@@ -102,14 +102,17 @@
       <div class="title">escape the snake 🐍</div>
       <div class="subtitle">-- Updates & Patch Notes --</div>
 
-      <div class="section-title" style="color: #9bffb1;">latest changes</div>
+      <div class="section-title">latest changes</div>
 
-      <!-- PATCH 4 -->
-      <div class="date" style="color: #9bffb1;">Dec 3rd -- LEADER BOARD RESET!</div>
+      <!-- PATCH: scoring + multi-snake + leaderboard reset -->
+      <div class="date">Dec 3, 2025</div>
       <ul>
-        <li>Reworked multi-snake logic so only the newest snake can shed and grow; older snakes freeze at their final size but stay in the arena.</li>
-        <li>Made sure a snake that has shed three times never sheds again, but continues slithering as a permanent threat.</li>
-        <li>Smoothed out segment spacing so the snake body stays visually tight even at higher speeds.</li>
+        <li>Reworked scoring so you now gain <b>+1 point every time a frog is eaten</b>, instead of score constantly ticking up over time.</li>
+        <li>Removed time-based score scaling so high scores stay readable and reflect actual chaos / frogs lost, not just AFK time.</li>
+        <li>Implemented proper <b>multi-snake behavior</b>: each snake can shed up to three times, and on the fourth shed a brand-new snake spawns instead of replacing the old one.</li>
+        <li>Only the newest snake continues to shed and grow; older snakes remain in the arena at their final size for the rest of the run.</li>
+        <li>Improved high-speed snake movement so segment spacing stays tight and clean even when the primary snake gets very fast.</li>
+        <li>Reset the online leaderboard and wiped old entries so all scores are now using this new scoring + multi-snake ruleset.</li>
       </ul>
 
       <div class="divider"></div>
