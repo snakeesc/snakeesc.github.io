@@ -2203,9 +2203,17 @@ function applyBuff(type, frog) {
         const killed = tryKillFrogAtIndex(i, "snake");
 
         // Only the CURRENT primary snake is allowed to grow.
-        if (killed && snakeObj === snake) {
+        if (killed) {
           frogsEatenCount++;
+
+          // 🔢 Scoring: 1 point per frog eaten
+          let gain = 1;
+          gain *= getLuckyScoreBonusFactor();
+          if (scoreMultiTime > 0) gain *= SCORE_MULTI_FACTOR;
+          score += gain;
+
           if (frogsEatenCount % 2 === 0) {
+            // Grow whichever snake actually got the kill
             growSnakeForSnake(snakeObj, 1);
           }
         }
@@ -3901,10 +3909,9 @@ function populateUpgradeOverlayChoices(mode) {
       updateSnake(dt, width, height);
       updateOrbs(dt);
 
-      // ----- SCORING (reverted to original pace) -----
-      let scoreFactor = scoreMultiTime > 0 ? SCORE_MULTI_FACTOR : 1;
-      scoreFactor *= getLuckyScoreBonusFactor();
-      score += dt * scoreFactor;
+      // ----- SCORING -----
+      // Score is now handled per frog eaten inside updateSingleSnake().
+      // No more time-based score gain here.
 
       // ----- GAME OVER: no frogs left -----
       if (!gameOver && frogs.length === 0) {
