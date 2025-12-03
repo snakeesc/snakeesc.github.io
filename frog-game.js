@@ -2566,10 +2566,10 @@ function ensureHowToOverlay() {
       linkLine.style.opacity = "0.9";
       linkLine.innerHTML =
         'Best played in browser at ' +
-        '<a href="." ' +
+        '<a href="https://snakeesc.github.io" ' +
         'target="_blank" rel="noopener noreferrer" ' +
         'style="color:#9cff9c;text-decoration:underline;">' +
-        'freshfrogs.github.io/snake</a>';
+        'snakeesc.github.io</a>';
 
       panel.appendChild(linkLine);
     }
