@@ -3840,8 +3840,8 @@ function populateUpgradeOverlayChoices(mode) {
     const dt = (time - lastTime) / 1000;
     lastTime = time;
 
-    if (!gameOver && nextShedAt && now >= nextShedAt) {
-      nextShedAt += SNAKE_SHED_INTERVAL_MS;
+    if (!gameOver && nextShedTime && now >= nextShedTime) {
+      nextShedTime += SHED_INTERVAL;
       snakeShedCount++;
 
       // We want a repeating 4-step cycle:
