@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Escape the Snake – Updates & Patch Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --bg: #050b10;
+      --bg2: #0b141d;
+      --border: #1b2a36;
+      --ink: #e8f6ff;
+      --muted: #8aa4b6;
+      --accent: #9bffb1;
+      --accent2: #6ee7ff;
+      --danger: #ff7a7a;
+      --shadow: 0 0 0 1px rgba(155,255,177,0.06),
+                0 18px 45px rgba(0,0,0,0.75);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top, #101b27 0, #050b10 55%) fixed;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                   "Segoe UI", sans-serif;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 900px;
+      padding: 24px 16px;
+    }
+
+    .panel {
+      background: radial-gradient(circle at top, #111c29 0, #091019 55%);
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background:
+        radial-gradient(circle at 0 0, rgba(155,255,177,0.15) 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(110,231,255,0.18) 0, transparent 55%);
+      mix-blend-mode: screen;
+      opacity: 0.6;
+    }
+
+    .panel-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: 1.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .title-block p {
+      margin: 4px 0 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .back-link {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(155,255,177,0.4);
+      color: var(--accent);
+      text-decoration: none;
+      background: rgba(5,11,16,0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .back-link span {
+      font-size: 1rem;
+    }
+
+    .back-link:hover {
+      background: rgba(10,20,28,0.95);
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .meta-pill {
+      border-radius: 999px;
+      border: 1px solid rgba(139, 167, 190, 0.45);
+      padding: 4px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(5,11,16,0.8);
+    }
+
+    .meta-pill strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .section {
+      border-top: 1px solid rgba(27,42,54,0.85);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .section:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .section h2 {
+      margin: 0 0 4px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent2);
+    }
+
+    .section p {
+      margin: 4px 0 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .chip {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(155,255,177,0.35);
+      color: var(--accent);
+      background: rgba(5,11,16,0.9);
+    }
+
+    .patch {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: linear-gradient(
+        135deg,
+        rgba(9,16,25,0.95),
+        rgba(6,12,20,0.95)
+      );
+      border: 1px solid rgba(27,42,54,0.9);
+    }
+
+    .patch-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .patch-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .patch-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .patch-type {
+      margin-left: auto;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+    }
+
+    ul {
+      margin: 4px 0 4px 18px;
+      padding: 0;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(155,255,177,0.4);
+      color: var(--accent);
+      background: rgba(5,11,16,0.9);
+      margin-top: 8px;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .footer-note a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .footer-note a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .panel {
+        padding: 16px 14px 18px;
+      }
+      .title-block h1 {
+        font-size: 1.35rem;
+      }
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .back-link {
+        align-self: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="panel">
+      <div class="panel-inner">
+        <header class="panel-header">
+          <div class="title-block">
+            <h1>Escape the Snake – Updates</h1>
+            <p>Patch notes & balance changes for the browser version.</p>
+          </div>
+          <a class="back-link" href="https://snakeesc.github.io/">
+            <span>⟵</span>
+            <span>Back to Game</span>
+          </a>
+        </header>
+
+        <div class="meta-row">
+          <div class="meta-pill">
+            <strong>Game:</strong> Escape the Snake
+          </div>
+          <div class="meta-pill">
+            <strong>Mode:</strong> Browser / HTML5
+          </div>
+          <div class="meta-pill">
+            <strong>Last Updated:</strong> Dec 3, 2025
+          </div>
+        </div>
+
+        <!-- Overview -->
+        <section class="section">
+          <h2>Overview</h2>
+          <p>
+            This page lists recent updates, balance tweaks, and fixes for the
+            web version of <strong>Escape the Snake</strong>. Most changes apply
+            to both the embedded versions (like Newgrounds) and the main site at
+            <strong>snakeesc.github.io</strong>.
+          </p>
+          <div class="chip-row">
+            <span class="chip">Buff Stacking</span>
+            <span class="chip">Orb Balance</span>
+            <span class="chip">Snake Sheds</span>
+            <span class="chip">Upgrade Timing</span>
+            <span class="chip">Frog Variations</span>
+          </div>
+        </section>
+
+        <!-- Latest Patch -->
+        <section class="section">
+          <h2>Latest Patch</h2>
+
+          <article class="patch">
+            <div class="patch-header">
+              <div class="patch-title">Domain Move & Readme / Balance Pass</div>
+              <div class="patch-meta">Dec 3, 2025</div>
+              <div class="patch-type">Live</div>
+            </div>
+            <ul>
+              <li>
+                <strong>New home:</strong> The main game is now hosted at
+                <strong>https://snakeesc.github.io</strong>. The old URL
+                <code>freshfrogs.github.io/snake</code> now redirects here.
+              </li>
+              <li>
+                Updated the in-game <strong>Read Me / How To Play</strong> panel
+                to better explain timing for sheds, upgrades, and how buffs stack.
+              </li>
+              <li>
+                Locked in the current pacing:
+                <ul>
+                  <li>Snake sheds every <strong>5 minutes</strong> (faster each shed).</li>
+                  <li>Common upgrades available every <strong>1 minute</strong>.</li>
+                  <li>Epic upgrades available every <strong>3 minutes</strong>.</li>
+                  <li>Upgrades stack and disappear from the pool when their cap is reached.</li>
+                </ul>
+              </li>
+              <li>
+                Tweaked various small UI details to make the game feel better in
+                fullscreen and embedded views (Newgrounds, etc.).
+              </li>
+            </ul>
+            <span class="badge">Focus: usability & clarity</span>
+          </article>
+        </section>
+
+        <!-- Recent Changes -->
+        <section class="section">
+          <h2>Recent Changes</h2>
+
+          <article class="patch">
+            <div class="patch-header">
+              <div class="patch-title">Buff & Orb Balance</div>
+              <div class="patch-meta">Late Nov 2025</div>
+              <div class="patch-type">Tuning</div>
+            </div>
+            <ul>
+              <li>
+                Adjusted <strong>orb lifetimes</strong> so players have a more
+                reasonable window to chase them without instantly dying to the snake.
+              </li>
+              <li>
+                Added <strongsoft>caps</strongsoft> to certain buff types to prevent
+                extreme late-game stacking from breaking the difficulty curve.
+              </li>
+              <li>
+                Cleaned up upgrade descriptions to be shorter and easier to skim
+                during runs.
+              </li>
+            </ul>
+            <span class="badge">Focus: balance & readability</span>
+          </article>
+
+          <article class="patch">
+            <div class="patch-header">
+              <div class="patch-title">Multi-Snake Support & Readme Overlay</div>
+              <div class="patch-meta">Late Nov 2025</div>
+              <div class="patch-type">Feature</div>
+            </div>
+            <ul>
+              <li>
+                Refined the logic for spawning additional snakes after the
+                maximum sheds are reached, so extra snakes appear without
+                replacing the original.
+              </li>
+              <li>
+                Ensured the <strong>Read Me / How To Play</strong> panel properly
+                appears before the first run so new players understand the basics.
+              </li>
+              <li>
+                Fixed issues where certain frogs promoted into the arena were
+                missing their proper role icon in the HUD.
+              </li>
+            </ul>
+            <span class="badge">Focus: features & bug fixes</span>
+          </article>
+        </section>
+
+        <p class="footer-note">
+          Have feedback or found a bug? You can always play the latest version at
+          <a href="https://snakeesc.github.io/">snakeesc.github.io</a> and share
+          feedback through the platforms where the game is hosted (like Newgrounds).
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
