@@ -424,7 +424,6 @@
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
-
   function snakeShed(stage) {
     if (!snake) return;
 
@@ -443,6 +442,11 @@
       });
     }
 
+    // Base this shed's speed on the old snake's personal factor (defaults to 1)
+    const baseSpeedFactor = (oldSnake && typeof oldSnake.speedFactor === "number")
+      ? oldSnake.speedFactor
+      : 1.0;
+
     // Permanent speed bonus each shed.
     // Normally +20%, but if Snake Egg is pending, only +11% (20% - 9%).
     let speedMult = SNAKE_SHED_SPEEDUP;
@@ -450,7 +454,11 @@
       speedMult = SNAKE_EGG_BUFF_PCT;   // +11% instead of +20%
       snakeEggPending = false; // consume the egg buff
     }
-    snakePermanentSpeedFactor *= speedMult;
+
+    const newSpeedFactor = baseSpeedFactor * speedMult;
+
+    // Keep the old global in sync for stats / HUD if you reference it anywhere
+    snakePermanentSpeedFactor = newSpeedFactor;
 
     // Turn radius: slightly tighter turns each shed (20% per shed, capped)
     // NOTE: higher snakeTurnRate = sharper turns (tighter radius).
@@ -458,7 +466,6 @@
 
     // Decide new color stage (1 = yellow, 2 = orange, 3+ = red).
     snakeShedStage = stage;
-
 
     // Spawn the new snake roughly where the old head was.
     const width  = window.innerWidth;
@@ -528,12 +535,14 @@
       path.push({ x: startX, y: startY });
     }
 
-    // Replace global snake reference with the new snake
+    // Replace global snake reference with the new snake,
+    // carrying forward the new per-snake speed factor
     snake = {
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
-      isFrenzyVisual: false
+      isFrenzyVisual: false,
+      speedFactor: newSpeedFactor
     };
 
     // Apply the appropriate color tint for this shed stage
@@ -544,14 +553,13 @@
       const ghostCount = randInt(GRAVE_WAVE_MIN_GHOSTS, GRAVE_WAVE_MAX_GHOSTS);
       spawnGhostWave(ghostCount);
     }
-
   }
 
   function handleFourthShed() {
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
-    // Create a brand-new snake
+    // Create a brand-new fresh snake
     const newSnake = spawnAdditionalSnake(width, height);
     if (!newSnake) return;
 
@@ -563,8 +571,15 @@
     // New snake becomes the primary one that will shed from now on
     snake = newSnake;
 
-    // Make sure the new primary snake uses the current base appearance logic
-    // (stage 1/2/3 visuals will be applied the next time snakeShed(stage) runs)
+    // This new primary should start like the very first snake:
+    // - base shed stage (no color tint)
+    // - base speed & turn rate
+    snakeShedStage = 0;
+    snake.speedFactor = 1.0;
+    snakePermanentSpeedFactor = 1.0;
+    snakeTurnRate = SNAKE_TURN_RATE_BASE;
+
+    // Apply appearance for stage 0 (original art, no tint)
     applySnakeAppearance();
   }
 
@@ -931,39 +946,48 @@
     return factor;
   }
 
-function getJumpFactor(frog) {
-  let factor = frogPermanentJumpFactor * (frog.jumpMult || 1);
+  function getJumpFactor(frog) {
+    let factor = frogPermanentJumpFactor * (frog.jumpMult || 1);
 
-  // Aura jump boost
-  for (const other of frogs) {
-    if (!other.isAura) continue;
-    const dx = (other.x + FROG_SIZE / 2) - (frog.x + FROG_SIZE / 2);
-    const dy = (other.baseY + FROG_SIZE / 2) - (frog.baseY + FROG_SIZE / 2);
-    const d2 = dx * dx + dy * dy;
-    if (d2 <= AURA_RADIUS2) {
-      factor *= AURA_JUMP_FACTOR; // 1.15
+    // Aura jump boost
+    for (const other of frogs) {
+      if (!other.isAura) continue;
+      const dx = (other.x + FROG_SIZE / 2) - (frog.x + FROG_SIZE / 2);
+      const dy = (other.baseY + FROG_SIZE / 2) - (frog.baseY + FROG_SIZE / 2);
+      const d2 = dx * dx + dy * dy;
+      if (d2 <= AURA_RADIUS2) {
+        factor *= AURA_JUMP_FACTOR; // 1.15
+      }
     }
+
+    // Temporary jump buff
+    if (jumpBuffTime > 0) {
+      factor *= JUMP_BUFF_FACTOR; // e.g. 3.2
+    }
+
+    // Champion jump boost
+    if (frog.isChampion) {
+      factor *= CHAMPION_JUMP_FACTOR; // 1.25
+    }
+
+    return factor;
   }
 
-  // Temporary jump buff
-  if (jumpBuffTime > 0) {
-    factor *= JUMP_BUFF_FACTOR; // e.g. 3.2
-  }
+  function getSnakeSpeedFactor(snakeObj) {
+    // Per-snake permanent speed factor (from sheds)
+    let factor;
 
-  // Champion jump boost
-  if (frog.isChampion) {
-    factor *= CHAMPION_JUMP_FACTOR; // 1.25
-  }
+    if (snakeObj && typeof snakeObj.speedFactor === "number") {
+      factor = snakeObj.speedFactor;
+    } else {
+      // Fallback to global if needed / for old snakes without speedFactor
+      factor = snakePermanentSpeedFactor;
+    }
 
-  return factor;
-}
-
-  function getSnakeSpeedFactor() {
-    let factor = snakePermanentSpeedFactor;
-
+    // Global debuffs / buffs still apply to all snakes
     if (snakeSlowTime > 0)   factor *= SNAKE_SLOW_FACTOR;
     if (timeSlowTime > 0)    factor *= TIME_SLOW_FACTOR;
-    if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR; // +25% speed during Frenzy
+    if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR; // Frenzy speeds all snakes
 
     return factor;
   }
@@ -1914,7 +1938,8 @@ function applyBuff(type, frog) {
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
-      isFrenzyVisual: false
+      isFrenzyVisual: false,
+      speedFactor: 1.0
     };
     // apply current stage color on fresh snake
     applySnakeAppearance();
@@ -1965,15 +1990,15 @@ function applyBuff(type, frog) {
       path.push({ x: startX, y: startY });
     }
 
+    // Fresh snake: base speed + base color
     const newSnake = {
       head: { el: headEl, x: startX, y: startY, angle: Math.PI }, // facing left
       segments,
       path,
-      isFrenzyVisual: false
+      isFrenzyVisual: false,
+      speedFactor: 1.0
     };
 
-    // Stage 3: let the caller decide whether this becomes the main snake
-    // or just an extra. So we RETURN it instead of pushing here.
     return newSnake;
   }
 
@@ -2046,7 +2071,7 @@ function applyBuff(type, frog) {
     const baseSegmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
 
     // How fast the snake is moving right now (permanent speed + buffs/debuffs)
-    const speedFactor = getSnakeSpeedFactor();
+    const speedFactor = getSnakeSpeedFactor(snakeObj);
 
     // When the snake speeds up, shrink the path gap so the visual spacing stays similar.
     let segmentGap = baseSegmentGap;
