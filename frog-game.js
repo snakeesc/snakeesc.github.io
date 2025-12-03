@@ -2505,7 +2505,7 @@ function ensureHowToOverlay() {
     '<a href="https://snakeesc.github.io/updates" ' +
     'target="_blank" rel="noopener noreferrer" ' +
     'style="color:#9cff9c;text-decoration:underline;">' +
-    '/updates</a>';
+    'snakeesc.github.io/updates</a>';
 
   // Buttons row: Start & Learn more
   const btnRow = document.createElement("div");
