@@ -231,7 +231,7 @@
   const LEGENDARY_EVENT_TIME = 600; // 10 minutes
 
   // Snake shedding every 5 minutes
-  const SHED_INTERVAL = 10; // 5 minutes
+  const SHED_INTERVAL = 300; // 5 minutes
 
   let legendaryEventTriggered = false;
 
@@ -3532,31 +3532,6 @@ function populateUpgradeOverlayChoices(mode) {
     containerEl.appendChild(makeButton(choice.label, choice.apply));
   }
 }
-
-    function makeButton(label, onClick) {
-      const btn = document.createElement("button");
-      btn.innerHTML = label; // ⬅ was textContent
-      btn.style.fontFamily = "monospace";
-      btn.style.fontSize = "13px";
-      btn.style.padding = "6px 8px";
-      btn.style.border = "1px solid #555";
-      btn.style.borderRadius = "6px";
-      btn.style.background = "#222";
-      btn.style.color = "#fff";
-      btn.style.cursor = "pointer";
-      btn.onmouseenter = () => { btn.style.background = "#333"; };
-      btn.onmouseleave = () => { btn.style.background = "#222"; };
-      btn.onclick = () => {
-        try {
-          onClick();
-        } catch (e) {
-          console.error("Error applying upgrade:", e);
-        }
-        playPermanentChoiceSound();
-        closeUpgradeOverlay();
-      };
-      return btn;
-    }
 
   function openUpgradeOverlay(mode) {
     ensureUpgradeOverlay();
