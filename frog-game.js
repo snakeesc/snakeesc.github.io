@@ -3901,14 +3901,10 @@ function populateUpgradeOverlayChoices(mode) {
       updateSnake(dt, width, height);
       updateOrbs(dt);
 
-      // ----- SCORING -----
-      // Score per second, boosted by frog count + Lucky + scoreMulti buff
-      let perSecond = 10 + frogs.length * 0.25;
-      let gain = perSecond * dt * getLuckyScoreBonusFactor();
-      if (scoreMultiTime > 0) {
-        gain *= SCORE_MULTI_FACTOR;
-      }
-      score += gain;
+      // ----- SCORING (reverted to original pace) -----
+      let scoreFactor = scoreMultiTime > 0 ? SCORE_MULTI_FACTOR : 1;
+      scoreFactor *= getLuckyScoreBonusFactor();
+      score += dt * scoreFactor;
 
       // ----- GAME OVER: no frogs left -----
       if (!gameOver && frogs.length === 0) {
