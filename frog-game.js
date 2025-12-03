@@ -205,7 +205,8 @@
   // GAME STATE
   // --------------------------------------------------
   let frogs = [];
-  let snake = null;
+  let snake = null;       // primary snake
+  let extraSnakes = [];   // any additional snakes spawned later
   let orbs  = [];
 
   let animId        = null;
@@ -230,7 +231,7 @@
   const LEGENDARY_EVENT_TIME = 600; // 10 minutes
 
   // Snake shedding every 5 minutes
-  const SHED_INTERVAL = 300; // 5 minutes
+  const SHED_INTERVAL = 5; // 5 minutes
 
   let legendaryEventTriggered = false;
 
@@ -423,7 +424,6 @@
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
-
   function snakeShed(stage) {
     if (!snake) return;
 
@@ -442,6 +442,11 @@
       });
     }
 
+    // Base this shed's speed on the old snake's personal factor (defaults to 1)
+    const baseSpeedFactor = (oldSnake && typeof oldSnake.speedFactor === "number")
+      ? oldSnake.speedFactor
+      : 1.0;
+
     // Permanent speed bonus each shed.
     // Normally +20%, but if Snake Egg is pending, only +11% (20% - 9%).
     let speedMult = SNAKE_SHED_SPEEDUP;
@@ -449,7 +454,11 @@
       speedMult = SNAKE_EGG_BUFF_PCT;   // +11% instead of +20%
       snakeEggPending = false; // consume the egg buff
     }
-    snakePermanentSpeedFactor *= speedMult;
+
+    const newSpeedFactor = baseSpeedFactor * speedMult;
+
+    // Keep the old global in sync for stats / HUD if you reference it anywhere
+    snakePermanentSpeedFactor = newSpeedFactor;
 
     // Turn radius: slightly tighter turns each shed (20% per shed, capped)
     // NOTE: higher snakeTurnRate = sharper turns (tighter radius).
@@ -457,7 +466,6 @@
 
     // Decide new color stage (1 = yellow, 2 = orange, 3+ = red).
     snakeShedStage = stage;
-
 
     // Spawn the new snake roughly where the old head was.
     const width  = window.innerWidth;
@@ -527,12 +535,14 @@
       path.push({ x: startX, y: startY });
     }
 
-    // Replace global snake reference with the new snake
+    // Replace global snake reference with the new snake,
+    // carrying forward the new per-snake speed factor
     snake = {
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
-      isFrenzyVisual: false
+      isFrenzyVisual: false,
+      speedFactor: newSpeedFactor
     };
 
     // Apply the appropriate color tint for this shed stage
@@ -543,7 +553,34 @@
       const ghostCount = randInt(GRAVE_WAVE_MIN_GHOSTS, GRAVE_WAVE_MAX_GHOSTS);
       spawnGhostWave(ghostCount);
     }
+  }
 
+  function handleFourthShed() {
+    const width  = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Create a brand-new fresh snake
+    const newSnake = spawnAdditionalSnake(width, height);
+    if (!newSnake) return;
+
+    // Demote the current primary snake into the extras array (if it exists)
+    if (snake) {
+      extraSnakes.push(snake);
+    }
+
+    // New snake becomes the primary one that will shed from now on
+    snake = newSnake;
+
+    // This new primary should start like the very first snake:
+    // - base shed stage (no color tint)
+    // - base speed & turn rate
+    snakeShedStage = 0;
+    snake.speedFactor = 1.0;
+    snakePermanentSpeedFactor = 1.0;
+    snakeTurnRate = SNAKE_TURN_RATE_BASE;
+
+    // Apply appearance for stage 0 (original art, no tint)
+    applySnakeAppearance();
   }
 
   function updateDyingSnakes(dt) {
@@ -909,39 +946,48 @@
     return factor;
   }
 
-function getJumpFactor(frog) {
-  let factor = frogPermanentJumpFactor * (frog.jumpMult || 1);
+  function getJumpFactor(frog) {
+    let factor = frogPermanentJumpFactor * (frog.jumpMult || 1);
 
-  // Aura jump boost
-  for (const other of frogs) {
-    if (!other.isAura) continue;
-    const dx = (other.x + FROG_SIZE / 2) - (frog.x + FROG_SIZE / 2);
-    const dy = (other.baseY + FROG_SIZE / 2) - (frog.baseY + FROG_SIZE / 2);
-    const d2 = dx * dx + dy * dy;
-    if (d2 <= AURA_RADIUS2) {
-      factor *= AURA_JUMP_FACTOR; // 1.15
+    // Aura jump boost
+    for (const other of frogs) {
+      if (!other.isAura) continue;
+      const dx = (other.x + FROG_SIZE / 2) - (frog.x + FROG_SIZE / 2);
+      const dy = (other.baseY + FROG_SIZE / 2) - (frog.baseY + FROG_SIZE / 2);
+      const d2 = dx * dx + dy * dy;
+      if (d2 <= AURA_RADIUS2) {
+        factor *= AURA_JUMP_FACTOR; // 1.15
+      }
     }
+
+    // Temporary jump buff
+    if (jumpBuffTime > 0) {
+      factor *= JUMP_BUFF_FACTOR; // e.g. 3.2
+    }
+
+    // Champion jump boost
+    if (frog.isChampion) {
+      factor *= CHAMPION_JUMP_FACTOR; // 1.25
+    }
+
+    return factor;
   }
 
-  // Temporary jump buff
-  if (jumpBuffTime > 0) {
-    factor *= JUMP_BUFF_FACTOR; // e.g. 3.2
-  }
+  function getSnakeSpeedFactor(snakeObj) {
+    // Per-snake permanent speed factor (from sheds)
+    let factor;
 
-  // Champion jump boost
-  if (frog.isChampion) {
-    factor *= CHAMPION_JUMP_FACTOR; // 1.25
-  }
+    if (snakeObj && typeof snakeObj.speedFactor === "number") {
+      factor = snakeObj.speedFactor;
+    } else {
+      // Fallback to global if needed / for old snakes without speedFactor
+      factor = snakePermanentSpeedFactor;
+    }
 
-  return factor;
-}
-
-  function getSnakeSpeedFactor() {
-    let factor = snakePermanentSpeedFactor;
-
+    // Global debuffs / buffs still apply to all snakes
     if (snakeSlowTime > 0)   factor *= SNAKE_SLOW_FACTOR;
     if (timeSlowTime > 0)    factor *= TIME_SLOW_FACTOR;
-    if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR; // +25% speed during Frenzy
+    if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR; // Frenzy speeds all snakes
 
     return factor;
   }
@@ -951,12 +997,27 @@ function getJumpFactor(frog) {
   }
 
   function getSnakeResistance() {
-    if (!snake || !snake.segments) return 0;
-    const extraSegments = Math.max(0, snake.segments.length - SNAKE_INITIAL_SEGMENTS);
+    let totalSegments = 0;
+
+    if (snake && Array.isArray(snake.segments)) {
+      totalSegments += snake.segments.length;
+    }
+    if (Array.isArray(extraSnakes) && extraSnakes.length) {
+      for (const s of extraSnakes) {
+        if (s && Array.isArray(s.segments)) {
+          totalSegments += s.segments.length;
+        }
+      }
+    }
+
+    if (totalSegments <= 0) return 0;
+
+    const extraSegments = Math.max(0, totalSegments - SNAKE_INITIAL_SEGMENTS);
     const RESIST_PER_SEGMENT = 0.04;
     const maxResist = 0.8;
     return Math.max(0, Math.min(maxResist, extraSegments * RESIST_PER_SEGMENT));
   }
+
 
 function grantChampionFrog(frog) {
   if (frog.isChampion) return;
@@ -1877,220 +1938,294 @@ function applyBuff(type, frog) {
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
-      isFrenzyVisual: false
+      isFrenzyVisual: false,
+      speedFactor: 1.0
     };
     // apply current stage color on fresh snake
     applySnakeAppearance();
   }
 
-function growSnake(extraSegments) {
-  if (!snake) return;
-  extraSegments = extraSegments || 1;
+  // Spawn a second active snake without touching the primary one
+  function spawnAdditionalSnake(width, height) {
+    const startX = width * 0.85;  // opposite side of the screen
+    const startY = height * 0.5;
 
-  // 🔒 Do not grow beyond MAX_SNAKE_SEGMENTS
-  const currentLen = snake.segments.length;
-  const allowedExtra = Math.max(0, MAX_SNAKE_SEGMENTS - currentLen);
-  if (allowedExtra <= 0) {
-    return; // already at or above cap
+    const headEl = document.createElement("div");
+    headEl.className = "snake-head";
+    headEl.style.position = "absolute";
+    headEl.style.width = SNAKE_SEGMENT_SIZE + "px";
+    headEl.style.height = SNAKE_SEGMENT_SIZE + "px";
+    headEl.style.imageRendering = "pixelated";
+    headEl.style.backgroundSize = "contain";
+    headEl.style.backgroundRepeat = "no-repeat";
+    headEl.style.pointerEvents = "none";
+    headEl.style.zIndex = "30";
+    headEl.style.backgroundImage = "url(./images/head.png)";
+    container.appendChild(headEl);
+
+    const segments = [];
+    for (let i = 0; i < SNAKE_INITIAL_SEGMENTS; i++) {
+      const segEl = document.createElement("div");
+      const isTail = i === SNAKE_INITIAL_SEGMENTS - 1;
+      segEl.className = isTail ? "snake-tail" : "snake-body";
+      segEl.style.position = "absolute";
+      segEl.style.width = SNAKE_SEGMENT_SIZE + "px";
+      segEl.style.height = SNAKE_SEGMENT_SIZE + "px";
+      segEl.style.imageRendering = "pixelated";
+      segEl.style.backgroundSize = "contain";
+      segEl.style.backgroundRepeat = "no-repeat";
+      segEl.style.pointerEvents = "none";
+      segEl.style.zIndex = "29";
+      segEl.style.backgroundImage = isTail
+        ? "url(./images/tail.png)"
+        : "url(./images/body.png)";
+      container.appendChild(segEl);
+
+      segments.push({ el: segEl, x: startX, y: startY });
+    }
+
+    const path = [];
+    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * SNAKE_SEGMENT_GAP + 2;
+    for (let i = 0; i < maxPath; i++) {
+      path.push({ x: startX, y: startY });
+    }
+
+    // Fresh snake: base speed + base color
+    const newSnake = {
+      head: { el: headEl, x: startX, y: startY, angle: Math.PI }, // facing left
+      segments,
+      path,
+      isFrenzyVisual: false,
+      speedFactor: 1.0
+    };
+
+    return newSnake;
   }
 
-  extraSegments = Math.min(extraSegments, allowedExtra);
+  function growSnakeForSnake(snakeObj, extraSegments) {
+    if (!snakeObj) return;
+    extraSegments = extraSegments || 1;
 
-  for (let i = 0; i < extraSegments; i++) {
-    const tailIndex = snake.segments.length - 1;
-    const tailSeg = snake.segments[tailIndex];
+    const currentLen = snakeObj.segments.length;
+    const allowedExtra = Math.max(0, MAX_SNAKE_SEGMENTS - currentLen);
+    if (allowedExtra <= 0) {
+      return;
+    }
 
-    const segEl = document.createElement("div");
-    segEl.className = "snake-body";
-    segEl.style.position = "absolute";
-    segEl.style.width = SNAKE_SEGMENT_SIZE + "px";
-    segEl.style.height = SNAKE_SEGMENT_SIZE + "px";
-    segEl.style.imageRendering = "pixelated";
-    segEl.style.backgroundSize = "contain";
-    segEl.style.backgroundRepeat = "no-repeat";
-    segEl.style.pointerEvents = "none";
-    segEl.style.zIndex = "29";
-    segEl.style.backgroundImage = "url(./images/body.png)";
-    container.appendChild(segEl);
+    extraSegments = Math.min(extraSegments, allowedExtra);
 
-    snake.segments.splice(tailIndex, 0, {
-      el: segEl,
-      x: tailSeg ? tailSeg.x : snake.head.x,
-      y: tailSeg ? tailSeg.y : snake.head.y
-    });
-  }
+    for (let i = 0; i < extraSegments; i++) {
+      const tailIndex = snakeObj.segments.length - 1;
+      const tailSeg = snakeObj.segments[tailIndex];
 
-  const desiredPathLength =
-    (snake.segments.length + 2) * SNAKE_SEGMENT_GAP + 2;
-  while (snake.path.length < desiredPathLength) {
-    const last = snake.path[snake.path.length - 1];
-    snake.path.push({ x: last.x, y: last.y });
-  }
+      const segEl = document.createElement("div");
+      segEl.className = "snake-body";
+      segEl.style.position = "absolute";
+      segEl.style.width = SNAKE_SEGMENT_SIZE + "px";
+      segEl.style.height = SNAKE_SEGMENT_SIZE + "px";
+      segEl.style.imageRendering = "pixelated";
+      segEl.style.backgroundSize = "contain";
+      segEl.style.backgroundRepeat = "no-repeat";
+      segEl.style.pointerEvents = "none";
+      segEl.style.zIndex = "29";
+      segEl.style.backgroundImage = "url(./images/body.png)";
+      container.appendChild(segEl);
 
-  // ✅ Make sure new segments match current shed color / frenzy tint
-  applySnakeAppearance();
-}
+      snakeObj.segments.splice(tailIndex, 0, {
+        el: segEl,
+        x: tailSeg ? tailSeg.x : snakeObj.head.x,
+        y: tailSeg ? tailSeg.y : snakeObj.head.y
+      });
+    }
 
-function updateSnake(dt, width, height) {
-  if (!snake) return;
+    const desiredPathLength =
+      (snakeObj.segments.length + 2) * SNAKE_SEGMENT_GAP + 2;
+    while (snakeObj.path.length < desiredPathLength) {
+      const last = snakeObj.path[snakeObj.path.length - 1];
+      snakeObj.path.push({ x: last.x, y: last.y });
+    }
 
-  const marginX = 8;
-  const marginY = 24;
-
-  const head = snake.head;
-  if (!head) return;
-
-  const isMobile = window.matchMedia("(max-device-width: 768px)").matches;
-
-  // Base gap (in path samples) for this device
-  const baseSegmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
-
-  // How fast the snake is moving right now (permanent speed + buffs/debuffs)
-  const speedFactor = getSnakeSpeedFactor();
-
-  // When the snake speeds up, shrink the path gap so the visual spacing stays similar.
-  let segmentGap = baseSegmentGap;
-  if (speedFactor > 1.0) {
-    segmentGap = Math.round(baseSegmentGap / speedFactor);
-  }
-
-  // Don’t let the segments collapse completely
-  const MIN_SEGMENT_GAP = isMobile ? 10 : 18;
-  if (segmentGap < MIN_SEGMENT_GAP) segmentGap = MIN_SEGMENT_GAP;
-
-
-
-  // -----------------------------
-  // Targeting logic
-  // -----------------------------
-  let targetFrog = null;
-  let bestDist2 = Infinity;
-
-  for (const frog of frogs) {
-    if (!frog || !frog.el) continue;
-    const fx = frog.x + FROG_SIZE / 2;
-    const fy = frog.baseY + FROG_SIZE / 2;
-    const dx = fx - head.x;
-    const dy = fy - head.y;
-    const d2 = dx * dx + dy * dy;
-    if (d2 < bestDist2) {
-      bestDist2 = d2;
-      targetFrog = frog;
+    // Only primary snake uses shed-color logic; extra snakes stay base color
+    if (snakeObj === snake) {
+      applySnakeAppearance();
     }
   }
 
-  let desiredAngle = head.angle;
-
-  if (snakeConfuseTime > 0) {
-    // confused: random-ish turning
-    desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
-    targetFrog = null;
-  } else if (targetFrog) {
-    const fx = targetFrog.x + FROG_SIZE / 2;
-    const fy = targetFrog.baseY + FROG_SIZE / 2;
-    desiredAngle = Math.atan2(fy - head.y, fx - head.x);
-  } else {
-    // no frogs? just wander
-    desiredAngle += (Math.random() - 0.5) * dt;
+  // Backwards-compatible wrapper (if anything else calls growSnake)
+  function growSnake(extraSegments) {
+    growSnakeForSnake(snake, extraSegments);
   }
 
-  let angleDiff =
-    ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
-  const maxTurn = snakeTurnRate * dt;
-  if (angleDiff > maxTurn) angleDiff = maxTurn;
-  if (angleDiff < -maxTurn) angleDiff = -maxTurn;
-  head.angle += angleDiff;
+  function updateSingleSnake(snakeObj, dt, width, height) {
+    if (!snakeObj) return;
 
-  // speedFactor already computed at the top of updateSnake
-  const speed = SNAKE_BASE_SPEED * speedFactor * (0.8 + Math.random() * 0.4);
+    const marginX = 8;
+    const marginY = 24;
 
-  head.x += Math.cos(head.angle) * speed * dt;
-  head.y += Math.sin(head.angle) * speed * dt;
+    const head = snakeObj.head;
+    if (!head) return;
 
-  // Keep inside bounds
-  if (head.x < marginX) {
-    head.x = marginX;
-    head.angle = Math.PI - head.angle;
-  } else if (head.x > width - marginX - SNAKE_SEGMENT_SIZE) {
-    head.x = width - marginX - SNAKE_SEGMENT_SIZE;
-    head.angle = Math.PI - head.angle;
-  }
-  if (head.y < marginY) {
-    head.y = marginY;
-    head.angle = -head.angle;
-  } else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) {
-    head.y = height - marginY - SNAKE_SEGMENT_SIZE;
-    head.angle = -head.angle;
-  }
+    const isMobile = window.matchMedia("(max-device-width: 768px)").matches;
 
-  // -----------------------------
-  // Path + segments follow
-  // -----------------------------
-  snake.path.unshift({ x: head.x, y: head.y });
-  const maxPathLength = (snake.segments.length + 2) * segmentGap + 2;
-  while (snake.path.length > maxPathLength) {
-    snake.path.pop();
-  }
+    // Base gap (in path samples) for this device
+    const baseSegmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
 
-  const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
+    // How fast the snake is moving right now (permanent speed + buffs/debuffs)
+    const speedFactor = getSnakeSpeedFactor(snakeObj);
 
-  // 🔸 Head: fully rotate with movement
-  head.el.style.transform =
-    `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
+    // When the snake speeds up, shrink the path gap so the visual spacing stays similar.
+    let segmentGap = baseSegmentGap;
+    if (speedFactor > 1.0) {
+      segmentGap = Math.round(baseSegmentGap / speedFactor);
+    }
 
-  for (let i = 0; i < snake.segments.length; i++) {
-    const seg = snake.segments[i];
-    const idx = Math.min(
-      snake.path.length - 1,
-      (i + 1) * segmentGap
-    );
-    const p = snake.path[idx] || snake.path[snake.path.length - 1];
+    // Don’t let the segments collapse completely
+    const MIN_SEGMENT_GAP = isMobile ? 10 : 18;
+    if (segmentGap < MIN_SEGMENT_GAP) segmentGap = MIN_SEGMENT_GAP;
 
-    const nextIdx = Math.max(0, idx - 2);
-    const q = snake.path[nextIdx] || p;
-    const angle = Math.atan2(p.y - q.y, p.x - q.x);
+    // -----------------------------
+    // Targeting logic
+    // -----------------------------
+    let targetFrog = null;
+    let bestDist2 = Infinity;
 
-    seg.x = p.x;
-    seg.y = p.y;
+    for (const frog of frogs) {
+      if (!frog || !frog.el) continue;
+      const fx = frog.x + FROG_SIZE / 2;
+      const fy = frog.baseY + FROG_SIZE / 2;
+      const dx = fx - head.x;
+      const dy = fy - head.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < bestDist2) {
+        bestDist2 = d2;
+        targetFrog = frog;
+      }
+    }
 
-    seg.el.style.transform =
-      `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
-  }
+    let desiredAngle = head.angle;
 
-  // -----------------------------
-  // Collisions with frogs
-  // -----------------------------
-  const eatRadius = getSnakeEatRadius();
-  const eatR2 = eatRadius * eatRadius;
+    if (snakeConfuseTime > 0) {
+      // confused: random-ish turning
+      desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
+      targetFrog = null;
+    } else if (targetFrog) {
+      const fx = targetFrog.x + FROG_SIZE / 2;
+      const fy = targetFrog.baseY + FROG_SIZE / 2;
+      desiredAngle = Math.atan2(fy - head.y, fx - head.x);
+    } else {
+      // no frogs? just wander
+      desiredAngle += (Math.random() - 0.5) * dt;
+    }
 
-  // ✅ Use the *center* of the head sprite as the bite point
-  const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
-  const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
+    let angleDiff =
+      ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+    const maxTurn = snakeTurnRate * dt;
+    if (angleDiff > maxTurn) angleDiff = maxTurn;
+    if (angleDiff < -maxTurn) angleDiff = -maxTurn;
+    head.angle += angleDiff;
 
-  for (let i = frogs.length - 1; i >= 0; i--) {
-    const frog = frogs[i];
-    if (!frog || !frog.el) continue;
+    const speed = SNAKE_BASE_SPEED * speedFactor * (0.8 + Math.random() * 0.4);
 
-    const fx = frog.x + FROG_SIZE / 2;
-    const fy = frog.baseY + FROG_SIZE / 2;
-    const dx = fx - headCx;
-    const dy = fy - headCy;
-    const d2 = dx * dx + dy * dy;
+    head.x += Math.cos(head.angle) * speed * dt;
+    head.y += Math.sin(head.angle) * speed * dt;
 
-    if (d2 <= eatR2) {
-      // Shared kill logic (shields, zombies, deathrattle, sounds, cannibal tracking)
-      const killed = tryKillFrogAtIndex(i, "snake");
+    // Keep inside bounds
+    if (head.x < marginX) {
+      head.x = marginX;
+      head.angle = Math.PI - head.angle;
+    } else if (head.x > width - marginX - SNAKE_SEGMENT_SIZE) {
+      head.x = width - marginX - SNAKE_SEGMENT_SIZE;
+      head.angle = Math.PI - head.angle;
+    }
+    if (head.y < marginY) {
+      head.y = marginY;
+      head.angle = -head.angle;
+    } else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) {
+      head.y = height - marginY - SNAKE_SEGMENT_SIZE;
+      head.angle = -head.angle;
+    }
 
-      if (killed) {
-        // Only grow one segment for every 2 frogs eaten
-        frogsEatenCount++;
-        if (frogsEatenCount % 2 === 0) {
-          growSnake(1);
+    // -----------------------------
+    // Path + segments follow
+    // -----------------------------
+    snakeObj.path.unshift({ x: head.x, y: head.y });
+    const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
+    while (snakeObj.path.length > maxPathLength) {
+      snakeObj.path.pop();
+    }
+
+    const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
+
+    // 🔸 Head: fully rotate with movement
+    head.el.style.transform =
+      `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
+
+    for (let i = 0; i < snakeObj.segments.length; i++) {
+      const seg = snakeObj.segments[i];
+      const idx = Math.min(
+        snakeObj.path.length - 1,
+        (i + 1) * segmentGap
+      );
+      const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
+
+      const nextIdx = Math.max(0, idx - 2);
+      const q = snakeObj.path[nextIdx] || p;
+      const angle = Math.atan2(p.y - q.y, p.x - q.x);
+
+      seg.x = p.x;
+      seg.y = p.y;
+
+      seg.el.style.transform =
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
+    }
+
+    // -----------------------------
+    // Collisions with frogs
+    // -----------------------------
+    const eatRadius = getSnakeEatRadius();
+    const eatR2 = eatRadius * eatRadius;
+
+    // ✅ Use the *center* of the head sprite as the bite point
+    const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
+    const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
+
+    for (let i = frogs.length - 1; i >= 0; i--) {
+      const frog = frogs[i];
+      if (!frog || !frog.el) continue;
+
+      const fx = frog.x + FROG_SIZE / 2;
+      const fy = frog.baseY + FROG_SIZE / 2;
+      const dx = fx - headCx;
+      const dy = fy - headCy;
+      const d2 = dx * dx + dy * dy;
+
+      if (d2 <= eatR2) {
+        const killed = tryKillFrogAtIndex(i, "snake");
+
+        // Only the CURRENT primary snake is allowed to grow.
+        if (killed && snakeObj === snake) {
+          frogsEatenCount++;
+          if (frogsEatenCount % 2 === 0) {
+            growSnakeForSnake(snakeObj, 1);
+          }
         }
       }
     }
   }
-}
+
+  function updateSnake(dt, width, height) {
+    if (!snake) return;
+
+    // Update primary snake
+    updateSingleSnake(snake, dt, width, height);
+
+    // Update any extra snakes
+    if (extraSnakes && extraSnakes.length) {
+      for (const s of extraSnakes) {
+        updateSingleSnake(s, dt, width, height);
+      }
+    }
+  }
 
   // --------------------------------------------------
   // PERMANENT, EPIC & LEGENDARY UPGRADE OVERLAY
@@ -3582,7 +3717,7 @@ function populateUpgradeOverlayChoices(mode) {
     }
     orbs = [];
 
-    // Remove snake graphics
+    // Remove snake graphics (primary)
     if (snake) {
       if (snake.head && snake.head.el && snake.head.el.parentNode === container) {
         container.removeChild(snake.head.el);
@@ -3595,7 +3730,26 @@ function populateUpgradeOverlayChoices(mode) {
         }
       }
     }
+
+    // Remove any extra snakes
+    if (Array.isArray(extraSnakes) && extraSnakes.length) {
+      for (const s of extraSnakes) {
+        if (!s) continue;
+        if (s.head && s.head.el && s.head.el.parentNode === container) {
+          container.removeChild(s.head.el);
+        }
+        if (Array.isArray(s.segments)) {
+          for (const seg of s.segments) {
+            if (seg.el && seg.el.parentNode === container) {
+              container.removeChild(seg.el);
+            }
+          }
+        }
+      }
+    }
+    extraSnakes = [];
     snake = null;
+
     // Remove any old shed skins still fading out
     for (const ds of dyingSnakes) {
       if (ds.headEl && ds.headEl.parentNode === container) {
@@ -3697,8 +3851,10 @@ function populateUpgradeOverlayChoices(mode) {
   function setNextOrbTime() {
     const min = ORB_SPAWN_INTERVAL_MIN * orbSpawnIntervalFactor;
     const max = ORB_SPAWN_INTERVAL_MAX * orbSpawnIntervalFactor;
+    // countdown in seconds until next orb
     nextOrbTime = randRange(min, max);
   }
+
 
   // --------------------------------------------------
   // GAME LOOP
@@ -3708,71 +3864,86 @@ function populateUpgradeOverlayChoices(mode) {
     const height = window.innerHeight;
 
     if (!lastTime) lastTime = time;
-    const dt = (time - lastTime) / 1000;
+    let dt = (time - lastTime) / 1000;
     lastTime = time;
 
-    if (!gameOver) {
-      if (!gamePaused) {
-        elapsedTime += dt;
+    // Clamp crazy tab-switch jumps so nothing explodes
+    if (dt > 0.1) dt = 0.1;
 
-        //
-        // 1) Snake sheds every 5 minutes
-        //
-        if (elapsedTime >= nextShedTime) {
-          snakeShedCount += 1;
-          // Stage 1 = yellow, 2 = orange, 3+ = red
-          const stage = Math.min(snakeShedCount, 3);
-          snakeShed(stage);
-          nextShedTime += SHED_INTERVAL;
+    // Shed skins fade out even while paused
+    updateDyingSnakes(dt);
+
+    if (!gameOver && !gamePaused) {
+      // ----- core timers -----
+      elapsedTime += dt;
+      updateBuffTimers(dt);
+
+      // ----- ORB TIMER (back to countdown style) -----
+      // nextOrbTime is a countdown in seconds, not an absolute timestamp
+      nextOrbTime -= dt;
+      if (nextOrbTime <= 0) {
+        spawnOrbRandom(width, height);
+        setNextOrbTime();   // reset countdown to a new 4–9s (scaled)
+      }
+
+      // ----- SNAKE SHED TIMER (every SHED_INTERVAL seconds) -----
+      if (elapsedTime >= nextShedTime) {
+        snakeShedCount++;
+
+        // 1,2,3 = shed on current primary snake
+        // 4      = instead of shedding, spawn new snake & keep old one
+        const cycleIndex = ((snakeShedCount - 1) % 4) + 1;
+
+        if (cycleIndex <= 3) {
+          snakeShed(cycleIndex);
+        } else {
+          handleFourthShed();
         }
 
-        //
-        // 2) Upgrade menus (epic + normal)
-        //
-        if (elapsedTime >= nextEpicChoiceTime) {
-          // At epic milestones: player picks a NORMAL upgrade first,
-          // then immediately an EPIC upgrade.
+        nextShedTime += SHED_INTERVAL;
+      }
+
+      // ----- UPGRADE TIMING (don’t open new menu if one is already open) -----
+      const overlayOpen =
+        upgradeOverlay && upgradeOverlay.style.display !== "none";
+
+      if (!overlayOpen) {
+        // Epic chain: normal -> epic back-to-back at epic marks
+        if (elapsedTime >= nextEpicChoiceTime &&
+                 elapsedTime >= nextPermanentChoiceTime) {
           epicChainPending = true;
-          openUpgradeOverlay("normal");
+          openUpgradeOverlay("normal"); // epic half handled in closeUpgradeOverlay
         }
+        // Regular common upgrade
         else if (elapsedTime >= nextPermanentChoiceTime) {
-          // Regular 1-minute normal upgrades
           openUpgradeOverlay("normal");
         }
-        else {
-          // ... normal update logic: buffs, frogs, snake, orbs, score, etc.
-          updateBuffTimers(dt);
+      }
 
-          const slowFactor = timeSlowTime > 0 ? 0.4 : 1.0;
+      // ----- WORLD UPDATE -----
+      updateFrogs(dt, width, height);
+      updateSnake(dt, width, height);
+      updateOrbs(dt);
 
-          updateFrogs(dt, width, height);
-          updateSnake(dt * slowFactor, width, height);
+      // ----- SCORING -----
+      // Score per second, boosted by frog count + Lucky + scoreMulti buff
+      let perSecond = 10 + frogs.length * 0.25;
+      let gain = perSecond * dt * getLuckyScoreBonusFactor();
+      if (scoreMultiTime > 0) {
+        gain *= SCORE_MULTI_FACTOR;
+      }
+      score += gain;
 
-          // 🔹 Despawn old shed snakes segment-by-segment
-          updateDyingSnakes(dt);
-
-          updateOrbs(dt * slowFactor);
-
-          let scoreFactor = scoreMultiTime > 0 ? 2 : 1;
-          scoreFactor *= getLuckyScoreBonusFactor();
-          score += dt * scoreFactor;
-
-          nextOrbTime -= dt;
-          if (nextOrbTime <= 0) {
-            spawnOrbRandom(width, height);
-            setNextOrbTime();
-          }
-
-          if (frogs.length === 0) {
-            endGame();
-          }
-        }
+      // ----- GAME OVER: no frogs left -----
+      if (!gameOver && frogs.length === 0) {
+        endGame();
       }
     }
 
     updateHUD();
     animId = requestAnimationFrame(drawFrame);
   }
+
 
   // --------------------------------------------------
   // INIT
