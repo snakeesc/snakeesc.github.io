@@ -3832,7 +3832,7 @@ function populateUpgradeOverlayChoices(mode) {
   // --------------------------------------------------
   // GAME LOOP
   // --------------------------------------------------
-  function drawFrame(time) {
+    function drawFrame(time) {
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
@@ -3840,21 +3840,68 @@ function populateUpgradeOverlayChoices(mode) {
     const dt = (time - lastTime) / 1000;
     lastTime = time;
 
-    if (!gameOver && nextShedTime && now >= nextShedTime) {
-      nextShedTime += SHED_INTERVAL;
-      snakeShedCount++;
+    if (!gameOver) {
+      if (!gamePaused) {
+        elapsedTime += dt;
 
-      // We want a repeating 4-step cycle:
-      // 1, 2, 3 -> snake sheds (stages 1,2,3)
-      // 4       -> spawn a new snake and switch the "shedding" snake
-      const cycleIndex = ((snakeShedCount - 1) % 4) + 1;
+        //
+        // 1) Snake sheds every 5 minutes
+        //
+        if (elapsedTime >= nextShedTime) {
+          snakeShedCount += 1;
+          nextShedTime += SHED_INTERVAL;
+          const cycleIndex = ((snakeShedCount - 1) % 4) + 1;
 
-      if (cycleIndex <= 3) {
-        // Normal shed on the current primary snake
-        snakeShed(cycleIndex);
-      } else {
-        // 4th tick in the cycle: spawn a new primary snake
-        handleFourthShed();
+          if (cycleIndex <= 3) {
+            // Normal shed on the current primary snake
+            snakeShed(cycleIndex);
+          } else {
+            // 4th tick in the cycle: spawn a new primary snake
+            handleFourthShed();
+          }
+        }
+
+        //
+        // 2) Upgrade menus (epic + normal)
+        //
+        if (elapsedTime >= nextEpicChoiceTime) {
+          // At epic milestones: player picks a NORMAL upgrade first,
+          // then immediately an EPIC upgrade.
+          epicChainPending = true;
+          openUpgradeOverlay("normal");
+        }
+        else if (elapsedTime >= nextPermanentChoiceTime) {
+          // Regular 1-minute normal upgrades
+          openUpgradeOverlay("normal");
+        }
+        else {
+          // ... normal update logic: buffs, frogs, snake, orbs, score, etc.
+          updateBuffTimers(dt);
+
+          const slowFactor = timeSlowTime > 0 ? 0.4 : 1.0;
+
+          updateFrogs(dt, width, height);
+          updateSnake(dt * slowFactor, width, height);
+
+          // 🔹 Despawn old shed snakes segment-by-segment
+          updateDyingSnakes(dt);
+
+          updateOrbs(dt * slowFactor);
+
+          let scoreFactor = scoreMultiTime > 0 ? 2 : 1;
+          scoreFactor *= getLuckyScoreBonusFactor();
+          score += dt * scoreFactor;
+
+          nextOrbTime -= dt;
+          if (nextOrbTime <= 0) {
+            spawnOrbRandom(width, height);
+            setNextOrbTime();
+          }
+
+          if (frogs.length === 0) {
+            endGame();
+          }
+        }
       }
     }
 
