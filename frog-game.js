@@ -2496,6 +2496,17 @@ function ensureHowToOverlay() {
     list.appendChild(li);
   });
 
+  const updatesLine = document.createElement("div");
+  updatesLine.style.marginTop = "10px";
+  updatesLine.style.fontSize = "11px";
+  updatesLine.style.opacity = "0.9";
+  updatesLine.innerHTML =
+    'Patch notes available at  ' +
+    '<a href="https://snakeesc.github.io/updates" ' +
+    'target="_blank" rel="noopener noreferrer" ' +
+    'style="color:#9cff9c;text-decoration:underline;">' +
+    '/updates</a>';
+
   // Buttons row: Start & Learn more
   const btnRow = document.createElement("div");
   btnRow.style.display = "flex";
@@ -2550,7 +2561,9 @@ function ensureHowToOverlay() {
   panel.appendChild(title);
   panel.appendChild(subtitle);
   panel.appendChild(list);
+  panel.appendChild(updatesLine);
   panel.appendChild(btnRow);
+  
 
   // Bottom line: site link (only if NOT already on freshfrogs.github.io/snake)
   try {
