@@ -65,7 +65,7 @@
   // SNAKE CONSTANTS
   // --------------------------------------------------
   const SNAKE_SEGMENT_SIZE  = 64;
-  const SNAKE_BASE_SPEED    = 85;
+  const SNAKE_BASE_SPEED    = 80;
   const SNAKE_TURN_RATE     = Math.PI * 0.75;
   const SNAKE_SEGMENT_GAP   = 48;
   const SNAKE_INITIAL_SEGMENTS = 6;
@@ -140,7 +140,7 @@
   const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
   const SNAKE_SHED_SPEEDUP = 1.20;
 
-  const MAX_SNAKE_SEGMENTS = 150;
+  const MAX_SNAKE_SEGMENTS = 100;
   const CANNIBAL_ROLE_CHANCE = 0.05;
 
   const ORB_STORM_COUNT = 15;
@@ -2716,30 +2716,6 @@ function ensureHowToOverlay() {
   
   panel.appendChild(btnRow);
   panel.appendChild(updatesLine);
-
-  // Bottom line: site link (only if NOT already on freshfrogs.github.io/snake)
-  try {
-    const loc = window.location;
-    const isMainSnakePage =
-      loc.hostname === "snakeesc.github.io"
-
-    if (!isMainSnakePage) {
-      const linkLine = document.createElement("div");
-      linkLine.style.marginTop = "10px";
-      linkLine.style.fontSize = "11px";
-      linkLine.style.opacity = "0.9";
-      linkLine.innerHTML =
-        'Best played in browser at ' +
-        '<a href="https://snakeesc.github.io" ' +
-        'target="_blank" rel="noopener noreferrer" ' +
-        'style="color:#9cff9c;text-decoration:underline;">' +
-        'snakeesc.github.io</a>';
-
-      panel.appendChild(linkLine);
-    }
-  } catch (e) {
-    // If something weird happens with window.location, just skip the link.
-  }
 
   howToOverlay.appendChild(panel);
   container.appendChild(howToOverlay);
