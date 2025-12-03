@@ -2561,9 +2561,9 @@ function ensureHowToOverlay() {
   panel.appendChild(title);
   panel.appendChild(subtitle);
   panel.appendChild(list);
-  panel.appendChild(updatesLine);
-  panel.appendChild(btnRow);
   
+  panel.appendChild(btnRow);
+  panel.appendChild(updatesLine);
 
   // Bottom line: site link (only if NOT already on freshfrogs.github.io/snake)
   try {
