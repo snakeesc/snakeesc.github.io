@@ -3837,24 +3837,85 @@ function populateUpgradeOverlayChoices(mode) {
     const height = window.innerHeight;
 
     if (!lastTime) lastTime = time;
-    const dt = (time - lastTime) / 1000;
+    let dt = (time - lastTime) / 1000;
     lastTime = time;
 
-    if (!gameOver && nextShedTime && now >= nextShedTime) {
-      nextShedTime += SHED_INTERVAL;
-      snakeShedCount++;
+    // clamp crazy tab-switch jumps
+    if (dt > 0.1) dt = 0.1;
 
-      // We want a repeating 4-step cycle:
-      // 1, 2, 3 -> snake sheds (stages 1,2,3)
-      // 4       -> spawn a new snake and switch the "shedding" snake
-      const cycleIndex = ((snakeShedCount - 1) % 4) + 1;
+    // Always fade out old shed skins smoothly
+    updateDyingSnakes(dt);
 
-      if (cycleIndex <= 3) {
-        // Normal shed on the current primary snake
-        snakeShed(cycleIndex);
-      } else {
-        // 4th tick in the cycle: spawn a new primary snake
-        handleFourthShed();
+    if (!gameOver && !gamePaused) {
+      // ----- core timers -----
+      elapsedTime += dt;
+      updateBuffTimers(dt);
+
+      // ----- orb spawn timer -----
+      if (elapsedTime >= nextOrbTime) {
+        spawnOrbRandom(width, height);
+        setNextOrbTime();
+      }
+
+      // ----- snake shed timer (every SHED_INTERVAL seconds) -----
+      if (elapsedTime >= nextShedTime) {
+        snakeShedCount++;
+
+        // 1,2,3 = shed on current primary snake
+        // 4      = instead of shedding, spawn new snake & keep old one
+        const cycleIndex = ((snakeShedCount - 1) % 4) + 1;
+
+        if (cycleIndex <= 3) {
+          snakeShed(cycleIndex);
+        } else {
+          handleFourthShed();
+        }
+
+        nextShedTime += SHED_INTERVAL;
+      }
+
+      // ----- upgrade timing (only fire if overlay is not already open) -----
+      const overlayOpen =
+        upgradeOverlay && upgradeOverlay.style.display !== "none";
+
+      if (!overlayOpen) {
+        // One-time legendary event at 10 minutes
+        if (!legendaryEventTriggered &&
+            elapsedTime >= LEGENDARY_EVENT_TIME) {
+          legendaryEventTriggered = true;
+          openUpgradeOverlay("legendary");
+        }
+        // Epic chain: normal -> epic back-to-back at epic marks
+        else if (elapsedTime >= nextEpicChoiceTime &&
+                 elapsedTime >= nextPermanentChoiceTime) {
+          epicChainPending = true;
+          openUpgradeOverlay("normal"); // epic half handled in closeUpgradeOverlay
+        }
+        // Regular common upgrade
+        else if (elapsedTime >= nextPermanentChoiceTime) {
+          openUpgradeOverlay("normal");
+        }
+      }
+
+      // ----- update world -----
+      updateFrogs(dt, width, height);
+      updateSnake(dt, width, height);
+      updateOrbs(dt);
+
+      // ----- scoring -----
+      // Simple: score per second, boosted by #frogs + Lucky + scoreMulti buff
+      if (!gameOver) {
+        let perSecond = 10 + frogs.length * 0.25; // base + a bit per frog
+        let gain = perSecond * dt * getLuckyScoreBonusFactor();
+        if (scoreMultiTime > 0) {
+          gain *= SCORE_MULTI_FACTOR;
+        }
+        score += gain;
+      }
+
+      // ----- game over: no frogs left -----
+      if (!gameOver && frogs.length === 0) {
+        endGame();
       }
     }
 
