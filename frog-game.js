@@ -2556,8 +2556,7 @@ function ensureHowToOverlay() {
   try {
     const loc = window.location;
     const isMainSnakePage =
-      loc.hostname === "freshfrogs.github.io" &&
-      (loc.pathname === "/snake" || loc.pathname === "/snake/");
+      loc.hostname === "snakeesc.github.io"
 
     if (!isMainSnakePage) {
       const linkLine = document.createElement("div");
