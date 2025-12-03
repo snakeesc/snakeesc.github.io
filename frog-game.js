@@ -3545,7 +3545,7 @@ function populateUpgradeOverlayChoices(mode) {
       );
       const rawList = posted || (await fetchLeaderboard()) || [];
   
-      const topList = rawList.slice(0, 50);
+      const topList = rawList.slice(0, 100);
   
       updateMiniLeaderboard(topList);
       openScoreboardOverlay(topList, lastRunScore, lastRunTime, finalStats);
