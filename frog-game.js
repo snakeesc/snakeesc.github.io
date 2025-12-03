@@ -65,7 +65,7 @@
   // SNAKE CONSTANTS
   // --------------------------------------------------
   const SNAKE_SEGMENT_SIZE  = 64;
-  const SNAKE_BASE_SPEED    = 90;
+  const SNAKE_BASE_SPEED    = 85;
   const SNAKE_TURN_RATE     = Math.PI * 0.75;
   const SNAKE_SEGMENT_GAP   = 48;
   const SNAKE_INITIAL_SEGMENTS = 6;
@@ -1993,7 +1993,7 @@ function updateSnake(dt, width, height) {
     // no frogs? just wander
     desiredAngle += (Math.random() - 0.5) * dt;
   }
-  
+
   let angleDiff =
     ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
   const maxTurn = snakeTurnRate * dt;
