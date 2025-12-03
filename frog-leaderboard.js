@@ -566,6 +566,7 @@
       scoreboardOverlayInner.appendChild(tagBox);
 
       function finish(tagValue) {
+        // Save to localStorage
         try {
           if (typeof localStorage !== "undefined") {
             if (tagValue) {
@@ -584,21 +585,13 @@
           lastMyEntry = lastMyEntry || {};
           lastMyEntry.tag = tagValue;
 
-          // Send a lightweight update to the worker so the stored entry
-          // gets this tag as well (score/time only matter for PB logic).
+          // Compute a safe score/time for the server update
           const safeScore =
             typeof lastScore === "number" ? lastScore : getEntryScore(myEntry);
           const safeTime =
             typeof lastTime === "number" ? lastTime : getEntryTime(myEntry);
 
-          submitScoreToServer(
-            typeof safeScore === "number" ? safeScore : 0,
-            typeof safeTime === "number" ? safeTime : 0,
-            null,
-            tagValue
-          );
-
-          // Refresh summary text (if it already exists)
+          // Immediately refresh the summary text with the new tag
           if (summary) {
             const newName = getDisplayName(myEntry, "You");
             summary.innerHTML =
@@ -608,8 +601,44 @@
               )}</span>` +
               ` — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
           }
+
+          // Fire-and-forget: push the new tag to the server and then
+          // refresh BOTH leaderboards when we get updated entries back.
+          (async () => {
+            try {
+              const updatedEntries = await submitScoreToServer(
+                typeof safeScore === "number" ? safeScore : 0,
+                typeof safeTime === "number" ? safeTime : 0,
+                null,
+                tagValue
+              );
+
+              if (!updatedEntries || !Array.isArray(updatedEntries)) {
+                return;
+              }
+
+              // Limit to the same size you use for the overlay (100 here)
+              const topList = updatedEntries.slice(0, 100);
+
+              // 1) Refresh the mini leaderboard (top-right HUD)
+              updateMiniLeaderboard({
+                entries: topList,
+                myEntry: lastMyEntry,
+              });
+
+              // 2) Rebuild the end-game summary leaderboard so it shows the new tag
+              //    (this keeps the overlay open, just re-renders its inner content)
+              openScoreboardOverlay(topList, lastScore, lastTime, finalStats);
+            } catch (err) {
+              console.error(
+                "Error refreshing leaderboards after tag change:",
+                err
+              );
+            }
+          })();
         }
 
+        // Hide the tag box for this run (you still show it again on next summary)
         tagBox.style.display = "none";
       }
 
