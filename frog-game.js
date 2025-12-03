@@ -3350,6 +3350,7 @@ function populateUpgradeOverlayChoices(mode) {
       let spawnChoice;
 
       if (spawnChoiceIndex !== -1) {
+        // Take the existing spawn20 entry out of the pool
         spawnChoice = pool.splice(spawnChoiceIndex, 1)[0];
       } else {
         // Fallback: recreate the spawn20 choice if it somehow went missing
@@ -3365,6 +3366,7 @@ function populateUpgradeOverlayChoices(mode) {
         };
       }
 
+      // Always include spawn frogs as one of the three options
       choices.push(spawnChoice);
 
       // Fill remaining slots randomly until we have 3 total
