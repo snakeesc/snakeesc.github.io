@@ -1941,7 +1941,23 @@ function updateSnake(dt, width, height) {
   if (!head) return;
 
   const isMobile = window.matchMedia("(max-device-width: 768px)").matches;
-  const segmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
+
+  // Base gap (in path samples) for this device
+  const baseSegmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
+
+  // How fast the snake is moving right now (permanent speed + buffs/debuffs)
+  const speedFactor = getSnakeSpeedFactor();
+
+  // When the snake speeds up, shrink the path gap so the visual spacing stays similar.
+  let segmentGap = baseSegmentGap;
+  if (speedFactor > 1.0) {
+    segmentGap = Math.round(baseSegmentGap / speedFactor);
+  }
+
+  // Don’t let the segments collapse completely
+  const MIN_SEGMENT_GAP = isMobile ? 10 : 18;
+  if (segmentGap < MIN_SEGMENT_GAP) segmentGap = MIN_SEGMENT_GAP;
+
 
 
   // -----------------------------
@@ -1977,7 +1993,7 @@ function updateSnake(dt, width, height) {
     // no frogs? just wander
     desiredAngle += (Math.random() - 0.5) * dt;
   }
-
+  
   let angleDiff =
     ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
   const maxTurn = snakeTurnRate * dt;
@@ -1985,8 +2001,9 @@ function updateSnake(dt, width, height) {
   if (angleDiff < -maxTurn) angleDiff = -maxTurn;
   head.angle += angleDiff;
 
-  const speedFactor = getSnakeSpeedFactor();
+  // speedFactor already computed at the top of updateSnake
   const speed = SNAKE_BASE_SPEED * speedFactor * (0.8 + Math.random() * 0.4);
+
   head.x += Math.cos(head.angle) * speed * dt;
   head.y += Math.sin(head.angle) * speed * dt;
 
