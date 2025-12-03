@@ -3826,88 +3826,99 @@ function populateUpgradeOverlayChoices(mode) {
   function setNextOrbTime() {
     const min = ORB_SPAWN_INTERVAL_MIN * orbSpawnIntervalFactor;
     const max = ORB_SPAWN_INTERVAL_MAX * orbSpawnIntervalFactor;
+    // countdown in seconds until next orb
     nextOrbTime = randRange(min, max);
   }
+
 
   // --------------------------------------------------
   // GAME LOOP
   // --------------------------------------------------
-    function drawFrame(time) {
+  function drawFrame(time) {
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
     if (!lastTime) lastTime = time;
-    const dt = (time - lastTime) / 1000;
+    let dt = (time - lastTime) / 1000;
     lastTime = time;
 
-    if (!gameOver) {
-      if (!gamePaused) {
-        elapsedTime += dt;
+    // Clamp crazy tab-switch jumps so nothing explodes
+    if (dt > 0.1) dt = 0.1;
 
-        //
-        // 1) Snake sheds every 5 minutes
-        //
-        if (elapsedTime >= nextShedTime) {
-          snakeShedCount += 1;
-          nextShedTime += SHED_INTERVAL;
-          const cycleIndex = ((snakeShedCount - 1) % 4) + 1;
+    // Shed skins fade out even while paused
+    updateDyingSnakes(dt);
 
-          if (cycleIndex <= 3) {
-            // Normal shed on the current primary snake
-            snakeShed(cycleIndex);
-          } else {
-            // 4th tick in the cycle: spawn a new primary snake
-            handleFourthShed();
-          }
+    if (!gameOver && !gamePaused) {
+      // ----- core timers -----
+      elapsedTime += dt;
+      updateBuffTimers(dt);
+
+      // ----- ORB TIMER (back to countdown style) -----
+      // nextOrbTime is a countdown in seconds, not an absolute timestamp
+      nextOrbTime -= dt;
+      if (nextOrbTime <= 0) {
+        spawnOrbRandom(width, height);
+        setNextOrbTime();   // reset countdown to a new 4–9s (scaled)
+      }
+
+      // ----- SNAKE SHED TIMER (every SHED_INTERVAL seconds) -----
+      if (elapsedTime >= nextShedTime) {
+        snakeShedCount++;
+
+        // 1,2,3 = shed on current primary snake
+        // 4      = instead of shedding, spawn new snake & keep old one
+        const cycleIndex = ((snakeShedCount - 1) % 4) + 1;
+
+        if (cycleIndex <= 3) {
+          snakeShed(cycleIndex);
+        } else {
+          handleFourthShed();
         }
 
-        //
-        // 2) Upgrade menus (epic + normal)
-        //
-        if (elapsedTime >= nextEpicChoiceTime) {
-          // At epic milestones: player picks a NORMAL upgrade first,
-          // then immediately an EPIC upgrade.
+        nextShedTime += SHED_INTERVAL;
+      }
+
+      // ----- UPGRADE TIMING (don’t open new menu if one is already open) -----
+      const overlayOpen =
+        upgradeOverlay && upgradeOverlay.style.display !== "none";
+
+      if (!overlayOpen) {
+        // Epic chain: normal -> epic back-to-back at epic marks
+        if (elapsedTime >= nextEpicChoiceTime &&
+                 elapsedTime >= nextPermanentChoiceTime) {
           epicChainPending = true;
-          openUpgradeOverlay("normal");
+          openUpgradeOverlay("normal"); // epic half handled in closeUpgradeOverlay
         }
+        // Regular common upgrade
         else if (elapsedTime >= nextPermanentChoiceTime) {
-          // Regular 1-minute normal upgrades
           openUpgradeOverlay("normal");
         }
-        else {
-          // ... normal update logic: buffs, frogs, snake, orbs, score, etc.
-          updateBuffTimers(dt);
+      }
 
-          const slowFactor = timeSlowTime > 0 ? 0.4 : 1.0;
+      // ----- WORLD UPDATE -----
+      updateFrogs(dt, width, height);
+      updateSnake(dt, width, height);
+      updateOrbs(dt);
 
-          updateFrogs(dt, width, height);
-          updateSnake(dt * slowFactor, width, height);
+      // ----- SCORING -----
+      // Score per second, boosted by frog count + Lucky + scoreMulti buff
+      let perSecond = 10 + frogs.length * 0.25;
+      let gain = perSecond * dt * getLuckyScoreBonusFactor();
+      if (scoreMultiTime > 0) {
+        gain *= SCORE_MULTI_FACTOR;
+      }
+      score += gain;
 
-          // 🔹 Despawn old shed snakes segment-by-segment
-          updateDyingSnakes(dt);
-
-          updateOrbs(dt * slowFactor);
-
-          let scoreFactor = scoreMultiTime > 0 ? 2 : 1;
-          scoreFactor *= getLuckyScoreBonusFactor();
-          score += dt * scoreFactor;
-
-          nextOrbTime -= dt;
-          if (nextOrbTime <= 0) {
-            spawnOrbRandom(width, height);
-            setNextOrbTime();
-          }
-
-          if (frogs.length === 0) {
-            endGame();
-          }
-        }
+      // ----- GAME OVER: no frogs left -----
+      if (!gameOver && frogs.length === 0) {
+        endGame();
       }
     }
 
     updateHUD();
     animId = requestAnimationFrame(drawFrame);
   }
+
 
   // --------------------------------------------------
   // INIT
