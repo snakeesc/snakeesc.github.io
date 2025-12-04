@@ -71,11 +71,11 @@
   const SNAKE_INITIAL_SEGMENTS = 6;
   const SNAKE_EAT_RADIUS_BASE = 48;
 
-  const SNAKE_EGG_BUFF_PCT = 1.11;
+  const SNAKE_EGG_BUFF_PCT = 1.14;
 
   // Base turn rate and cap
   const SNAKE_TURN_RATE_BASE = Math.PI * 0.75;
-  const SNAKE_TURN_RATE_CAP  = Math.PI * 1.60;
+  const SNAKE_TURN_RATE_CAP  = Math.PI * 1.75;
 
   // --------------------------------------------------
   // BUFFS
@@ -110,10 +110,10 @@
 
   // Aura / champion / lucky
   const CHAMPION_SPEED_FACTOR    = 0.85;
-  const CHAMPION_JUMP_FACTOR     = 1.20;
-  const AURA_JUMP_FACTOR         = 1.25;
+  const CHAMPION_JUMP_FACTOR     = 1.15;
+  const AURA_JUMP_FACTOR         = 1.15;
   const LUCKY_BUFF_DURATION_BOOST = 1.50;
-  const AURA_SPEED_FACTOR        = 0.80;
+  const AURA_SPEED_FACTOR        = 0.85;
   const LUCKY_SCORE_BONUS_PER    = 0.15; // +10% per Lucky frog
   
   const CANNIBAL_EAT_CHANCE = 0.10;
@@ -125,7 +125,7 @@
   // Normal upgrade multipliers
   const FROG_SPEED_UPGRADE_FACTOR     = 0.90; // ~15% faster hops each pick
   const FROG_JUMP_UPGRADE_FACTOR      = 1.25; // ~70% higher jumps each pick
-  const BUFF_DURATION_UPGRADE_FACTOR  = 1.10; // +20% buff duration each pick
+  const BUFF_DURATION_UPGRADE_FACTOR  = 1.15; // +20% buff duration each pick
   const ORB_INTERVAL_UPGRADE_FACTOR   = 0.85; // ~15% faster orb spawns each pick
   const ORB_COLLECTOR_CHANCE = 0.20;
   const TOTAL_HIGHLIGHT_COLOR = "#ffb347"; // for showing new total values
@@ -133,9 +133,9 @@
   // --- HARD CAPS for permanent upgrades / buffs ---
   // Frogs can't be faster than 50% of the original hop cycle
   const MIN_FROG_SPEED_FACTOR         = 0.70;
-  const MAX_FROG_JUMP_FACTOR          = 2.00;
-  const MAX_BUFF_DURATION_FACTOR      = 2.00;
-  const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.40;
+  const MAX_FROG_JUMP_FACTOR          = 1.95;
+  const MAX_BUFF_DURATION_FACTOR      = 1.50;
+  const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.65;
   const MAX_DEATHRATTLE_CHANCE        = 0.35;
   const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
   const SNAKE_SHED_SPEEDUP = 1.25;
@@ -293,7 +293,7 @@
   let frogPermanentJumpFactor  = 1.0; // >1 = higher hops
   let snakePermanentSpeedFactor= 1.0;
   let buffDurationFactor       = 1.0; // >1 = longer temp buffs
-  let orbSpawnIntervalFactor   = 0.95; // <1 = more orbs
+  let orbSpawnIntervalFactor   = 1.0; // <1 = more orbs
 
   // ---- RUN STATS (for leaderboard / post-run summary) ----
   let totalFrogsSpawned = 0;
@@ -3897,7 +3897,7 @@ function populateUpgradeOverlayChoices(mode) {
     frogPermanentSpeedFactor = 1.0;
     frogPermanentJumpFactor  = 1.0;
     buffDurationFactor       = 1.0;
-    orbSpawnIntervalFactor   = 0.9;
+    orbSpawnIntervalFactor   = 1.0;
     snakePermanentSpeedFactor= 1.0;
 
     // Hide overlays
