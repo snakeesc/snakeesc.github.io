@@ -2103,18 +2103,18 @@ function applyBuff(type, frog) {
     // Base gap (in path samples) for this device
     const baseSegmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
 
-    // How fast this snake is moving right now (permanent speed + buffs/debuffs)
+    // How fast the snake is moving right now (permanent speed + buffs/debuffs)
     const speedFactor = getSnakeSpeedFactor(snakeObj);
 
-    // Keep visual spacing roughly constant for both speed-ups and slow-downs:
-    // distance ≈ speed * dt * segmentGap → make segmentGap ∝ 1 / speedFactor
-    let segmentGap = Math.round(baseSegmentGap / speedFactor);
+    // When the snake speeds up, shrink the path gap so the visual spacing stays similar.
+    let segmentGap = baseSegmentGap;
+    if (speedFactor > 1.0) {
+      segmentGap = Math.round(baseSegmentGap / speedFactor);
+    }
 
-    // Clamp so it never gets too tight or too stretched
+    // Don’t let the segments collapse completely
     const MIN_SEGMENT_GAP = isMobile ? 10 : 18;
-    const MAX_SEGMENT_GAP = isMobile ? 26 : 32;
     if (segmentGap < MIN_SEGMENT_GAP) segmentGap = MIN_SEGMENT_GAP;
-    if (segmentGap > MAX_SEGMENT_GAP) segmentGap = MAX_SEGMENT_GAP;
 
     // -----------------------------
     // Targeting logic
@@ -2157,7 +2157,6 @@ function applyBuff(type, frog) {
     if (angleDiff < -maxTurn) angleDiff = -maxTurn;
     head.angle += angleDiff;
 
-    // reuse speedFactor from above
     const speed = SNAKE_BASE_SPEED * speedFactor * (0.8 + Math.random() * 0.4);
 
     head.x += Math.cos(head.angle) * speed * dt;
@@ -2236,7 +2235,7 @@ function applyBuff(type, frog) {
       if (d2 <= eatR2) {
         const killed = tryKillFrogAtIndex(i, "snake");
 
-        // Only the CURRENT snake that got the kill grows
+        // Only the CURRENT primary snake is allowed to grow.
         if (killed) {
           frogsEatenCount++;
 
@@ -2247,6 +2246,7 @@ function applyBuff(type, frog) {
           score += gain;
 
           if (frogsEatenCount % 2 === 0) {
+            // Grow whichever snake actually got the kill
             growSnakeForSnake(snakeObj, 1);
           }
         }
