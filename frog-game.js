@@ -2301,7 +2301,7 @@ function getEpicUpgradeChoices() {
   const nextDRChance    = Math.min(1, currentDRChance + EPIC_DEATHRATTLE_CHANCE);
   const drTotalPct      = Math.round(nextDRChance * 100);
 
-  const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.25;
+  const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.20;
   const buffPerPickPct  = Math.round((epicBuffFactor - 1) * 100);
   const nextBuffFactor  = buffDurationFactor * epicBuffFactor;
   const buffTotalPct    = Math.round((nextBuffFactor - 1) * 100);
