@@ -136,7 +136,7 @@
   const MAX_FROG_JUMP_FACTOR          = 2.00;
   const MAX_BUFF_DURATION_FACTOR      = 2.00;
   const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.40;
-  const MAX_DEATHRATTLE_CHANCE        = 0.45;
+  const MAX_DEATHRATTLE_CHANCE        = 0.33;
   const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
   const SNAKE_SHED_SPEEDUP = 1.20;
 
