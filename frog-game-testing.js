@@ -47,7 +47,7 @@
   // --------------------------------------------------
   // BASIC CONSTANTS
   // --------------------------------------------------
-  const FROG_SIZE       = 32;
+  const FROG_SIZE       = 48;
   const MAX_TOKEN_ID    = 4040;
   const META_BASE       = "https://freshfrogs.github.io/frog/json/";
   const META_EXT        = ".json";
@@ -68,7 +68,7 @@
     // --------------------------------------------------
   // SNAKE CONSTANTS
   // --------------------------------------------------
-  const SNAKE_SEGMENT_SIZE  = 32;
+  const SNAKE_SEGMENT_SIZE  = 48;
   const SNAKE_BASE_SPEED    = 80;
   const SNAKE_TURN_RATE     = Math.PI * 0.75;
   const SNAKE_SEGMENT_GAP   = 24;
