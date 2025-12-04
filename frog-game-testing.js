@@ -47,7 +47,7 @@
   // --------------------------------------------------
   // BASIC CONSTANTS
   // --------------------------------------------------
-  const FROG_SIZE       = 64;
+  const FROG_SIZE       = 48;
   const MAX_TOKEN_ID    = 4040;
 
   const STARTING_FROGS  = 50;
