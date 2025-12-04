@@ -2667,30 +2667,67 @@ function ensureHowToOverlay() {
   title.style.marginBottom = "4px";
 
   const subtitle = document.createElement("div");
-  subtitle.textContent = "-- How to Play --";
+  subtitle.textContent = "-- How to Play & Controls --";
   subtitle.style.marginBottom = "10px";
   subtitle.style.fontSize = "13px";
   subtitle.style.opacity = "0.9";
 
-  const list = document.createElement("ul");
-  list.style.paddingLeft = "18px";
-  list.style.margin = "0 0 14px 0";
-  list.style.fontSize = "13px";
-  list.style.lineHeight = "1.4";
+  const intro = document.createElement("div");
+  intro.textContent =
+    "Keep your frogs alive as long as possible. Dodge the snake, grab buffs, and climb the leaderboard.";
+  intro.style.fontSize = "13px";
+  intro.style.lineHeight = "1.4";
+  intro.style.marginBottom = "10px";
+
+  // CONTROLS
+  const controlsLabel = document.createElement("div");
+  controlsLabel.textContent = "Controls:";
+  controlsLabel.style.fontSize = "13px";
+  controlsLabel.style.fontWeight = "bold";
+  controlsLabel.style.margin = "0 0 4px 0";
+
+  const controlsList = document.createElement("ul");
+  controlsList.style.paddingLeft = "18px";
+  controlsList.style.margin = "0 0 10px 0";
+  controlsList.style.fontSize = "13px";
+  controlsList.style.lineHeight = "1.4";
 
   [
-    "Avoid the snake and stay alive as long as possible!",
-    "Collect orbs to gain buffs and upgrades.",
-    "Beat the high score to get on the leaderboard.",
-    "Control frogs with your mouse."
+    "Move your mouse – frogs follow your cursor.",
+    "No keyboard needed, just point where you want them to go.",
+    "Stay away from the snake's head – one bite and that frog is gone."
   ].forEach(text => {
     const li = document.createElement("li");
     li.textContent = text;
-    list.appendChild(li);
+    controlsList.appendChild(li);
+  });
+
+  // TIPS / GOAL
+  const tipsLabel = document.createElement("div");
+  tipsLabel.textContent = "Tips:";
+  tipsLabel.style.fontSize = "13px";
+  tipsLabel.style.fontWeight = "bold";
+  tipsLabel.style.margin = "4px 0 4px 0";
+
+  const tipsList = document.createElement("ul");
+  tipsList.style.paddingLeft = "18px";
+  tipsList.style.margin = "0 0 12px 0";
+  tipsList.style.fontSize = "13px";
+  tipsList.style.lineHeight = "1.4";
+
+  [
+    "Collect glowing orbs to gain buffs and upgrades.",
+    "Stronger buffs help you survive longer as the snake speeds up.",
+    "Your score increases the longer you stay alive.",
+    "Beat your best run to climb the leaderboard."
+  ].forEach(text => {
+    const li = document.createElement("li");
+    li.textContent = text;
+    tipsList.appendChild(li);
   });
 
   const updatesLine = document.createElement("div");
-  updatesLine.style.marginTop = "10px";
+  updatesLine.style.marginTop = "6px";
   updatesLine.style.fontSize = "11px";
   updatesLine.style.opacity = "0.9";
   updatesLine.innerHTML =
@@ -2753,13 +2790,24 @@ function ensureHowToOverlay() {
 
   panel.appendChild(title);
   panel.appendChild(subtitle);
-  panel.appendChild(list);
-  
+  panel.appendChild(intro);
+  panel.appendChild(controlsLabel);
+  panel.appendChild(controlsList);
+  panel.appendChild(tipsLabel);
+  panel.appendChild(tipsList);
   panel.appendChild(btnRow);
   panel.appendChild(updatesLine);
 
   howToOverlay.appendChild(panel);
   container.appendChild(howToOverlay);
+}
+
+function openHowToOverlay() {
+  ensureHowToOverlay();
+  gamePaused = true;
+  if (howToOverlay) {
+    howToOverlay.style.display = "flex";
+  }
 }
 
 
@@ -2770,7 +2818,6 @@ function openHowToOverlay() {
     howToOverlay.style.display = "flex";
   }
 }
-
 
 function ensureInfoOverlay() {
   if (infoOverlay) return;
