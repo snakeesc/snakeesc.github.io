@@ -61,7 +61,7 @@
   const FROG_SPRITE_IDLE_ROW    = 0;
   const FROG_SPRITE_IDLE_FRAMES = 8;    // how many idle frames in row 0
 
-  const FROG_SPRITE_HOP_ROW     = 2;
+  const FROG_SPRITE_HOP_ROW     = 1;
   const FROG_SPRITE_HOP_FRAMES  = 7;    // how many hop frames in row 1
 
   const FROG_SPRITE_FPS_IDLE    = 12;    // idle frames per second
