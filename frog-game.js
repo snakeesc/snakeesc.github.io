@@ -132,13 +132,20 @@
 
   // --- HARD CAPS for permanent upgrades / buffs ---
   // Frogs can't be faster than 50% of the original hop cycle
-  const MIN_FROG_SPEED_FACTOR         = 0.60;
+  const MIN_FROG_SPEED_FACTOR         = 0.70;
   const MAX_FROG_JUMP_FACTOR          = 2.00;
   const MAX_BUFF_DURATION_FACTOR      = 2.00;
   const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.40;
   const MAX_DEATHRATTLE_CHANCE        = 0.35;
   const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
   const SNAKE_SHED_SPEEDUP = 1.25;
+
+  // Hard caps on TOTAL frog speed / jump after *all* buffs (perma + orbs).
+  // Lower speedFactor = faster. We don't let total speed go below this.
+  const MIN_TOTAL_FROG_SPEED_FACTOR = 0.60;  // ~2x faster than base at most
+
+  // Jump factor >1 = higher jumps. We don't let total jump exceed this.
+  const MAX_TOTAL_FROG_JUMP_FACTOR  = 3.0;   // up to ~3x base jump height
 
   const MAX_SNAKE_SEGMENTS = 100;
   const CANNIBAL_ROLE_CHANCE = 0.05;
@@ -924,24 +931,45 @@
   function getSpeedFactor(frog) {
     let factor = frogPermanentSpeedFactor * (frog.speedMult || 1);
 
-    // aura speed boost
+    // Aura speed boost (permanent, area-based)
     let auraFactor = 1.0;
     for (const other of frogs) {
       if (!other.isAura) continue;
       const dx = (other.x + FROG_SIZE / 2) - (frog.x + FROG_SIZE / 2);
       const dy = (other.baseY + FROG_SIZE / 2) - (frog.baseY + FROG_SIZE / 2);
       const d2 = dx * dx + dy * dy;
-      if (d2 <= AURA_RADIUS2) auraFactor *= AURA_SPEED_FACTOR; // 0.9 etc.
+      if (d2 <= AURA_RADIUS2) {
+        auraFactor *= AURA_SPEED_FACTOR;
+      }
     }
     factor *= auraFactor;
 
-    // champion frogs are a bit faster
+    // Champion frogs are a bit faster (perma)
     if (frog.isChampion) {
-      factor *= CHAMPION_SPEED_FACTOR; // 0.85 → ~15% faster cycle
+      factor *= CHAMPION_SPEED_FACTOR;
     }
 
-    if (speedBuffTime > 0)   factor *= SPEED_BUFF_FACTOR;      // e.g. 0.5
-    if (panicHopTime > 0)    factor *= PANIC_HOP_SPEED_FACTOR; // e.g. 0.6
+    // -----------------------------
+    // TEMP SPEED BUFFS (from orbs)
+    // -----------------------------
+    // Instead of stacking Speed + Panic Hop, only use the STRONGEST
+    // (smallest) temporary speed factor.
+    let tempSpeedFactor = 1.0;
+
+    if (speedBuffTime > 0) {
+      tempSpeedFactor = Math.min(tempSpeedFactor, SPEED_BUFF_FACTOR);
+    }
+    if (panicHopTime > 0) {
+      tempSpeedFactor = Math.min(tempSpeedFactor, PANIC_HOP_SPEED_FACTOR);
+    }
+
+    factor *= tempSpeedFactor;
+
+    // Final hard cap so orbs can't push total speed too far.
+    // Remember: smaller factor = faster hops.
+    if (factor < MIN_TOTAL_FROG_SPEED_FACTOR) {
+      factor = MIN_TOTAL_FROG_SPEED_FACTOR;
+    }
 
     return factor;
   }
@@ -949,25 +977,30 @@
   function getJumpFactor(frog) {
     let factor = frogPermanentJumpFactor * (frog.jumpMult || 1);
 
-    // Aura jump boost
+    // Aura jump boost (perma)
     for (const other of frogs) {
       if (!other.isAura) continue;
       const dx = (other.x + FROG_SIZE / 2) - (frog.x + FROG_SIZE / 2);
       const dy = (other.baseY + FROG_SIZE / 2) - (frog.baseY + FROG_SIZE / 2);
       const d2 = dx * dx + dy * dy;
       if (d2 <= AURA_RADIUS2) {
-        factor *= AURA_JUMP_FACTOR; // 1.15
+        factor *= AURA_JUMP_FACTOR;
       }
     }
 
-    // Temporary jump buff
+    // Orb jump buff ("super jump")
     if (jumpBuffTime > 0) {
-      factor *= JUMP_BUFF_FACTOR; // e.g. 3.2
+      factor *= JUMP_BUFF_FACTOR;
     }
 
-    // Champion jump boost
+    // Champion jump boost (perma)
     if (frog.isChampion) {
-      factor *= CHAMPION_JUMP_FACTOR; // 1.25
+      factor *= CHAMPION_JUMP_FACTOR;
+    }
+
+    // Final hard cap: permanent + orb jump can't exceed this.
+    if (factor > MAX_TOTAL_FROG_JUMP_FACTOR) {
+      factor = MAX_TOTAL_FROG_JUMP_FACTOR;
     }
 
     return factor;
