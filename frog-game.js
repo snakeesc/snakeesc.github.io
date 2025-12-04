@@ -3042,143 +3042,143 @@ function closeInfoOverlay() {
 }
 
 
-function ensureBuffGuideOverlay() {
-  if (buffGuideOverlay) return;
+  function ensureBuffGuideOverlay() {
+    if (buffGuideOverlay) return;
 
-  buffGuideOverlay = document.createElement("div");
-  buffGuideOverlay.className = "frog-buff-guide-overlay";
-  buffGuideOverlay.style.position = "absolute";
-  buffGuideOverlay.style.inset = "0";
-  buffGuideOverlay.style.background = "rgba(0,0,0,0.75)";
-  buffGuideOverlay.style.display = "none";
-  buffGuideOverlay.style.zIndex = "170";
-  buffGuideOverlay.style.alignItems = "center";
-  buffGuideOverlay.style.justifyContent = "center";
-  buffGuideOverlay.style.pointerEvents = "auto";
+    buffGuideOverlay = document.createElement("div");
+    buffGuideOverlay.className = "frog-buff-guide-overlay";
+    buffGuideOverlay.style.position = "absolute";
+    buffGuideOverlay.style.inset = "0";
+    buffGuideOverlay.style.background = "rgba(0,0,0,0.75)";
+    buffGuideOverlay.style.display = "none";
+    buffGuideOverlay.style.zIndex = "170";
+    buffGuideOverlay.style.alignItems = "center";
+    buffGuideOverlay.style.justifyContent = "center";
+    buffGuideOverlay.style.pointerEvents = "auto";
 
-  const panel = document.createElement("div");
-  panel.style.background = "#111";
-  panel.style.padding = "16px 20px 12px 20px";
-  panel.style.borderRadius = "10px";
-  panel.style.border = "1px solid #444";
-  panel.style.color = "#fff";
-  panel.style.fontFamily = "monospace";
-  panel.style.textAlign = "left";
-  panel.style.minWidth = "260px";
-  panel.style.maxWidth = "440px";
-  panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    const panel = document.createElement("div");
+    panel.style.background = "#111";
+    panel.style.padding = "16px 20px 12px 20px";
+    panel.style.borderRadius = "10px";
+    panel.style.border = "1px solid #444";
+    panel.style.color = "#fff";
+    panel.style.fontFamily = "monospace";
+    panel.style.textAlign = "left";
+    panel.style.minWidth = "260px";
+    panel.style.maxWidth = "440px";
+    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
 
-  const headerRow = document.createElement("div");
-  headerRow.style.display = "flex";
-  headerRow.style.justifyContent = "space-between";
-  headerRow.style.alignItems = "center";
-  headerRow.style.marginBottom = "6px";
+    const headerRow = document.createElement("div");
+    headerRow.style.display = "flex";
+    headerRow.style.justifyContent = "space-between";
+    headerRow.style.alignItems = "center";
+    headerRow.style.marginBottom = "6px";
 
-  const title = document.createElement("div");
-  title.textContent = "Buffs & upgrades";
-  title.style.fontSize = "14px";
-  title.style.fontWeight = "bold";
+    const title = document.createElement("div");
+    title.textContent = "Buffs & upgrades";
+    title.style.fontSize = "14px";
+    title.style.fontWeight = "bold";
 
-  const pageLabel = document.createElement("div");
-  pageLabel.style.fontSize = "11px";
-  pageLabel.style.opacity = "0.8";
-  buffGuidePageLabel = pageLabel;
+    const pageLabel = document.createElement("div");
+    pageLabel.style.fontSize = "11px";
+    pageLabel.style.opacity = "0.8";
+    buffGuidePageLabel = pageLabel;
 
-  headerRow.appendChild(title);
-  headerRow.appendChild(pageLabel);
+    headerRow.appendChild(title);
+    headerRow.appendChild(pageLabel);
 
-  const content = document.createElement("div");
-  content.style.fontSize = "13px";
-  content.style.marginTop = "4px";
-  content.style.lineHeight = "1.4";
-  buffGuideContentEl = content;
+    const content = document.createElement("div");
+    content.style.fontSize = "13px";
+    content.style.marginTop = "4px";
+    content.style.lineHeight = "1.4";
+    buffGuideContentEl = content;
 
-  const navRow = document.createElement("div");
-  navRow.style.display = "flex";
-  navRow.style.justifyContent = "space-between";
-  navRow.style.alignItems = "center";
-  navRow.style.marginTop = "10px";
+    const navRow = document.createElement("div");
+    navRow.style.display = "flex";
+    navRow.style.justifyContent = "space-between";
+    navRow.style.alignItems = "center";
+    navRow.style.marginTop = "10px";
 
-  const leftBtns = document.createElement("div");
-  leftBtns.style.display = "flex";
-  leftBtns.style.gap = "6px";
+    const leftBtns = document.createElement("div");
+    leftBtns.style.display = "flex";
+    leftBtns.style.gap = "6px";
 
-  const prevBtn = document.createElement("button");
-  prevBtn.textContent = "◀ Prev";
-  prevBtn.style.fontFamily = "monospace";
-  prevBtn.style.fontSize = "12px";
-  prevBtn.style.padding = "4px 8px";
-  prevBtn.style.borderRadius = "6px";
-  prevBtn.style.border = "1px solid #555";
-  prevBtn.style.background = "#222";
-  prevBtn.style.color = "#fff";
-  prevBtn.style.cursor = "pointer";
-  prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
-  prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
-  prevBtn.onclick = () => {
-    playButtonClick();
-    setBuffGuidePage(buffGuidePage - 1);
-  };
-  buffGuidePrevBtn = prevBtn;
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "◀ Prev";
+    prevBtn.style.fontFamily = "monospace";
+    prevBtn.style.fontSize = "12px";
+    prevBtn.style.padding = "4px 8px";
+    prevBtn.style.borderRadius = "6px";
+    prevBtn.style.border = "1px solid #555";
+    prevBtn.style.background = "#222";
+    prevBtn.style.color = "#fff";
+    prevBtn.style.cursor = "pointer";
+    prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
+    prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
+    prevBtn.onclick = () => {
+      playButtonClick();
+      setBuffGuidePage(buffGuidePage - 1);
+    };
+    buffGuidePrevBtn = prevBtn;
 
-  const nextBtn = document.createElement("button");
-  nextBtn.textContent = "Next ▶";
-  nextBtn.style.fontFamily = "monospace";
-  nextBtn.style.fontSize = "12px";
-  nextBtn.style.padding = "4px 8px";
-  nextBtn.style.borderRadius = "6px";
-  nextBtn.style.border = "1px solid #555";
-  nextBtn.style.background = "#222";
-  nextBtn.style.color = "#fff";
-  nextBtn.style.cursor = "pointer";
-  nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
-  nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
-  nextBtn.onclick = () => {
-    playButtonClick();
-    setBuffGuidePage(buffGuidePage + 1);
-  };
-  buffGuideNextBtn = nextBtn;
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next ▶";
+    nextBtn.style.fontFamily = "monospace";
+    nextBtn.style.fontSize = "12px";
+    nextBtn.style.padding = "4px 8px";
+    nextBtn.style.borderRadius = "6px";
+    nextBtn.style.border = "1px solid #555";
+    nextBtn.style.background = "#222";
+    nextBtn.style.color = "#fff";
+    nextBtn.style.cursor = "pointer";
+    nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
+    nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
+    nextBtn.onclick = () => {
+      playButtonClick();
+      setBuffGuidePage(buffGuidePage + 1);
+    };
+    buffGuideNextBtn = nextBtn;
 
-  leftBtns.appendChild(prevBtn);
-  leftBtns.appendChild(nextBtn);
+    leftBtns.appendChild(prevBtn);
+    leftBtns.appendChild(nextBtn);
 
-  const backBtn = document.createElement("button");
-  backBtn.textContent = "Close ×";
-  backBtn.style.fontFamily = "monospace";
-  backBtn.style.fontSize = "12px";
-  backBtn.style.padding = "4px 8px";
-  backBtn.style.borderRadius = "6px";
-  backBtn.style.border = "1px solid #555";
-  backBtn.style.background = "#222";
-  backBtn.style.color = "#fff";
-  backBtn.style.cursor = "pointer";
-  backBtn.onmouseenter = () => { backBtn.style.background = "#333"; };
-  backBtn.onmouseleave = () => { backBtn.style.background = "#222"; };
-  backBtn.onclick = () => {
-    playButtonClick();
-    closeBuffGuideOverlay();
-  };
-
-  navRow.appendChild(leftBtns);
-  navRow.appendChild(backBtn);
-
-  panel.appendChild(headerRow);
-  panel.appendChild(content);
-  panel.appendChild(navRow);
-
-  buffGuideOverlay.appendChild(panel);
-  container.appendChild(buffGuideOverlay);
-
-  // clicking the dim background also closes it
-  buffGuideOverlay.addEventListener("click", (e) => {
-    if (e.target === buffGuideOverlay) {
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "Close ×";
+    backBtn.style.fontFamily = "monospace";
+    backBtn.style.fontSize = "12px";
+    backBtn.style.padding = "4px 8px";
+    backBtn.style.borderRadius = "6px";
+    backBtn.style.border = "1px solid #555";
+    backBtn.style.background = "#222";
+    backBtn.style.color = "#fff";
+    backBtn.style.cursor = "pointer";
+    backBtn.onmouseenter = () => { backBtn.style.background = "#333"; };
+    backBtn.onmouseleave = () => { backBtn.style.background = "#222"; };
+    backBtn.onclick = () => {
+      playButtonClick();
       closeBuffGuideOverlay();
-    }
-  });
+    };
 
-  // start on page 0
-  setBuffGuidePage(0);
-}
+    navRow.appendChild(leftBtns);
+    navRow.appendChild(backBtn);
+
+    panel.appendChild(headerRow);
+    panel.appendChild(content);
+    panel.appendChild(navRow);
+
+    buffGuideOverlay.appendChild(panel);
+    container.appendChild(buffGuideOverlay);
+
+    // clicking the dim background also closes it
+    buffGuideOverlay.addEventListener("click", (e) => {
+      if (e.target === buffGuideOverlay) {
+        closeBuffGuideOverlay();
+      }
+    });
+
+    // start on page 0
+    setBuffGuidePage(0);
+  }
 
   function setBuffGuidePage(pageIndex) {
     if (!buffGuideContentEl || !buffGuidePageLabel) return;
@@ -3201,21 +3201,21 @@ function ensureBuffGuideOverlay() {
     const buffPerPickPct      = pct(BUFF_DURATION_UPGRADE_FACTOR - 1);
     const orbFasterPerPickPct = pct(1 - ORB_INTERVAL_UPGRADE_FACTOR);
 
-    const commonDeathPct   = pct(COMMON_DEATHRATTLE_CHANCE);
-    const epicDeathPct     = pct(EPIC_DEATHRATTLE_CHANCE);
-    const legendaryDeathPct= pct(LEGENDARY_DEATHRATTLE_CHANCE);
-    const deathCapPct      = pct(MAX_DEATHRATTLE_CHANCE);
+    const commonDeathPct      = pct(COMMON_DEATHRATTLE_CHANCE);
+    const epicDeathPct        = pct(EPIC_DEATHRATTLE_CHANCE);
+    const legendaryDeathPct   = pct(LEGENDARY_DEATHRATTLE_CHANCE);
+    const deathCapPct         = pct(MAX_DEATHRATTLE_CHANCE);
 
     const orbCollectorStepPct = pct(ORB_COLLECTOR_CHANCE);
     const orbCollectorCapPct  = pct(MAX_ORB_COLLECTOR_TOTAL);
 
-    const lastStandMinPct = pct(LAST_STAND_MIN_CHANCE);
+    const lastStandMinPct     = pct(LAST_STAND_MIN_CHANCE);
 
-    const snakeEggPct   = pct(SNAKE_EGG_BUFF_PCT - 1);
-    const shedSpeedPct  = pct(SNAKE_SHED_SPEEDUP - 1);
+    const snakeEggPct         = pct(SNAKE_EGG_BUFF_PCT - 1);
+    const shedSpeedPct        = pct(SNAKE_SHED_SPEEDUP - 1);
 
-    const luckyDurBoostPct   = pct(LUCKY_BUFF_DURATION_BOOST - 1);
-    const luckyScoreBonusPct = pct(LUCKY_SCORE_BONUS_PER);
+    const luckyDurBoostPct    = pct(LUCKY_BUFF_DURATION_BOOST - 1);
+    const luckyScoreBonusPct  = pct(LUCKY_SCORE_BONUS_PER);
 
     const pages = [
       // ------------------------------------------------------------------
@@ -3249,12 +3249,17 @@ function ensureBuffGuideOverlay() {
       // ------------------------------------------------------------------
       `
   <b>🟢 Orb buffs – score & survival</b><br><br>
+  <span style="color:${neon};">Each frog the snake eats is worth +1 point</span>.
+  Score multipliers stack on top of this base rate.<br><br>
+
   🐸➕ <b>Spawn</b> – instantly spawns
     <span style="color:${neon};">${NORMAL_SPAWN_AMOUNT}</span> frogs
     (Lucky collectors can add a few extra).<br>
   🐸🌊 <b>Mega spawn</b> – a larger wave of frogs (roughly 15–25) + Lucky bonus.<br>
   🧲 <b>Orb magnet</b> – orbs drift toward frogs for
     <span style="color:${neon};">${sec(ORB_MAGNET_DURATION)}</span> (prefers Magnet frogs).<br>
+  ⏳ <b>Longer orb life</b> – certain upgrades make orbs stay on screen longer
+    before fading, giving you more time to reach them.<br>
   💰 <b>Score ×${SCORE_MULTI_FACTOR.toFixed(1)}</b> – score gain is multiplied by
     <span style="color:${neon};">${mult(SCORE_MULTI_FACTOR)}</span> for
     <span style="color:${neon};">${sec(SCORE_MULTI_DURATION)}</span>.<br>
@@ -3318,7 +3323,7 @@ function ensureBuffGuideOverlay() {
   `,
 
       // ------------------------------------------------------------------
-      // Page 4 – Epic choices & snake rules
+      // Page 4 – Epic choices & snake rules (updated multi-snake behavior)
       // ------------------------------------------------------------------
       `
   <b>🐍 Epics & snake rules</b><br><br>
@@ -3335,13 +3340,17 @@ function ensureBuffGuideOverlay() {
     ghost frogs that join the swarm.<br>
   🧪 <b>Orb Specialist (epic)</b> – every collected orb guarantees at least one frog spawn;
     Orb Collector rolls can add more.<br><br>
-  🔥 <b>Snake sheds</b><br>
-  • Every roughly <span style="color:${neon};">${mins(SHED_INTERVAL)}</span>, the current snake sheds.<br>
-  • A new snake spawns a bit shorter but permanently faster and with a more dangerous color.<br><br>
+
+  🔥 <b>Snake sheds & multiple snakes</b><br>
+  • Every roughly <span style="color:${neon};">${mins(SHED_INTERVAL)}</span>, the <i>active</i> snake reaches a shed breakpoint.<br>
+  • Each individual snake can shed up to <span style="color:${neon};">3</span> times, getting faster and more dangerous with each shed.<br>
+  • When a snake hits what would be its 4th shed, it <b>stops growing</b> and a <b>new snake spawns</b> instead.<br>
+  • Older snakes stay in the arena but no longer gain buffs — only the <b>newest snake</b> keeps shedding and growing.<br><br>
+
   ⏱ <b>Upgrade timing</b><br>
   • ~60s: common upgrade choices.<br>
   • ~180s: common + epic chain.<br>
-  • ~${mins(SHED_INTERVAL)}: shed phase & big difficulty spike.<br>
+  • ~${mins(SHED_INTERVAL)}: first shed phase & big difficulty spike.<br>
   • 10 minutes: a one-time legendary choice event.<br>
   `
     ];
@@ -3361,6 +3370,7 @@ function ensureBuffGuideOverlay() {
       buffGuideNextBtn.style.opacity = buffGuideNextBtn.disabled ? "0.5" : "1";
     }
   }
+
 
   function openBuffGuideOverlay() {
     ensureBuffGuideOverlay();
