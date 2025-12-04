@@ -47,26 +47,17 @@
   // --------------------------------------------------
   // BASIC CONSTANTS
   // --------------------------------------------------
-  const FROG_SIZE       = 48;
+  const FROG_SIZE       = 32;
   const MAX_TOKEN_ID    = 4040;
-
+  const META_BASE       = "https://freshfrogs.github.io/frog/json/";
+  const META_EXT        = ".json";
+  const BUILD_BASE      = "https://freshfrogs.github.io/frog/build_files";
   const STARTING_FROGS  = 50;
   const MAX_FROGS       = 100;
 
-  // === FROG SPRITE SHEET CONFIG (NEW) ===
-  // 64x64 grid; row 0 = idle, row 1 = hop
-  const FROG_SPRITE_SHEET_URL   = "./images/frog-sprites.png";
-  const FROG_SPRITE_FRAME_SIZE  = 48;   // width/height of a single frame
-
-  const FROG_SPRITE_IDLE_ROW    = 0;
-  const FROG_SPRITE_IDLE_FRAMES = 8;    // how many idle frames in row 0
-
-  const FROG_SPRITE_HOP_ROW     = 1;
-  const FROG_SPRITE_HOP_FRAMES  = 7;    // how many hop frames in row 1
-
-  const FROG_SPRITE_FPS_IDLE    = 12;    // idle frames per second
-  const FROG_SPRITE_FPS_HOP     = 12;   // hop frames per second
-
+  const positions = [];
+  const MIN_DIST = 26;
+  const margin   = 16;
 
   // ORBS
   const ORB_RADIUS  = 12;
@@ -77,12 +68,12 @@
     // --------------------------------------------------
   // SNAKE CONSTANTS
   // --------------------------------------------------
-  const SNAKE_SEGMENT_SIZE  = 64;
+  const SNAKE_SEGMENT_SIZE  = 32;
   const SNAKE_BASE_SPEED    = 80;
   const SNAKE_TURN_RATE     = Math.PI * 0.75;
-  const SNAKE_SEGMENT_GAP   = 48;
+  const SNAKE_SEGMENT_GAP   = 24;
   const SNAKE_INITIAL_SEGMENTS = 6;
-  const SNAKE_EAT_RADIUS_BASE = 48;
+  const SNAKE_EAT_RADIUS_BASE = 24;
 
   const SNAKE_EGG_BUFF_PCT = 1.14;
 
@@ -655,86 +646,68 @@
   }
 
   // --------------------------------------------------
-  // FROG SPRITE-SHEET ANIMATION (NEW)
+  // METADATA + LAYERS (MATCHES SCATTER FROGS)
   // --------------------------------------------------
-
-  function initFrogSprite(frog) {
-    const sprite = {
-      sheetUrl: FROG_SPRITE_SHEET_URL,
-      frameSize: FROG_SPRITE_FRAME_SIZE,
-      anim: "idle",                     // "idle" | "hop"
-      row: FROG_SPRITE_IDLE_ROW,
-      frameIndex: Math.floor(Math.random() * FROG_SPRITE_IDLE_FRAMES),
-      frameTimer: 0,
-      frameDurationIdle: 1 / FROG_SPRITE_FPS_IDLE,
-      frameDurationHop:  1 / FROG_SPRITE_FPS_HOP,
-      el: null
-    };
-    frog.sprite = sprite;
-
-    const inner = document.createElement("div");
-    inner.className = "frog-sprite-inner";
-    inner.style.position = "absolute";
-    inner.style.inset = "0";
-    inner.style.backgroundImage = `url(${sprite.sheetUrl})`;
-    inner.style.backgroundRepeat = "no-repeat";
-    inner.style.imageRendering = "pixelated";
-
-    frog.el.appendChild(inner);
-    sprite.el = inner;
-
-    updateFrogSpriteFrame(frog);
+  async function fetchMetadata(tokenId) {
+    const url = `${META_BASE}${tokenId}${META_EXT}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Metadata fetch failed for " + tokenId);
+    return res.json();
   }
 
-  function updateFrogSpriteFrame(frog) {
-    if (!frog.sprite || !frog.sprite.el) return;
-    const s = frog.sprite;
-    const size = s.frameSize;
-    const x = -s.frameIndex * size;
-    const y = -s.row * size;
-    s.el.style.backgroundPosition = `${x}px ${y}px`;
+  async function loadTraitImage(traitType, value) {
+    const v = String(value);
+    const pngUrl = `${BUILD_BASE}/${traitType}/${v}.png`;
+    const canAnimate = SCATTER_ANIMATED_VALUES.has(v);
+
+    return new Promise((resolve) => {
+      if (!canAnimate) {
+        const png = new Image();
+        png.decoding = "async";
+        png.onload = () => resolve(png);
+        png.onerror = () => resolve(null);
+        png.src = pngUrl;
+        return;
+      }
+
+      const gifUrl = `${BUILD_BASE}/${traitType}/animations/${v}_animation.gif`;
+      const gif = new Image();
+      gif.decoding = "async";
+      gif.onload = () => resolve(gif);
+      gif.onerror = () => {
+        const png = new Image();
+        png.decoding = "async";
+        png.onload = () => resolve(png);
+        png.onerror = () => resolve(null);
+        png.src = pngUrl;
+      };
+      gif.src = gifUrl;
+    });
   }
 
-  function setFrogAnim(frog, anim) {
-    if (!frog.sprite) return;
-    if (frog.sprite.anim === anim) return;
+  async function buildLayersForFrog(frog, meta) {
+    frog.el.innerHTML = "";
+    frog.layers = [];
 
-    frog.sprite.anim = anim;
-    frog.sprite.frameIndex = 0;
-    frog.sprite.frameTimer = 0;
+    const attrs = Array.isArray(meta.attributes) ? meta.attributes : [];
+    for (const attr of attrs) {
+      const traitType = attr.trait_type;
+      const value = attr.value;
+      if (!traitType || typeof value === "undefined") continue;
+      if (SKIP_TRAITS.has(traitType)) continue;
 
-    if (anim === "idle") {
-      frog.sprite.row = FROG_SPRITE_IDLE_ROW;
-    } else if (anim === "hop") {
-      frog.sprite.row = FROG_SPRITE_HOP_ROW;
-    }
-    updateFrogSpriteFrame(frog);
-  }
+      const img = await loadTraitImage(traitType, value);
+      if (!img) continue;
 
-  function updateFrogAnimation(frog, dt) {
-    if (!frog.sprite) return;
-    const s = frog.sprite;
+      img.alt = "";
+      img.style.position = "absolute";
+      img.style.inset = "0";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.imageRendering = "pixelated";
 
-    const isIdle = frog.state === "idle";
-    const frames = isIdle ? FROG_SPRITE_IDLE_FRAMES  : FROG_SPRITE_HOP_FRAMES;
-    const frameDur = isIdle ? s.frameDurationIdle    : s.frameDurationHop;
-
-    // Make sure row matches current state
-    if (isIdle && s.row !== FROG_SPRITE_IDLE_ROW) {
-      s.row = FROG_SPRITE_IDLE_ROW;
-      s.frameIndex = 0;
-      s.frameTimer = 0;
-    } else if (!isIdle && s.row !== FROG_SPRITE_HOP_ROW) {
-      s.row = FROG_SPRITE_HOP_ROW;
-      s.frameIndex = 0;
-      s.frameTimer = 0;
-    }
-
-    s.frameTimer += dt;
-    while (s.frameTimer >= frameDur) {
-      s.frameTimer -= frameDur;
-      s.frameIndex = (s.frameIndex + 1) % frames;
-      updateFrogSpriteFrame(frog);
+      frog.layers.push(img);
+      frog.el.appendChild(img);
     }
   }
 
@@ -742,9 +715,6 @@
   // FROG CREATION (KEEPING ORIGINAL HOP FEEL)
   // --------------------------------------------------
   function computeInitialPositions(width, height, count) {
-    const positions = [];
-    const MIN_DIST = 52;
-    const margin   = 16;
 
     let safety = count * 80;
     while (positions.length < count && safety-- > 0) {
@@ -844,32 +814,29 @@
       isLucky: false,
       isZombie: false,
       shieldGrantedAt: null,
+      // per-frog deathrattle (for special cases like Zombie Horde)
       specialDeathRattleChance: null,
 
-      // special roles
+      // NEW – special roles
       isCannibal: false,
-      extraDeathRattleChance: 0,
-      cannibalIcon: null,
+      extraDeathRattleChance: 0,  // per-frog extra chance (e.g. Zombie Horde)
+      cannibalIcon: null,         // overlay icon for cannibal
 
       cloneEl: null,
-
-      // NEW: sprite data
-      sprite: null
+      layers: []
     };
-
-    // initialize sprite-sheet animation
-    initFrogSprite(frog);
 
     frogs.push(frog);
     refreshFrogPermaGlow(frog);
 
     totalFrogsSpawned++;
 
-    // ✅ No more metadata / trait loading
+    fetchMetadata(tokenId)
+      .then(meta => buildLayersForFrog(frog, meta))
+      .catch(() => {});
 
     return frog;
   }
-
 
   async function createInitialFrogs(width, height) {
     frogs = [];
@@ -1060,7 +1027,8 @@
   }
 
   function getSnakeEatRadius() {
-    return snakeShrinkTime > 0 ? 24 : SNAKE_EAT_RADIUS_BASE;
+    // When shrink is active, cut the bite radius in half
+    return snakeShrinkTime > 0 ? 12 : SNAKE_EAT_RADIUS_BASE;
   }
 
   function getSnakeResistance() {
@@ -1629,8 +1597,6 @@ function applyBuff(type, frog) {
           frog.state = "hopping";
           frog.hopTime = 0;
 
-          setFrogAnim(frog, "hop");
-
           const baseDur = randRange(frog.hopDurMin, frog.hopDurMax);
           frog.hopDuration = baseDur * getSpeedFactor(frog);
 
@@ -1667,7 +1633,6 @@ function applyBuff(type, frog) {
 
         if (frog.hopTime >= frog.hopDuration) {
           frog.state = "idle";
-          setFrogAnim(frog, "idle");
 
           const baseIdle = randRange(frog.idleMin, frog.idleMax);
           frog.idleTime = baseIdle * getSpeedFactor(frog);
@@ -1706,9 +1671,6 @@ function applyBuff(type, frog) {
         }
         frog.cloneEl = null;
       }
-      // Update sprite-sheet animation frames
-      updateFrogAnimation(frog, dt);
-
     }
     // --- Cannibal Frogs --- //
     const cannibals = frogs.filter(f => f.isCannibal);
@@ -2341,7 +2303,7 @@ function getEpicUpgradeChoices() {
   const nextDRChance    = Math.min(1, currentDRChance + EPIC_DEATHRATTLE_CHANCE);
   const drTotalPct      = Math.round(nextDRChance * 100);
 
-  const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.25;
+  const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.20;
   const buffPerPickPct  = Math.round((epicBuffFactor - 1) * 100);
   const nextBuffFactor  = buffDurationFactor * epicBuffFactor;
   const buffTotalPct    = Math.round((nextBuffFactor - 1) * 100);
