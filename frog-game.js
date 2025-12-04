@@ -3351,7 +3351,6 @@ function closeInfoOverlay() {
   • ~60s: common upgrade choices.<br>
   • ~180s: common + epic chain.<br>
   • ~${mins(SHED_INTERVAL)}: first shed phase & big difficulty spike.<br>
-  • 10 minutes: a one-time legendary choice event.<br>
   `
     ];
 
