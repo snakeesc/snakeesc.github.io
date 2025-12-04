@@ -136,7 +136,7 @@
   const MAX_FROG_JUMP_FACTOR          = 1.95;
   const MAX_BUFF_DURATION_FACTOR      = 1.50;
   const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.65;
-  const MAX_DEATHRATTLE_CHANCE        = 0.35;
+  const MAX_DEATHRATTLE_CHANCE        = 0.40;
   const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
   const SNAKE_SHED_SPEEDUP = 1.25;
 
@@ -158,8 +158,8 @@
 
   // Deathrattle chances
   const COMMON_DEATHRATTLE_CHANCE = 0.05;
-  const EPIC_DEATHRATTLE_CHANCE       = 0.15; // 25%
-  const LEGENDARY_DEATHRATTLE_CHANCE  = 0.25; // 50%
+  const EPIC_DEATHRATTLE_CHANCE       = 0.1; // 25%
+  const LEGENDARY_DEATHRATTLE_CHANCE  = 0.2; // 50%
 
   const GRAVE_WAVE_MIN_GHOSTS = 10;
   const GRAVE_WAVE_MAX_GHOSTS = 20;
