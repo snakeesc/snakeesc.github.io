@@ -138,7 +138,7 @@
   const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.65;
   const MAX_DEATHRATTLE_CHANCE        = 0.40;
   const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
-  const SNAKE_SHED_SPEEDUP = 1.25;
+  const SNAKE_SHED_SPEEDUP = 1.30;
 
   // Hard caps on TOTAL frog speed / jump after *all* buffs (perma + orbs).
   // Lower speedFactor = faster. We don't let total speed go below this.
