@@ -3736,7 +3736,7 @@ function ensureUpgradeOverlay() {
     contentRow.appendChild(choicesCol);
     contentRow.appendChild(buffsCol);
 
-    panel.appendChild(title);
+    //panel.appendChild(title);
     panel.appendChild(contentRow);
     upgradeOverlay.appendChild(panel);
     container.appendChild(upgradeOverlay);
