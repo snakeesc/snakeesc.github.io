@@ -389,7 +389,7 @@
   miniBoard.textContent = "Loading leaderboard…";
   container.appendChild(miniBoard);
 
-  // detailed stats panel (run + upgrades)
+  // detailed stats panel (bottom-left)
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";
   statsPanel.style.position = "absolute";
@@ -407,6 +407,45 @@
   statsPanel.style.pointerEvents = "none";
   statsPanel.style.lineHeight = "1.4";
   container.appendChild(statsPanel);
+
+  // Small control buttons (top-left)
+  const controlsBar = document.createElement("div");
+  controlsBar.style.position = "absolute";
+  controlsBar.style.top = "10px";
+  controlsBar.style.left = "10px";
+  controlsBar.style.display = "flex";
+  controlsBar.style.flexDirection = "column";
+  controlsBar.style.gap = "4px";
+  controlsBar.style.zIndex = "120";
+  controlsBar.style.pointerEvents = "auto";
+
+  function makeControlButton(label) {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.style.fontFamily = "monospace";
+    btn.style.fontSize = "11px";
+    btn.style.padding = "3px 6px";
+    btn.style.borderRadius = "6px";
+    btn.style.border = "1px solid #444";
+    btn.style.background = "rgba(0,0,0,0.8)";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
+    btn.style.outline = "none";
+    btn.onmouseenter = () => { btn.style.background = "#222"; };
+    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.8)"; };
+    return btn;
+  }
+
+  const btnHowTo = makeControlButton("How to play");
+  const btnStats = makeControlButton("Toggle stats");
+  const btnSound = makeControlButton("Sound: ON");
+  const btnEnd   = makeControlButton("End run");
+
+  controlsBar.appendChild(btnHowTo);
+  controlsBar.appendChild(btnStats);
+  controlsBar.appendChild(btnSound);
+  controlsBar.appendChild(btnEnd);
+  container.appendChild(controlsBar);
 
   const gameOverBanner = document.createElement("div");
   gameOverBanner.style.position = "absolute";
@@ -440,8 +479,7 @@
   }
 
   function updateStatsPanel() {
-    const neon = "#4defff";
-    if (!statsPanel) return;
+    if (!statsPanel || !statsPanelVisible) return;
 
     const frogsAlive = frogs.length;
     const snakesAlive =
@@ -456,7 +494,7 @@
         ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100)
         : 0;
 
-    const jumpBonus = Math.round((frogPermanentJumpFactor - 1) * 100);
+    const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
 
     const orbRateBonus =
@@ -477,6 +515,7 @@
         ? `${totalOrbsCollected}/${totalOrbsSpawned}`
         : `${totalOrbsCollected}`;
 
+    statsPanel.style.display = "block";
     statsPanel.innerHTML =
       `<div style="font-weight:bold; margin-bottom:4px;">Upgrade stats</div>` +
       `<div>Hop speed: <span style="color: ${neon};">${hopSpeedBonus}%</span> faster</div>` +
@@ -491,6 +530,7 @@
       `<div>Orb Specialist: <span style="color: ${neon};">${orbSpecialistActive ? "ON" : "off"}</span></div>` +
       `<div>Cannibal frogs: <span style="color: ${neon};">${frogEatFrogActive ? "ON" : "off"}</span></div>`;
   }
+
 
   function showGameOver() {
     gameOverBanner.style.display = "block";
