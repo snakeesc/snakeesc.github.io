@@ -555,7 +555,7 @@
     }
   }
 
-  // Wire up control buttons
+  /* Wire up control buttons
   if (btnHowTo) {
     btnHowTo.onclick = () => {
       if (soundEnabled) playButtonClick();
@@ -563,6 +563,7 @@
       openHowToOverlay();
     };
   }
+  */
 
   if (btnStats) {
     btnStats.onclick = () => {
