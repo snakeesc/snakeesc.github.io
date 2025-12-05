@@ -440,12 +440,12 @@
     return btn;
   }
 
-  const btnHowTo = makeControlButton("How to play");
+  //const btnHowTo = makeControlButton("How to play");
   const btnStats = makeControlButton("Toggle stats");
   const btnSound = makeControlButton("Sound: ON");
   const btnEnd   = makeControlButton("End run");
 
-  controlsBar.appendChild(btnHowTo);
+  //controlsBar.appendChild(btnHowTo);
   controlsBar.appendChild(btnStats);
   controlsBar.appendChild(btnSound);
   controlsBar.appendChild(btnEnd);
