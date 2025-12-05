@@ -2614,10 +2614,10 @@ function applyBuff(type, frog) {
         id: "frogSpeed",
         label: `
           💨 Quicker Hops<br>
-          Frogs hop ~<span style="color:${epicTitleColor};">${speedPerPickPct}%</span> faster (stacks)
+          Frogs hop ~<span style="color:${epicTitleColor};">20%%</span> faster (stacks)
         `,
         apply: () => {
-          frogPermanentSpeedFactor *= FROG_SPEED_UPGRADE_FACTOR*2;
+          frogPermanentSpeedFactor *= 0.80;
           if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
             frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
           }
@@ -2631,10 +2631,10 @@ function applyBuff(type, frog) {
         id: "frogJump",
         label: `
           🦘 Higher Hops<br>
-          +<span style="color:${epicTitleColor};">${jumpPerPickPct}%</span> jump height (stacks)
+          +<span style="color:${epicTitleColor};">40%</span> jump height (stacks)
         `,
         apply: () => {
-          frogPermanentJumpFactor *= FROG_JUMP_UPGRADE_FACTOR*2;
+          frogPermanentJumpFactor *= 1.40;
           if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
             frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
           }
@@ -2648,10 +2648,10 @@ function applyBuff(type, frog) {
         id: "moreOrbs",
         label: `
           🎯 More orbs over time<br>
-          ~<span style="color:${neon};">${orbFasterPerPickPct}%</span> faster orb spawns (stacks)
+          ~<span style="color:${neon};">20%</span> faster orb spawns (stacks)
         `,
         apply: () => {
-          orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR*2;
+          orbSpawnIntervalFactor *= 0.80;
           if (orbSpawnIntervalFactor < MIN_ORB_SPAWN_INTERVAL_FACTOR) {
             orbSpawnIntervalFactor = MIN_ORB_SPAWN_INTERVAL_FACTOR;
           }
