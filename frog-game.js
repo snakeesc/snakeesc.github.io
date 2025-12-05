@@ -3048,7 +3048,7 @@ function applyBuff(type, frog) {
     panel.appendChild(intro);
     panel.appendChild(controlsLabel);
     panel.appendChild(controlsList);
-    panel.appendChild(tipsLabel);
+    //panel.appendChild(tipsLabel);
     panel.appendChild(tipsList);
     panel.appendChild(btnRow);
     panel.appendChild(updatesLine);
