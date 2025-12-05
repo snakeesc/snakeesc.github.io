@@ -2609,51 +2609,22 @@ function applyBuff(type, frog) {
       });
     }
 
-    if (frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4) {
+    if (frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4 && frogPermanentJumpFactor < MAX_FROG_JUMP_FACTOR - 1e-4) {
       upgrades.push({
         id: "frogSpeed",
         label: `
-          💨 Quicker Hops<br>
-          Frogs hop ~<span style="color:${epicTitleColor};">20%%</span> faster (stacks)
+          💨 Quicker & 🦘Higher Hops<br>
+          Frogs hop ~<span style="color:${epicTitleColor};">10%</span> faster
+          +<span style="color:${epicTitleColor};">20%</span> jump height
         `,
         apply: () => {
-          frogPermanentSpeedFactor *= 0.80;
+          frogPermanentSpeedFactor *= 0.90;
           if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
             frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
           }
-        }
-      });
-    }
-
-    // Frogs jump higher (capped on PERMA factor)
-    if (frogPermanentJumpFactor < MAX_FROG_JUMP_FACTOR - 1e-4) {
-      upgrades.push({
-        id: "frogJump",
-        label: `
-          🦘 Higher Hops<br>
-          +<span style="color:${epicTitleColor};">40%</span> jump height (stacks)
-        `,
-        apply: () => {
-          frogPermanentJumpFactor *= 1.40;
+          frogPermanentJumpFactor *= 1.20;
           if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
             frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
-          }
-        }
-      });
-    }
-
-    // Orb spawn interval (capped)
-    if (orbSpawnIntervalFactor > MIN_ORB_SPAWN_INTERVAL_FACTOR + 1e-4) {
-      upgrades.push({
-        id: "moreOrbs",
-        label: `
-          🎯 More orbs over time<br>
-          ~<span style="color:${neon};">20%</span> faster orb spawns (stacks)
-        `,
-        apply: () => {
-          orbSpawnIntervalFactor *= 0.80;
-          if (orbSpawnIntervalFactor < MIN_ORB_SPAWN_INTERVAL_FACTOR) {
-            orbSpawnIntervalFactor = MIN_ORB_SPAWN_INTERVAL_FACTOR;
           }
         }
       });
