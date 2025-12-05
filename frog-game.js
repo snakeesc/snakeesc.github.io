@@ -134,9 +134,9 @@
   // Frogs can't be faster than 50% of the original hop cycle
   const MIN_FROG_SPEED_FACTOR         = 0.70; // 
   const MAX_FROG_JUMP_FACTOR          = 2.00; // 
-  const MAX_BUFF_DURATION_FACTOR      = 2.00; // 
+  const MAX_BUFF_DURATION_FACTOR      = 1.00; // 
   const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.65;
-  const MAX_DEATHRATTLE_CHANCE        = 0.40;
+  const MAX_DEATHRATTLE_CHANCE        = 0.30;
   const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
   const SNAKE_SHED_SPEEDUP = 1.30;
 
