@@ -2351,12 +2351,16 @@ function applyBuff(type, frog) {
     }
 
     // -----------------------------
-    // Path + segments follow
+    // Path + segments follow (distance-based, stable at any speed)
     // -----------------------------
+
+    // Insert current head position at front
     snakeObj.path.unshift({ x: head.x, y: head.y });
-    const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
-    while (snakeObj.path.length > maxPathLength) {
-      snakeObj.path.pop();
+
+    // Limit path length so we don't accumulate infinite points
+    const MAX_PATH_POINTS = 600; // tweak if you want
+    if (snakeObj.path.length > MAX_PATH_POINTS) {
+      snakeObj.path.length = MAX_PATH_POINTS;
     }
 
     const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
@@ -2365,23 +2369,54 @@ function applyBuff(type, frog) {
     head.el.style.transform =
       `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
+    // Desired pixel spacing between segments
+    const basePixelGap = isMobile
+      ? SNAKE_SEGMENT_SIZE * 0.8
+      : SNAKE_SEGMENT_SIZE * 0.9;
+
+    // Helper: get a point at a certain distance along the stored path
+    function getPointAlongPath(path, distance) {
+      let remaining = distance;
+
+      for (let i = 0; i < path.length - 1; i++) {
+        const p = path[i];
+        const q = path[i + 1];
+        const dx = q.x - p.x;
+        const dy = q.y - p.y;
+        const segLen = Math.hypot(dx, dy);
+
+        if (segLen >= remaining) {
+          const t = remaining / Math.max(segLen, 0.0001);
+          return {
+            x: p.x + dx * t,
+            y: p.y + dy * t,
+            angle: Math.atan2(dy, dx)
+          };
+        }
+
+        remaining -= segLen;
+      }
+
+      // Fallback: last point
+      const last = path[path.length - 1] || head;
+      const prev = path[path.length - 2] || last;
+      return {
+        x: last.x,
+        y: last.y,
+        angle: Math.atan2(last.y - prev.y, last.x - prev.x)
+      };
+    }
+
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const seg = snakeObj.segments[i];
-      const idx = Math.min(
-        snakeObj.path.length - 1,
-        (i + 1) * segmentGap
-      );
-      const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
+      const dist = basePixelGap * (i + 1);
+      const pos = getPointAlongPath(snakeObj.path, dist);
 
-      const nextIdx = Math.max(0, idx - 2);
-      const q = snakeObj.path[nextIdx] || p;
-      const angle = Math.atan2(p.y - q.y, p.x - q.x);
-
-      seg.x = p.x;
-      seg.y = p.y;
+      seg.x = pos.x;
+      seg.y = pos.y;
 
       seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${pos.angle}rad) scale(${shrinkScale})`;
     }
 
     // -----------------------------
