@@ -2624,8 +2624,8 @@ function applyBuff(type, frog) {
       upgrades.push({
         id: "frogSpeed",
         label: `
-          💨 Quicker & 🦘Higher Hops<br>
-          Frogs hop ~<span style="color:${epicTitleColor};">10%</span> faster
+          💨🦘 Hop Quicker & Higher<br>
+          Frogs hop ~<span style="color:${epicTitleColor};">10%</span> faster<br>
           +<span style="color:${epicTitleColor};">20%</span> jump height
         `,
         apply: () => {
