@@ -12,6 +12,7 @@
   // ------------------------------------------------------------
   const pools = {};
   let audioInitialized = false;
+  let globalMuted = false; // NEW: global mute flag
 
   /**
    * Create a small pool of Audio elements for a given key.
@@ -31,6 +32,7 @@
         a.preload = "auto";
         a.volume = volume;
         a.crossOrigin = "anonymous";
+        a.muted = globalMuted; // respect current mute state
         players.push(a);
       } catch (e) {
         // If something goes wrong creating audio, just stop building pool.
@@ -51,7 +53,7 @@
    * Will reuse paused/ended instances; if all are in use, it “steals” the next one.
    */
   function playFromPool(key) {
-    if (!audioInitialized) return;
+    if (!audioInitialized || globalMuted) return; // NEW: respect mute
     const pool = pools[key];
     if (!pool || !pool.players.length) return;
 
@@ -183,7 +185,6 @@
     playFromPool("buttonClick");
   }
 
-
   /**
    * Temp buff audio – `type` matches your existing game logic:
    * "speed", "jump", "spawn", "snakeSlow", "snakeConfuse", "snakeShrink",
@@ -233,6 +234,27 @@
   }
 
   // ------------------------------------------------------------
+  // MUTE CONTROL
+  // ------------------------------------------------------------
+  function setMuted(muted) {
+    globalMuted = !!muted;
+    // Also propagate to existing audio elements so browsers know they're muted
+    Object.keys(pools).forEach(key => {
+      const pool = pools[key];
+      if (!pool || !pool.players) return;
+      pool.players.forEach(a => {
+        try {
+          a.muted = globalMuted;
+        } catch (e) {}
+      });
+    });
+  }
+
+  function isMuted() {
+    return globalMuted;
+  }
+
+  // ------------------------------------------------------------
   // EXPORT API
   // ------------------------------------------------------------
   window.FrogGameAudio = {
@@ -244,6 +266,8 @@
     playBuffSound,
     playPermanentChoiceSound,
     playPerFrogUpgradeSound,
-    playButtonClick
+    playButtonClick,
+    setMuted,   // NEW
+    isMuted     // NEW
   };
 })();
