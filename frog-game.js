@@ -1592,7 +1592,7 @@ function applyBuff(type, frog) {
       break;
 
     case "megaSpawn": {
-      const base  = randInt(15, 25);
+      const base  = randInt(10, 20);
       const bonus = isLuckyCollector ? randInt(3, 8) : 0;
       spawnExtraFrogs(base + bonus);
       break;
