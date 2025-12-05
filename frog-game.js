@@ -523,12 +523,12 @@
     statsPanel.style.display = "block";
     statsPanel.innerHTML =
       `<div style="font-weight:bold; margin-bottom:4px;">Upgrade stats</div>` +
-      `<div>Hop speed: <span style="color: ${neon};">${hopSpeedBonus}%</span> faster</div>` +
-      `<div>Jump height: <span style="color: ${neon};">${jumpBonus}%</span> higher</div>` +
-      `<div>Buff duration: <span style="color: ${neon};">${buffDurationBonus}%</span> longer</div>` +
-      `<div>Orb spawn rate: <span style="color: ${neon};">${orbRateBonus}%</span> faster</div>` +
+      `<div>Hop speed: <span style="color: ${neon};">${hopSpeedBonus}%</span></div>` +
+      `<div>Jump height: <span style="color: ${neon};">${jumpBonus}%</span></div>` +
+      `<div>Buff duration: <span style="color: ${neon};">${buffDurationBonus}%</span></div>` +
+      `<div>Orb spawn rate: <span style="color: ${neon};">${orbRateBonus}%</span></div>` +
       `<div>Deathrattle: <span style="color: ${neon};">${deathrattlePct}%</span></div>` +
-      `<div>Orb Collector: <span style="color: ${neon};">${orbCollectorPct}%</span> per orb</div>` +
+      `<div>Orb Collector: <span style="color: ${neon};">${orbCollectorPct}%</span></div>` +
       `<div>Snake speed bonus: <span style="color: ${neon};">${snakeSpeedBonus}%</span></div>` +
       `<div>Last Stand: <span style="color: ${neon};">${lastStandActive ? "ON" : "off"}</span></div>` +
       `<div>Grave Wave: <span style="color: ${neon};">${graveWaveActive ? "ON" : "off"}</span></div>` +
