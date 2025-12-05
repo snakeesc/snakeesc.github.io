@@ -104,49 +104,24 @@
 
       <div class="section-title">latest changes</div>
 
-      <!-- PATCH: stats panel + upgrade caps + snake pacing -->
-      <!-- PATCH: stats panel + upgrade caps + snake pacing -->
+      <!-- PATCH: Dec 4 -->
       <div class="date">Dec 4, 2025</div>
       <ul>
-        <li>Added a new bottom-left <b>Stats panel</b> that tracks your run in real time:
-          time, score, frogs alive, total frogs spawned, orbs, sheds, and snakes.</li>
-        <li>The same panel now shows live <b>upgrade stats</b>:
-          hop speed bonus, jump height bonus, buff duration bonus, orb spawn rate bonus,
-          <b>Deathrattle%</b>, <b>Orb Collector%</b>, snake speed bonus, and toggles for
-          things like <b>Last Stand</b>, <b>Grave Wave</b>, and <b>Orb Specialist</b>.</li>
-        <li>Permanent upgrades (hop speed, jump height, buff duration, orb spawn rate,
-          Deathrattle, Orb Collector) are now <b>properly capped</b>, and once capped they
-          are <b>removed from upgrade menus</b> so you never see a dead pick.</li>
-        <li>All “spawn frogs” upgrades (normal, epic, legendary) now respect the
-          <b>max frog cap of 100</b> – if you’re at the cap, those options disappear,
-          and the guaranteed spawn at the 1:00 upgrade will only appear if there’s room.</li>
-        <li>Rebalanced common buff upgrades:
-          <b>Jump height</b> now gives <b>+20%</b> per pick (down from 25%),
-          <b>Buff duration</b> gives <b>+10%</b> per pick (down from 15%),
-          and <b>Orb spawn rate</b> gives <b>+10%</b> faster orbs per pick (down from 15%).</li>
-        <li>Added new <b>Epic</b> versions of the speed / jump / orb spawn buffs in the Epic panel,
-          each giving roughly <b>double</b> the bonus of their common counterparts so late-game
-          choices feel more impactful without making early upgrades busted.</li>
-        <li>Fixed a nasty bug where <b>snake segments would stretch apart</b> and create
-          big gaps when the snake was slowed or moving very fast. Segment spacing is now
-          clamped and stays tight and clean at all speeds.</li>
-        <li>Adjusted multi-snake pacing so a new snake now appears on
-          <b>every 3rd shed interval</b> instead of every 4th. That means the
-          <b>second snake now spawns around 15:00</b> instead of 20:00, with later snakes
-          spawning more frequently as the game goes on.</li>
+        <li>Added a bottom-left <b>Stats panel</b> for time, score, frogs, snakes, sheds and key upgrades.</li>
+        <li>Permanent buffs (speed, jump, buff duration, orb rate, Deathrattle, Orb Collector) now have clear caps and disappear from upgrade menus when maxed.</li>
+        <li>All “spawn frogs” upgrades now respect the <b>100 frog cap</b>, including the 1:00 guaranteed spawn.</li>
+        <li>Rebalanced buffs: jump +20% (was 25%), buff duration +10% (was 15%), orb spawn +10% faster (was 15%). Added stronger <b>Epic</b> versions of these in the Epic panel.</li>
+        <li>Fixed snake segment gaps when slowed and changed multi-snake pacing: a new snake now spawns every <b>3rd shed</b> (second snake around 15:00).</li>
       </ul>
 
       <div class="divider"></div>
 
-      <!-- PATCH: scoring + multi-snake + leaderboard reset -->
+      <!-- PATCH: scoring + multi-snake -->
       <div class="date">Dec 3, 2025</div>
       <ul>
-        <li>Reworked scoring so you now gain <b>+1 point every time a frog is eaten</b>, instead of score constantly ticking up over time.</li>
-        <li>Removed time-based score scaling so high scores stay readable and reflect actual chaos / frogs lost, not just AFK time.</li>
-        <li>Implemented proper <b>multi-snake behavior</b>: each snake can shed up to three times, and on the fourth shed a brand-new snake spawns instead of replacing the old one (this was later tightened to every 3rd shed in the Dec 4 patch).</li>
-        <li>Only the newest snake continues to shed and grow; older snakes remain in the arena at their final size for the rest of the run.</li>
-        <li>Improved high-speed snake movement so segment spacing stays tight and clean even when the primary snake gets very fast.</li>
-        <li>Reset the online leaderboard and wiped old entries so all scores are now using this new scoring + multi-snake ruleset.</li>
+        <li>New scoring: +1 point per frog eaten. No more passive score gain over time.</li>
+        <li>Improved multi-snake behavior: newest snake keeps shedding; older snakes stay on the map at their final size.</li>
+        <li>Reset online leaderboard so all scores use the new scoring + multi-snake rules.</li>
       </ul>
 
       <div class="divider"></div>
@@ -154,48 +129,36 @@
       <!-- PATCH: balance tuning -->
       <div class="date">Dec 3, 2025</div>
       <ul>
-        <li>Decreased max <b>Deathrattle</b> chance from <b>45%</b> down to <b>35%</b> so it feels strong but not spammy.</li>
-        <li>Increased per-shed snake speed gain from <b>+20%</b> to <b>+25%</b> so late-game snakes ramp up a bit harder.</li>
-        <li>Added tighter caps to permanent speed / jump upgrades so they stay powerful without completely breaking late-game pace.</li>
-        <li>Minor buff / orb value tweaks for a smoother difficulty curve once multiple snakes are on screen.</li>
+        <li>Lowered max <b>Deathrattle</b> from 45% to 35%.</li>
+        <li>Snakes gain more speed per shed to make late-game tighter.</li>
       </ul>
 
       <div class="divider"></div>
 
-      <!-- PATCH 1 -->
+      <!-- PATCH: move + how to -->
       <div class="date">Dec 3, 2025</div>
       <ul>
-        <li>Game moved to new main URL: <a href="https://snakeesc.github.io/">snakeesc.github.io</a>.</li>
-        <li>Old address <code>freshfrogs.github.io/snake</code> now redirects to the new site.</li>
-        <li>Updated in-game “How to Play” text to better explain buffs, sheds, and upgrade timing.</li>
-        <li>Created this updates page to track changes for the browser version.</li>
+        <li>Main URL moved to <a href="https://snakeesc.github.io/">snakeesc.github.io</a>.</li>
+        <li>Updated “How to Play” text and created this updates page.</li>
       </ul>
 
       <div class="divider"></div>
 
-      <!-- PATCH 2 -->
+      <!-- PATCH: late Nov -->
       <div class="date">Late Nov 2025</div>
       <ul>
-        <li>Adjusted orb lifetimes so they don’t vanish quite as fast, giving a more fair chance to grab them.</li>
-        <li>Added caps to certain buffs to keep late-game runs from getting out of control.</li>
-        <li>Cleaned up upgrade descriptions to be shorter and easier to read mid-run.</li>
-      </ul>
-
-      <div class="divider"></div>
-
-      <!-- PATCH 3 -->
-      <div class="date">Late Nov 2025</div>
-      <ul>
-        <li>Fixed multi-snake behavior so new snakes spawn after max sheds <em>without</em> replacing the original snake.</li>
-        <li>Ensured the Read Me / How To overlay reliably appears before the first game for new players.</li>
-        <li>Fixed missing role icons on some promoted frogs so their HUD icons display correctly.</li>
+        <li>Orbs last slightly longer before despawning.</li>
+        <li>Added buff caps to keep very long runs under control.</li>
+        <li>Shorter upgrade text for easier mid-run reading.</li>
+        <li>Fixed multi-snake spawns so new snakes don’t replace old ones.</li>
+        <li>Ensured the Read Me / How To appears for new players and fixed missing role icons on some promoted frogs.</li>
       </ul>
 
       <div class="divider"></div>
 
       <div class="section-title">about</div>
       <ul>
-        <li>Most changes here apply to the main browser build at <a href="https://snakeesc.github.io/">snakeesc.github.io</a>.</li>
+        <li>All changes apply to the main browser build at <a href="https://snakeesc.github.io/">snakeesc.github.io</a>.</li>
       </ul>
 
       <div class="small-note">
