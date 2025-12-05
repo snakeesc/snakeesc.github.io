@@ -2449,7 +2449,7 @@ function applyBuff(type, frog) {
   let currentUpgradeOverlayMode = "normal"; // "normal" | "epic" | "legendary"
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
-
+  let upgradeBuffSummaryBox = null;
 
   // How-to-play overlay shown once before the very first buff choice
   let howToOverlay = null;
@@ -4170,6 +4170,8 @@ function populateUpgradeOverlayChoices(mode) {
           const stage = cycleIndex; // 1 or 2
           snakeShed(stage);
         } else {
+          const stage = cycleIndex; // 1 or 2
+          snakeShed(stage);
           // Every third shed interval creates a new primary snake
           handleFourthShed();
         }
