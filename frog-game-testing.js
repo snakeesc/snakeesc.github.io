@@ -3735,6 +3735,89 @@ function ensureUpgradeOverlay() {
     container.appendChild(upgradeOverlay);
   }
 
+  function updateUpgradeBuffSummary() {
+    if (!upgradeBuffSummaryBox) return;
+
+    const lines = [];
+
+    // Percent helpers
+    const deathPct = Math.round(frogDeathRattleChance * 100);
+    const orbCollectorPct = Math.round(orbCollectorChance * 100);
+
+    const hopSpeedBonus =
+      frogPermanentSpeedFactor < 1
+        ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100)
+        : 0;
+
+    const jumpBonus = Math.round((frogPermanentJumpFactor - 1) * 100);
+    const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
+
+    const orbRateBonus =
+      orbSpawnIntervalFactor < 1
+        ? Math.round((1 - orbSpawnIntervalFactor) * 100)
+        : 0;
+
+    const snakeSpeedBonus =
+      snakePermanentSpeedFactor > 1
+        ? Math.round((snakePermanentSpeedFactor - 1) * 100)
+        : 0;
+
+    // Core permanent buffs
+    if (deathPct > 0) {
+      lines.push(`💀 Deathrattle: ${deathPct}%`);
+    }
+
+    if (orbCollectorPct > 0) {
+      lines.push(`🌌 Orb Collector: +${orbCollectorPct}% per orb`);
+    }
+
+    if (hopSpeedBonus > 0) {
+      lines.push(`💨 Quicker Hops: +${hopSpeedBonus}%`);
+    }
+
+    if (jumpBonus > 0) {
+      lines.push(`🦘 Higher Hops: +${jumpBonus}%`);
+    }
+
+    if (buffDurationBonus > 0) {
+      lines.push(`⏳ Buff duration: +${buffDurationBonus}%`);
+    }
+
+    if (orbRateBonus > 0) {
+      lines.push(`🎯 Orb spawn rate: +${orbRateBonus}% faster`);
+    }
+
+    if (snakeSpeedBonus > 0) {
+      lines.push(`🐍 Snake speed: +${snakeSpeedBonus}%`);
+    }
+
+    // Special flags
+    if (lastStandActive) {
+      const lastStandPct = Math.round(LAST_STAND_MIN_CHANCE * 100);
+      lines.push(`🏹 Last Stand: at least ${lastStandPct}% revive on last frog`);
+    }
+
+    if (graveWaveActive) {
+      lines.push("👻 Grave Wave: ghost frogs spawn at shed");
+    }
+
+    if (orbSpecialistActive) {
+      lines.push("🧪 Orb Specialist: orbs spawn one frog");
+    }
+
+    if (frogEatFrogActive) {
+      lines.push("🍴 Cannibal frogs: frogs can eat frogs");
+    }
+
+    if (!lines.length) {
+      lines.push("No permanent buffs yet.");
+    }
+
+    upgradeBuffSummaryBox.innerHTML = lines
+      .map(line => `<div>${line}</div>`)
+      .join("");
+  }
+
   function populateUpgradeOverlayChoices(mode) {
     ensureUpgradeOverlay();
     const containerEl = upgradeOverlayButtonsContainer;
@@ -3866,6 +3949,7 @@ function ensureUpgradeOverlay() {
   function openUpgradeOverlay(mode) {
     ensureUpgradeOverlay();
     populateUpgradeOverlayChoices(mode);
+    updateUpgradeBuffSummary();
 
     gamePaused = true;
     if (upgradeOverlay) {
