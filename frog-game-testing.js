@@ -3762,47 +3762,49 @@ function ensureUpgradeOverlay() {
         ? Math.round((snakePermanentSpeedFactor - 1) * 100)
         : 0;
 
+    const neon = "#4defff";
+
     // Core permanent buffs
     if (deathPct > 0) {
-      lines.push(`💀 Deathrattle: ${deathPct}%`);
+      lines.push(`💀 Deathrattle: <span style="color: ${neon};">${deathPct}%</span>`);
     }
 
     if (orbCollectorPct > 0) {
-      lines.push(`🌌 Orb Collector: +${orbCollectorPct}%`);
+      lines.push(`🌌 Orb Collector: <span style="color: ${neon};">+${orbCollectorPct}%</span>`);
     }
 
     if (hopSpeedBonus > 0) {
-      lines.push(`💨 Quicker Hops: +${hopSpeedBonus}%`);
+      lines.push(`💨 Quicker Hops: <span style="color: ${neon};">+${hopSpeedBonus}%</span>`);
     }
 
     if (jumpBonus > 0) {
-      lines.push(`🦘 Higher Hops: +${jumpBonus}%`);
+      lines.push(`🦘 Higher Hops: <span style="color: ${neon};">+${jumpBonus}%</span>`);
     }
 
     if (buffDurationBonus > 0) {
-      lines.push(`⏳ Buff duration: +${buffDurationBonus}%`);
+      lines.push(`⏳ Buff duration: <span style="color: ${neon};">+${buffDurationBonus}%</span>`);
     }
 
     if (orbRateBonus > 0) {
-      lines.push(`🎯 Orb spawn rate: +${orbRateBonus}% faster`);
+      lines.push(`🎯 Orb spawn rate: <span style="color: ${neon};">+${orbRateBonus}%</span>`);
     }
 
     if (snakeSpeedBonus > 0) {
-      lines.push(`🐍 Snake speed: +${snakeSpeedBonus}%`);
+      lines.push(`🐍 Snake speed: <span style="color: ${neon};">+${snakeSpeedBonus}%</span>`);
     }
 
     // Special flags
     if (lastStandActive) {
       const lastStandPct = Math.round(LAST_STAND_MIN_CHANCE * 100);
-      lines.push(`🏹 Last Stand: ${lastStandPct}%`);
+      lines.push(`🏹 Last Stand: <span style="color: ${neon};">${lastStandPct}%</span>`);
     }
 
     if (graveWaveActive) {
-      lines.push("👻 Grave Wave");
+      lines.push(`👻 Grave Wave: <span style="color: ${neon};">Active</span>`);
     }
 
     if (orbSpecialistActive) {
-      lines.push("🧪 Orb Specialist");
+      lines.push(`🧪 Orb Specialist: <span style="color: ${neon};">Active</span>`);
     }
 
     if (frogEatFrogActive) {
