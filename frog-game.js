@@ -225,6 +225,10 @@
   let score         = 0;
   let frogsEatenCount = 0; // grow one segment every 2 frogs
 
+  // UI + audio toggles
+  let soundEnabled      = true;
+  let statsPanelVisible = true;
+
   let lastRunScore  = 0;
   let lastRunTime   = 0;
 
