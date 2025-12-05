@@ -2279,25 +2279,32 @@ function applyBuff(type, frog) {
 
     const isMobile = window.matchMedia("(max-device-width: 768px)").matches;
 
-    // Base gap (in path samples) for this device
-    const baseSegmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
+    // Desired visual gap between segments in *pixels*
+    const desiredPixelGap = isMobile ? 42 : SNAKE_SEGMENT_GAP; // ~a bit tighter on mobile
 
     // How fast the snake is moving right now (permanent speed + buffs/debuffs)
     const speedFactor = getSnakeSpeedFactor(snakeObj);
 
-    // Only compress spacing when the snake is faster than base speed.
-    // When slowed, keep normal spacing so the body doesn't stretch out.
-    let segmentGap = baseSegmentGap;
-    if (speedFactor > 1) {
-      segmentGap = Math.round(baseSegmentGap / speedFactor);
+    // Use a nominal speed (without the random wobble) to compute spacing
+    const nominalSpeed = SNAKE_BASE_SPEED * speedFactor;
+
+    // Last frame's sample gap, in case dt is tiny or speed is ~0
+    let segmentGapSamples = snakeObj._segmentGapSamples || 18;
+
+    if (nominalSpeed > 0 && dt > 0) {
+      // Approximate how many pixels of travel each stored path sample represents
+      const pixelsPerSample = nominalSpeed * dt;
+
+      // Convert the desired pixel gap into "how many samples apart should segments be?"
+      segmentGapSamples = Math.round(desiredPixelGap / Math.max(pixelsPerSample, 0.001));
     }
 
-    // Clamp so segments never explode apart or collapse into a blob
-    const MIN_SEGMENT_GAP = isMobile ? 10 : 18;
-    const MAX_SEGMENT_GAP = isMobile ? 28 : 80;
+    // Clamp samples so the body never explodes or collapses
+    if (segmentGapSamples < 4)  segmentGapSamples = 4;
+    if (segmentGapSamples > 40) segmentGapSamples = 40;
 
-    if (segmentGap < MIN_SEGMENT_GAP) segmentGap = MIN_SEGMENT_GAP;
-    if (segmentGap > MAX_SEGMENT_GAP) segmentGap = MAX_SEGMENT_GAP;
+    // Remember for next frame (helps when dt is tiny or snake is frozen)
+    snakeObj._segmentGapSamples = segmentGapSamples;
 
     // -----------------------------
     // Targeting logic
@@ -2365,7 +2372,7 @@ function applyBuff(type, frog) {
     // Path + segments follow
     // -----------------------------
     snakeObj.path.unshift({ x: head.x, y: head.y });
-    const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
+    const maxPathLength = (snakeObj.segments.length + 2) * segmentGapSamples + 2;
     while (snakeObj.path.length > maxPathLength) {
       snakeObj.path.pop();
     }
