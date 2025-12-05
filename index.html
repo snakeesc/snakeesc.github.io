@@ -6,7 +6,16 @@
   <link rel="icon"
       href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%90%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6PB0WKB4SH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
+    gtag('config', 'G-6PB0WKB4SH');
+  </script>
+  
   <meta name="viewport" content="width=1024, initial-scale=1">
   <!-- Adjust path if your CSS is elsewhere -->
   <link rel="stylesheet" href="css/style.css" />
@@ -27,6 +36,7 @@
 <body>
   <!-- data-snake-game turns on snake logic in scatter-frogs.js -->
   <div id="frog-game"></div>
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
   <script src="frog-audio.js"></script>
   <script src="frog-leaderboard.js"></script>
   <script src="frog-game.js"></script>
