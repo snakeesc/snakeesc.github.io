@@ -2387,7 +2387,7 @@ function applyBuff(type, frog) {
       const seg = snakeObj.segments[i];
       const idx = Math.min(
         snakeObj.path.length - 1,
-        (i + 1) * segmentGap
+        (i + 1) * segmentGapSamples
       );
       const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
 
