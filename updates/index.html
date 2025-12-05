@@ -104,13 +104,28 @@
 
       <div class="section-title">latest changes</div>
 
-      <!-- PATCH: balance tuning -->
-      <div class="date">Dec 3, 2025</div>
+      <!-- PATCH: stats panel + upgrade caps + snake pacing -->
+      <div class="date">Dec 4, 2025</div>
       <ul>
-        <li>Decreased max <b>Deathrattle</b> chance from <b>45%</b> down to <b>35%</b> so it feels strong but not spammy.</li>
-        <li>Increased per-shed snake speed gain from <b>+20%</b> to <b>+25%</b> so late-game snakes ramp up a bit harder.</li>
-        <li>Added tighter caps to permanent speed / jump upgrades so they stay powerful without completely breaking late-game pace.</li>
-        <li>Minor buff / orb value tweaks for a smoother difficulty curve once multiple snakes are on screen.</li>
+        <li>Added a new bottom-left <b>Stats panel</b> that tracks your run in real time:
+          time, score, frogs alive, total frogs spawned, orbs, sheds, and snakes.</li>
+        <li>The same panel now shows live <b>upgrade stats</b>:
+          hop speed bonus, jump height bonus, buff duration bonus, orb spawn rate bonus,
+          <b>Deathrattle%</b>, <b>Orb Collector%</b>, snake speed bonus, and toggles for
+          things like <b>Last Stand</b>, <b>Grave Wave</b>, and <b>Orb Specialist</b>.</li>
+        <li>Permanent upgrades (hop speed, jump height, buff duration, orb spawn rate,
+          Deathrattle, Orb Collector) are now <b>properly capped</b>, and once capped they
+          are <b>removed from upgrade menus</b> so you never see a dead pick.</li>
+        <li>All “spawn frogs” upgrades (normal, epic, legendary) now respect the
+          <b>max frog cap of 100</b> – if you’re at the cap, those options disappear,
+          and the guaranteed spawn at the 1:00 upgrade will only appear if there’s room.</li>
+        <li>Fixed a nasty bug where <b>snake segments would stretch apart</b> and create
+          big gaps when the snake was slowed or moving very fast. Segment spacing is now
+          clamped and stays tight and clean at all speeds.</li>
+        <li>Adjusted multi-snake pacing so a new snake now appears on
+          <b>every 3rd shed interval</b> instead of every 4th. That means the
+          <b>second snake now spawns around 15:00</b> instead of 20:00, with later snakes
+          spawning more frequently as the game goes on.</li>
       </ul>
 
       <div class="divider"></div>
@@ -120,10 +135,21 @@
       <ul>
         <li>Reworked scoring so you now gain <b>+1 point every time a frog is eaten</b>, instead of score constantly ticking up over time.</li>
         <li>Removed time-based score scaling so high scores stay readable and reflect actual chaos / frogs lost, not just AFK time.</li>
-        <li>Implemented proper <b>multi-snake behavior</b>: each snake can shed up to three times, and on the fourth shed a brand-new snake spawns instead of replacing the old one.</li>
+        <li>Implemented proper <b>multi-snake behavior</b>: each snake can shed up to three times, and on the fourth shed a brand-new snake spawns instead of replacing the old one (this was later tightened to every 3rd shed in the Dec 4 patch).</li>
         <li>Only the newest snake continues to shed and grow; older snakes remain in the arena at their final size for the rest of the run.</li>
         <li>Improved high-speed snake movement so segment spacing stays tight and clean even when the primary snake gets very fast.</li>
         <li>Reset the online leaderboard and wiped old entries so all scores are now using this new scoring + multi-snake ruleset.</li>
+      </ul>
+
+      <div class="divider"></div>
+
+      <!-- PATCH: balance tuning -->
+      <div class="date">Dec 3, 2025</div>
+      <ul>
+        <li>Decreased max <b>Deathrattle</b> chance from <b>45%</b> down to <b>35%</b> so it feels strong but not spammy.</li>
+        <li>Increased per-shed snake speed gain from <b>+20%</b> to <b>+25%</b> so late-game snakes ramp up a bit harder.</li>
+        <li>Added tighter caps to permanent speed / jump upgrades so they stay powerful without completely breaking late-game pace.</li>
+        <li>Minor buff / orb value tweaks for a smoother difficulty curve once multiple snakes are on screen.</li>
       </ul>
 
       <div class="divider"></div>
