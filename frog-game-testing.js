@@ -2231,6 +2231,12 @@ function applyBuff(type, frog) {
       segEl.style.pointerEvents = "none";
       segEl.style.zIndex = "29";
       segEl.style.backgroundImage = "url(./images/body.png)";
+
+      // 🔴 KEY FIX: inherit the tail's color/filter so new segments match
+      if (tailSeg && tailSeg.el && tailSeg.el.style.filter) {
+        segEl.style.filter = tailSeg.el.style.filter;
+      }
+
       container.appendChild(segEl);
 
       snakeObj.segments.splice(tailIndex, 0, {
@@ -2247,7 +2253,7 @@ function applyBuff(type, frog) {
       snakeObj.path.push({ x: last.x, y: last.y });
     }
 
-    // Only primary snake uses shed-color logic; extra snakes stay base color
+    // Primary snake still uses shed-color logic
     if (snakeObj === snake) {
       applySnakeAppearance();
     }
