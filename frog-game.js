@@ -123,18 +123,18 @@
   // --------------------------------------------------
 
   // Normal upgrade multipliers
-  const FROG_SPEED_UPGRADE_FACTOR     = 0.90; // ~15% faster hops each pick
-  const FROG_JUMP_UPGRADE_FACTOR      = 1.25; // ~70% higher jumps each pick
-  const BUFF_DURATION_UPGRADE_FACTOR  = 1.15; // +20% buff duration each pick
-  const ORB_INTERVAL_UPGRADE_FACTOR   = 0.85; // ~15% faster orb spawns each pick
+  const FROG_SPEED_UPGRADE_FACTOR     = 0.90; // ~10% faster hops each pick
+  const FROG_JUMP_UPGRADE_FACTOR      = 1.20; // ~20% higher jumps each pick
+  const BUFF_DURATION_UPGRADE_FACTOR  = 1.10; // +10% buff duration each pick
+  const ORB_INTERVAL_UPGRADE_FACTOR   = 0.90; // ~10% faster orb spawns each pick
   const ORB_COLLECTOR_CHANCE = 0.20;
   const TOTAL_HIGHLIGHT_COLOR = "#ffb347"; // for showing new total values
 
   // --- HARD CAPS for permanent upgrades / buffs ---
   // Frogs can't be faster than 50% of the original hop cycle
-  const MIN_FROG_SPEED_FACTOR         = 0.70;
-  const MAX_FROG_JUMP_FACTOR          = 1.95;
-  const MAX_BUFF_DURATION_FACTOR      = 1.50;
+  const MIN_FROG_SPEED_FACTOR         = 0.70; // 
+  const MAX_FROG_JUMP_FACTOR          = 2.00; // 
+  const MAX_BUFF_DURATION_FACTOR      = 2.00; // 
   const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.65;
   const MAX_DEATHRATTLE_CHANCE        = 0.40;
   const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
@@ -389,6 +389,25 @@
   miniBoard.textContent = "Loading leaderboard…";
   container.appendChild(miniBoard);
 
+  // detailed stats panel (run + upgrades)
+  const statsPanel = document.createElement("div");
+  statsPanel.id = "frog-stats-panel";
+  statsPanel.style.position = "absolute";
+  statsPanel.style.bottom = "10px";
+  statsPanel.style.left = "10px";
+  statsPanel.style.padding = "8px 12px";
+  statsPanel.style.borderRadius = "10px";
+  statsPanel.style.background = "rgba(0,0,0,0.75)";
+  statsPanel.style.border = "1px solid #444";
+  statsPanel.style.color = "#fff";
+  statsPanel.style.fontFamily = "monospace";
+  statsPanel.style.fontSize = "11px";
+  statsPanel.style.zIndex = "100";
+  statsPanel.style.maxWidth = "260px";
+  statsPanel.style.pointerEvents = "none";
+  statsPanel.style.lineHeight = "1.4";
+  container.appendChild(statsPanel);
+
   const gameOverBanner = document.createElement("div");
   gameOverBanner.style.position = "absolute";
   gameOverBanner.style.top = "50%";
@@ -418,6 +437,67 @@
     timerLabel.textContent = `Time: ${formatTime(elapsedTime)}`;
     frogsLabel.textContent = `Frogs left: ${frogs.length}`;
     scoreLabel.textContent = `Score: ${Math.floor(score)}`;
+  }
+
+  function updateStatsPanel() {
+    if (!statsPanel) return;
+
+    const frogsAlive = frogs.length;
+    const snakesAlive =
+      (snake ? 1 : 0) + (Array.isArray(extraSnakes) ? extraSnakes.length : 0);
+
+    const scoreNow = Math.floor(score);
+    const timeNow  = formatTime(elapsedTime);
+
+    // Permanent buff percentages
+    const hopSpeedBonus =
+      frogPermanentSpeedFactor < 1
+        ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100)
+        : 0;
+
+    const jumpBonus = Math.round((frogPermanentJumpFactor - 1) * 100);
+    const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
+
+    const orbRateBonus =
+      orbSpawnIntervalFactor < 1
+        ? Math.round((1 - orbSpawnIntervalFactor) * 100)
+        : 0;
+
+    const deathrattlePct  = Math.round(frogDeathRattleChance * 100);
+    const orbCollectorPct = Math.round(orbCollectorChance * 100);
+
+    const snakeSpeedBonus =
+      snakePermanentSpeedFactor > 1
+        ? Math.round((snakePermanentSpeedFactor - 1) * 100)
+        : 0;
+
+    const totalOrbsText =
+      totalOrbsSpawned > 0
+        ? `${totalOrbsCollected}/${totalOrbsSpawned}`
+        : `${totalOrbsCollected}`;
+
+    statsPanel.innerHTML =
+      `<div style="font-weight:bold; margin-bottom:4px;">Run stats</div>` +
+      `<div>Time: ${timeNow}</div>` +
+      `<div>Score: ${scoreNow}</div>` +
+      `<div>Frogs alive: ${frogsAlive}</div>` +
+      `<div>Total frogs spawned: ${totalFrogsSpawned}</div>` +
+      `<div>Orbs: ${totalOrbsText}</div>` +
+      `<div>Snakes: ${snakesAlive}</div>` +
+      `<div>Sheds: ${snakeShedCount}</div>` +
+      `<hr style="border:0;border-top:1px solid rgba(255,255,255,0.25);margin:6px 0;">` +
+      `<div style="font-weight:bold; margin-bottom:4px;">Upgrade stats</div>` +
+      `<div>Hop speed: ${hopSpeedBonus}% faster</div>` +
+      `<div>Jump height: ${jumpBonus}% higher</div>` +
+      `<div>Buff duration: ${buffDurationBonus}% longer</div>` +
+      `<div>Orb spawn rate: ${orbRateBonus}% faster</div>` +
+      `<div>Deathrattle: ${deathrattlePct}%</div>` +
+      `<div>Orb Collector: ${orbCollectorPct}% per orb</div>` +
+      `<div>Snake speed bonus: ${snakeSpeedBonus}%</div>` +
+      `<div>Last Stand: ${lastStandActive ? "ON" : "off"}</div>` +
+      `<div>Grave Wave: ${graveWaveActive ? "ON" : "off"}</div>` +
+      `<div>Orb Specialist: ${orbSpecialistActive ? "ON" : "off"}</div>` +
+      `<div>Cannibal frogs: ${frogEatFrogActive ? "ON" : "off"}</div>`;
   }
 
   function showGameOver() {
@@ -2309,6 +2389,10 @@ function applyBuff(type, frog) {
     const nextBuffFactor  = buffDurationFactor * epicBuffFactor;
     const buffTotalPct    = Math.round((nextBuffFactor - 1) * 100);
 
+    const speedPerPickPct     = Math.round((1 - (FROG_SPEED_UPGRADE_FACTOR*2)) * 100);
+    const jumpPerPickPct      = Math.round(((FROG_JUMP_UPGRADE_FACTOR*2) - 1) * 100);
+    const orbFasterPerPickPct = Math.round((1 - ORB_INTERVAL_UPGRADE_FACTOR) * 100);
+
     const orbStormCount   = 10;
     const snakeEggBuffPct = 11; // +11% instead of +20%
 
@@ -2372,37 +2456,41 @@ function applyBuff(type, frog) {
       apply: () => {
         const width  = window.innerWidth;
         const height = window.innerHeight;
-        for (let i = 0; i < orbStormCount; i++) {
+        for (let i = 0; i < ORB_STORM_COUNT; i++) {
           spawnOrbRandom(width, height);
         }
       }
     });
 
     // SNAKE EGG
-    upgrades.push({
-      id: "snakeEgg",
-      label: `
-        🥚 Snake Egg<br>
-        The <span style="color:${epicTitleColor};">next shed</span> only gives the new snake
-        <span style="color:${epicTitleColor};">+${snakeEggBuffPct}%</span> speed instead of +20%
-      `,
-      apply: () => {
-        snakeEggPending = true;
-      }
-    });
+    if (!snakeEggPending) {
+      upgrades.push({
+        id: "snakeEgg",
+        label: `
+          🥚 Snake Egg<br>
+          The <span style="color:${epicTitleColor};">next shed</span> only gives the new snake
+          <span style="color:${epicTitleColor};">+${snakeEggBuffPct}%</span> speed instead of +20%
+        `,
+        apply: () => {
+          snakeEggPending = true;
+        }
+      }); 
+    }
 
     // Frog Promotion (epic role wave)
-    upgrades.push({
-      id: "frogPromotion",
-      label: `
-        🐸⭐ Frog Promotion<br>
-        Summon <span style="color:${epicTitleColor};">7</span> frogs,<br>
-        each with a random permanent role
-      `,
-      apply: () => {
-        spawnFrogPromotion(7);
-      }
-    });
+    if (frogs.length < MAX_FROGS) {
+      upgrades.push({
+        id: "frogPromotion",
+        label: `
+          🐸⭐ Frog Promotion<br>
+          Summon <span style="color:${epicTitleColor};">7</span> frogs,<br>
+          each with a random permanent role
+        `,
+        apply: () => {
+          spawnFrogPromotion(7);
+        }
+      });
+    }
 
     // Grave Wave – only once
     if (!graveWaveActive) {
@@ -2429,6 +2517,56 @@ function applyBuff(type, frog) {
         apply: () => {
           orbSpecialistActive = true;
         },
+      });
+    }
+
+    if (frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4) {
+      upgrades.push({
+        id: "frogSpeed",
+        label: `
+          💨 Quicker Hops<br>
+          Frogs hop ~<span style="color:${epicTitleColor};">${speedPerPickPct}%</span> faster (stacks)
+        `,
+        apply: () => {
+          frogPermanentSpeedFactor *= FROG_SPEED_UPGRADE_FACTOR*2;
+          if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
+            frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
+          }
+        }
+      });
+    }
+
+    // Frogs jump higher (capped on PERMA factor)
+    if (frogPermanentJumpFactor < MAX_FROG_JUMP_FACTOR - 1e-4) {
+      upgrades.push({
+        id: "frogJump",
+        label: `
+          🦘 Higher Hops<br>
+          +<span style="color:${epicTitleColor};">${jumpPerPickPct}%</span> jump height (stacks)
+        `,
+        apply: () => {
+          frogPermanentJumpFactor *= FROG_JUMP_UPGRADE_FACTOR*2;
+          if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
+            frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
+          }
+        }
+      });
+    }
+
+    // Orb spawn interval (capped)
+    if (orbSpawnIntervalFactor > MIN_ORB_SPAWN_INTERVAL_FACTOR + 1e-4) {
+      upgrades.push({
+        id: "moreOrbs",
+        label: `
+          🎯 More orbs over time<br>
+          ~<span style="color:${neon};">${orbFasterPerPickPct}%</span> faster orb spawns (stacks)
+        `,
+        apply: () => {
+          orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR*2;
+          if (orbSpawnIntervalFactor < MIN_ORB_SPAWN_INTERVAL_FACTOR) {
+            orbSpawnIntervalFactor = MIN_ORB_SPAWN_INTERVAL_FACTOR;
+          }
+        }
       });
     }
 
@@ -3911,6 +4049,7 @@ function populateUpgradeOverlayChoices(mode) {
     initSnake(width, height);
 
     setNextOrbTime();
+    updateStatsPanel();
     updateHUD();
 
     // Show the upgrade menu again at the start of a new run
@@ -3961,13 +4100,15 @@ function populateUpgradeOverlayChoices(mode) {
       if (elapsedTime >= nextShedTime) {
         snakeShedCount++;
 
-        // 1,2,3 = shed on current primary snake
-        // 4      = instead of shedding, spawn new snake & keep old one
-        const cycleIndex = ((snakeShedCount - 1) % 4) + 1;
+        // 1,2 = shed / speed up current primary snake
+        // 3   = instead of shedding, spawn a new snake & keep the old one
+        const cycleIndex = ((snakeShedCount - 1) % 3) + 1;
 
-        if (cycleIndex <= 3) {
-          snakeShed(cycleIndex);
+        if (cycleIndex <= 2) {
+          const stage = cycleIndex; // 1 or 2
+          snakeShed(stage);
         } else {
+          // Every third shed interval creates a new primary snake
           handleFourthShed();
         }
 
@@ -4007,46 +4148,46 @@ function populateUpgradeOverlayChoices(mode) {
     }
 
     updateHUD();
+    updateStatsPanel();
     animId = requestAnimationFrame(drawFrame);
   }
-
 
   // --------------------------------------------------
   // INIT
   // --------------------------------------------------
-async function startGame() {
-  initAudio();
-  initLeaderboard(container);
-  ensureUpgradeOverlay();
-  ensureInfoOverlay();  // unified info panel
+  async function startGame() {
+    initAudio();
+    initLeaderboard(container);
+    ensureUpgradeOverlay();
+    ensureInfoOverlay();  // unified info panel
 
-  const topList = await fetchLeaderboard();
-  if (topList) {
-    updateMiniLeaderboard(topList);
-    infoLeaderboardData = topList;
-  } else {
-    infoLeaderboardData = [];
+    const topList = await fetchLeaderboard();
+    if (topList) {
+      updateMiniLeaderboard(topList);
+      infoLeaderboardData = topList;
+    } else {
+      infoLeaderboardData = [];
+    }
+
+    const width  = window.innerWidth;
+    const height = window.innerHeight;
+
+    await createInitialFrogs(width, height);
+    initSnake(width, height);
+
+    setNextOrbTime();
+    updateStatsPanel();
+    updateHUD();
+
+    // Show the how-to-play menu before the first upgrade
+    openHowToOverlay();
+
+    // Always offer a common upgrade at the very start of the game
+    // (same behavior as restartGame)
+    openUpgradeOverlay("normal");
+
+    animId = requestAnimationFrame(drawFrame);
   }
-
-  const width  = window.innerWidth;
-  const height = window.innerHeight;
-
-  await createInitialFrogs(width, height);
-  initSnake(width, height);
-
-  setNextOrbTime();
-  updateHUD();
-
-  // Show the how-to-play menu before the first upgrade
-  openHowToOverlay();
-
-  // Always offer a common upgrade at the very start of the game
-  // (same behavior as restartGame)
-  openUpgradeOverlay("normal");
-
-  animId = requestAnimationFrame(drawFrame);
-}
-
 
   window.addEventListener("load", startGame);
 })();
