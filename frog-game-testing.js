@@ -242,7 +242,7 @@
   const LEGENDARY_EVENT_TIME = 600; // 10 minutes
 
   // Snake shedding every 5 minutes
-  const SHED_INTERVAL = 300; // 5 minutes
+  const SHED_INTERVAL = 5; // 5 minutes
 
   let legendaryEventTriggered = false;
 
@@ -4156,7 +4156,7 @@ function ensureUpgradeOverlay() {
 
     snakeEggPending          = false;
     orbCollectorActive       = false;
-    orbCollectorChance       = 0.10;
+    orbCollectorChance       = 0;
     lastStandActive          = false;
 
     snakeTurnRate            = SNAKE_TURN_RATE_BASE;
