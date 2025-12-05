@@ -2955,6 +2955,7 @@ function applyBuff(type, frog) {
       controlsList.appendChild(li);
     });
 
+    /*
     // TIPS / GOAL
     const tipsLabel = document.createElement("div");
     tipsLabel.textContent = "Tips:";
@@ -2978,6 +2979,7 @@ function applyBuff(type, frog) {
       li.textContent = text;
       tipsList.appendChild(li);
     });
+    */
 
     const updatesLine = document.createElement("div");
     updatesLine.style.marginTop = "6px";
