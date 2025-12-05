@@ -71,7 +71,7 @@
   const SNAKE_INITIAL_SEGMENTS = 6;
   const SNAKE_EAT_RADIUS_BASE = 48;
 
-  const SNAKE_EGG_BUFF_PCT = 1.20;
+  const SNAKE_EGG_BUFF_PCT = 1.15;
 
   // Base turn rate and cap
   const SNAKE_TURN_RATE_BASE = Math.PI * 0.75;
@@ -2483,7 +2483,7 @@ function applyBuff(type, frog) {
     const orbFasterPerPickPct = Math.round((1 - ORB_INTERVAL_UPGRADE_FACTOR) * 100);
 
     const orbStormCount   = 10;
-    const snakeEggBuffPct = 20; // +11% instead of +20%
+    const snakeEggBuffPct = 15; // +11% instead of +20%
 
     const upgrades = [];
 
