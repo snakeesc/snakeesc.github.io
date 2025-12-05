@@ -2590,11 +2590,11 @@ function applyBuff(type, frog) {
         id: "frogPromotion",
         label: `
           🐸⭐ Frog Promotion<br>
-          Summon <span style="color:${epicTitleColor};">7</span> frogs,<br>
+          Summon <span style="color:${epicTitleColor};">10</span> frogs,<br>
           each with a random permanent role
         `,
         apply: () => {
-          spawnFrogPromotion(7);
+          spawnFrogPromotion(10);
         }
       });
     }
