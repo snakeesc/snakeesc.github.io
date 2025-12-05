@@ -531,6 +531,57 @@
       `<div>Cannibal frogs: <span style="color: ${neon};">${frogEatFrogActive ? "ON" : "off"}</span></div>`;
   }
 
+    function toggleStatsPanel() {
+    statsPanelVisible = !statsPanelVisible;
+    if (!statsPanel) return;
+    statsPanel.style.display = statsPanelVisible ? "block" : "none";
+  }
+
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+
+    // If your audio module supports it, propagate mute state
+    if (AudioMod && typeof AudioMod.setMuted === "function") {
+      AudioMod.setMuted(!soundEnabled);
+    }
+
+    if (btnSound) {
+      btnSound.textContent = soundEnabled ? "Sound: ON" : "Sound: OFF";
+    }
+  }
+
+  // Wire up control buttons
+  if (btnHowTo) {
+    btnHowTo.onclick = () => {
+      if (soundEnabled) playButtonClick();
+      // This already sets gamePaused = true internally
+      openHowToOverlay();
+    };
+  }
+
+  if (btnStats) {
+    btnStats.onclick = () => {
+      if (soundEnabled) playButtonClick();
+      toggleStatsPanel();
+    };
+  }
+
+  if (btnSound) {
+    btnSound.onclick = () => {
+      toggleSound();
+      // If we just turned sound ON, give feedback
+      if (soundEnabled) playButtonClick();
+    };
+  }
+
+  if (btnEnd) {
+    btnEnd.onclick = () => {
+      if (soundEnabled) playButtonClick();
+      if (!gameOver) {
+        endGame(); // ends game and submits score to leaderboard
+      }
+    };
+  }
 
   function showGameOver() {
     gameOverBanner.style.display = "block";
