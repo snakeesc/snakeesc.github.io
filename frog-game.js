@@ -2281,9 +2281,10 @@ function applyBuff(type, frog) {
     // How fast the snake is moving right now (permanent speed + buffs/debuffs)
     const speedFactor = getSnakeSpeedFactor(snakeObj);
 
-    // Keep physical spacing roughly constant across speed changes
+    // Only compress spacing when the snake is faster than base speed.
+    // When slowed, keep normal spacing so the body doesn't stretch out.
     let segmentGap = baseSegmentGap;
-    if (speedFactor > 0) {
+    if (speedFactor > 1) {
       segmentGap = Math.round(baseSegmentGap / speedFactor);
     }
 
