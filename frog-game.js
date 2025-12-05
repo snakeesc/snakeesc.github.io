@@ -440,6 +440,7 @@
   }
 
   function updateStatsPanel() {
+    const neon = "#4defff";
     if (!statsPanel) return;
 
     const frogsAlive = frogs.length;
@@ -477,27 +478,18 @@
         : `${totalOrbsCollected}`;
 
     statsPanel.innerHTML =
-      `<div style="font-weight:bold; margin-bottom:4px;">Run stats</div>` +
-      `<div>Time: ${timeNow}</div>` +
-      `<div>Score: ${scoreNow}</div>` +
-      `<div>Frogs alive: ${frogsAlive}</div>` +
-      `<div>Total frogs spawned: ${totalFrogsSpawned}</div>` +
-      `<div>Orbs: ${totalOrbsText}</div>` +
-      `<div>Snakes: ${snakesAlive}</div>` +
-      `<div>Sheds: ${snakeShedCount}</div>` +
-      `<hr style="border:0;border-top:1px solid rgba(255,255,255,0.25);margin:6px 0;">` +
       `<div style="font-weight:bold; margin-bottom:4px;">Upgrade stats</div>` +
-      `<div>Hop speed: ${hopSpeedBonus}% faster</div>` +
-      `<div>Jump height: ${jumpBonus}% higher</div>` +
-      `<div>Buff duration: ${buffDurationBonus}% longer</div>` +
-      `<div>Orb spawn rate: ${orbRateBonus}% faster</div>` +
-      `<div>Deathrattle: ${deathrattlePct}%</div>` +
-      `<div>Orb Collector: ${orbCollectorPct}% per orb</div>` +
-      `<div>Snake speed bonus: ${snakeSpeedBonus}%</div>` +
-      `<div>Last Stand: ${lastStandActive ? "ON" : "off"}</div>` +
-      `<div>Grave Wave: ${graveWaveActive ? "ON" : "off"}</div>` +
-      `<div>Orb Specialist: ${orbSpecialistActive ? "ON" : "off"}</div>` +
-      `<div>Cannibal frogs: ${frogEatFrogActive ? "ON" : "off"}</div>`;
+      `<div>Hop speed: <span style="color: ${neon};">${hopSpeedBonus}%</span> faster</div>` +
+      `<div>Jump height: <span style="color: ${neon};">${jumpBonus}%</span> higher</div>` +
+      `<div>Buff duration: <span style="color: ${neon};">${buffDurationBonus}%</span> longer</div>` +
+      `<div>Orb spawn rate: <span style="color: ${neon};">${orbRateBonus}%</span> faster</div>` +
+      `<div>Deathrattle: <span style="color: ${neon};">${deathrattlePct}%</span></div>` +
+      `<div>Orb Collector: <span style="color: ${neon};">${orbCollectorPct}%</span> per orb</div>` +
+      `<div>Snake speed bonus: <span style="color: ${neon};">${snakeSpeedBonus}%</span></div>` +
+      `<div>Last Stand: <span style="color: ${neon};">${lastStandActive ? "ON" : "off"}</span></div>` +
+      `<div>Grave Wave: <span style="color: ${neon};">${graveWaveActive ? "ON" : "off"}</span></div>` +
+      `<div>Orb Specialist: <span style="color: ${neon};">${orbSpecialistActive ? "ON" : "off"}</span></div>` +
+      `<div>Cannibal frogs: <span style="color: ${neon};">${frogEatFrogActive ? "ON" : "off"}</span></div>`;
   }
 
   function showGameOver() {
