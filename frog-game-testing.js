@@ -227,7 +227,7 @@
 
   // UI + audio toggles
   let soundEnabled      = true;
-  let statsPanelVisible = true;
+  let statsPanelVisible = false;
 
   let lastRunScore  = 0;
   let lastRunTime   = 0;
