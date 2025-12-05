@@ -483,6 +483,7 @@
   }
 
   function updateStatsPanel() {
+    const neon = "#4defff";
     if (!statsPanel || !statsPanelVisible) return;
 
     const frogsAlive = frogs.length;
