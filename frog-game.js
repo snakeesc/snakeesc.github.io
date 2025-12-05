@@ -874,6 +874,10 @@
       frog.layers.push(img);
       frog.el.appendChild(img);
     }
+
+    // Re-apply glow + emoji badge that may have been cleared
+    refreshFrogPermaGlow(frog);
+    updateFrogRoleEmoji(frog);
   }
 
   // --------------------------------------------------
@@ -2480,7 +2484,7 @@ function applyBuff(type, frog) {
     const nextDRChance    = Math.min(1, currentDRChance + EPIC_DEATHRATTLE_CHANCE);
     const drTotalPct      = Math.round(nextDRChance * 100);
 
-    const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.20;
+    const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.15;
     const buffPerPickPct  = Math.round((epicBuffFactor - 1) * 100);
     const nextBuffFactor  = buffDurationFactor * epicBuffFactor;
     const buffTotalPct    = Math.round((nextBuffFactor - 1) * 100);
