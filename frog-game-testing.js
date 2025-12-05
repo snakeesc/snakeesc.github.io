@@ -3768,7 +3768,7 @@ function ensureUpgradeOverlay() {
     }
 
     if (orbCollectorPct > 0) {
-      lines.push(`🌌 Orb Collector: +${orbCollectorPct}% per orb`);
+      lines.push(`🌌 Orb Collector: +${orbCollectorPct}%`);
     }
 
     if (hopSpeedBonus > 0) {
@@ -3794,19 +3794,19 @@ function ensureUpgradeOverlay() {
     // Special flags
     if (lastStandActive) {
       const lastStandPct = Math.round(LAST_STAND_MIN_CHANCE * 100);
-      lines.push(`🏹 Last Stand: at least ${lastStandPct}% revive on last frog`);
+      lines.push(`🏹 Last Stand: ${lastStandPct}%`);
     }
 
     if (graveWaveActive) {
-      lines.push("👻 Grave Wave: ghost frogs spawn at shed");
+      lines.push("👻 Grave Wave");
     }
 
     if (orbSpecialistActive) {
-      lines.push("🧪 Orb Specialist: orbs spawn one frog");
+      lines.push("🧪 Orb Specialist");
     }
 
     if (frogEatFrogActive) {
-      lines.push("🍴 Cannibal frogs: frogs can eat frogs");
+      lines.push("🍴 Cannibal frogs");
     }
 
     if (!lines.length) {
