@@ -1097,13 +1097,13 @@
     return factor;
   }
 
-  const TARGET_SEGMENT_SPACING = Math.max(48, Math.round(SNAKE_SEGMENT_SIZE * 0.9));
-  const MIN_SEGMENT_SPACING = Math.max(24, Math.round(SNAKE_SEGMENT_SIZE * 0.5));
-  const MAX_SEGMENT_SPACING = Math.max(120, Math.round(SNAKE_SEGMENT_SIZE * 2));
+  const TARGET_SEGMENT_SPACING = SNAKE_SEGMENT_GAP;
+  const MIN_SEGMENT_SPACING = Math.max(20, Math.round(SNAKE_SEGMENT_GAP * 0.6));
+  const MAX_SEGMENT_SPACING = Math.max(SNAKE_SEGMENT_SIZE, Math.round(SNAKE_SEGMENT_GAP * 1.6));
 
   function getSegmentSpacing() {
     // Keep a consistent physical distance between segments regardless of frame rate.
-    const shrinkScale = snakeShrinkTime > 0 ? 0.9 : 1.0;
+    const shrinkScale = snakeShrinkTime > 0 ? 0.85 : 1.0;
     const spacing = TARGET_SEGMENT_SPACING * shrinkScale;
     return Math.max(MIN_SEGMENT_SPACING, Math.min(MAX_SEGMENT_SPACING, Math.round(spacing)));
   }
@@ -2333,8 +2333,15 @@ function applyBuff(type, frog) {
       seg.x = pos.x;
       seg.y = pos.y;
 
+      let angle = pos.angle;
+      if (i === snakeObj.segments.length - 1) {
+        // Tail should point toward the segment in front of it (or head if very short).
+        const prevSeg = snakeObj.segments[i - 1] || head;
+        angle = Math.atan2(prevSeg.y - seg.y, prevSeg.x - seg.x);
+      }
+
       seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${pos.angle}rad) scale(${shrinkScale})`;
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
 
     // -----------------------------
