@@ -849,52 +849,6 @@
     // Initial render
     renderPage();
   
-    // ---- Run stats block (uses finalStats if provided) ----
-    if (finalStats && typeof finalStats === "object") {
-      const s = finalStats;
-  
-      const statsBox = document.createElement("div");
-      statsBox.style.marginTop = "10px";
-      statsBox.style.padding = "8px 10px";
-      statsBox.style.borderTop = "1px solid #333";
-      statsBox.style.fontSize = "11px";
-      statsBox.style.textAlign = "left";
-  
-      function fmtPct(val) {
-        return typeof val === "number" ? (val * 100).toFixed(1) + "%" : "—";
-      }
-  
-      function fmtMult(val) {
-        return typeof val === "number" ? "×" + val.toFixed(2) : "—";
-      }
-  
-      function fmtInt(val) {
-        return typeof val === "number" ? String(Math.floor(val)) : "—";
-      }
-  
-      const deathrattleChance =
-        typeof s.deathrattleChance === "number"
-          ? s.deathrattleChance
-          : (typeof s.frogDeathRattleChance === "number"
-              ? s.frogDeathRattleChance
-              : null);
-  
-      /*
-      statsBox.innerHTML = `
-        <div style="font-weight:bold; margin-bottom:4px;">Run stats</div>
-        <div>Deathrattle chance: ${fmtPct(deathrattleChance)}</div>
-        <div>Frog speed factor: ${fmtMult(s.frogSpeedFactor)}</div>
-        <div>Frog jump factor: ${fmtMult(s.frogJumpFactor)}</div>
-        <div>Buff duration: ${fmtMult(s.buffDurationFactor)}</div>
-        <div>Orb spawn interval factor: ${fmtMult(s.orbSpawnIntervalFactor)}</div>
-        <div>Total frogs spawned: ${fmtInt(s.totalFrogsSpawned)}</div>
-      `;
-
-  
-      scoreboardOverlayInner.appendChild(statsBox);
-      */
-    }
-  
     const hint = document.createElement("div");
     hint.textContent = "Click outside this panel to close.";
     hint.style.marginTop = "8px";
