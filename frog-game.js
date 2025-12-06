@@ -2804,7 +2804,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    if (frogs.length > 0) {
+    if (frogs.length > 5) {
       upgrades.push({
         id: "coinFlip",
         label: `
