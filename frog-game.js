@@ -1078,6 +1078,34 @@
     return factor;
   }
 
+  function computeSegmentGap(snakeObj) {
+    const isMobile = window.matchMedia("(max-device-width: 768px)").matches;
+
+    // Start from a tighter baseline on mobile to account for smaller screens.
+    const baseSegmentGap = isMobile
+      ? Math.max(12, Math.round(SNAKE_SEGMENT_GAP * 0.85))
+      : SNAKE_SEGMENT_GAP;
+
+    const speedFactor = getSnakeSpeedFactor(snakeObj);
+
+    // Compress spacing both when speeding up and when slowed to avoid stretched bodies.
+    let segmentGap;
+    if (speedFactor >= 1) {
+      segmentGap = Math.round(baseSegmentGap / speedFactor);
+    } else {
+      segmentGap = Math.round(baseSegmentGap * speedFactor);
+    }
+
+    // Clamp so the snake stays cohesive across devices and effects.
+    const MIN_SEGMENT_GAP = isMobile ? 12 : 16;
+    const MAX_SEGMENT_GAP = isMobile ? 26 : 32;
+
+    if (segmentGap < MIN_SEGMENT_GAP) segmentGap = MIN_SEGMENT_GAP;
+    if (segmentGap > MAX_SEGMENT_GAP) segmentGap = MAX_SEGMENT_GAP;
+
+    return segmentGap;
+  }
+
   function getSnakeEatRadius() {
     return snakeShrinkTime > 0 ? 24 : SNAKE_EAT_RADIUS_BASE;
   }
@@ -2157,27 +2185,7 @@ function applyBuff(type, frog) {
     const head = snakeObj.head;
     if (!head) return;
 
-    const isMobile = window.matchMedia("(max-device-width: 768px)").matches;
-
-    // Base gap (in path samples) for this device
-    const baseSegmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
-
-    // How fast the snake is moving right now (permanent speed + buffs/debuffs)
-    const speedFactor = getSnakeSpeedFactor(snakeObj);
-
-    // Only compress spacing when the snake is faster than base speed.
-    // When slowed, keep normal spacing so the body doesn't stretch out.
-    let segmentGap = baseSegmentGap;
-    if (speedFactor > 1) {
-      segmentGap = Math.round(baseSegmentGap / speedFactor);
-    }
-
-    // Clamp so segments never explode apart or collapse into a blob
-    const MIN_SEGMENT_GAP = isMobile ? 10 : 18;
-    const MAX_SEGMENT_GAP = isMobile ? 28 : 80;
-
-    if (segmentGap < MIN_SEGMENT_GAP) segmentGap = MIN_SEGMENT_GAP;
-    if (segmentGap > MAX_SEGMENT_GAP) segmentGap = MAX_SEGMENT_GAP;
+    const segmentGap = computeSegmentGap(snakeObj);
 
     // -----------------------------
     // Targeting logic

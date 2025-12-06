@@ -20,7 +20,9 @@
     SNAKE_SEGMENT_SIZE: 64,
     SNAKE_BASE_SPEED: 75,
     SNAKE_TURN_RATE: Math.PI * 0.75,
-    SNAKE_SEGMENT_GAP: 64,
+    // Default spacing for snake segments (in path samples) before clamping.
+    // Lowered to keep body segments tighter across devices.
+    SNAKE_SEGMENT_GAP: 22,
     SNAKE_INITIAL_SEGMENTS: 6,
     SNAKE_EAT_RADIUS_BASE: 48,
     SNAKE_EGG_BUFF_PCT: 1.15,
