@@ -680,7 +680,126 @@
       )}</span>` +
       ` — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
     scoreboardOverlayInner.appendChild(summary);
-  
+
+    const finalRunStats = finalStats || {};
+    const funStatValue =
+      typeof finalRunStats.maxFrogsAlive === "number"
+        ? finalRunStats.maxFrogsAlive
+        : 0;
+    const safeFunStat =
+      funStatValue > 0
+        ? funStatValue
+        : typeof finalRunStats.totalFrogsSpawned === "number"
+          ? finalRunStats.totalFrogsSpawned
+          : 0;
+    const safeScore = Math.floor(
+      typeof lastScore === "number" && isFinite(lastScore)
+        ? lastScore
+        : getEntryScore(myEntry)
+    );
+    const safeTime =
+      typeof lastTime === "number" && isFinite(lastTime) && lastTime >= 0
+        ? lastTime
+        : getEntryTime(myEntry);
+    const funStatLine = `Most frogs alive at once: ${safeFunStat}`;
+    const cardText =
+      "Frog Snake Run" +
+      "\n" +
+      `Score: ${safeScore}` +
+      "\n" +
+      `Time survived: ${formatTime(safeTime)}` +
+      "\n" +
+      funStatLine;
+
+    const shareBox = document.createElement("div");
+    shareBox.style.marginBottom = "12px";
+
+    const shareTitle = document.createElement("div");
+    shareTitle.textContent = "Shareable death card:";
+    shareTitle.style.marginBottom = "6px";
+    shareTitle.style.fontWeight = "bold";
+    shareBox.appendChild(shareTitle);
+
+    const cardPre = document.createElement("pre");
+    cardPre.textContent = cardText;
+    cardPre.style.background = "#0a0a0a";
+    cardPre.style.border = "1px solid #333";
+    cardPre.style.borderRadius = "6px";
+    cardPre.style.padding = "8px";
+    cardPre.style.whiteSpace = "pre-wrap";
+    cardPre.style.fontSize = "12px";
+    cardPre.style.marginBottom = "6px";
+    cardPre.style.lineHeight = "1.35";
+    shareBox.appendChild(cardPre);
+
+    const shareButtons = document.createElement("div");
+    shareButtons.style.display = "flex";
+    shareButtons.style.gap = "6px";
+
+    const copyBtn = document.createElement("button");
+    copyBtn.textContent = "Copy";
+    copyBtn.style.padding = "4px 8px";
+    copyBtn.style.background = "#222";
+    copyBtn.style.border = "1px solid #444";
+    copyBtn.style.color = "#eee";
+    copyBtn.style.borderRadius = "3px";
+    copyBtn.style.cursor = "pointer";
+
+    const tweetBtn = document.createElement("button");
+    tweetBtn.textContent = "Tweet";
+    tweetBtn.style.padding = "4px 8px";
+    tweetBtn.style.background = "#1da1f2";
+    tweetBtn.style.border = "1px solid #0f86d1";
+    tweetBtn.style.color = "#fff";
+    tweetBtn.style.borderRadius = "3px";
+    tweetBtn.style.cursor = "pointer";
+
+    const shareStatus = document.createElement("div");
+    shareStatus.style.fontSize = "11px";
+    shareStatus.style.marginTop = "4px";
+    shareStatus.style.minHeight = "14px";
+
+    copyBtn.addEventListener("click", () => {
+      const fallbackCopy = () => {
+        const textarea = document.createElement("textarea");
+        textarea.value = cardText;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      };
+
+      (async () => {
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(cardText);
+          } else {
+            fallbackCopy();
+          }
+          shareStatus.textContent = "Copied to clipboard!";
+          shareStatus.style.color = "#9be28f";
+        } catch (err) {
+          console.error("Failed to copy card:", err);
+          shareStatus.textContent = "Unable to copy. Please try again.";
+          shareStatus.style.color = "#ff8080";
+        }
+      })();
+    });
+
+    tweetBtn.addEventListener("click", () => {
+      const tweetUrl =
+        "https://twitter.com/intent/tweet?text=" + encodeURIComponent(cardText);
+      window.open(tweetUrl, "_blank");
+    });
+
+    shareButtons.appendChild(copyBtn);
+    shareButtons.appendChild(tweetBtn);
+    shareBox.appendChild(shareButtons);
+    shareBox.appendChild(shareStatus);
+    scoreboardOverlayInner.appendChild(shareBox);
+
     // ----- Leaderboard table with pagination (10 per page) -----
     const PAGE_SIZE = 10;
     let currentPage = 0;
