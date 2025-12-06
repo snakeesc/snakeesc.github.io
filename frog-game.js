@@ -1097,9 +1097,15 @@
     return factor;
   }
 
-  const TARGET_SEGMENT_SPACING = SNAKE_SEGMENT_GAP;
-  const MIN_SEGMENT_SPACING = Math.max(20, Math.round(SNAKE_SEGMENT_GAP * 0.6));
-  const MAX_SEGMENT_SPACING = Math.max(SNAKE_SEGMENT_SIZE, Math.round(SNAKE_SEGMENT_GAP * 1.6));
+  const TARGET_SEGMENT_SPACING = Math.min(
+    SNAKE_SEGMENT_GAP,
+    Math.round(SNAKE_SEGMENT_SIZE * 0.7)
+  );
+  const MIN_SEGMENT_SPACING = Math.max(18, Math.round(TARGET_SEGMENT_SPACING * 0.65));
+  const MAX_SEGMENT_SPACING = Math.max(
+    TARGET_SEGMENT_SPACING,
+    Math.round(TARGET_SEGMENT_SPACING * 1.25)
+  );
 
   function getSegmentSpacing() {
     // Keep a consistent physical distance between segments regardless of frame rate.
@@ -2335,9 +2341,9 @@ function applyBuff(type, frog) {
 
       let angle = pos.angle;
       if (i === snakeObj.segments.length - 1) {
-        // Tail should point toward the segment in front of it (or head if very short).
+        // Tail should point away from the segment in front of it so it trails correctly.
         const prevSeg = snakeObj.segments[i - 1] || head;
-        angle = Math.atan2(prevSeg.y - seg.y, prevSeg.x - seg.x);
+        angle = Math.atan2(seg.y - prevSeg.y, seg.x - prevSeg.x);
       }
 
       seg.el.style.transform =
