@@ -173,12 +173,6 @@
   // every 180 seconds we pause for an EPIC upgrade
   let nextEpicChoiceTime = 180;
 
-  // 10-minute legendary choice
-  const LEGENDARY_EVENT_TIME = 600; // 10 minutes
-
-  // Snake shedding every 5 minutes
-  const SHED_INTERVAL = 300; // 5 minutes
-
   let legendaryEventTriggered = false;
 
   let infoOverlay = null;
@@ -189,9 +183,8 @@
   let infoNextBtn = null;
   let infoLeaderboardData = [];
 
-    // This is the value actually used in movement and scaled on each shed
+  // This is the value actually used in movement and scaled on each shed
   let snakeTurnRate        = SNAKE_TURN_RATE_BASE;
-
 
   // Shed state
   let snakeShedStage   = 0;          // 0 = base, 1 = yellow, 2 = orange, 3+ = red
@@ -245,9 +238,6 @@
 
   let graveWaveActive   = false;
   let frogEatFrogActive = false;
-
-  const AURA_RADIUS  = 200;
-  const AURA_RADIUS2 = AURA_RADIUS * AURA_RADIUS;
 
   // --------------------------------------------------
   // MOUSE
