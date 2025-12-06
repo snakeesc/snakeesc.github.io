@@ -2213,6 +2213,7 @@ function applyBuff(type, frog) {
     if (angleDiff < -maxTurn) angleDiff = -maxTurn;
     head.angle += angleDiff;
 
+    const speedFactor = getSnakeSpeedFactor(snakeObj);
     const speed = SNAKE_BASE_SPEED * speedFactor * (0.8 + Math.random() * 0.4);
 
     head.x += Math.cos(head.angle) * speed * dt;
