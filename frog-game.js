@@ -175,6 +175,10 @@
 
   let legendaryEventTriggered = false;
 
+  // One-shot upgrades
+  let ouroborosPactUsed = false;
+  let fragileRealityActive = false;
+
   let infoOverlay = null;
   let infoPage = 0;
   let infoContentEl = null;
@@ -216,6 +220,7 @@
   let orbCollectorActive   = false;
   let orbCollectorChance   = 0;    // current chance (0–1) that an orb spawns a frog
   let orbSpecialistActive  = false;
+  let orbDropChanceOnDeath = 0;
 
   // Legendary Frenzy timer (snake + frogs go wild)
   let snakeFrenzyTime = 0;
@@ -225,12 +230,16 @@
   let frogPermanentJumpFactor  = 1.0; // >1 = higher hops
   let snakePermanentSpeedFactor= 1.0;
   let buffDurationFactor       = 1.0; // >1 = longer temp buffs
+  let buffDurationCap          = MAX_BUFF_DURATION_FACTOR;
+  let buffDurationUpgradeFactor = BUFF_DURATION_UPGRADE_FACTOR;
   let orbSpawnIntervalFactor   = 1.0; // <1 = more orbs
+  let orbSpawnPenaltyFactor    = 1.0; // >1 = fewer orbs (used for trade-offs)
 
   // ---- RUN STATS (for leaderboard / post-run summary) ----
   let totalFrogsSpawned = 0;
   let totalOrbsSpawned = 0;
   let totalOrbsCollected = 0;
+  let maxFrogsAlive = 0;
 
   // Optional extras if you want them:
   let totalGhostFrogsSpawned = 0;  // for Grave Wave, etc.
@@ -407,6 +416,13 @@
     scoreLabel.textContent = `Score: ${Math.floor(score)}`;
   }
 
+  function getEffectiveOrbIntervalFactor() {
+    const base = fragileRealityActive
+      ? Math.max(orbSpawnIntervalFactor, 1)
+      : orbSpawnIntervalFactor;
+    return base * orbSpawnPenaltyFactor;
+  }
+
   function updateStatsPanel() {
     const neon = "#4defff";
     if (!statsPanel || !statsPanelVisible) return;
@@ -427,10 +443,8 @@
     const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
 
-    const orbRateBonus =
-      orbSpawnIntervalFactor < 1
-        ? Math.round((1 - orbSpawnIntervalFactor) * 100)
-        : 0;
+    const effectiveOrbInterval = getEffectiveOrbIntervalFactor();
+    const orbRateBonus = Math.round((1 - effectiveOrbInterval) * 100);
 
     const deathrattlePct  = Math.round(frogDeathRattleChance * 100);
     const orbCollectorPct = Math.round(orbCollectorChance * 100);
@@ -454,6 +468,7 @@
       `<div>Orb spawn rate: <span style="color: ${neon};">${orbRateBonus}%</span></div>` +
       `<div>Deathrattle: <span style="color: ${neon};">${deathrattlePct}%</span></div>` +
       `<div>Orb Collector: <span style="color: ${neon};">${orbCollectorPct}%</span></div>` +
+      `<div>Orb drop on death: <span style="color: ${neon};">${Math.round(orbDropChanceOnDeath * 100)}%</span></div>` +
       `<div>Snake speed bonus: <span style="color: ${neon};">${snakeSpeedBonus}%</span></div>` +
       `<div>Last Stand: <span style="color: ${neon};">${lastStandActive ? "ON" : "off"}</span></div>` +
       `<div>Grave Wave: <span style="color: ${neon};">${graveWaveActive ? "ON" : "off"}</span></div>` +
@@ -630,12 +645,7 @@
     }
 
     // New path for the new snake
-    const path = [];
-    const segmentGap = computeSegmentGap();
-    const maxPath = (segments.length + 2) * segmentGap + 2;
-    for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
-    }
+    const path = [{ x: startX, y: startY, dist: 0 }];
 
     // Replace global snake reference with the new snake,
     // carrying forward the new per-snake speed factor
@@ -643,6 +653,7 @@
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
+      pathLength: 0,
       isFrenzyVisual: false,
       speedFactor: newSpeedFactor
     };
@@ -804,6 +815,12 @@
     frog.el.style.boxShadow = glows.join(", ");
   }
 
+  function recordMaxFrogsAlive() {
+    if (frogs.length > maxFrogsAlive) {
+      maxFrogsAlive = frogs.length;
+    }
+  }
+
   function createFrogAt(x, y, tokenId) {
     const el = document.createElement("div");
     el.className = "frog-sprite";
@@ -881,6 +898,7 @@
 
     frogs.push(frog);
     refreshFrogPermaGlow(frog);
+    recordMaxFrogsAlive();
 
     totalFrogsSpawned++;
 
@@ -1079,14 +1097,44 @@
     return factor;
   }
 
-  const IS_MOBILE = window.matchMedia("(max-device-width: 768px)").matches;
-  const BASE_SEGMENT_GAP = IS_MOBILE
-    ? Math.max(12, Math.round(SNAKE_SEGMENT_GAP * 0.85))
-    : SNAKE_SEGMENT_GAP;
+  const TARGET_SEGMENT_SPACING = Math.max(48, Math.round(SNAKE_SEGMENT_SIZE * 0.9));
+  const MIN_SEGMENT_SPACING = Math.max(24, Math.round(SNAKE_SEGMENT_SIZE * 0.5));
+  const MAX_SEGMENT_SPACING = Math.max(120, Math.round(SNAKE_SEGMENT_SIZE * 2));
 
-  function computeSegmentGap() {
-    // Keep spacing stable across devices and effects so the body never stretches apart.
-    return BASE_SEGMENT_GAP;
+  function getSegmentSpacing() {
+    // Keep a consistent physical distance between segments regardless of frame rate.
+    const shrinkScale = snakeShrinkTime > 0 ? 0.9 : 1.0;
+    const spacing = TARGET_SEGMENT_SPACING * shrinkScale;
+    return Math.max(MIN_SEGMENT_SPACING, Math.min(MAX_SEGMENT_SPACING, Math.round(spacing)));
+  }
+
+  function samplePathAtDistance(path, targetDistance) {
+    if (!Array.isArray(path) || path.length === 0) {
+      return { x: 0, y: 0, angle: 0 };
+    }
+
+    let accumulated = 0;
+
+    for (let i = 1; i < path.length; i++) {
+      const curr = path[i];
+      const prev = path[i - 1];
+      const segDist = curr.dist || Math.hypot(prev.x - curr.x, prev.y - curr.y);
+
+      if (accumulated + segDist >= targetDistance) {
+        const t = segDist === 0 ? 0 : (targetDistance - accumulated) / segDist;
+        const x = prev.x + (curr.x - prev.x) * t;
+        const y = prev.y + (curr.y - prev.y) * t;
+        const angle = Math.atan2(prev.y - curr.y, prev.x - curr.x);
+        return { x, y, angle };
+      }
+
+      accumulated += segDist;
+    }
+
+    const tail = path[path.length - 1];
+    const beforeTail = path[path.length - 2] || tail;
+    const angle = Math.atan2(beforeTail.y - tail.y, beforeTail.x - tail.x);
+    return { x: tail.x, y: tail.y, angle };
   }
 
   function getSnakeEatRadius() {
@@ -1347,6 +1395,13 @@ function tryKillFrogAtIndex(index, source) {
     container.removeChild(frog.el);
   }
   frogs.splice(index, 1);
+
+  // Ouroboros Pact: chance to drop an orb on death
+  if (orbDropChanceOnDeath > 0 && Math.random() < orbDropChanceOnDeath) {
+    const centerX = frog.x + FROG_SIZE / 2;
+    const centerY = frog.baseY + FROG_SIZE / 2;
+    spawnOrbAtPosition(centerX, centerY);
+  }
 
   // -----------------------------
   // On-death effects: zombie, global + per-frog deathrattle, Lifeline, Last Stand
@@ -1778,15 +1833,7 @@ function applyBuff(type, frog) {
   // ORBS
   // --------------------------------------------------
 
-  function spawnOrbRandom(width, height) {
-    if (frogs.length === 0) return;
-
-    const marginX = 24;
-    const marginY = 48;
-
-    const x = marginX + Math.random() * (width - marginX * 2);
-    const y = marginY + Math.random() * (height - marginY * 2);
-
+  function pickRandomOrbType() {
     const types = [
       "speed",
       "jump",
@@ -1802,8 +1849,13 @@ function applyBuff(type, frog) {
       "lifeSteal",
       "permaFrog"
     ];
-    const type = types[Math.floor(Math.random() * types.length)];
+    return types[Math.floor(Math.random() * types.length)];
+  }
 
+  function spawnOrbAtPosition(x, y, type) {
+    if (frogs.length === 0) return;
+
+    const orbType = type || pickRandomOrbType();
     const size = ORB_RADIUS * 2;
     const el = document.createElement("div");
     el.className = "frog-orb";
@@ -1820,28 +1872,40 @@ function applyBuff(type, frog) {
     el.style.backgroundRepeat = "no-repeat";
     el.style.backgroundPosition = "center";
 
-    if (type === "speed")      el.style.boxShadow = "0 0 14px #32ff9b";
-    else if (type === "jump")  el.style.boxShadow = "0 0 14px #b857ff";
-    else if (type === "spawn") el.style.boxShadow = "0 0 14px #ffe66b";
-    else if (type === "snakeSlow")    el.style.boxShadow = "0 0 14px #ff6b6b";
-    else if (type === "snakeConfuse") el.style.boxShadow = "0 0 14px #ff9ff3";
-    else if (type === "snakeShrink")  el.style.boxShadow = "0 0 14px #74b9ff";
-    else if (type === "frogShield")   el.style.boxShadow = "0 0 14px #55efc4";
-    else if (type === "timeSlow")     el.style.boxShadow = "0 0 14px #ffeaa7";
-    else if (type === "orbMagnet")    el.style.boxShadow = "0 0 14px #a29bfe";
-    else if (type === "megaSpawn")    el.style.boxShadow = "0 0 14px #fd79a8";
-    else if (type === "scoreMulti")   el.style.boxShadow = "0 0 14px #fdcb6e";
-    else if (type === "panicHop")     el.style.boxShadow = "0 0 14px #fab1a0";
-    else if (type === "lifeSteal")    el.style.boxShadow = "0 0 14px #00ff88";
-    else if (type === "permaFrog")    el.style.boxShadow = "0 0 14px #ffd700";
+    if (orbType === "speed")      el.style.boxShadow = "0 0 14px #32ff9b";
+    else if (orbType === "jump")  el.style.boxShadow = "0 0 14px #b857ff";
+    else if (orbType === "spawn") el.style.boxShadow = "0 0 14px #ffe66b";
+    else if (orbType === "snakeSlow")    el.style.boxShadow = "0 0 14px #ff6b6b";
+    else if (orbType === "snakeConfuse") el.style.boxShadow = "0 0 14px #ff9ff3";
+    else if (orbType === "snakeShrink")  el.style.boxShadow = "0 0 14px #74b9ff";
+    else if (orbType === "frogShield")   el.style.boxShadow = "0 0 14px #55efc4";
+    else if (orbType === "timeSlow")     el.style.boxShadow = "0 0 14px #ffeaa7";
+    else if (orbType === "orbMagnet")    el.style.boxShadow = "0 0 14px #a29bfe";
+    else if (orbType === "megaSpawn")    el.style.boxShadow = "0 0 14px #fd79a8";
+    else if (orbType === "scoreMulti")   el.style.boxShadow = "0 0 14px #fdcb6e";
+    else if (orbType === "panicHop")     el.style.boxShadow = "0 0 14px #fab1a0";
+    else if (orbType === "lifeSteal")    el.style.boxShadow = "0 0 14px #00ff88";
+    else if (orbType === "permaFrog")    el.style.boxShadow = "0 0 14px #ffd700";
     else                              el.style.boxShadow = "0 0 10px rgba(0,0,0,0.4)";
 
     container.appendChild(el);
-    orbs.push({ type, x, y, ttl: ORB_TTL, el });
+    orbs.push({ type: orbType, x, y, ttl: ORB_TTL, el });
 
     totalOrbsSpawned++;
 
     playRandomOrbSpawnSound();
+  }
+
+  function spawnOrbRandom(width, height) {
+    if (frogs.length === 0) return;
+
+    const marginX = 24;
+    const marginY = 48;
+
+    const x = marginX + Math.random() * (width - marginX * 2);
+    const y = marginY + Math.random() * (height - marginY * 2);
+
+    spawnOrbAtPosition(x, y);
   }
 
   function updateOrbs(dt) {
@@ -2025,17 +2089,13 @@ function applyBuff(type, frog) {
       segments.push({ el: segEl, x: startX, y: startY });
     }
 
-    const path = [];
-    const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
-    for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
-    }
+    const path = [{ x: startX, y: startY, dist: 0 }];
 
     snake = {
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
+      pathLength: 0,
       isFrenzyVisual: false,
       speedFactor: 1.0
     };
@@ -2082,18 +2142,14 @@ function applyBuff(type, frog) {
       segments.push({ el: segEl, x: startX, y: startY });
     }
 
-    const path = [];
-    const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
-    for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
-    }
+    const path = [{ x: startX, y: startY, dist: 0 }];
 
     // Fresh snake: base speed + base color
     const newSnake = {
       head: { el: headEl, x: startX, y: startY, angle: Math.PI }, // facing left
       segments,
       path,
+      pathLength: 0,
       isFrenzyVisual: false,
       speedFactor: 1.0
     };
@@ -2143,11 +2199,17 @@ function applyBuff(type, frog) {
       });
     }
 
-    const desiredPathLength =
-      (snakeObj.segments.length + 2) * computeSegmentGap() + 2;
-    while (snakeObj.path.length < desiredPathLength) {
+    const segmentSpacing = getSegmentSpacing();
+    const desiredPathLength = segmentSpacing * (snakeObj.segments.length + 2);
+    snakeObj.pathLength = snakeObj.pathLength || 0;
+    while (
+      snakeObj.pathLength < desiredPathLength &&
+      snakeObj.path.length < snakeObj.segments.length + 6
+    ) {
       const last = snakeObj.path[snakeObj.path.length - 1];
-      snakeObj.path.push({ x: last.x, y: last.y });
+      const dist = segmentSpacing;
+      snakeObj.path.push({ x: last.x, y: last.y, dist });
+      snakeObj.pathLength += dist;
     }
 
     // Primary snake still uses shed-color logic
@@ -2169,8 +2231,6 @@ function applyBuff(type, frog) {
 
     const head = snakeObj.head;
     if (!head) return;
-
-    const segmentGap = computeSegmentGap();
 
     // -----------------------------
     // Targeting logic
@@ -2215,6 +2275,10 @@ function applyBuff(type, frog) {
 
     const speedFactor = getSnakeSpeedFactor(snakeObj);
     const speed = SNAKE_BASE_SPEED * speedFactor * (0.8 + Math.random() * 0.4);
+    const segmentSpacing = getSegmentSpacing();
+
+    const prevHeadX = head.x;
+    const prevHeadY = head.y;
 
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
@@ -2238,10 +2302,21 @@ function applyBuff(type, frog) {
     // -----------------------------
     // Path + segments follow
     // -----------------------------
-    snakeObj.path.unshift({ x: head.x, y: head.y });
-    const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
-    while (snakeObj.path.length > maxPathLength) {
-      snakeObj.path.pop();
+    const moveDist = Math.hypot(head.x - prevHeadX, head.y - prevHeadY);
+    snakeObj.path.unshift({ x: head.x, y: head.y, dist: 0 });
+    if (snakeObj.path.length > 1) {
+      snakeObj.path[1].dist = moveDist;
+    }
+
+    snakeObj.pathLength = (snakeObj.pathLength || 0) + moveDist;
+
+    const maxPathLength = segmentSpacing * (snakeObj.segments.length + 2);
+    while (
+      snakeObj.path.length > 1 &&
+      snakeObj.pathLength - (snakeObj.path[snakeObj.path.length - 1].dist || 0) >= maxPathLength
+    ) {
+      const tail = snakeObj.path.pop();
+      snakeObj.pathLength -= tail.dist || 0;
     }
 
     const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
@@ -2252,21 +2327,14 @@ function applyBuff(type, frog) {
 
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const seg = snakeObj.segments[i];
-      const idx = Math.min(
-        snakeObj.path.length - 1,
-        (i + 1) * segmentGap
-      );
-      const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
+      const spacing = segmentSpacing * (i + 1);
+      const pos = samplePathAtDistance(snakeObj.path, spacing);
 
-      const nextIdx = Math.max(0, idx - 2);
-      const q = snakeObj.path[nextIdx] || p;
-      const angle = Math.atan2(p.y - q.y, p.x - q.x);
-
-      seg.x = p.x;
-      seg.y = p.y;
+      seg.x = pos.x;
+      seg.y = pos.y;
 
       seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${pos.angle}rad) scale(${shrinkScale})`;
     }
 
     // -----------------------------
@@ -2358,9 +2426,9 @@ function applyBuff(type, frog) {
     const nextDRChance    = Math.min(1, currentDRChance + EPIC_DEATHRATTLE_CHANCE);
     const drTotalPct      = Math.round(nextDRChance * 100);
 
-    const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.15;
+    const epicBuffFactor  = buffDurationUpgradeFactor + 0.15;
     const buffPerPickPct  = Math.round((epicBuffFactor - 1) * 100);
-    const nextBuffFactor  = buffDurationFactor * epicBuffFactor;
+    const nextBuffFactor  = Math.min(buffDurationFactor * epicBuffFactor, buffDurationCap);
     const buffTotalPct    = Math.round((nextBuffFactor - 1) * 100);
 
     const speedPerPickPct     = Math.round((1 - (FROG_SPEED_UPGRADE_FACTOR*2)) * 100);
@@ -2404,7 +2472,7 @@ function applyBuff(type, frog) {
     }
 
     // EPIC: Buff duration – only if below cap
-    if (buffDurationFactor < MAX_BUFF_DURATION_FACTOR - 1e-4) {
+    if (buffDurationFactor < buffDurationCap - 1e-4) {
       upgrades.push({
         id: "epicBuffDuration",
         label: `
@@ -2413,9 +2481,31 @@ function applyBuff(type, frog) {
         `,
         apply: () => {
           buffDurationFactor *= epicBuffFactor;
-          if (buffDurationFactor > MAX_BUFF_DURATION_FACTOR) {
-            buffDurationFactor = MAX_BUFF_DURATION_FACTOR;
+          if (buffDurationFactor > buffDurationCap) {
+            buffDurationFactor = buffDurationCap;
           }
+        }
+      });
+    }
+
+    if (!fragileRealityActive) {
+      upgrades.push({
+        id: "fragileReality",
+        label: `
+          🌀 Fragile Reality<br>
+          Buff duration bonuses are doubled (cap doubled)<br>
+          But only <span style="color:${epicTitleColor};">half as many</span> orbs can spawn
+        `,
+        apply: () => {
+          fragileRealityActive = true;
+          buffDurationCap *= 2;
+          buffDurationUpgradeFactor *= 2;
+          if (buffDurationFactor > buffDurationCap) {
+            buffDurationFactor = buffDurationCap;
+          }
+          orbSpawnPenaltyFactor = Math.max(orbSpawnPenaltyFactor, 2);
+          setNextOrbTime();
+          updateStatsPanel();
         }
       });
     }
@@ -2524,7 +2614,7 @@ function applyBuff(type, frog) {
     // per-pick effects
     const speedPerPickPct     = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
     const jumpPerPickPct      = Math.round((FROG_JUMP_UPGRADE_FACTOR - 1) * 100);
-    const buffPerPickPct      = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
+    const buffPerPickPct      = Math.round((buffDurationUpgradeFactor - 1) * 100);
     const orbFasterPerPickPct = Math.round((1 - ORB_INTERVAL_UPGRADE_FACTOR) * 100);
     const deathPerPickPct     = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const orbPerPickPct       = Math.round(ORB_COLLECTOR_CHANCE * 100);
@@ -2582,7 +2672,7 @@ function applyBuff(type, frog) {
     }
 
     // Buff duration (capped)
-    if (buffDurationFactor < MAX_BUFF_DURATION_FACTOR - 1e-4) {
+    if (buffDurationFactor < buffDurationCap - 1e-4) {
       upgrades.push({
         id: "buffDuration",
         label: `
@@ -2590,9 +2680,9 @@ function applyBuff(type, frog) {
           +<span style="color:${neon};">${buffPerPickPct}%</span> buff duration (stacks)
         `,
         apply: () => {
-          buffDurationFactor *= BUFF_DURATION_UPGRADE_FACTOR;
-          if (buffDurationFactor > MAX_BUFF_DURATION_FACTOR) {
-            buffDurationFactor = MAX_BUFF_DURATION_FACTOR;
+          buffDurationFactor *= buffDurationUpgradeFactor;
+          if (buffDurationFactor > buffDurationCap) {
+            buffDurationFactor = buffDurationCap;
           }
         }
       });
@@ -2611,6 +2701,21 @@ function applyBuff(type, frog) {
           if (orbSpawnIntervalFactor < MIN_ORB_SPAWN_INTERVAL_FACTOR) {
             orbSpawnIntervalFactor = MIN_ORB_SPAWN_INTERVAL_FACTOR;
           }
+          setNextOrbTime();
+        }
+      });
+    }
+
+    if (!ouroborosPactUsed) {
+      upgrades.push({
+        id: "ouroborosPact",
+        label: `
+          🔁 Ouroboros Pact (one-time)<br>
+          Frogs have a <span style="color:${neon};">5%</span> chance to drop an orb on death
+        `,
+        apply: () => {
+          ouroborosPactUsed = true;
+          orbDropChanceOnDeath = Math.max(orbDropChanceOnDeath, 0.05);
         }
       });
     }
@@ -3637,10 +3742,8 @@ function ensureUpgradeOverlay() {
     const jumpBonus = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
 
-    const orbRateBonus =
-      orbSpawnIntervalFactor < 1
-        ? Math.round((1 - orbSpawnIntervalFactor) * 100)
-        : 0;
+    const effectiveOrbInterval = getEffectiveOrbIntervalFactor();
+    const orbRateBonus = Math.round((1 - effectiveOrbInterval) * 100);
 
     const snakeSpeedBonus =
       snakePermanentSpeedFactor > 1
@@ -3674,6 +3777,11 @@ function ensureUpgradeOverlay() {
       lines.push(`🎯 Orb spawn rate: <span style="color: ${neon};">+${orbRateBonus}%</span>`);
     }
 
+    if (orbDropChanceOnDeath > 0) {
+      const orbDropPct = Math.round(orbDropChanceOnDeath * 100);
+      lines.push(`🔁 Orb drops on death: <span style="color: ${neon};">${orbDropPct}%</span>`);
+    }
+
     if (snakeSpeedBonus > 0) {
       lines.push(`🐍 Snake speed: <span style="color: ${neon};">+${snakeSpeedBonus}%</span>`);
     }
@@ -3694,6 +3802,10 @@ function ensureUpgradeOverlay() {
 
     if (frogEatFrogActive) {
       lines.push("🍴 Cannibal frogs");
+    }
+
+    if (fragileRealityActive) {
+      lines.push(`🌀 Fragile Reality: <span style="color: ${neon};">Half orb spawns</span>`);
     }
 
     if (!lines.length) {
@@ -3909,14 +4021,20 @@ function ensureUpgradeOverlay() {
       frogSpeedFactor: frogPermanentSpeedFactor,
       frogJumpFactor: frogPermanentJumpFactor,
       buffDurationFactor,
+      buffDurationCap,
+      buffDurationUpgradeFactor,
       orbSpawnIntervalFactor,
+      orbSpawnPenaltyFactor,
       orbCollectorChance,
       orbSpecialistActive,
-  
+      orbDropChanceOnDeath,
+      fragileRealityActive,
+
       // Totals for this run
       totalFrogsSpawned,
       //totalOrbsSpawned,
       //totalOrbsCollected,
+      maxFrogsAlive,
       //totalGhostFrogsSpawned,
       //totalCannibalEvents,
     };
@@ -4075,8 +4193,15 @@ function ensureUpgradeOverlay() {
     frogPermanentSpeedFactor = 1.0;
     frogPermanentJumpFactor  = 1.0;
     buffDurationFactor       = 1.0;
+    buffDurationCap          = MAX_BUFF_DURATION_FACTOR;
+    buffDurationUpgradeFactor = BUFF_DURATION_UPGRADE_FACTOR;
     orbSpawnIntervalFactor   = 1.0;
+    orbSpawnPenaltyFactor    = 1.0;
+    orbDropChanceOnDeath     = 0;
     snakePermanentSpeedFactor= 1.0;
+    fragileRealityActive     = false;
+    ouroborosPactUsed        = false;
+    maxFrogsAlive            = 0;
 
     // Hide overlays
     hideGameOver();
@@ -4101,8 +4226,9 @@ function ensureUpgradeOverlay() {
   }
 
   function setNextOrbTime() {
-    const min = ORB_SPAWN_INTERVAL_MIN * orbSpawnIntervalFactor;
-    const max = ORB_SPAWN_INTERVAL_MAX * orbSpawnIntervalFactor;
+    const effectiveFactor = getEffectiveOrbIntervalFactor();
+    const min = ORB_SPAWN_INTERVAL_MIN * effectiveFactor;
+    const max = ORB_SPAWN_INTERVAL_MAX * effectiveFactor;
     // countdown in seconds until next orb
     nextOrbTime = randRange(min, max);
   }
