@@ -645,12 +645,7 @@
     }
 
     // New path for the new snake
-    const path = [];
-    const segmentGap = computeSegmentGap();
-    const maxPath = (segments.length + 2) * segmentGap + 2;
-    for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
-    }
+    const path = [{ x: startX, y: startY, dist: 0 }];
 
     // Replace global snake reference with the new snake,
     // carrying forward the new per-snake speed factor
@@ -658,6 +653,7 @@
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
+      pathLength: 0,
       isFrenzyVisual: false,
       speedFactor: newSpeedFactor
     };
@@ -1101,14 +1097,44 @@
     return factor;
   }
 
-  const IS_MOBILE = window.matchMedia("(max-device-width: 768px)").matches;
-  const BASE_SEGMENT_GAP = IS_MOBILE
-    ? Math.max(12, Math.round(SNAKE_SEGMENT_GAP * 0.85))
-    : SNAKE_SEGMENT_GAP;
+  const TARGET_SEGMENT_SPACING = Math.max(48, Math.round(SNAKE_SEGMENT_SIZE * 0.9));
+  const MIN_SEGMENT_SPACING = Math.max(24, Math.round(SNAKE_SEGMENT_SIZE * 0.5));
+  const MAX_SEGMENT_SPACING = Math.max(120, Math.round(SNAKE_SEGMENT_SIZE * 2));
 
-  function computeSegmentGap() {
-    // Keep spacing stable across devices and effects so the body never stretches apart.
-    return BASE_SEGMENT_GAP;
+  function getSegmentSpacing() {
+    // Keep a consistent physical distance between segments regardless of frame rate.
+    const shrinkScale = snakeShrinkTime > 0 ? 0.9 : 1.0;
+    const spacing = TARGET_SEGMENT_SPACING * shrinkScale;
+    return Math.max(MIN_SEGMENT_SPACING, Math.min(MAX_SEGMENT_SPACING, Math.round(spacing)));
+  }
+
+  function samplePathAtDistance(path, targetDistance) {
+    if (!Array.isArray(path) || path.length === 0) {
+      return { x: 0, y: 0, angle: 0 };
+    }
+
+    let accumulated = 0;
+
+    for (let i = 1; i < path.length; i++) {
+      const curr = path[i];
+      const prev = path[i - 1];
+      const segDist = curr.dist || Math.hypot(prev.x - curr.x, prev.y - curr.y);
+
+      if (accumulated + segDist >= targetDistance) {
+        const t = segDist === 0 ? 0 : (targetDistance - accumulated) / segDist;
+        const x = prev.x + (curr.x - prev.x) * t;
+        const y = prev.y + (curr.y - prev.y) * t;
+        const angle = Math.atan2(prev.y - curr.y, prev.x - curr.x);
+        return { x, y, angle };
+      }
+
+      accumulated += segDist;
+    }
+
+    const tail = path[path.length - 1];
+    const beforeTail = path[path.length - 2] || tail;
+    const angle = Math.atan2(beforeTail.y - tail.y, beforeTail.x - tail.x);
+    return { x: tail.x, y: tail.y, angle };
   }
 
   function getSnakeEatRadius() {
@@ -2063,17 +2089,13 @@ function applyBuff(type, frog) {
       segments.push({ el: segEl, x: startX, y: startY });
     }
 
-    const path = [];
-    const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
-    for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
-    }
+    const path = [{ x: startX, y: startY, dist: 0 }];
 
     snake = {
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
+      pathLength: 0,
       isFrenzyVisual: false,
       speedFactor: 1.0
     };
@@ -2120,18 +2142,14 @@ function applyBuff(type, frog) {
       segments.push({ el: segEl, x: startX, y: startY });
     }
 
-    const path = [];
-    const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
-    for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
-    }
+    const path = [{ x: startX, y: startY, dist: 0 }];
 
     // Fresh snake: base speed + base color
     const newSnake = {
       head: { el: headEl, x: startX, y: startY, angle: Math.PI }, // facing left
       segments,
       path,
+      pathLength: 0,
       isFrenzyVisual: false,
       speedFactor: 1.0
     };
@@ -2181,11 +2199,17 @@ function applyBuff(type, frog) {
       });
     }
 
-    const desiredPathLength =
-      (snakeObj.segments.length + 2) * computeSegmentGap() + 2;
-    while (snakeObj.path.length < desiredPathLength) {
+    const segmentSpacing = getSegmentSpacing();
+    const desiredPathLength = segmentSpacing * (snakeObj.segments.length + 2);
+    snakeObj.pathLength = snakeObj.pathLength || 0;
+    while (
+      snakeObj.pathLength < desiredPathLength &&
+      snakeObj.path.length < snakeObj.segments.length + 6
+    ) {
       const last = snakeObj.path[snakeObj.path.length - 1];
-      snakeObj.path.push({ x: last.x, y: last.y });
+      const dist = segmentSpacing;
+      snakeObj.path.push({ x: last.x, y: last.y, dist });
+      snakeObj.pathLength += dist;
     }
 
     // Primary snake still uses shed-color logic
@@ -2207,8 +2231,6 @@ function applyBuff(type, frog) {
 
     const head = snakeObj.head;
     if (!head) return;
-
-    const segmentGap = computeSegmentGap();
 
     // -----------------------------
     // Targeting logic
@@ -2253,6 +2275,10 @@ function applyBuff(type, frog) {
 
     const speedFactor = getSnakeSpeedFactor(snakeObj);
     const speed = SNAKE_BASE_SPEED * speedFactor * (0.8 + Math.random() * 0.4);
+    const segmentSpacing = getSegmentSpacing();
+
+    const prevHeadX = head.x;
+    const prevHeadY = head.y;
 
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
@@ -2276,10 +2302,21 @@ function applyBuff(type, frog) {
     // -----------------------------
     // Path + segments follow
     // -----------------------------
-    snakeObj.path.unshift({ x: head.x, y: head.y });
-    const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
-    while (snakeObj.path.length > maxPathLength) {
-      snakeObj.path.pop();
+    const moveDist = Math.hypot(head.x - prevHeadX, head.y - prevHeadY);
+    snakeObj.path.unshift({ x: head.x, y: head.y, dist: 0 });
+    if (snakeObj.path.length > 1) {
+      snakeObj.path[1].dist = moveDist;
+    }
+
+    snakeObj.pathLength = (snakeObj.pathLength || 0) + moveDist;
+
+    const maxPathLength = segmentSpacing * (snakeObj.segments.length + 2);
+    while (
+      snakeObj.path.length > 1 &&
+      snakeObj.pathLength - (snakeObj.path[snakeObj.path.length - 1].dist || 0) >= maxPathLength
+    ) {
+      const tail = snakeObj.path.pop();
+      snakeObj.pathLength -= tail.dist || 0;
     }
 
     const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
@@ -2290,21 +2327,14 @@ function applyBuff(type, frog) {
 
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const seg = snakeObj.segments[i];
-      const idx = Math.min(
-        snakeObj.path.length - 1,
-        (i + 1) * segmentGap
-      );
-      const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
+      const spacing = segmentSpacing * (i + 1);
+      const pos = samplePathAtDistance(snakeObj.path, spacing);
 
-      const nextIdx = Math.max(0, idx - 2);
-      const q = snakeObj.path[nextIdx] || p;
-      const angle = Math.atan2(p.y - q.y, p.x - q.x);
-
-      seg.x = p.x;
-      seg.y = p.y;
+      seg.x = pos.x;
+      seg.y = pos.y;
 
       seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${pos.angle}rad) scale(${shrinkScale})`;
     }
 
     // -----------------------------
