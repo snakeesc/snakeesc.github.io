@@ -26,10 +26,106 @@
   const openScoreboardOverlay  = LMod.openScoreboardOverlay  || function(){};
   const hideScoreboardOverlay  = LMod.hideScoreboardOverlay  || function(){};
 
+  const Config = window.FrogGameConfig;
+  const Utils = window.FrogGameUtils || {};
+
+  if (!Config) return;
+
+  const {
+    TAG_STORAGE_KEY,
+    FROG_SIZE,
+    MAX_TOKEN_ID,
+    META_BASE,
+    META_EXT,
+    BUILD_BASE,
+    STARTING_FROGS,
+    MAX_FROGS,
+    ORB_RADIUS,
+    ORB_TTL,
+    ORB_SPAWN_INTERVAL_MIN,
+    ORB_SPAWN_INTERVAL_MAX,
+    SNAKE_SEGMENT_SIZE,
+    SNAKE_BASE_SPEED,
+    SNAKE_TURN_RATE,
+    SNAKE_SEGMENT_GAP,
+    SNAKE_INITIAL_SEGMENTS,
+    SNAKE_EAT_RADIUS_BASE,
+    SNAKE_EGG_BUFF_PCT,
+    SNAKE_TURN_RATE_BASE,
+    SNAKE_TURN_RATE_CAP,
+    SPEED_BUFF_DURATION,
+    JUMP_BUFF_DURATION,
+    SNAKE_SLOW_DURATION,
+    SNAKE_CONFUSE_DURATION,
+    SNAKE_SHRINK_DURATION,
+    FROG_SHIELD_DURATION,
+    TIME_SLOW_DURATION,
+    ORB_MAGNET_DURATION,
+    SCORE_MULTI_DURATION,
+    PANIC_HOP_DURATION,
+    CLONE_SWARM_DURATION,
+    LIFE_STEAL_DURATION,
+    PERMA_LIFESTEAL_ORB_COUNT,
+    SPEED_BUFF_FACTOR,
+    PANIC_HOP_SPEED_FACTOR,
+    JUMP_BUFF_FACTOR,
+    SNAKE_SLOW_FACTOR,
+    TIME_SLOW_FACTOR,
+    FRENZY_SPEED_FACTOR,
+    SCORE_MULTI_FACTOR,
+    CHAMPION_SPEED_FACTOR,
+    CHAMPION_JUMP_FACTOR,
+    AURA_JUMP_FACTOR,
+    LUCKY_BUFF_DURATION_BOOST,
+    AURA_SPEED_FACTOR,
+    LUCKY_SCORE_BONUS_PER,
+    CANNIBAL_EAT_CHANCE,
+    FROG_SPEED_UPGRADE_FACTOR,
+    FROG_JUMP_UPGRADE_FACTOR,
+    BUFF_DURATION_UPGRADE_FACTOR,
+    ORB_INTERVAL_UPGRADE_FACTOR,
+    ORB_COLLECTOR_CHANCE,
+    TOTAL_HIGHLIGHT_COLOR,
+    MIN_FROG_SPEED_FACTOR,
+    MAX_FROG_JUMP_FACTOR,
+    MAX_BUFF_DURATION_FACTOR,
+    MIN_ORB_SPAWN_INTERVAL_FACTOR,
+    MAX_DEATHRATTLE_CHANCE,
+    MAX_ORB_COLLECTOR_TOTAL,
+    SNAKE_SHED_SPEEDUP,
+    MIN_TOTAL_FROG_SPEED_FACTOR,
+    MAX_TOTAL_FROG_JUMP_FACTOR,
+    MAX_SNAKE_SEGMENTS,
+    CANNIBAL_ROLE_CHANCE,
+    ORB_STORM_COUNT,
+    NORMAL_SPAWN_AMOUNT,
+    EPIC_SPAWN_AMOUNT,
+    LEGENDARY_SPAWN_AMOUNT,
+    COMMON_DEATHRATTLE_CHANCE,
+    EPIC_DEATHRATTLE_CHANCE,
+    LEGENDARY_DEATHRATTLE_CHANCE,
+    GRAVE_WAVE_MIN_GHOSTS,
+    GRAVE_WAVE_MAX_GHOSTS,
+    LEGENDARY_BUFF_DURATION_FACTOR,
+    LAST_STAND_MIN_CHANCE,
+    SCATTER_ANIMATED_VALUES,
+    SKIP_TRAITS,
+    LEGENDARY_EVENT_TIME,
+    SHED_INTERVAL,
+    AURA_RADIUS,
+    AURA_RADIUS2
+  } = Config;
+
+  const {
+    randInt = () => 0,
+    randRange = () => 0,
+    pickRandomTokenIds = () => [],
+    computeInitialPositions = () => []
+  } = Utils;
+
   // --------------------------------------------------
   // PLAYER TAG STORAGE (client-side only)
   // --------------------------------------------------
-  const TAG_STORAGE_KEY   = "frogSnake_username";
 
   function getSavedPlayerTag() {
     try {
@@ -44,169 +140,8 @@
     return null;
   }
 
-  // --------------------------------------------------
-  // BASIC CONSTANTS
-  // --------------------------------------------------
-  const FROG_SIZE       = 64;
-  const MAX_TOKEN_ID    = 4040;
-  const META_BASE       = "https://freshfrogs.github.io/frog/json/";
-  const META_EXT        = ".json";
-  const BUILD_BASE      = "https://freshfrogs.github.io/frog/build_files";
-  const STARTING_FROGS  = 50;
-  const MAX_FROGS       = 100;
-
-  // ORBS
-  const ORB_RADIUS  = 12;
-  const ORB_TTL     = 28;
-  const ORB_SPAWN_INTERVAL_MIN = 4;
-  const ORB_SPAWN_INTERVAL_MAX = 9;
-
-    // --------------------------------------------------
-  // SNAKE CONSTANTS
-  // --------------------------------------------------
-  const SNAKE_SEGMENT_SIZE  = 64;
-  const SNAKE_BASE_SPEED    = 75;
-  const SNAKE_TURN_RATE     = Math.PI * 0.75;
-  const SNAKE_SEGMENT_GAP   = 64;
-  const SNAKE_INITIAL_SEGMENTS = 6;
-  const SNAKE_EAT_RADIUS_BASE = 48;
-
-  const SNAKE_EGG_BUFF_PCT = 1.15;
-
-  // Base turn rate and cap
-  const SNAKE_TURN_RATE_BASE = Math.PI * 0.75;
-  const SNAKE_TURN_RATE_CAP  = Math.PI * 1.75;
-
-  // --------------------------------------------------
-  // BUFFS
-  // --------------------------------------------------
-  const SPEED_BUFF_DURATION = 10;
-  const JUMP_BUFF_DURATION  = 10;
-
-  const SNAKE_SLOW_DURATION    = 10;
-  const SNAKE_CONFUSE_DURATION = 10;
-  const SNAKE_SHRINK_DURATION  = 10;
-  const FROG_SHIELD_DURATION   = 10;
-  const TIME_SLOW_DURATION     = 10;
-  const ORB_MAGNET_DURATION    = 10;
-  const SCORE_MULTI_DURATION   = 20;
-  const PANIC_HOP_DURATION     = 7;
-  const CLONE_SWARM_DURATION   = 1;
-  const LIFE_STEAL_DURATION    = 10;
-  // Permanent lifesteal upgrade: how many orbs it affects
-  const PERMA_LIFESTEAL_ORB_COUNT = 20;
-
-  // How strong each buff is
-  const SPEED_BUFF_FACTOR        = 0.80;  // frogs act 2× faster (0.5 = half their cycle)
-  const PANIC_HOP_SPEED_FACTOR   = 0.80;  // panic hop speed factor
-  const JUMP_BUFF_FACTOR         = 2.00;  // jump buff height multiplier
-
-  // Snake speed + Lucky config
-  const SNAKE_SLOW_FACTOR      = 0.6;  // snake slow buff → 50% speed
-  const TIME_SLOW_FACTOR       = 0.5;  // time slow → 40% speed
-  const FRENZY_SPEED_FACTOR    = 1.25; // legendary Frenzy → +25% speed
-
-  const SCORE_MULTI_FACTOR       = 2.0;  // score x2
-
-  // Aura / champion / lucky
-  const CHAMPION_SPEED_FACTOR    = 0.85;
-  const CHAMPION_JUMP_FACTOR     = 1.15;
-  const AURA_JUMP_FACTOR         = 1.15;
-  const LUCKY_BUFF_DURATION_BOOST = 1.50;
-  const AURA_SPEED_FACTOR        = 0.85;
-  const LUCKY_SCORE_BONUS_PER    = 0.15; // +10% per Lucky frog
-  
-  const CANNIBAL_EAT_CHANCE = 0.10;
-
-  // --------------------------------------------------
-  // UPGRADE CONFIG (permanent choices)
-  // --------------------------------------------------
-
-  // Normal upgrade multipliers
-  const FROG_SPEED_UPGRADE_FACTOR     = 0.90; // ~10% faster hops each pick
-  const FROG_JUMP_UPGRADE_FACTOR      = 1.20; // ~20% higher jumps each pick
-  const BUFF_DURATION_UPGRADE_FACTOR  = 1.10; // +10% buff duration each pick
-  const ORB_INTERVAL_UPGRADE_FACTOR   = 0.90; // ~10% faster orb spawns each pick
-  const ORB_COLLECTOR_CHANCE = 0.20;
-  const TOTAL_HIGHLIGHT_COLOR = "#ffb347"; // for showing new total values
-
-  // --- HARD CAPS for permanent upgrades / buffs ---
-  // Frogs can't be faster than 50% of the original hop cycle
-  const MIN_FROG_SPEED_FACTOR         = 0.70; // 
-  const MAX_FROG_JUMP_FACTOR          = 2.00; // 
-  const MAX_BUFF_DURATION_FACTOR      = 1.00; // 
-  const MIN_ORB_SPAWN_INTERVAL_FACTOR = 0.65;
-  const MAX_DEATHRATTLE_CHANCE        = 0.30;
-  const MAX_ORB_COLLECTOR_TOTAL       = 1.0;
-  const SNAKE_SHED_SPEEDUP = 1.30;
-
-  // Hard caps on TOTAL frog speed / jump after *all* buffs (perma + orbs).
-  // Lower speedFactor = faster. We don't let total speed go below this.
-  const MIN_TOTAL_FROG_SPEED_FACTOR = 0.60;  // ~2x faster than base at most
-
-  // Jump factor >1 = higher jumps. We don't let total jump exceed this.
-  const MAX_TOTAL_FROG_JUMP_FACTOR  = 3.0;   // up to ~3x base jump height
-
-  const MAX_SNAKE_SEGMENTS = 100;
-  const CANNIBAL_ROLE_CHANCE = 0.05;
-
-  const ORB_STORM_COUNT = 10;
-  // Spawn amounts
-  const NORMAL_SPAWN_AMOUNT           = 20;   // normal menu
-  const EPIC_SPAWN_AMOUNT             = 30;   // epic menu
-  const LEGENDARY_SPAWN_AMOUNT        = 30;   // legendary menu
-
-  // Deathrattle chances
-  const COMMON_DEATHRATTLE_CHANCE = 0.05;
-  const EPIC_DEATHRATTLE_CHANCE       = 0.1; // 25%
-  const LEGENDARY_DEATHRATTLE_CHANCE  = 0.2; // 50%
-
-  const GRAVE_WAVE_MIN_GHOSTS = 10;
-  const GRAVE_WAVE_MAX_GHOSTS = 20;
-
-  // Legendary buff duration spike
-  const LEGENDARY_BUFF_DURATION_FACTOR = 2.0; // x2 all buff durations
-  const LAST_STAND_MIN_CHANCE = 0.35;
-
   const container = document.getElementById("frog-game");
   if (!container) return;
-
-  // Keep these arrays consistent with your scatter-frogs setup
-  const SCATTER_ANIMATED_VALUES = new Set([
-    "goldenDartFrog",
-    "blueDartFrog",
-    "blueTreeFrog",
-    "brownTreeFrog",
-    "redEyedTreeFrog",
-    "tongueSpiderRed",
-    "tongueSpider",
-    "tongueFly",
-    "croaking",
-    "peace",
-    "inversedEyes",
-    "closedEyes",
-    "thirdEye",
-    "mask",
-    "smoking",
-    "smokingCigar",
-    "smokingPipe",
-    "circleShadesRed",
-    "circleShadesPurple",
-    "shades",
-    "shadesPurple",
-    "shadesThreeD",
-    "shadesWhite",
-    "circleNightVision",
-    "yellow",
-    "blue(2)",
-    "blue",
-    "cyan",
-    "brown",
-    "silverEthChain",
-    "goldDollarChain"
-  ]);
-
-  const SKIP_TRAITS = new Set(["Background", "background", "BG", "Bg"]);
 
   // --------------------------------------------------
   // GAME STATE
@@ -238,12 +173,6 @@
   // every 180 seconds we pause for an EPIC upgrade
   let nextEpicChoiceTime = 180;
 
-  // 10-minute legendary choice
-  const LEGENDARY_EVENT_TIME = 600; // 10 minutes
-
-  // Snake shedding every 5 minutes
-  const SHED_INTERVAL = 300; // 5 minutes
-
   let legendaryEventTriggered = false;
 
   let infoOverlay = null;
@@ -254,9 +183,8 @@
   let infoNextBtn = null;
   let infoLeaderboardData = [];
 
-    // This is the value actually used in movement and scaled on each shed
+  // This is the value actually used in movement and scaled on each shed
   let snakeTurnRate        = SNAKE_TURN_RATE_BASE;
-
 
   // Shed state
   let snakeShedStage   = 0;          // 0 = base, 1 = yellow, 2 = orange, 3+ = red
@@ -310,9 +238,6 @@
 
   let graveWaveActive   = false;
   let frogEatFrogActive = false;
-
-  const AURA_RADIUS  = 200;
-  const AURA_RADIUS2 = AURA_RADIUS * AURA_RADIUS;
 
   // --------------------------------------------------
   // MOUSE
@@ -706,7 +631,8 @@
 
     // New path for the new snake
     const path = [];
-    const maxPath = (segments.length + 2) * SNAKE_SEGMENT_GAP + 2;
+    const segmentGap = computeSegmentGap();
+    const maxPath = (segments.length + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -793,23 +719,6 @@
     }
   }
 
-
-  function randInt(min, maxInclusive) {
-    return Math.floor(Math.random() * (maxInclusive - min + 1)) + min;
-  }
-
-  function randRange(min, max) {
-    return min + Math.random() * (max - min);
-  }
-
-  function pickRandomTokenIds(count) {
-    const set = new Set();
-    while (set.size < count) {
-      set.add(randInt(1, MAX_TOKEN_ID));
-    }
-    return Array.from(set);
-  }
-
   // --------------------------------------------------
   // METADATA + LAYERS (MATCHES SCATTER FROGS)
   // --------------------------------------------------
@@ -883,34 +792,6 @@
   // --------------------------------------------------
   // FROG CREATION (KEEPING ORIGINAL HOP FEEL)
   // --------------------------------------------------
-  function computeInitialPositions(width, height, count) {
-    const positions = [];
-    const MIN_DIST = 52;
-    const margin   = 16;
-
-    let safety = count * 80;
-    while (positions.length < count && safety-- > 0) {
-      const x = margin + Math.random() * (width - margin * 2 - FROG_SIZE);
-      const y = margin + Math.random() * (height - margin * 2 - FROG_SIZE);
-      const cx = x + FROG_SIZE / 2;
-      const cy = y + FROG_SIZE / 2;
-
-      let ok = true;
-      for (const p of positions) {
-        const pcx = p.x + FROG_SIZE / 2;
-        const pcy = p.y + FROG_SIZE / 2;
-        const dx = cx - pcx;
-        const dy = cy - pcy;
-        if (dx * dx + dy * dy < MIN_DIST * MIN_DIST) {
-          ok = false;
-          break;
-        }
-      }
-      if (ok) positions.push({ x, y });
-    }
-    return positions;
-  }
-
   function refreshFrogPermaGlow(frog) {
     const glows = [];
     if (frog.isChampion)      glows.push("0 0 12px rgba(255,215,0,0.9)");
@@ -1196,6 +1077,16 @@
     if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR; // Frenzy speeds all snakes
 
     return factor;
+  }
+
+  const IS_MOBILE = window.matchMedia("(max-device-width: 768px)").matches;
+  const BASE_SEGMENT_GAP = IS_MOBILE
+    ? Math.max(12, Math.round(SNAKE_SEGMENT_GAP * 0.85))
+    : SNAKE_SEGMENT_GAP;
+
+  function computeSegmentGap() {
+    // Keep spacing stable across devices and effects so the body never stretches apart.
+    return BASE_SEGMENT_GAP;
   }
 
   function getSnakeEatRadius() {
@@ -2135,7 +2026,8 @@ function applyBuff(type, frog) {
     }
 
     const path = [];
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * SNAKE_SEGMENT_GAP + 2;
+    const segmentGap = computeSegmentGap();
+    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -2191,7 +2083,8 @@ function applyBuff(type, frog) {
     }
 
     const path = [];
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * SNAKE_SEGMENT_GAP + 2;
+    const segmentGap = computeSegmentGap();
+    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -2251,7 +2144,7 @@ function applyBuff(type, frog) {
     }
 
     const desiredPathLength =
-      (snakeObj.segments.length + 2) * SNAKE_SEGMENT_GAP + 2;
+      (snakeObj.segments.length + 2) * computeSegmentGap() + 2;
     while (snakeObj.path.length < desiredPathLength) {
       const last = snakeObj.path[snakeObj.path.length - 1];
       snakeObj.path.push({ x: last.x, y: last.y });
@@ -2277,27 +2170,7 @@ function applyBuff(type, frog) {
     const head = snakeObj.head;
     if (!head) return;
 
-    const isMobile = window.matchMedia("(max-device-width: 768px)").matches;
-
-    // Base gap (in path samples) for this device
-    const baseSegmentGap = isMobile ? 14 : SNAKE_SEGMENT_GAP;
-
-    // How fast the snake is moving right now (permanent speed + buffs/debuffs)
-    const speedFactor = getSnakeSpeedFactor(snakeObj);
-
-    // Only compress spacing when the snake is faster than base speed.
-    // When slowed, keep normal spacing so the body doesn't stretch out.
-    let segmentGap = baseSegmentGap;
-    if (speedFactor > 1) {
-      segmentGap = Math.round(baseSegmentGap / speedFactor);
-    }
-
-    // Clamp so segments never explode apart or collapse into a blob
-    const MIN_SEGMENT_GAP = isMobile ? 10 : 18;
-    const MAX_SEGMENT_GAP = isMobile ? 28 : 80;
-
-    if (segmentGap < MIN_SEGMENT_GAP) segmentGap = MIN_SEGMENT_GAP;
-    if (segmentGap > MAX_SEGMENT_GAP) segmentGap = MAX_SEGMENT_GAP;
+    const segmentGap = computeSegmentGap();
 
     // -----------------------------
     // Targeting logic
