@@ -2494,6 +2494,7 @@ function applyBuff(type, frog) {
       });
     }
 
+    /*
     if (frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4 && frogPermanentJumpFactor < MAX_FROG_JUMP_FACTOR - 1e-4) {
       upgrades.push({
         id: "frogSpeed",
@@ -2513,7 +2514,7 @@ function applyBuff(type, frog) {
           }
         }
       });
-    }
+    }*/
 
     return upgrades;
   }
