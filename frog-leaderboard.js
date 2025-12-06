@@ -680,7 +680,7 @@
       )}</span>` +
       ` — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
     scoreboardOverlayInner.appendChild(summary);
-  
+
     // ----- Leaderboard table with pagination (10 per page) -----
     const PAGE_SIZE = 10;
     let currentPage = 0;
