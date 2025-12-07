@@ -22,7 +22,7 @@
       const el = document.getElementById("metrics-summary");
       if (!el) return;
 
-      const METRICS_URL = "https://YOUR-WORKER-URL/metrics/full";
+      const METRICS_URL = "https://lucky-king-0d37.danielssouthworth.workers.dev/metrics/full";
 
       fetch(METRICS_URL)
         .then(r => (r.ok ? r.json() : null))
