@@ -824,3 +824,324 @@ a {
   pointer-events: none;
   border-radius: 100%;
 }
+/* ============================
+   ESCAPE THE SNAKE – GAME UI
+   ============================ */
+
+#frog-game {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000; /* game itself will draw on top / inside */
+  font-family: monospace;
+  color: #fff;
+}
+
+/* Generic full-screen UI layer */
+.frog-ui-screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.frog-ui-screen.is-visible {
+  display: flex;
+}
+
+/* MAIN MENU */
+
+.frog-main-menu {
+  background: radial-gradient(circle at top, rgba(255,255,255,0.04), transparent 55%),
+              #020617;
+}
+
+.frog-menu-panel {
+  background: #111;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 24px 26px 20px;
+  box-shadow: 0 0 22px rgba(0,0,0,0.7);
+  max-width: 520px;
+  text-align: center;
+}
+
+.frog-title {
+  margin: 0 0 8px;
+  font-size: 1.7rem;
+  text-shadow: 2px 2px darkslateblue;
+}
+
+.frog-subtitle {
+  margin: 0 0 18px;
+  font-size: 0.95rem;
+  color: #e5e7eb;
+}
+
+.frog-menu-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-bottom: 16px;
+}
+
+/* buttons tuned to match your existing style */
+.frog-btn {
+  border-radius: 0;
+  padding: 0.55rem 1.3rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  box-shadow: 2px 2px darkslateblue;
+  background: #2081e2;
+  color: #fff;
+  white-space: nowrap;
+  transition:
+    transform 140ms ease-out,
+    filter 140ms ease-out;
+}
+
+.frog-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.frog-btn.secondary {
+  background: lightcoral;
+}
+
+.frog-btn.tiny {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.75rem;
+  box-shadow: 1px 1px darkslateblue;
+}
+
+.frog-small-note {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.frog-small-note a {
+  color: #a7f3d0;
+  text-decoration: none;
+}
+
+/* GAME HUD */
+
+.frog-game-hud {
+  pointer-events: none; /* HUD sits over game without blocking pointer by default */
+}
+
+.frog-top-bar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  z-index: 120;
+  pointer-events: auto; /* allow clicking pause/upgrades */
+}
+
+.frog-top-left,
+.frog-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.frog-label {
+  font-size: 0.8rem;
+  color: #e5e7eb;
+}
+
+.frog-value {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #bbf7d0;
+}
+
+/* INFO SCREENS (Learn more / Updates) */
+
+.frog-info-screen {
+  background: rgba(0,0,0,0.78);
+}
+
+.frog-panel {
+  background: #111;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 20px 22px;
+  max-width: 640px;
+  box-shadow: 0 0 22px rgba(0,0,0,0.7);
+}
+
+.frog-panel h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  text-shadow: 2px 2px darkslateblue;
+}
+
+.frog-panel h3 {
+  margin-top: 16px;
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.frog-panel p {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.frog-info-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.frog-updates-list {
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+}
+
+.frog-updates-list li + li {
+  margin-top: 8px;
+}
+
+/* OVERLAYS (Upgrades, Pause, etc.) */
+
+.frog-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.frog-overlay-panel {
+  background: #111;
+  border-radius: 10px;
+  border: 1px solid #444;
+  padding: 20px 22px 16px;
+  max-width: 720px;
+  width: min(720px, 100% - 32px);
+  box-shadow: 0 0 24px rgba(0,0,0,0.8);
+}
+
+.frog-overlay-panel h2 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  text-shadow: 2px 2px darkslateblue;
+}
+
+.frog-overlay-subtitle {
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+  color: #d1d5db;
+}
+
+.frog-overlay-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* Upgrade cards */
+
+.frog-upgrade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.frog-upgrade-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  background: #020617;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  padding: 10px 10px 9px;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+  transition:
+    transform 120ms ease-out,
+    box-shadow 120ms ease-out,
+    border-color 120ms ease-out,
+    background 120ms ease-out;
+}
+
+.frog-upgrade-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(59,130,246,0.45);
+}
+
+/* Rarity colors */
+.frog-upgrade-card.rarity-common {
+  border-color: #6b7280;
+}
+
+.frog-upgrade-card.rarity-rare {
+  border-color: #22d3ee;
+}
+
+.frog-upgrade-card.rarity-epic {
+  border-color: #a855f7;
+}
+
+.frog-upgrade-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 4px;
+  font-size: 0.86rem;
+}
+
+.frog-upgrade-title {
+  font-weight: 600;
+}
+
+.frog-upgrade-rarity {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a5b4fc;
+}
+
+.frog-upgrade-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #e5e7eb;
+}
+
+/* Responsive tweaks */
+
+@media (max-width: 640px) {
+  .frog-menu-panel {
+    padding: 18px 16px 16px;
+  }
+
+  .frog-title {
+    font-size: 1.4rem;
+  }
+
+  .frog-overlay-panel {
+    padding: 16px 14px 14px;
+  }
+}
