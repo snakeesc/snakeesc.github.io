@@ -2809,10 +2809,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "coinFlip",
         label: `
           🪙 Coin Flip<br>
-          Sacrifice <span style="color:${neon};">5</span> frogs to trigger a random buff with extra duration
+          Sacrifice <span style="color:${neon};">1</span> frog(s) to trigger a random buff with extra duration
         `,
         apply: () => {
-          const toKill = Math.min(5, frogs.length);
+          const toKill = Math.min(1, frogs.length);
           killRandomFrogs(toKill, "coinFlip");
 
           const buffPool = ORB_TYPES.filter(t => t !== "permaFrog");
