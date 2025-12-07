@@ -3802,71 +3802,58 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         ? Math.round((snakePermanentSpeedFactor - 1) * 100)
         : 0;
 
-    // NEW: Orb Whisperer (+orb lifetime)
+    // Orb Whisperer (+orb lifetime)
     const orbLingerBonusPct =
       orbTtlFactor > 1 ? Math.round((orbTtlFactor - 1) * 100) : 0;
 
-    // NEW: Ouroboros Pact (frog death -> orb)
+    // Ouroboros Pact (frog death -> orb)
     const deathOrbDropPct = Math.round(frogDeathOrbChance * 100);
 
-    const neon = "#4defff";
+    // helper for consistent value styling
+    const v = (text) => `<span class="frog-current-buff-value">${text}</span>`;
 
     // -----------------------------
     // Core permanent buffs (numeric)
     // -----------------------------
     if (deathPct > 0) {
-      lines.push(
-        `💀 Deathrattle: <span style="color: ${neon};">${deathPct}%</span>`
-      );
+      lines.push(`💀 Deathrattle: ${v(`${deathPct}%`)}`);
     }
 
     if (orbCollectorPct > 0) {
-      lines.push(
-        `🌌 Orb Collector: <span style="color: ${neon};">+${orbCollectorPct}%</span>`
-      );
+      lines.push(`🌌 Orb Collector: ${v(`+${orbCollectorPct}%`)}`);
     }
 
     if (hopSpeedBonus > 0) {
-      lines.push(
-        `💨 Quicker Hops: <span style="color: ${neon};">+${hopSpeedBonus}%</span>`
-      );
+      lines.push(`💨 Quicker Hops: ${v(`+${hopSpeedBonus}%`)}`);
     }
 
     if (jumpBonus > 0) {
-      lines.push(
-        `🦘 Higher Hops: <span style="color: ${neon};">+${jumpBonus}%</span>`
-      );
+      lines.push(`🦘 Higher Hops: ${v(`+${jumpBonus}%`)}`);
     }
 
     if (buffDurationBonus > 0) {
-      lines.push(
-        `⏳ Buff duration: <span style="color: ${neon};">+${buffDurationBonus}%</span>`
-      );
+      lines.push(`⏳ Buff duration: ${v(`+${buffDurationBonus}%`)}`);
     }
 
     if (orbRateBonus > 0) {
-      lines.push(
-        `🎯 Orb spawn rate: <span style="color: ${neon};">+${orbRateBonus}%</span>`
-      );
+      lines.push(`🎯 Orb spawn rate: ${v(`+${orbRateBonus}%`)}`);
     }
 
-    // NEW: Orb Whisperer – 20% longer orb life (scaled if you ever change it)
+    // Orb Whisperer – longer orb life
     if (orbLingerBonusPct > 0) {
-      lines.push(
-        `🌀 Orb Whisperer: <span style="color: ${neon};">+${orbLingerBonusPct}%</span> orb lifetime`
-      );
+      lines.push(`🌀 Orb Whisperer: ${v(`+${orbLingerBonusPct}%`)} orb lifetime`);
     }
 
     if (snakeSpeedBonus > 0) {
-      lines.push(
-        `🐍 Snake speed: <span style="color: ${neon};">+${snakeSpeedBonus}%</span>`
-      );
+      lines.push(`🐍 Snake speed: ${v(`+${snakeSpeedBonus}%`)}`);
     }
 
-    // NEW: Ouroboros Pact – frog death orb drop chance
+    // Ouroboros Pact – frog death orb drop chance
     if (deathOrbDropPct > 0) {
       lines.push(
-        `🔄 Ouroboros Pact: <span style="color: ${neon};">${deathOrbDropPct}%</span> chance frogs drop an orb on death`
+        `🔄 Ouroboros Pact: ${v(
+          `${deathOrbDropPct}%`
+        )} chance frogs drop an orb on death`
       );
     }
 
@@ -3875,31 +3862,23 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     // -----------------------------
     if (lastStandActive) {
       const lastStandPct = Math.round(LAST_STAND_MIN_CHANCE * 100);
-      lines.push(
-        `🏹 Last Stand: <span style="color: ${neon};">${lastStandPct}%</span>`
-      );
+      lines.push(`🏹 Last Stand: ${v(`${lastStandPct}%`)}`);
     }
 
     if (graveWaveActive) {
-      lines.push(`👻 Grave Wave: <span style="color: ${neon};">Active</span>`);
+      lines.push(`👻 Grave Wave: ${v("Active")}`);
     }
 
     if (orbSpecialistActive) {
-      lines.push(
-        `🧪 Orb Specialist: <span style="color: ${neon};">Active</span>`
-      );
+      lines.push(`🧪 Orb Specialist: ${v("Active")}`);
     }
 
-    // NEW: Fragile Reality permanent modifier
     if (fragileRealityActive) {
-      lines.push(`🪞 Fragile Reality: <span style="color: ${neon};">Active</span>`);
+      lines.push(`🪞 Fragile Reality: ${v("Active")}`);
     }
 
-    // NEW: Eye for an Eye permanent modifier
     if (eyeForEyeUsed) {
-      lines.push(
-        `👁️ Eye for an Eye: <span style="color: ${neon};">Active</span>`
-      );
+      lines.push(`👁️ Eye for an Eye: ${v("Active")}`);
     }
 
     if (frogEatFrogActive) {
@@ -3911,7 +3890,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
 
     upgradeBuffSummaryBox.innerHTML = lines
-      .map(line => `<div>${line}</div>`)
+      .map((line) => `<div>${line}</div>`)
       .join("");
   }
 
