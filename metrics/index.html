@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Escape the Snake – Metrics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="snake-game">
+  <div class="metrics-page">
+    <h1>Escape the Snake – Metrics</h1>
+
+    <div id="metrics-summary">
+      Loading metrics...
+    </div>
+
+    <!-- later: tables/graphs for runs per day, top tags, etc. -->
+  </div>
+
+  <script>
+    (function () {
+      const el = document.getElementById("metrics-summary");
+      if (!el) return;
+
+      const METRICS_URL = "https://YOUR-WORKER-URL/metrics/full";
+
+      fetch(METRICS_URL)
+        .then(r => (r.ok ? r.json() : null))
+        .then(data => {
+          if (!data) {
+            el.textContent = "Unable to load metrics.";
+            return;
+          }
+
+          const totalRuns = data.totalRuns || 0;
+          const uniquePlayers = data.uniquePlayers || 0;
+
+          el.textContent =
+            `${uniquePlayers.toLocaleString()} unique players · ` +
+            `${totalRuns.toLocaleString()} total runs`;
+
+          // later you can build more DOM here for extra metrics
+        })
+        .catch(() => {
+          el.textContent = "Unable to load metrics.";
+        });
+    })();
+  </script>
+</body>
+</html>

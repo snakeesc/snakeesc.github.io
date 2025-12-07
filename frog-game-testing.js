@@ -495,7 +495,7 @@
     btnHowTo.onclick = () => {
       if (soundEnabled) playButtonClick();
       // This already sets gamePaused = true internally
-      openHowToOverlay();
+      showHowToOverlay();
     };
   }
   */
@@ -4423,7 +4423,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     updateHUD();
 
     // Show the how-to-play menu before the first upgrade
-    openHowToOverlay();
+    showHowToOverlay();
 
     // Always offer a common upgrade at the very start of the game
     // (same behavior as restartGame)
