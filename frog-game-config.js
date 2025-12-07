@@ -18,7 +18,7 @@
     ORB_SPAWN_INTERVAL_MIN: 4,
     ORB_SPAWN_INTERVAL_MAX: 9,
     SNAKE_SEGMENT_SIZE: 64,
-    SNAKE_BASE_SPEED: 75,
+    SNAKE_BASE_SPEED: 70,
     SNAKE_TURN_RATE: Math.PI * 0.75,
     // Default spacing for snake segments (in path samples) before clamping.
     // Lowered to keep body segments tighter across devices.

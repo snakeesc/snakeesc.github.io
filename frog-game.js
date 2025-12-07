@@ -3892,7 +3892,7 @@ function ensureUpgradeOverlay() {
     const lines = [];
 
     // Percent helpers
-    const deathPct = Math.round(frogDeathRattleChance * 100);
+    const deathPct        = Math.round(frogDeathRattleChance * 100);
     const orbCollectorPct = Math.round(orbCollectorChance * 100);
 
     const hopSpeedBonus =
@@ -3900,7 +3900,7 @@ function ensureUpgradeOverlay() {
         ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100)
         : 0;
 
-    const jumpBonus = Math.round((frogPermanentJumpFactor - 1) * 100);
+    const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
 
     const orbRateBonus =
@@ -3913,41 +3913,82 @@ function ensureUpgradeOverlay() {
         ? Math.round((snakePermanentSpeedFactor - 1) * 100)
         : 0;
 
+    // NEW: Orb Whisperer (+orb lifetime)
+    const orbLingerBonusPct =
+      orbTtlFactor > 1 ? Math.round((orbTtlFactor - 1) * 100) : 0;
+
+    // NEW: Ouroboros Pact (frog death -> orb)
+    const deathOrbDropPct = Math.round(frogDeathOrbChance * 100);
+
     const neon = "#4defff";
 
-    // Core permanent buffs
+    // -----------------------------
+    // Core permanent buffs (numeric)
+    // -----------------------------
     if (deathPct > 0) {
-      lines.push(`💀 Deathrattle: <span style="color: ${neon};">${deathPct}%</span>`);
+      lines.push(
+        `💀 Deathrattle: <span style="color: ${neon};">${deathPct}%</span>`
+      );
     }
 
     if (orbCollectorPct > 0) {
-      lines.push(`🌌 Orb Collector: <span style="color: ${neon};">+${orbCollectorPct}%</span>`);
+      lines.push(
+        `🌌 Orb Collector: <span style="color: ${neon};">+${orbCollectorPct}%</span>`
+      );
     }
 
     if (hopSpeedBonus > 0) {
-      lines.push(`💨 Quicker Hops: <span style="color: ${neon};">+${hopSpeedBonus}%</span>`);
+      lines.push(
+        `💨 Quicker Hops: <span style="color: ${neon};">+${hopSpeedBonus}%</span>`
+      );
     }
 
     if (jumpBonus > 0) {
-      lines.push(`🦘 Higher Hops: <span style="color: ${neon};">+${jumpBonus}%</span>`);
+      lines.push(
+        `🦘 Higher Hops: <span style="color: ${neon};">+${jumpBonus}%</span>`
+      );
     }
 
     if (buffDurationBonus > 0) {
-      lines.push(`⏳ Buff duration: <span style="color: ${neon};">+${buffDurationBonus}%</span>`);
+      lines.push(
+        `⏳ Buff duration: <span style="color: ${neon};">+${buffDurationBonus}%</span>`
+      );
     }
 
     if (orbRateBonus > 0) {
-      lines.push(`🎯 Orb spawn rate: <span style="color: ${neon};">+${orbRateBonus}%</span>`);
+      lines.push(
+        `🎯 Orb spawn rate: <span style="color: ${neon};">+${orbRateBonus}%</span>`
+      );
+    }
+
+    // NEW: Orb Whisperer – 20% longer orb life (scaled if you ever change it)
+    if (orbLingerBonusPct > 0) {
+      lines.push(
+        `🌀 Orb Whisperer: <span style="color: ${neon};">+${orbLingerBonusPct}%</span> orb lifetime`
+      );
     }
 
     if (snakeSpeedBonus > 0) {
-      lines.push(`🐍 Snake speed: <span style="color: ${neon};">+${snakeSpeedBonus}%</span>`);
+      lines.push(
+        `🐍 Snake speed: <span style="color: ${neon};">+${snakeSpeedBonus}%</span>`
+      );
     }
 
-    // Special flags
+    // NEW: Ouroboros Pact – frog death orb drop chance
+    if (deathOrbDropPct > 0) {
+      lines.push(
+        `🔄 Ouroboros Pact: <span style="color: ${neon};">${deathOrbDropPct}%</span> chance frogs drop an orb on death`
+      );
+    }
+
+    // -----------------------------
+    // Special flags / named effects
+    // -----------------------------
     if (lastStandActive) {
       const lastStandPct = Math.round(LAST_STAND_MIN_CHANCE * 100);
-      lines.push(`🏹 Last Stand: <span style="color: ${neon};">${lastStandPct}%</span>`);
+      lines.push(
+        `🏹 Last Stand: <span style="color: ${neon};">${lastStandPct}%</span>`
+      );
     }
 
     if (graveWaveActive) {
@@ -3955,7 +3996,21 @@ function ensureUpgradeOverlay() {
     }
 
     if (orbSpecialistActive) {
-      lines.push(`🧪 Orb Specialist: <span style="color: ${neon};">Active</span>`);
+      lines.push(
+        `🧪 Orb Specialist: <span style="color: ${neon};">Active</span>`
+      );
+    }
+
+    // NEW: Fragile Reality permanent modifier
+    if (fragileRealityActive) {
+      lines.push(`🪞 Fragile Reality: <span style="color: ${neon};">Active</span>`);
+    }
+
+    // NEW: Eye for an Eye permanent modifier
+    if (eyeForEyeUsed) {
+      lines.push(
+        `👁️ Eye for an Eye: <span style="color: ${neon};">Active</span>`
+      );
     }
 
     if (frogEatFrogActive) {
