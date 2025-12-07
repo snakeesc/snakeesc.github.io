@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Escape the Snake – Metrics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Same snake emoji favicon style as the main game (optional) -->
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%2770%27%20font-size%3D%2790%27%3E%F0%9F%90%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <!-- Hero / header -->
+    <header class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">Escape the Snake – Metrics</h1>
+        <p class="hero-subtitle">
+          Live stats from the browser game: unique players, total runs, and a quick leaderboard snapshot.
+        </p>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="dashboard-main">
+      <!-- Overview panel -->
+      <section class="panel" id="metrics-overview-panel">
+        <h2>Overview</h2>
+        <p id="metrics-overview-status">Loading metrics…</p>
+        <div id="metrics-overview" style="display:none;">
+          <p><strong>Unique players:</strong> <span id="metrics-unique"></span></p>
+          <p><strong>Total runs:</strong> <span id="metrics-total"></span></p>
+          <p><strong>Average runs per player:</strong> <span id="metrics-avg"></span></p>
+        </div>
+      </section>
+
+      <!-- Leaderboard snapshot -->
+      <section class="panel" id="metrics-leaderboard-panel">
+        <h2>Leaderboard snapshot</h2>
+        <p id="metrics-leaderboard-status">Loading leaderboard…</p>
+        <div id="metrics-leaderboard" style="display:none; overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:4px 6px;">Rank</th>
+                <th style="text-align:left; padding:4px 6px;">Player</th>
+                <th style="text-align:right; padding:4px 6px;">Best score</th>
+                <th style="text-align:right; padding:4px 6px;">Best time (s)</th>
+              </tr>
+            </thead>
+            <tbody id="metrics-leaderboard-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      // Use the same Worker base URL you use in frog-leaderboard.js
+      const WORKER_BASE = "https://lucky-king-0d37.danielssouthworth.workers.dev";
+
+      const metricsStatusEl = document.getElementById("metrics-overview-status");
+      const metricsContainerEl = document.getElementById("metrics-overview");
+      const uniqueEl = document.getElementById("metrics-unique");
+      const totalEl = document.getElementById("metrics-total");
+      const avgEl = document.getElementById("metrics-avg");
+
+      const lbStatusEl = document.getElementById("metrics-leaderboard-status");
+      const lbContainerEl = document.getElementById("metrics-leaderboard");
+      const lbBodyEl = document.getElementById("metrics-leaderboard-body");
+
+      // ---- Fetch metrics ----
+      fetch(WORKER_BASE + "/metrics")
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data) {
+            metricsStatusEl.textContent = "Unable to load metrics.";
+            return;
+          }
+
+          const totalRuns = Number(data.totalRuns || 0);
+          const uniquePlayers = Number(data.uniquePlayers || 0);
+          const avgRuns = uniquePlayers > 0 ? (totalRuns / uniquePlayers) : 0;
+
+          uniqueEl.textContent = uniquePlayers.toLocaleString();
+          totalEl.textContent = totalRuns.toLocaleString();
+          avgEl.textContent = avgRuns.toFixed(2);
+
+          metricsStatusEl.style.display = "none";
+          metricsContainerEl.style.display = "block";
+        })
+        .catch(() => {
+          metricsStatusEl.textContent = "Unable to load metrics.";
+        });
+
+      // ---- Fetch leaderboard snapshot ----
+      fetch(WORKER_BASE + "/leaderboard")
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data || !Array.isArray(data.entries)) {
+            lbStatusEl.textContent = "Unable to load leaderboard.";
+            return;
+          }
+
+          const entries = data.entries.slice(0, 10); // top 10
+
+          lbBodyEl.innerHTML = "";
+
+          entries.forEach((entry, index) => {
+            const tr = document.createElement("tr");
+
+            const rankTd = document.createElement("td");
+            rankTd.style.padding = "4px 6px";
+            rankTd.textContent = index + 1;
+
+            const nameTd = document.createElement("td");
+            nameTd.style.padding = "4px 6px";
+            nameTd.textContent = (entry.tag && entry.tag.trim()) || "Anonymous Frog";
+
+            const scoreTd = document.createElement("td");
+            scoreTd.style.padding = "4px 6px";
+            scoreTd.style.textAlign = "right";
+            scoreTd.textContent = Number(entry.bestScore || 0).toLocaleString();
+
+            const timeTd = document.createElement("td");
+            timeTd.style.padding = "4px 6px";
+            timeTd.style.textAlign = "right";
+            const bestTime = Number(entry.bestTime || 0);
+            timeTd.textContent = isFinite(bestTime) ? bestTime.toFixed(1) : "0.0";
+
+            tr.appendChild(rankTd);
+            tr.appendChild(nameTd);
+            tr.appendChild(scoreTd);
+            tr.appendChild(timeTd);
+            lbBodyEl.appendChild(tr);
+          });
+
+          lbStatusEl.style.display = "none";
+          lbContainerEl.style.display = "block";
+        })
+        .catch(() => {
+          lbStatusEl.textContent = "Unable to load leaderboard.";
+        });
+    })();
+  </script>
+</body>
+</html>
