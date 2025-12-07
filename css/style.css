@@ -824,3 +824,372 @@ a {
   pointer-events: none;
   border-radius: 100%;
 }
+/* =========================================================
+   ESCAPE THE SNAKE – GAME UI THEME
+   Shared styles for in-game overlays, upgrade menus, HUD, etc.
+   ========================================================= */
+
+:root {
+  --frog-bg: #020617;
+  --frog-panel: #020617;
+  --frog-panel-soft: #030712;
+  --frog-panel-border: rgba(148, 163, 184, 0.7);
+  --frog-panel-shadow: 0 22px 40px rgba(15, 23, 42, 0.9);
+
+  --frog-accent-green: #4ade80;
+  --frog-accent-cyan: #22d3ee;
+  --frog-accent-pink: #f472b6;
+
+  --frog-text-main: #e5e7eb;
+  --frog-text-muted: #9ca3af;
+
+  --frog-rarity-common: #9ca3af;
+  --frog-rarity-rare: #22d3ee;
+  --frog-rarity-epic: #a855f7;
+}
+
+/* Game page base */
+
+body.snake-game {
+  font-family: monospace;
+  background: radial-gradient(circle at top, #0f172a 0, var(--frog-bg) 55%);
+  color: var(--frog-text-main);
+}
+
+/* Make sure the game container uses the same font/colors */
+body.snake-game #frog-game {
+  position: relative;
+  font-family: inherit;
+  color: inherit;
+}
+
+/* -----------------------------
+   Generic overlay backdrop
+   (How to play, upgrades, buff guide, summary, etc.)
+   ----------------------------- */
+
+.frog-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  display: none;           /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  z-index: 160;
+}
+
+.frog-overlay-backdrop.is-visible {
+  display: flex;
+}
+
+/* Main panel used inside any overlay */
+
+.frog-overlay-panel {
+  background: var(--frog-panel);
+  border-radius: 14px;
+  border: 1px solid var(--frog-panel-border);
+  box-shadow: var(--frog-panel-shadow);
+  padding: 18px 22px 16px;
+  width: min(90vw, 560px);
+  max-height: min(90vh, 640px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Scrollable content area inside a panel (so header/footer stay put) */
+
+.frog-overlay-scroll {
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Titles, subtitles, notes */
+
+.frog-overlay-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+  text-shadow: 2px 2px darkslateblue;
+}
+
+.frog-overlay-subtitle {
+  margin: 0 0 4px;
+  font-size: 0.86rem;
+  color: var(--frog-text-muted);
+}
+
+.frog-overlay-note {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--frog-text-muted);
+}
+
+/* Shared button row inside overlays */
+
+.frog-overlay-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 8px;
+}
+
+.frog-overlay-buttons .btn {
+  font-size: 0.8rem;
+}
+
+/* -----------------------------
+   How To Play specific layout
+   ----------------------------- */
+
+.frog-howto-panel {
+  width: min(90vw, 520px);
+}
+
+.frog-howto-list {
+  margin: 8px 0 4px;
+  padding-left: 18px;
+  font-size: 0.82rem;
+}
+
+.frog-howto-list li {
+  margin-bottom: 3px;
+}
+
+.frog-howto-footer {
+  margin-top: 6px;
+  font-size: 0.76rem;
+  color: var(--frog-text-muted);
+}
+
+.frog-howto-footer a {
+  color: var(--frog-accent-green);
+  text-decoration: none;
+}
+
+/* -----------------------------
+   Upgrade selection menu
+   ----------------------------- */
+
+.frog-upgrade-overlay .frog-overlay-panel {
+  width: min(92vw, 640px);
+}
+
+.frog-upgrade-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.frog-upgrade-round {
+  font-size: 0.78rem;
+  color: var(--frog-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.frog-upgrade-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Individual upgrade card */
+
+.frog-upgrade-card {
+  background: var(--frog-panel-soft);
+  border-radius: 10px;
+  border: 1px solid var(--frog-panel-border);
+  padding: 8px 9px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease-out,
+    box-shadow 120ms ease-out,
+    transform 100ms ease-out,
+    background 120ms ease-out;
+}
+
+.frog-upgrade-card:hover {
+  border-color: var(--frog-accent-green);
+  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.55);
+  transform: translateY(-1px);
+  background: #020617;
+}
+
+.frog-upgrade-card.is-selected {
+  border-color: var(--frog-accent-cyan);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.6);
+}
+
+/* Name + rarity tag row */
+
+.frog-upgrade-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.frog-upgrade-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Rarity chips */
+
+.frog-upgrade-rarity {
+  font-size: 0.7rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.frog-upgrade-rarity.common {
+  color: var(--frog-rarity-common);
+  border-color: var(--frog-rarity-common);
+}
+
+.frog-upgrade-rarity.rare {
+  color: var(--frog-rarity-rare);
+  border-color: var(--frog-rarity-rare);
+}
+
+.frog-upgrade-rarity.epic {
+  color: var(--frog-rarity-epic);
+  border-color: var(--frog-rarity-epic);
+}
+
+/* Description + tiny note */
+
+.frog-upgrade-desc {
+  font-size: 0.8rem;
+}
+
+.frog-upgrade-note {
+  font-size: 0.7rem;
+  color: var(--frog-text-muted);
+}
+
+/* -----------------------------
+   Current buffs panel (top right)
+   ----------------------------- */
+
+.frog-current-buffs {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 260px;
+  max-height: calc(100vh - 20px);
+  z-index: 120;
+}
+
+.frog-current-buffs-panel {
+  background: rgba(15, 23, 42, 0.94);
+  border-radius: 10px;
+  border: 1px solid var(--frog-panel-border);
+  box-shadow: var(--frog-panel-shadow);
+  padding: 8px 9px 8px;
+  font-size: 0.75rem;
+}
+
+.frog-current-buffs-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--frog-text-muted);
+  margin: 0 0 3px;
+}
+
+.frog-current-buffs-list {
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.frog-current-buffs-list div {
+  margin-bottom: 2px;
+}
+
+.frog-current-buff-value {
+  color: var(--frog-accent-cyan);
+}
+
+/* -----------------------------
+   Endgame summary overlay
+   (shares base overlay styles)
+   ----------------------------- */
+
+.frog-summary-panel {
+  width: min(92vw, 640px);
+}
+
+.frog-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  margin-top: 6px;
+  font-size: 0.82rem;
+}
+
+.frog-summary-stat-label {
+  font-size: 0.75rem;
+  color: var(--frog-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.frog-summary-stat-value {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+/* Player tag input in summary */
+
+.frog-summary-tag {
+  margin-top: 8px;
+  font-size: 0.78rem;
+}
+
+.frog-summary-tag input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--frog-panel-border);
+  background: #020617;
+  color: var(--frog-text-main);
+  font-family: inherit;
+  font-size: 0.8rem;
+}
+
+.frog-summary-tag-error {
+  margin-top: 2px;
+  font-size: 0.7rem;
+  color: #f97373;
+}
+
+/* Small helper for any label tags inside cards, buff panel, etc. */
+
+.frog-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  border: 1px solid var(--frog-panel-border);
+  color: var(--frog-text-muted);
+}
