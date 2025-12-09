@@ -2475,6 +2475,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let howToOverlay = null;
   let hasShownHowToOverlay = false;
 
+  // Main menu overlay (new)
+  let mainMenuOverlay = null;
+
   // Buff guide (READ ME) overlay
   let buffGuideOverlay = null;
   let buffGuideContentEl = null;
@@ -3137,6 +3140,165 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     gamePaused = true;
     if (howToOverlay) {
       howToOverlay.style.display = "flex";
+    }
+  }
+
+  // --------------------------------------------------
+  // MAIN MENU OVERLAY (Example 1D style)
+  // --------------------------------------------------
+  function ensureMainMenuOverlay() {
+    if (mainMenuOverlay) return;
+
+    mainMenuOverlay = document.createElement("div");
+    mainMenuOverlay.className = "frog-main-menu-overlay";
+
+    // Full-screen overlay
+    mainMenuOverlay.style.position = "absolute";
+    mainMenuOverlay.style.inset = "0";
+    mainMenuOverlay.style.display = "flex";
+    mainMenuOverlay.style.alignItems = "center";
+    mainMenuOverlay.style.justifyContent = "center";
+    mainMenuOverlay.style.pointerEvents = "auto";
+    mainMenuOverlay.style.zIndex = "250";
+
+    // Light, subtle glow so you still see the game background
+    mainMenuOverlay.style.background =
+      "radial-gradient(circle at top, rgba(255,255,255,0.18) 0, transparent 55%)";
+
+    // Inner panel
+    const panel = document.createElement("div");
+    panel.style.background = "rgba(0,0,0,0.82)";
+    panel.style.border = "1px solid #4defff";
+    panel.style.borderRadius = "16px";
+    panel.style.padding = "22px 26px 20px 26px";
+    panel.style.boxShadow = "0 0 28px rgba(0,0,0,0.8)";
+    panel.style.maxWidth = "420px";
+    panel.style.width = "90%";
+    panel.style.textAlign = "center";
+    panel.style.color = "#fff";
+    panel.style.fontFamily = "monospace";
+
+    // Title
+    const title = document.createElement("div");
+    title.textContent = "ESCAPE THE SNAKE";
+    title.style.fontSize = "26px";
+    title.style.letterSpacing = "0.18em";
+    title.style.textTransform = "uppercase";
+    title.style.marginBottom = "10px";
+    title.style.textShadow = "0 0 12px rgba(0,0,0,0.9)";
+    panel.appendChild(title);
+
+    // Tiny subtitle
+    const subtitle = document.createElement("div");
+    subtitle.textContent = "Keep your frogs alive. Don’t feed the snake.";
+    subtitle.style.fontSize = "12px";
+    subtitle.style.opacity = "0.85";
+    subtitle.style.marginBottom = "16px";
+    panel.appendChild(subtitle);
+
+    // Buttons container
+    const btnWrap = document.createElement("div");
+    btnWrap.style.display = "flex";
+    btnWrap.style.flexDirection = "column";
+    btnWrap.style.gap = "8px";
+    btnWrap.style.marginBottom = "14px";
+    panel.appendChild(btnWrap);
+
+    function makeMenuButton(label, onClick) {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      btn.style.width = "100%";
+      btn.style.padding = "10px 12px";
+      btn.style.borderRadius = "999px";
+      btn.style.border = "1px solid #4defff";
+      btn.style.background = "rgba(0,0,0,0.9)";
+      btn.style.color = "#fff";
+      btn.style.fontFamily = "monospace";
+      btn.style.fontSize = "13px";
+      btn.style.cursor = "pointer";
+      btn.style.letterSpacing = "0.08em";
+      btn.style.textTransform = "uppercase";
+      btn.style.boxShadow = "0 0 12px rgba(0,0,0,0.7)";
+      btn.style.transition = "background 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease";
+
+      btn.onmouseenter = () => {
+        btn.style.background = "#1b2b3f";
+        btn.style.boxShadow = "0 0 14px rgba(77,239,255,0.6)";
+        btn.style.transform = "translateY(-1px)";
+      };
+      btn.onmouseleave = () => {
+        btn.style.background = "rgba(0,0,0,0.9)";
+        btn.style.boxShadow = "0 0 12px rgba(0,0,0,0.7)";
+        btn.style.transform = "translateY(0)";
+      };
+
+      btn.onclick = () => {
+        playButtonClick();
+        onClick();
+      };
+
+      return btn;
+    }
+
+    // ▶ Start run
+    const startBtn = makeMenuButton("▶ Start run", () => {
+      hideMainMenu();
+      // Old startup flow: show how-to, then first upgrade choice
+      openHowToOverlay();
+      openUpgradeOverlay("normal");
+    });
+    btnWrap.appendChild(startBtn);
+
+    // ❓ How to play (just opens the how-to panel, menu stays visible)
+    const howToBtn = makeMenuButton("❓ How to play", () => {
+      openHowToOverlay();
+    });
+    btnWrap.appendChild(howToBtn);
+
+    // ℹ Learn more / updates (opens updates page in new tab)
+    const infoBtn = makeMenuButton("ℹ Learn more", () => {
+      try {
+        window.open("updates.html", "_blank");
+      } catch (e) {
+        console.error("Failed to open updates page", e);
+      }
+    });
+    btnWrap.appendChild(infoBtn);
+
+    // Footer
+    const footer = document.createElement("div");
+    footer.style.fontSize = "11px";
+    footer.style.opacity = "0.8";
+    footer.style.marginTop = "4px";
+
+    const span1 = document.createElement("span");
+    span1.textContent = "Best played in browser at ";
+    footer.appendChild(span1);
+
+    const link = document.createElement("a");
+    link.href = "https://freshfrogs.github.io/snake";
+    link.textContent = "freshfrogs.github.io/snake";
+    link.style.color = "#7dffb0";
+    link.style.textDecoration = "none";
+    link.style.borderBottom = "1px dotted #7dffb0";
+    link.target = "_blank";
+    footer.appendChild(link);
+
+    panel.appendChild(footer);
+    mainMenuOverlay.appendChild(panel);
+
+    // Attach to main game container
+    container.appendChild(mainMenuOverlay);
+  }
+
+  function showMainMenu() {
+    ensureMainMenuOverlay();
+    mainMenuOverlay.style.display = "flex";
+  }
+
+  function hideMainMenu() {
+    if (mainMenuOverlay) {
+      mainMenuOverlay.style.display = "none";
     }
   }
 
@@ -4554,12 +4716,8 @@ function ensureUpgradeOverlay() {
     updateStatsPanel();
     updateHUD();
 
-    // Show the how-to-play menu before the first upgrade
-    openHowToOverlay();
-
-    // Always offer a common upgrade at the very start of the game
-    // (same behavior as restartGame)
-    openUpgradeOverlay("normal");
+    // 🔹 New: show the main menu instead of auto-opening how-to + upgrade
+    showMainMenu();
 
     animId = requestAnimationFrame(drawFrame);
   }
