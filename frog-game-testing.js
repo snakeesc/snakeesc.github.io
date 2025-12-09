@@ -2475,13 +2475,19 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let howToOverlay = null;
   let hasShownHowToOverlay = false;
 
+  // Main menu overlay (Example 1D)
+  let mainMenuOverlay = null;
+
   // Buff guide (READ ME) overlay
   let buffGuideOverlay = null;
-  let buffGuideContentEl = null;
-  let buffGuidePageLabel = null;
+  let buffGuidePageIndex = 0;
+  let buffGuideTabEls = [];
+  let buffGuidePageIndicatorEl = null;
+  let buffGuideLeftListEl = null;
+  let buffGuideRightListEl = null;
+  let buffGuideDescEl = null;
   let buffGuidePrevBtn = null;
   let buffGuideNextBtn = null;
-  let buffGuidePage = 0;
 
   function getEpicUpgradeChoices() {
     const neon = "#4defff";
@@ -3132,12 +3138,122 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   }
 
 
-  function openHowToOverlay() {
-    ensureHowToOverlay();
-    gamePaused = true;
-    if (howToOverlay) {
-      howToOverlay.style.display = "flex";
+  // --------------------------------------------------
+  // MAIN MENU OVERLAY (Example 1D style)
+  // --------------------------------------------------
+  function ensureMainMenuOverlay() {
+    if (mainMenuOverlay) return;
+
+    mainMenuOverlay = document.createElement("div");
+    mainMenuOverlay.className = "frog-main-menu-overlay";
+
+    const card = document.createElement("div");
+    card.className = "frog-main-menu-card";
+    mainMenuOverlay.appendChild(card);
+
+    const top = document.createElement("div");
+    top.className = "frog-main-menu-card-top";
+    card.appendChild(top);
+
+    const heading = document.createElement("div");
+    heading.className = "frog-main-menu-heading";
+    top.appendChild(heading);
+
+    const title = document.createElement("div");
+    title.className = "frog-main-menu-title";
+    title.textContent = "Escape the Snake";
+    heading.appendChild(title);
+
+    const subtitle = document.createElement("div");
+    subtitle.className = "frog-main-menu-subtitle";
+    subtitle.textContent = "fresh frogs survival";
+    heading.appendChild(subtitle);
+
+    const badge = document.createElement("div");
+    badge.className = "frog-main-menu-badge";
+    badge.textContent = "new run";
+    top.appendChild(badge);
+
+    const desc = document.createElement("div");
+    desc.className = "frog-main-menu-description";
+    desc.textContent =
+      "Move your cursor to guide your frogs. Avoid the snake, collect orbs, and stack buffs. " +
+      "The longer you survive, the more dangerous (and fun) it gets.";
+    card.appendChild(desc);
+
+    const btnWrap = document.createElement("div");
+    btnWrap.className = "frog-main-menu-buttons";
+    card.appendChild(btnWrap);
+
+    function makeButton(label, hint, isPrimary, handler) {
+      const btn = document.createElement("button");
+      btn.className =
+        "frog-main-menu-btn" + (isPrimary ? " frog-main-menu-btn-primary" : "");
+
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "frog-main-menu-btn-label";
+      labelSpan.textContent = label;
+
+      const hintSpan = document.createElement("span");
+      hintSpan.className = "frog-main-menu-btn-hint";
+      hintSpan.textContent = hint;
+
+      btn.appendChild(labelSpan);
+      btn.appendChild(hintSpan);
+
+      btn.addEventListener("click", () => {
+        playButtonClick();
+        handler();
+      });
+
+      return btn;
     }
+
+    const startBtn = makeButton("Start game", "enter", true, () => {
+      hideMainMenu();
+      openUpgradeOverlay("normal");
+    });
+    btnWrap.appendChild(startBtn);
+
+    const howBtn = makeButton("How to play", "h", false, () => {
+      openBuffGuideOverlay();
+    });
+    btnWrap.appendChild(howBtn);
+
+    const learnBtn = makeButton("Learn more", "l", false, () => {
+      window.open("updates.html", "_blank");
+    });
+    btnWrap.appendChild(learnBtn);
+
+    const mini = document.createElement("div");
+    mini.className = "frog-main-menu-mini-stats";
+    mini.innerHTML = `
+    <span>Last score: 0</span>
+    <span>Best: 0</span>
+    <span>Runs played: 0</span>
+  `;
+    card.appendChild(mini);
+
+    const footer = document.createElement("div");
+    footer.className = "frog-main-menu-footer";
+    footer.innerHTML =
+      'best played at <a href="https://freshfrogs.github.io/snake" target="_blank">freshfrogs.github.io/snake</a>';
+    card.appendChild(footer);
+
+    container.appendChild(mainMenuOverlay);
+  }
+
+  function showMainMenu() {
+    ensureMainMenuOverlay();
+    gamePaused = true;
+    mainMenuOverlay.style.display = "flex";
+  }
+
+  function hideMainMenu() {
+    if (mainMenuOverlay) {
+      mainMenuOverlay.style.display = "none";
+    }
+    gamePaused = false;
   }
 
   function ensureInfoOverlay() {
@@ -3442,358 +3558,380 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     gamePaused = false;
   }
 
+  const BUFF_GUIDE_PAGES = [
+    {
+      label: "Buffs",
+      description:
+        "Every orb and frog icon does something specific. Use this panel to quickly check what your build is doing before you grab the next buff.",
+      leftTitle: "Core buffs",
+      rightTitle: "Frog roles & synergy",
+      leftItems: [
+        {
+          icon: "⚡",
+          title: "Speed boost",
+          body:
+            "Frogs move faster. Stacks with other speed buffs. Great early, risky if you can't control it later.",
+          tags: ["mobility", "stacking"]
+        },
+        {
+          icon: "🧲",
+          title: "Orb magnet",
+          body:
+            "Pulls nearby orbs into your frogs. Helps keep you safer when the snake covers more of the map.",
+          tags: ["economy", "orb builds"]
+        },
+        {
+          icon: "🛡",
+          title: "Shield",
+          body:
+            "Lets one frog survive a single hit. Good while learning or playing high-speed builds.",
+          tags: ["defense", "forgiving"]
+        }
+      ],
+      rightItems: [
+        {
+          icon: "🍖",
+          title: "Cannibal",
+          body: "Gains extra benefits when frogs die. Works best in risky builds with expected casualties.",
+          tags: []
+        },
+        {
+          icon: "💀",
+          title: "Deathrattle",
+          body: "Triggers a bonus effect when this frog dies. Pairs well with shields and revive effects.",
+          tags: []
+        },
+        {
+          icon: "⭐",
+          title: "Legendary buffs",
+          body: "Very rare, game-changing perks. Don't stack as often, but they can reshape your entire run.",
+          tags: []
+        }
+      ]
+    },
+    {
+      label: "Frog roles",
+      description: "Permanent roles change how a single frog behaves and how the whole swarm scales.",
+      leftTitle: "Permanent roles",
+      rightTitle: "Risky roles",
+      leftItems: [
+        {
+          icon: "🏅",
+          title: "Champion",
+          body: "Faster hop cycles and higher jumps. Great carrier for speed builds.",
+          tags: ["tempo"]
+        },
+        {
+          icon: "🌈",
+          title: "Aura",
+          body: "Nearby frogs gain speed and jump height. Strong when stacked.",
+          tags: ["support", "stacking"]
+        },
+        {
+          icon: "🧲",
+          title: "Magnet",
+          body: "Orbs in a radius are pulled toward this frog. Safe orb collection in late game.",
+          tags: ["economy"]
+        },
+        {
+          icon: "🍀",
+          title: "Lucky",
+          body: "Buffs last longer and score is boosted slightly. Synergizes with spawn buffs.",
+          tags: ["economy", "longevity"]
+        }
+      ],
+      rightItems: [
+        {
+          icon: "🍖",
+          title: "Cannibal",
+          body: "Eats nearby frogs to grant global deathrattle bonuses while alive.",
+          tags: ["risky"]
+        },
+        {
+          icon: "💀",
+          title: "Deathrattle",
+          body: "Triggers extra effects when this frog dies. Great with shields or revive loops.",
+          tags: ["burst"]
+        },
+        {
+          icon: "⭐",
+          title: "Legendary",
+          body: "Rare, game-changing perks that redefine the run. Choose with care.",
+          tags: ["unique"]
+        }
+      ]
+    },
+    {
+      label: "Tips",
+      description: "Quick survival reminders before you lock in your next buff.",
+      leftTitle: "Play tips",
+      rightTitle: "Score & safety",
+      leftItems: [
+        {
+          icon: "🖱️",
+          title: "Lead the swarm",
+          body: "Slow, smooth cursor paths keep frogs grouped so fewer get sniped by the snake.",
+          tags: []
+        },
+        {
+          icon: "🎯",
+          title: "Pick safe orbs",
+          body: "When the snake crowds the center, drag frogs to edges and let magnets pull orbs in.",
+          tags: ["positioning"]
+        },
+        {
+          icon: "🛡️",
+          title: "Hold a shield",
+          body: "Keep at least one shield-ready frog when speeds climb; it buys time for the next buff.",
+          tags: ["defense"]
+        }
+      ],
+      rightItems: [
+        {
+          icon: "💰",
+          title: "Score windows",
+          body: "Pair Score ×2 with magnets and spawns to juice your best runs.",
+          tags: ["economy"]
+        },
+        {
+          icon: "🧭",
+          title: "Pathing",
+          body: "After a shed, steer wide until the snake slows; then go collect again.",
+          tags: ["routing"]
+        },
+        {
+          icon: "📈",
+          title: "Upgrade cadence",
+          body: "Normal upgrades every ~60s, epic chains every ~3m. Plan roles around that timing.",
+          tags: []
+        }
+      ]
+    }
+  ];
+
   function ensureBuffGuideOverlay() {
     if (buffGuideOverlay) return;
 
     buffGuideOverlay = document.createElement("div");
     buffGuideOverlay.className = "frog-buff-guide-overlay";
-    buffGuideOverlay.style.position = "absolute";
-    buffGuideOverlay.style.inset = "0";
-    buffGuideOverlay.style.background = "rgba(0,0,0,0.75)";
-    buffGuideOverlay.style.display = "none";
-    buffGuideOverlay.style.zIndex = "170";
-    buffGuideOverlay.style.alignItems = "center";
-    buffGuideOverlay.style.justifyContent = "center";
-    buffGuideOverlay.style.pointerEvents = "auto";
 
-    const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px 12px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "260px";
-    panel.style.maxWidth = "440px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    const card = document.createElement("div");
+    card.className = "frog-buff-guide-card";
+    buffGuideOverlay.appendChild(card);
 
-    const headerRow = document.createElement("div");
-    headerRow.style.display = "flex";
-    headerRow.style.justifyContent = "space-between";
-    headerRow.style.alignItems = "center";
-    headerRow.style.marginBottom = "6px";
+    // Header
+    const header = document.createElement("div");
+    header.className = "frog-buff-guide-header";
 
-    const title = document.createElement("div");
-    title.textContent = "Buffs & upgrades";
-    title.style.fontSize = "14px";
-    title.style.fontWeight = "bold";
+    const headingWrap = document.createElement("div");
+    const headingMain = document.createElement("div");
+    headingMain.className = "frog-buff-guide-heading-main";
+    headingMain.textContent = "Buffs & roles";
 
-    const pageLabel = document.createElement("div");
-    pageLabel.style.fontSize = "11px";
-    pageLabel.style.opacity = "0.8";
-    buffGuidePageLabel = pageLabel;
+    const headingSub = document.createElement("div");
+    headingSub.className = "frog-buff-guide-heading-sub";
+    headingSub.textContent = "Learn what all the icons mean";
 
-    headerRow.appendChild(title);
-    headerRow.appendChild(pageLabel);
+    headingWrap.appendChild(headingMain);
+    headingWrap.appendChild(headingSub);
 
-    const content = document.createElement("div");
-    content.style.fontSize = "13px";
-    content.style.marginTop = "4px";
-    content.style.lineHeight = "1.4";
-    buffGuideContentEl = content;
+    const badge = document.createElement("div");
+    badge.className = "frog-buff-guide-badge";
+    badge.textContent = "read me";
 
-    const navRow = document.createElement("div");
-    navRow.style.display = "flex";
-    navRow.style.justifyContent = "space-between";
-    navRow.style.alignItems = "center";
-    navRow.style.marginTop = "10px";
+    header.appendChild(headingWrap);
+    header.appendChild(badge);
+    card.appendChild(header);
 
-    const leftBtns = document.createElement("div");
-    leftBtns.style.display = "flex";
-    leftBtns.style.gap = "6px";
+    // Intro / description
+    buffGuideDescEl = document.createElement("div");
+    buffGuideDescEl.className = "frog-buff-guide-description";
+    card.appendChild(buffGuideDescEl);
 
-    const prevBtn = document.createElement("button");
-    prevBtn.textContent = "◀ Prev";
-    prevBtn.style.fontFamily = "monospace";
-    prevBtn.style.fontSize = "12px";
-    prevBtn.style.padding = "4px 8px";
-    prevBtn.style.borderRadius = "6px";
-    prevBtn.style.border = "1px solid #555";
-    prevBtn.style.background = "#222";
-    prevBtn.style.color = "#fff";
-    prevBtn.style.cursor = "pointer";
-    prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
-    prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
-    prevBtn.onclick = () => {
-      playButtonClick();
-      setBuffGuidePage(buffGuidePage - 1);
-    };
-    buffGuidePrevBtn = prevBtn;
+    // Tabs
+    const tabs = document.createElement("div");
+    tabs.className = "frog-buff-guide-tabs";
+    buffGuideTabEls = BUFF_GUIDE_PAGES.map((page, idx) => {
+      const t = document.createElement("div");
+      t.className = "frog-buff-guide-tab";
+      t.textContent = page.label;
+      t.addEventListener("click", () => {
+        playButtonClick();
+        setBuffGuidePage(idx);
+      });
+      tabs.appendChild(t);
+      return t;
+    });
+    card.appendChild(tabs);
 
-    const nextBtn = document.createElement("button");
-    nextBtn.textContent = "Next ▶";
-    nextBtn.style.fontFamily = "monospace";
-    nextBtn.style.fontSize = "12px";
-    nextBtn.style.padding = "4px 8px";
-    nextBtn.style.borderRadius = "6px";
-    nextBtn.style.border = "1px solid #555";
-    nextBtn.style.background = "#222";
-    nextBtn.style.color = "#fff";
-    nextBtn.style.cursor = "pointer";
-    nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
-    nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
-    nextBtn.onclick = () => {
-      playButtonClick();
-      setBuffGuidePage(buffGuidePage + 1);
-    };
-    buffGuideNextBtn = nextBtn;
+    // Layout columns
+    const layout = document.createElement("div");
+    layout.className = "frog-buff-guide-layout";
+    card.appendChild(layout);
 
-    leftBtns.appendChild(prevBtn);
-    leftBtns.appendChild(nextBtn);
+    const colLeft  = document.createElement("div");
+    const colRight = document.createElement("div");
+    colLeft.className  = "frog-buff-guide-column";
+    colRight.className = "frog-buff-guide-column";
 
-    const backBtn = document.createElement("button");
-    backBtn.textContent = "Close ×";
-    backBtn.style.fontFamily = "monospace";
-    backBtn.style.fontSize = "12px";
-    backBtn.style.padding = "4px 8px";
-    backBtn.style.borderRadius = "6px";
-    backBtn.style.border = "1px solid #555";
-    backBtn.style.background = "#222";
-    backBtn.style.color = "#fff";
-    backBtn.style.cursor = "pointer";
-    backBtn.onmouseenter = () => { backBtn.style.background = "#333"; };
-    backBtn.onmouseleave = () => { backBtn.style.background = "#222"; };
-    backBtn.onclick = () => {
-      playButtonClick();
-      closeBuffGuideOverlay();
-    };
+    layout.appendChild(colLeft);
+    layout.appendChild(colRight);
 
-    navRow.appendChild(leftBtns);
-    navRow.appendChild(backBtn);
+    const leftTitleEl = document.createElement("h3");
+    const rightTitleEl = document.createElement("h3");
+    colLeft.appendChild(leftTitleEl);
+    colRight.appendChild(rightTitleEl);
 
-    panel.appendChild(headerRow);
-    panel.appendChild(content);
-    panel.appendChild(navRow);
+    buffGuideLeftListEl = document.createElement("ul");
+    buffGuideLeftListEl.className = "frog-buff-guide-list";
+    colLeft.appendChild(buffGuideLeftListEl);
 
-    buffGuideOverlay.appendChild(panel);
-    container.appendChild(buffGuideOverlay);
+    buffGuideRightListEl = document.createElement("ul");
+    buffGuideRightListEl.className = "frog-buff-guide-list";
+    colRight.appendChild(buffGuideRightListEl);
 
-    // clicking the dim background also closes it
-    buffGuideOverlay.addEventListener("click", (e) => {
-      if (e.target === buffGuideOverlay) {
-        closeBuffGuideOverlay();
+    function addBuffItem(parentUl, icon, title, body, tags) {
+      const li = document.createElement("li");
+      li.className = "frog-buff-guide-item";
+
+      const iconEl = document.createElement("div");
+      iconEl.className = "frog-buff-guide-icon";
+      iconEl.textContent = icon;
+
+      const textWrap = document.createElement("div");
+
+      const tTitle = document.createElement("div");
+      tTitle.className = "frog-buff-guide-text-title";
+      tTitle.textContent = title;
+
+      const tBody = document.createElement("div");
+      tBody.className = "frog-buff-guide-text-body";
+      tBody.textContent = body;
+
+      textWrap.appendChild(tTitle);
+      textWrap.appendChild(tBody);
+
+      if (tags && tags.length) {
+        const pillRow = document.createElement("div");
+        pillRow.className = "frog-buff-guide-pill-row";
+        tags.forEach(tag => {
+          const pill = document.createElement("span");
+          pill.className = "frog-buff-guide-pill";
+          pill.textContent = tag;
+          pillRow.appendChild(pill);
+        });
+        textWrap.appendChild(pillRow);
       }
+
+      li.appendChild(iconEl);
+      li.appendChild(textWrap);
+      parentUl.appendChild(li);
+    }
+
+    // Footer row
+    const footerRow = document.createElement("div");
+    footerRow.className = "frog-buff-guide-footer-row";
+
+    buffGuidePageIndicatorEl = document.createElement("div");
+    buffGuidePageIndicatorEl.className = "frog-buff-guide-page-indicator";
+
+    const footerHint = document.createElement("div");
+    footerHint.textContent = "Scroll inside each panel to see the full list.";
+
+    footerRow.appendChild(buffGuidePageIndicatorEl);
+    footerRow.appendChild(footerHint);
+    card.appendChild(footerRow);
+
+    // Buttons
+    const btnRow = document.createElement("div");
+    btnRow.className = "frog-btn-row";
+
+    buffGuidePrevBtn = document.createElement("button");
+    buffGuidePrevBtn.className = "frog-btn";
+    buffGuidePrevBtn.textContent = "< Prev";
+
+    buffGuideNextBtn = document.createElement("button");
+    buffGuideNextBtn.className = "frog-btn";
+    buffGuideNextBtn.textContent = "Next >";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "frog-btn frog-btn-primary";
+    closeBtn.textContent = "Close";
+
+    buffGuidePrevBtn.addEventListener("click", () => {
+      playButtonClick();
+      setBuffGuidePage(buffGuidePageIndex - 1);
     });
 
-    // start on page 0
-    setBuffGuidePage(0);
-  }
+    buffGuideNextBtn.addEventListener("click", () => {
+      playButtonClick();
+      setBuffGuidePage(buffGuidePageIndex + 1);
+    });
 
-  function setBuffGuidePage(pageIndex) {
-    if (!buffGuideContentEl || !buffGuidePageLabel) return;
+    closeBtn.addEventListener("click", () => {
+      playButtonClick();
+      closeBuffGuideOverlay();
+    });
 
-    const neon = "#4defff";
+    btnRow.appendChild(buffGuidePrevBtn);
+    btnRow.appendChild(buffGuideNextBtn);
+    btnRow.appendChild(closeBtn);
+    card.appendChild(btnRow);
 
-    // simple format helpers
-    const sec  = (n) => `${Math.round(n)}s`;
-    const mins = (n) => `${Math.round(n / 60)}m`;
-    const mult = (n) => `${n.toFixed(1)}×`;
-    const pct  = (n) => `${Math.round(n * 100)}%`;
-    const faster = (factor) => `${Math.round((1 - factor) * 100)}%`;
+    // Attach
+    container.appendChild(buffGuideOverlay);
 
-    // radius from your config
-    const auraRadiusPx = AURA_RADIUS;
+    function setBuffGuidePage(idx) {
+      const pageCount = BUFF_GUIDE_PAGES.length;
+      buffGuidePageIndex = Math.max(0, Math.min(idx, pageCount - 1));
+      const page = BUFF_GUIDE_PAGES[buffGuidePageIndex];
 
-    // Per-pick upgrade %s
-    const speedPerPickPct     = pct(1 - FROG_SPEED_UPGRADE_FACTOR);
-    const jumpPerPickPct      = pct(FROG_JUMP_UPGRADE_FACTOR - 1);
-    const buffPerPickPct      = pct(BUFF_DURATION_UPGRADE_FACTOR - 1);
-    const orbFasterPerPickPct = pct(1 - ORB_INTERVAL_UPGRADE_FACTOR);
+      // Update tabs
+      buffGuideTabEls.forEach((tab, tabIdx) => {
+        tab.className =
+          "frog-buff-guide-tab" + (tabIdx === buffGuidePageIndex ? " frog-buff-guide-tab-active" : "");
+      });
 
-    const commonDeathPct      = pct(COMMON_DEATHRATTLE_CHANCE);
-    const epicDeathPct        = pct(EPIC_DEATHRATTLE_CHANCE);
-    const legendaryDeathPct   = pct(LEGENDARY_DEATHRATTLE_CHANCE);
-    const deathCapPct         = pct(MAX_DEATHRATTLE_CHANCE);
+      // Description
+      buffGuideDescEl.textContent = page.description;
 
-    const orbCollectorStepPct = pct(ORB_COLLECTOR_CHANCE);
-    const orbCollectorCapPct  = pct(MAX_ORB_COLLECTOR_TOTAL);
+      // Titles
+      leftTitleEl.textContent = page.leftTitle;
+      rightTitleEl.textContent = page.rightTitle;
 
-    const lastStandMinPct     = pct(LAST_STAND_MIN_CHANCE);
+      // Lists
+      buffGuideLeftListEl.innerHTML = "";
+      buffGuideRightListEl.innerHTML = "";
+      page.leftItems.forEach(item => {
+        addBuffItem(buffGuideLeftListEl, item.icon, item.title, item.body, item.tags);
+      });
+      page.rightItems.forEach(item => {
+        addBuffItem(buffGuideRightListEl, item.icon, item.title, item.body, item.tags);
+      });
 
-    const snakeEggPct         = pct(SNAKE_EGG_BUFF_PCT - 1);
-    const shedSpeedPct        = pct(SNAKE_SHED_SPEEDUP - 1);
+      buffGuidePageIndicatorEl.textContent = `Page ${buffGuidePageIndex + 1} / ${pageCount}`;
 
-    const luckyDurBoostPct    = pct(LUCKY_BUFF_DURATION_BOOST - 1);
-    const luckyScoreBonusPct  = pct(LUCKY_SCORE_BONUS_PER);
-
-    const pages = [
-      // ------------------------------------------------------------------
-      // Page 0 – Orb buffs: movement & control
-      // ------------------------------------------------------------------
-      `
-  <b>🟢 Orb buffs – movement & control</b><br><br>
-  ⚡ <b>Speed</b> – frogs act faster for
-    <span style="color:${neon};">${sec(SPEED_BUFF_DURATION)}</span>.<br>
-  🦘 <b>Jump</b> – jumps about
-    <span style="color:${neon};">${mult(JUMP_BUFF_FACTOR)}</span> higher for
-    <span style="color:${neon};">${sec(JUMP_BUFF_DURATION)}</span>.<br>
-  🧊 <b>Snake slow</b> – snake moves at roughly
-    <span style="color:${neon};">${pct(SNAKE_SLOW_FACTOR)}</span> of normal speed for
-    <span style="color:${neon};">${sec(SNAKE_SLOW_DURATION)}</span>.<br>
-  🤪 <b>Confuse</b> – snake steering is scrambled for
-    <span style="color:${neon};">${sec(SNAKE_CONFUSE_DURATION)}</span>.<br>
-  📏 <b>Shrink</b> – snake body and bite radius shrink for
-    <span style="color:${neon};">${sec(SNAKE_SHRINK_DURATION)}</span>.<br>
-  🛡️ <b>Team shield</b> – frogs ignore snake hits for
-    <span style="color:${neon};">${sec(FROG_SHIELD_DURATION)}</span>.<br>
-  ⏱️ <b>Time slow</b> – the whole game runs at about
-    <span style="color:${neon};">${pct(TIME_SLOW_FACTOR)}</span> speed for
-    <span style="color:${neon};">${sec(TIME_SLOW_DURATION)}</span>.<br>
-  😱 <b>Panic hop</b> – frogs hop faster in random directions for
-    <span style="color:${neon};">${sec(PANIC_HOP_DURATION)}</span>.<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 1 – Orb buffs: score & survival
-      // ------------------------------------------------------------------
-      `
-  <b>🟢 Orb buffs – score & survival</b><br><br>
-  <span style="color:${neon};">Each frog the snake eats is worth +1 point</span>.
-  Score multipliers stack on top of this base rate.<br><br>
-
-  🐸➕ <b>Spawn</b> – instantly spawns
-    <span style="color:${neon};">${NORMAL_SPAWN_AMOUNT}</span> frogs
-    (Lucky collectors can add a few extra).<br>
-  🐸🌊 <b>Mega spawn</b> – a larger wave of frogs (roughly 15–25) + Lucky bonus.<br>
-  🧲 <b>Orb magnet</b> – orbs drift toward frogs for
-    <span style="color:${neon};">${sec(ORB_MAGNET_DURATION)}</span> (prefers Magnet frogs).<br>
-  ⏳ <b>Longer orb life</b> – certain upgrades make orbs stay on screen longer
-    before fading, giving you more time to reach them.<br>
-  💰 <b>Score ×${SCORE_MULTI_FACTOR.toFixed(1)}</b> – score gain is multiplied by
-    <span style="color:${neon};">${mult(SCORE_MULTI_FACTOR)}</span> for
-    <span style="color:${neon};">${sec(SCORE_MULTI_DURATION)}</span>.<br>
-  🩺 <b>Lifesteal</b> – for
-    <span style="color:${neon};">${sec(LIFE_STEAL_DURATION)}</span>, dead frogs get
-    an extra respawn roll tied to your deathrattle chance.<br>
-  ⭐ <b>PermaFrog</b> – permanently upgrades that frog with a random role
-    (Champion / Aura / Magnet / Lucky / Zombie).<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 2 – Permanent frog roles
-      // ------------------------------------------------------------------
-      `
-  <b>🐸 Permanent frog roles</b><br><br>
-  🏅 <b>Champion</b> – that frog's hop cycle is about
-    <span style="color:${neon};">${faster(CHAMPION_SPEED_FACTOR)}</span> faster and jumps are
-    <span style="color:${neon};">${mult(CHAMPION_JUMP_FACTOR)}</span> higher.<br>
-  🌈 <b>Aura</b> – buffs nearby frogs in a radius of roughly
-    <span style="color:${neon};">${auraRadiusPx}px</span>, giving them extra speed and
-    about <span style="color:${neon};">${mult(AURA_JUMP_FACTOR)}</span> jump height.<br>
-  🧲 <b>Magnet</b> – orbs within range are strongly pulled toward this frog.<br>
-  🍀 <b>Lucky</b> – buffs on this frog last about
-    <span style="color:${neon};">${luckyDurBoostPct}</span> longer, and each Lucky frog adds
-    roughly <span style="color:${neon};">${luckyScoreBonusPct}</span> to your score rate.<br>
-  🧟 <b>Zombie</b> – on death, spawns extra frogs and usually slows the snake briefly.<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 3 – Global upgrades (common / epic / legendary)
-      // ------------------------------------------------------------------
-      `
-  <b>🏗️ Global upgrades</b><br><br>
-  ⏩ <b>Frogs hop faster forever</b> – each pick makes the hop cycle about
-    <span style="color:${neon};">${speedPerPickPct}</span> faster (stacks, capped).<br>
-  🦘⬆️ <b>Frogs jump higher forever</b> – each pick adds roughly
-    <span style="color:${neon};">${jumpPerPickPct}</span> jump height (stacks, capped).<br>
-  ⏳ <b>Buffs last longer</b> – each pick multiplies buff duration by
-    <span style="color:${neon};">${mult(BUFF_DURATION_UPGRADE_FACTOR)}</span>
-    (~${buffPerPickPct} longer, stacks).<br>
-  🎯 <b>More orbs over time</b> – each pick shrinks the orb interval to about
-    <span style="color:${neon};">${mult(ORB_INTERVAL_UPGRADE_FACTOR)}</span>
-    (~${orbFasterPerPickPct} more orbs, stacks).<br>
-  🐸💥 <b>Spawn frogs (common / epic / legendary)</b><br>
-  • Common: +<span style="color:${neon};">${NORMAL_SPAWN_AMOUNT}</span> frogs now.<br>
-  • Epic: +<span style="color:${neon};">${EPIC_SPAWN_AMOUNT}</span> frogs now.<br>
-  • Legendary: +<span style="color:${neon};">${LEGENDARY_SPAWN_AMOUNT}</span> frogs now.<br><br>
-  💀 <b>Deathrattle</b><br>
-  • Common pick: +<span style="color:${neon};">${commonDeathPct}</span> base respawn chance.<br>
-  • Epic pick: +<span style="color:${neon};">${epicDeathPct}</span> base respawn chance.<br>
-  • Legendary pick: +<span style="color:${neon};">${legendaryDeathPct}</span> base respawn chance.<br>
-  • All deathrattle sources are capped at about
-    <span style="color:${neon};">${deathCapPct}</span> total.<br><br>
-  🌌 <b>Orb Collector</b> – each pick adds
-    <span style="color:${neon};">${orbCollectorStepPct}</span> flat chance for a collected orb
-    to also spawn a frog (up to about
-    <span style="color:${neon};">${orbCollectorCapPct}</span> total chance).<br>
-  🏹 <b>Last Stand</b> – your final remaining frog has at least
-    <span style="color:${neon};">${lastStandMinPct}</span> chance to respawn instead of dying,
-    using your current deathrattle setup.<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 4 – Epic choices & snake rules (updated multi-snake behavior)
-      // ------------------------------------------------------------------
-      `
-  <b>🐍 Epics & snake rules</b><br><br>
-  🐸⭐ <b>Frog Promotion (epic)</b> – summons
-    <span style="color:${neon};">7</span> frogs, each getting a random permanent role.<br>
-  🌩️ <b>Orb Storm (epic)</b> – drops
-    <span style="color:${neon};">${ORB_STORM_COUNT}</span> random orbs at once; strong with
-    Magnet / Orb Collector builds.<br>
-  🥚 <b>Snake Egg (epic)</b> – the <i>next shed</i> only gives the new snake about
-    <span style="color:${neon};">${snakeEggPct}</span> speed instead of the usual
-    <span style="color:${neon};">${shedSpeedPct}</span> boost.<br>
-  👻 <b>Grave Wave (epic)</b> – every snake shed raises
-    <span style="color:${neon};">${GRAVE_WAVE_MIN_GHOSTS}–${GRAVE_WAVE_MAX_GHOSTS}</span>
-    ghost frogs that join the swarm.<br>
-  🧪 <b>Orb Specialist (epic)</b> – every collected orb guarantees at least one frog spawn;
-    Orb Collector rolls can add more.<br><br>
-
-  🔥 <b>Snake sheds & multiple snakes</b><br>
-  • Every roughly <span style="color:${neon};">${mins(SHED_INTERVAL)}</span>, the <i>active</i> snake reaches a shed breakpoint.<br>
-  • Each individual snake can shed up to <span style="color:${neon};">3</span> times, getting faster and more dangerous with each shed.<br>
-  • When a snake hits what would be its 4th shed, it <b>stops growing</b> and a <b>new snake spawns</b> instead.<br>
-  • Older snakes stay in the arena but no longer gain buffs — only the <b>newest snake</b> keeps shedding and growing.<br><br>
-
-  ⏱ <b>Upgrade timing</b><br>
-  • ~60s: common upgrade choices.<br>
-  • ~180s: common + epic chain.<br>
-  • ~${mins(SHED_INTERVAL)}: first shed phase & big difficulty spike.<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 5 – New limited-use upgrades
-      // ------------------------------------------------------------------
-      `
-  <b>🧪 New limited-use upgrades</b><br><br>
-  🫧 <b>Orb Whisperer (common)</b> – orbs linger about
-    <span style="color:${neon};">20%</span> longer before disappearing.<br>
-  🔄 <b>Ouroboros Pact (common)</b> – roughly
-    <span style="color:${neon};">10%</span> of dead frogs drop an orb on death.<br>
-  🪙 <b>Coin Flip (common)</b> – sacrifices 5 frogs, then triggers a random orb buff
-    with an extended duration.<br><br>
-
-  🪞 <b>Fragile Reality (epic)</b> – doubles buff duration and cap while orbs spawn
-    about <span style="color:${neon};">50%</span> slower (hard cap applied).<br>
-  🐸💨 <b>Frog Scatter (epic)</b> – instantly slays and respawns all current frogs;
-    deathrattle applies but roles are re-rolled.<br>
-  ⚖️ <b>Eye for an Eye (epic)</b> – after 15:00, kills the slowest snake, then removes half
-    your frogs and lowers the max frog cap to
-    <span style="color:${neon};">50</span> for the run.<br>
-  `
-    ];
-
-    const maxPage = pages.length - 1;
-    buffGuidePage = Math.max(0, Math.min(maxPage, pageIndex));
-
-    buffGuideContentEl.innerHTML = pages[buffGuidePage];
-    buffGuidePageLabel.textContent = `Page ${buffGuidePage + 1} / ${pages.length}`;
-
-    if (buffGuidePrevBtn) {
-      buffGuidePrevBtn.disabled = buffGuidePage === 0;
-      buffGuidePrevBtn.style.opacity = buffGuidePage === 0 ? "0.5" : "1";
+      if (buffGuidePrevBtn) {
+        buffGuidePrevBtn.disabled = buffGuidePageIndex === 0;
+      }
+      if (buffGuideNextBtn) {
+        buffGuideNextBtn.disabled = buffGuidePageIndex === pageCount - 1;
+      }
     }
-    if (buffGuideNextBtn) {
-      buffGuideNextBtn.disabled = buffGuidePage === maxPage;
-      buffGuideNextBtn.style.opacity = buffGuideNextBtn.disabled ? "0.5" : "1";
-    }
+
+    // Initial render
+    setBuffGuidePage(buffGuidePageIndex);
+    buffGuideOverlay.setPage = setBuffGuidePage;
   }
 
 
   function openBuffGuideOverlay() {
     ensureBuffGuideOverlay();
+    if (buffGuideOverlay && typeof buffGuideOverlay.setPage === "function") {
+      buffGuidePageIndex = 0;
+      buffGuideOverlay.setPage(0);
+    }
+    gamePaused = true;
     if (buffGuideOverlay) {
       buffGuideOverlay.style.display = "flex";
     }
@@ -3802,6 +3940,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   function closeBuffGuideOverlay() {
     if (buffGuideOverlay) {
       buffGuideOverlay.style.display = "none";
+    }
+    const menuVisible = mainMenuOverlay && mainMenuOverlay.style.display !== "none";
+    const upgradeVisible = upgradeOverlay && upgradeOverlay.style.display !== "none";
+    if (!menuVisible && !upgradeVisible) {
+      gamePaused = false;
     }
   }
 
@@ -4554,12 +4697,8 @@ function ensureUpgradeOverlay() {
     updateStatsPanel();
     updateHUD();
 
-    // Show the how-to-play menu before the first upgrade
-    openHowToOverlay();
-
-    // Always offer a common upgrade at the very start of the game
-    // (same behavior as restartGame)
-    openUpgradeOverlay("normal");
+    // 🔹 New: show the main menu instead of auto-opening how-to + upgrade
+    showMainMenu();
 
     animId = requestAnimationFrame(drawFrame);
   }
