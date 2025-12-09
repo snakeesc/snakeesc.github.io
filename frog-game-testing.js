@@ -2475,7 +2475,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let howToOverlay = null;
   let hasShownHowToOverlay = false;
 
-  // Main menu overlay (new)
+  // Main menu overlay (Example 1D)
   let mainMenuOverlay = null;
 
   // Buff guide (READ ME) overlay
@@ -3135,14 +3135,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   }
 
 
-  function openHowToOverlay() {
-    ensureHowToOverlay();
-    gamePaused = true;
-    if (howToOverlay) {
-      howToOverlay.style.display = "flex";
-    }
-  }
-
   // --------------------------------------------------
   // MAIN MENU OVERLAY (Example 1D style)
   // --------------------------------------------------
@@ -3152,147 +3144,126 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     mainMenuOverlay = document.createElement("div");
     mainMenuOverlay.className = "frog-main-menu-overlay";
 
-    // Full-screen overlay
-    mainMenuOverlay.style.position = "absolute";
-    mainMenuOverlay.style.inset = "0";
-    mainMenuOverlay.style.display = "flex";
-    mainMenuOverlay.style.alignItems = "center";
-    mainMenuOverlay.style.justifyContent = "center";
-    mainMenuOverlay.style.pointerEvents = "auto";
-    mainMenuOverlay.style.zIndex = "250";
+    const card = document.createElement("div");
+    card.className = "frog-main-menu-card";
+    mainMenuOverlay.appendChild(card);
 
-    // Light, subtle glow so you still see the game background
-    mainMenuOverlay.style.background =
-      "radial-gradient(circle at top, rgba(255,255,255,0.18) 0, transparent 55%)";
+    // Top row: title + badge
+    const top = document.createElement("div");
+    top.className = "frog-main-menu-card-top";
+    card.appendChild(top);
 
-    // Inner panel
-    const panel = document.createElement("div");
-    panel.style.background = "rgba(0,0,0,0.82)";
-    panel.style.border = "1px solid #4defff";
-    panel.style.borderRadius = "16px";
-    panel.style.padding = "22px 26px 20px 26px";
-    panel.style.boxShadow = "0 0 28px rgba(0,0,0,0.8)";
-    panel.style.maxWidth = "420px";
-    panel.style.width = "90%";
-    panel.style.textAlign = "center";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
+    const heading = document.createElement("div");
+    heading.className = "frog-main-menu-heading";
+    top.appendChild(heading);
 
-    // Title
     const title = document.createElement("div");
-    title.textContent = "ESCAPE THE SNAKE";
-    title.style.fontSize = "26px";
-    title.style.letterSpacing = "0.18em";
-    title.style.textTransform = "uppercase";
-    title.style.marginBottom = "10px";
-    title.style.textShadow = "0 0 12px rgba(0,0,0,0.9)";
-    panel.appendChild(title);
+    title.className = "frog-main-menu-title";
+    title.textContent = "Escape the Snake";
+    heading.appendChild(title);
 
-    // Tiny subtitle
     const subtitle = document.createElement("div");
-    subtitle.textContent = "Keep your frogs alive. Don’t feed the snake.";
-    subtitle.style.fontSize = "12px";
-    subtitle.style.opacity = "0.85";
-    subtitle.style.marginBottom = "16px";
-    panel.appendChild(subtitle);
+    subtitle.className = "frog-main-menu-subtitle";
+    subtitle.textContent = "Fresh Frogs survival";
+    heading.appendChild(subtitle);
 
-    // Buttons container
+    const badge = document.createElement("div");
+    badge.className = "frog-main-menu-badge";
+    badge.textContent = "New run";
+    top.appendChild(badge);
+
+    // Description
+    const desc = document.createElement("div");
+    desc.className = "frog-main-menu-description";
+    desc.textContent =
+      "Move your cursor to guide your frogs. Avoid the snake, collect orbs, and stack buffs. The longer you survive, the more dangerous (and fun) it gets.";
+    card.appendChild(desc);
+
+    // Buttons
     const btnWrap = document.createElement("div");
-    btnWrap.style.display = "flex";
-    btnWrap.style.flexDirection = "column";
-    btnWrap.style.gap = "8px";
-    btnWrap.style.marginBottom = "14px";
-    panel.appendChild(btnWrap);
+    btnWrap.className = "frog-main-menu-buttons";
+    card.appendChild(btnWrap);
 
-    function makeMenuButton(label, onClick) {
+    function makeButton(label, hint, isPrimary, handler) {
       const btn = document.createElement("button");
-      btn.textContent = label;
-      btn.style.width = "100%";
-      btn.style.padding = "10px 12px";
-      btn.style.borderRadius = "999px";
-      btn.style.border = "1px solid #4defff";
-      btn.style.background = "rgba(0,0,0,0.9)";
-      btn.style.color = "#fff";
-      btn.style.fontFamily = "monospace";
-      btn.style.fontSize = "13px";
-      btn.style.cursor = "pointer";
-      btn.style.letterSpacing = "0.08em";
-      btn.style.textTransform = "uppercase";
-      btn.style.boxShadow = "0 0 12px rgba(0,0,0,0.7)";
-      btn.style.transition = "background 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease";
+      btn.className =
+        "frog-main-menu-btn" + (isPrimary ? " frog-main-menu-btn-primary" : "");
 
-      btn.onmouseenter = () => {
-        btn.style.background = "#1b2b3f";
-        btn.style.boxShadow = "0 0 14px rgba(77,239,255,0.6)";
-        btn.style.transform = "translateY(-1px)";
-      };
-      btn.onmouseleave = () => {
-        btn.style.background = "rgba(0,0,0,0.9)";
-        btn.style.boxShadow = "0 0 12px rgba(0,0,0,0.7)";
-        btn.style.transform = "translateY(0)";
-      };
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "frog-main-menu-btn-label";
+      labelSpan.textContent = label;
 
-      btn.onclick = () => {
+      const hintSpan = document.createElement("span");
+      hintSpan.className = "frog-main-menu-btn-hint";
+      hintSpan.textContent = hint;
+
+      btn.appendChild(labelSpan);
+      btn.appendChild(hintSpan);
+
+      btn.addEventListener("click", () => {
         playButtonClick();
-        onClick();
-      };
+        handler();
+      });
 
       return btn;
     }
 
-    // ▶ Start run
-    const startBtn = makeMenuButton("▶ Start run", () => {
+    // ▶ Start game
+    const startBtn = makeButton("Start game", "Enter", true, () => {
       hideMainMenu();
-      // Old startup flow: show how-to, then first upgrade choice
+      // Show the existing How To overlay.
+      // When the player presses "Let's play" in that overlay,
+      // it already calls openUpgradeOverlay("normal").
       openHowToOverlay();
-      openUpgradeOverlay("normal");
     });
     btnWrap.appendChild(startBtn);
 
-    // ❓ How to play (just opens the how-to panel, menu stays visible)
-    const howToBtn = makeMenuButton("❓ How to play", () => {
+    // ❓ How to play
+    const howBtn = makeButton("How to play", "H", false, () => {
       openHowToOverlay();
     });
-    btnWrap.appendChild(howToBtn);
+    btnWrap.appendChild(howBtn);
 
-    // ℹ Learn more / updates (opens updates page in new tab)
-    const infoBtn = makeMenuButton("ℹ Learn more", () => {
+    // ℹ Learn more (updates page)
+    const learnBtn = makeButton("Learn more", "L", false, () => {
       try {
         window.open("updates.html", "_blank");
-      } catch (e) {
-        console.error("Failed to open updates page", e);
+      } catch (err) {
+        console.error("Failed to open updates page", err);
       }
     });
-    btnWrap.appendChild(infoBtn);
+    btnWrap.appendChild(learnBtn);
+
+    // Mini stats row (static for now, we can wire real data later)
+    const miniStats = document.createElement("div");
+    miniStats.className = "frog-main-menu-mini-stats";
+
+    const lastSpan = document.createElement("span");
+    lastSpan.textContent = "Last score: 0";
+    const bestSpan = document.createElement("span");
+    bestSpan.textContent = "Best: 0";
+    const runsSpan = document.createElement("span");
+    runsSpan.textContent = "Runs played: 0";
+
+    miniStats.appendChild(lastSpan);
+    miniStats.appendChild(bestSpan);
+    miniStats.appendChild(runsSpan);
+    card.appendChild(miniStats);
 
     // Footer
     const footer = document.createElement("div");
-    footer.style.fontSize = "11px";
-    footer.style.opacity = "0.8";
-    footer.style.marginTop = "4px";
+    footer.className = "frog-main-menu-footer";
+    footer.innerHTML =
+      'best played at <a href="https://freshfrogs.github.io/snake" target="_blank">freshfrogs.github.io/snake</a>';
+    card.appendChild(footer);
 
-    const span1 = document.createElement("span");
-    span1.textContent = "Best played in browser at ";
-    footer.appendChild(span1);
-
-    const link = document.createElement("a");
-    link.href = "https://freshfrogs.github.io/snake";
-    link.textContent = "freshfrogs.github.io/snake";
-    link.style.color = "#7dffb0";
-    link.style.textDecoration = "none";
-    link.style.borderBottom = "1px dotted #7dffb0";
-    link.target = "_blank";
-    footer.appendChild(link);
-
-    panel.appendChild(footer);
-    mainMenuOverlay.appendChild(panel);
-
-    // Attach to main game container
+    // Attach to the main game container so frogs/snake are behind it
     container.appendChild(mainMenuOverlay);
   }
 
   function showMainMenu() {
     ensureMainMenuOverlay();
+    gamePaused = true;
     mainMenuOverlay.style.display = "flex";
   }
 
