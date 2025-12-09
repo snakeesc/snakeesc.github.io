@@ -973,3 +973,193 @@ a {
     align-items: flex-start;
   }
 }
+
+/* Buff guide overlay (uses same base card/btn style as other panels) */
+.frog-buff-guide-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0,0,0,0.55);
+  z-index: 170;
+  pointer-events: auto;
+  font-family: monospace;
+}
+
+.frog-buff-guide-card {
+  background: rgba(0,0,0,0.76);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 0 26px rgba(0,0,0,0.9);
+  padding: 20px 24px 16px;
+  color: #fff;
+  max-width: 720px;
+  width: 100%;
+}
+
+.frog-buff-guide-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.frog-buff-guide-heading-main {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-shadow: 2px 2px darkslateblue;
+}
+
+.frog-buff-guide-heading-sub {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.frog-buff-guide-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.4);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.frog-buff-guide-description {
+  font-size: 13px;
+  opacity: 0.92;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.frog-buff-guide-tabs {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+
+.frog-buff-guide-tab {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.22);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
+  cursor: pointer;
+  background: rgba(255,255,255,0.04);
+}
+
+.frog-buff-guide-tab-active {
+  border-color: #22c55e;
+  background: rgba(34,197,94,0.18);
+  opacity: 1;
+}
+
+.frog-buff-guide-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 14px;
+  margin-bottom: 10px;
+  max-height: 260px;
+}
+
+.frog-buff-guide-column {
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: radial-gradient(circle at top, #07101b 0, #02060a 100%);
+  padding: 10px 10px 9px;
+  font-size: 12px;
+  overflow-y: auto;
+}
+
+.frog-buff-guide-column h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.85;
+  margin-bottom: 6px;
+}
+
+.frog-buff-guide-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.frog-buff-guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.frog-buff-guide-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.24);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  margin-top: 1px;
+  background: rgba(255,255,255,0.04);
+}
+
+.frog-buff-guide-text-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+
+.frog-buff-guide-text-body {
+  font-size: 11px;
+  opacity: 0.92;
+  line-height: 1.35;
+}
+
+.frog-buff-guide-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.frog-buff-guide-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 1px 5px;
+  font-size: 10px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.frog-buff-guide-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.frog-buff-guide-page-indicator {
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .frog-buff-guide-card { max-width: 100%; }
+  .frog-buff-guide-layout {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+}
