@@ -825,10 +825,7 @@ a {
   border-radius: 100%;
 }
 
-/* =========================
-   Escape the Snake main menu (Example 1D)
-   ========================= */
-
+/* Escape the Snake main menu (Example 1D) */
 .frog-main-menu-overlay {
   position: absolute;
   inset: 0;
@@ -836,20 +833,18 @@ a {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  z-index: 140; /* below how-to/info overlays (160+), above game canvas */
+  z-index: 140;
   pointer-events: auto;
 }
 
 .frog-main-menu-card {
-  background: rgba(0, 0, 0, 0.86);
+  background: rgba(0,0,0,0.76);
   border-radius: 14px;
-  border: 2px solid #ffffff;
-  box-shadow:
-    0 0 0 3px rgba(0,0,0,0.75),
-    0 18px 32px rgba(0,0,0,0.9);
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 0 26px rgba(0,0,0,0.9);
+  padding: 22px 26px 18px;
   max-width: 480px;
   width: 100%;
-  padding: 22px 26px 18px;
   color: #fff;
   font-family: monospace;
 }
@@ -862,9 +857,7 @@ a {
   margin-bottom: 14px;
 }
 
-.frog-main-menu-heading {
-  flex: 1;
-}
+.frog-main-menu-heading { flex: 1; }
 
 .frog-main-menu-title {
   font-size: 25px;
@@ -920,20 +913,13 @@ a {
   text-transform: uppercase;
   cursor: pointer;
   text-shadow: 0 0 4px rgba(0,0,0,0.6);
-  text-align: left;
+  transition: background 0.16s, transform 0.1s, box-shadow 0.16s, color 0.16s;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition:
-    background 0.16s,
-    transform 0.1s,
-    box-shadow 0.16s,
-    color 0.16s;
 }
 
-.frog-main-menu-btn-label {
-  flex: 1;
-}
+.frog-main-menu-btn-label { flex: 1; }
 
 .frog-main-menu-btn-hint {
   font-size: 10px;
@@ -954,9 +940,7 @@ a {
   transform: translateY(-1px);
 }
 
-.frog-main-menu-btn-primary:hover {
-  background: #4ade80;
-}
+.frog-main-menu-btn-primary:hover { background: #4ade80; }
 
 .frog-main-menu-mini-stats {
   display: flex;
@@ -967,9 +951,7 @@ a {
   opacity: 0.9;
 }
 
-.frog-main-menu-mini-stats span {
-  white-space: nowrap;
-}
+.frog-main-menu-mini-stats span { white-space: nowrap; }
 
 .frog-main-menu-footer {
   font-size: 11px;
@@ -982,14 +964,10 @@ a {
   text-decoration: none;
 }
 
-.frog-main-menu-footer a:hover {
-  text-decoration: underline;
-}
+.frog-main-menu-footer a:hover { text-decoration: underline; }
 
 @media (max-width: 520px) {
-  .frog-main-menu-card {
-    padding: 18px 18px 16px;
-  }
+  .frog-main-menu-card { padding: 18px 18px 16px; }
   .frog-main-menu-card-top {
     flex-direction: column;
     align-items: flex-start;

@@ -3148,7 +3148,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     card.className = "frog-main-menu-card";
     mainMenuOverlay.appendChild(card);
 
-    // Top row: title + badge
     const top = document.createElement("div");
     top.className = "frog-main-menu-card-top";
     card.appendChild(top);
@@ -3164,22 +3163,21 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     const subtitle = document.createElement("div");
     subtitle.className = "frog-main-menu-subtitle";
-    subtitle.textContent = "Fresh Frogs survival";
+    subtitle.textContent = "fresh frogs survival";
     heading.appendChild(subtitle);
 
     const badge = document.createElement("div");
     badge.className = "frog-main-menu-badge";
-    badge.textContent = "New run";
+    badge.textContent = "new run";
     top.appendChild(badge);
 
-    // Description
     const desc = document.createElement("div");
     desc.className = "frog-main-menu-description";
     desc.textContent =
-      "Move your cursor to guide your frogs. Avoid the snake, collect orbs, and stack buffs. The longer you survive, the more dangerous (and fun) it gets.";
+      "Move your cursor to guide your frogs. Avoid the snake, collect orbs, and stack buffs. " +
+      "The longer you survive, the more dangerous (and fun) it gets.";
     card.appendChild(desc);
 
-    // Buttons
     const btnWrap = document.createElement("div");
     btnWrap.className = "frog-main-menu-buttons";
     card.appendChild(btnWrap);
@@ -3208,56 +3206,37 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       return btn;
     }
 
-    // ▶ Start game
-    const startBtn = makeButton("Start game", "Enter", true, () => {
+    const startBtn = makeButton("Start game", "enter", true, () => {
       hideMainMenu();
-      // Show the existing How To overlay.
-      // When the player presses "Let's play" in that overlay,
-      // it already calls openUpgradeOverlay("normal").
       openHowToOverlay();
     });
     btnWrap.appendChild(startBtn);
 
-    // ❓ How to play
-    const howBtn = makeButton("How to play", "H", false, () => {
+    const howBtn = makeButton("How to play", "h", false, () => {
       openHowToOverlay();
     });
     btnWrap.appendChild(howBtn);
 
-    // ℹ Learn more (updates page)
-    const learnBtn = makeButton("Learn more", "L", false, () => {
-      try {
-        window.open("updates.html", "_blank");
-      } catch (err) {
-        console.error("Failed to open updates page", err);
-      }
+    const learnBtn = makeButton("Learn more", "l", false, () => {
+      window.open("updates.html", "_blank");
     });
     btnWrap.appendChild(learnBtn);
 
-    // Mini stats row (static for now, we can wire real data later)
-    const miniStats = document.createElement("div");
-    miniStats.className = "frog-main-menu-mini-stats";
+    const mini = document.createElement("div");
+    mini.className = "frog-main-menu-mini-stats";
+    mini.innerHTML = `
+    <span>Last score: 0</span>
+    <span>Best: 0</span>
+    <span>Runs played: 0</span>
+  `;
+    card.appendChild(mini);
 
-    const lastSpan = document.createElement("span");
-    lastSpan.textContent = "Last score: 0";
-    const bestSpan = document.createElement("span");
-    bestSpan.textContent = "Best: 0";
-    const runsSpan = document.createElement("span");
-    runsSpan.textContent = "Runs played: 0";
-
-    miniStats.appendChild(lastSpan);
-    miniStats.appendChild(bestSpan);
-    miniStats.appendChild(runsSpan);
-    card.appendChild(miniStats);
-
-    // Footer
     const footer = document.createElement("div");
     footer.className = "frog-main-menu-footer";
     footer.innerHTML =
       'best played at <a href="https://freshfrogs.github.io/snake" target="_blank">freshfrogs.github.io/snake</a>';
     card.appendChild(footer);
 
-    // Attach to the main game container so frogs/snake are behind it
     container.appendChild(mainMenuOverlay);
   }
 
