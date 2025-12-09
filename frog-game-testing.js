@@ -2480,6 +2480,14 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   // Buff guide (READ ME) overlay
   let buffGuideOverlay = null;
+  let buffGuidePageIndex = 0;
+  let buffGuideTabEls = [];
+  let buffGuidePageIndicatorEl = null;
+  let buffGuideLeftListEl = null;
+  let buffGuideRightListEl = null;
+  let buffGuideDescEl = null;
+  let buffGuidePrevBtn = null;
+  let buffGuideNextBtn = null;
 
   function getEpicUpgradeChoices() {
     const neon = "#4defff";
@@ -3203,12 +3211,12 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     const startBtn = makeButton("Start game", "enter", true, () => {
       hideMainMenu();
-      openHowToOverlay();
+      openUpgradeOverlay("normal");
     });
     btnWrap.appendChild(startBtn);
 
     const howBtn = makeButton("How to play", "h", false, () => {
-      openHowToOverlay();
+      openBuffGuideOverlay();
     });
     btnWrap.appendChild(howBtn);
 
@@ -3245,6 +3253,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (mainMenuOverlay) {
       mainMenuOverlay.style.display = "none";
     }
+    gamePaused = false;
   }
 
   function ensureInfoOverlay() {
@@ -3549,6 +3558,157 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     gamePaused = false;
   }
 
+  const BUFF_GUIDE_PAGES = [
+    {
+      label: "Buffs",
+      description:
+        "Every orb and frog icon does something specific. Use this panel to quickly check what your build is doing before you grab the next buff.",
+      leftTitle: "Core buffs",
+      rightTitle: "Frog roles & synergy",
+      leftItems: [
+        {
+          icon: "⚡",
+          title: "Speed boost",
+          body:
+            "Frogs move faster. Stacks with other speed buffs. Great early, risky if you can't control it later.",
+          tags: ["mobility", "stacking"]
+        },
+        {
+          icon: "🧲",
+          title: "Orb magnet",
+          body:
+            "Pulls nearby orbs into your frogs. Helps keep you safer when the snake covers more of the map.",
+          tags: ["economy", "orb builds"]
+        },
+        {
+          icon: "🛡",
+          title: "Shield",
+          body:
+            "Lets one frog survive a single hit. Good while learning or playing high-speed builds.",
+          tags: ["defense", "forgiving"]
+        }
+      ],
+      rightItems: [
+        {
+          icon: "🍖",
+          title: "Cannibal",
+          body: "Gains extra benefits when frogs die. Works best in risky builds with expected casualties.",
+          tags: []
+        },
+        {
+          icon: "💀",
+          title: "Deathrattle",
+          body: "Triggers a bonus effect when this frog dies. Pairs well with shields and revive effects.",
+          tags: []
+        },
+        {
+          icon: "⭐",
+          title: "Legendary buffs",
+          body: "Very rare, game-changing perks. Don't stack as often, but they can reshape your entire run.",
+          tags: []
+        }
+      ]
+    },
+    {
+      label: "Frog roles",
+      description: "Permanent roles change how a single frog behaves and how the whole swarm scales.",
+      leftTitle: "Permanent roles",
+      rightTitle: "Risky roles",
+      leftItems: [
+        {
+          icon: "🏅",
+          title: "Champion",
+          body: "Faster hop cycles and higher jumps. Great carrier for speed builds.",
+          tags: ["tempo"]
+        },
+        {
+          icon: "🌈",
+          title: "Aura",
+          body: "Nearby frogs gain speed and jump height. Strong when stacked.",
+          tags: ["support", "stacking"]
+        },
+        {
+          icon: "🧲",
+          title: "Magnet",
+          body: "Orbs in a radius are pulled toward this frog. Safe orb collection in late game.",
+          tags: ["economy"]
+        },
+        {
+          icon: "🍀",
+          title: "Lucky",
+          body: "Buffs last longer and score is boosted slightly. Synergizes with spawn buffs.",
+          tags: ["economy", "longevity"]
+        }
+      ],
+      rightItems: [
+        {
+          icon: "🍖",
+          title: "Cannibal",
+          body: "Eats nearby frogs to grant global deathrattle bonuses while alive.",
+          tags: ["risky"]
+        },
+        {
+          icon: "💀",
+          title: "Deathrattle",
+          body: "Triggers extra effects when this frog dies. Great with shields or revive loops.",
+          tags: ["burst"]
+        },
+        {
+          icon: "⭐",
+          title: "Legendary",
+          body: "Rare, game-changing perks that redefine the run. Choose with care.",
+          tags: ["unique"]
+        }
+      ]
+    },
+    {
+      label: "Tips",
+      description: "Quick survival reminders before you lock in your next buff.",
+      leftTitle: "Play tips",
+      rightTitle: "Score & safety",
+      leftItems: [
+        {
+          icon: "🖱️",
+          title: "Lead the swarm",
+          body: "Slow, smooth cursor paths keep frogs grouped so fewer get sniped by the snake.",
+          tags: []
+        },
+        {
+          icon: "🎯",
+          title: "Pick safe orbs",
+          body: "When the snake crowds the center, drag frogs to edges and let magnets pull orbs in.",
+          tags: ["positioning"]
+        },
+        {
+          icon: "🛡️",
+          title: "Hold a shield",
+          body: "Keep at least one shield-ready frog when speeds climb; it buys time for the next buff.",
+          tags: ["defense"]
+        }
+      ],
+      rightItems: [
+        {
+          icon: "💰",
+          title: "Score windows",
+          body: "Pair Score ×2 with magnets and spawns to juice your best runs.",
+          tags: ["economy"]
+        },
+        {
+          icon: "🧭",
+          title: "Pathing",
+          body: "After a shed, steer wide until the snake slows; then go collect again.",
+          tags: ["routing"]
+        },
+        {
+          icon: "📈",
+          title: "Upgrade cadence",
+          body: "Normal upgrades every ~60s, epic chains every ~3m. Plan roles around that timing.",
+          tags: []
+        }
+      ]
+    }
+  ];
+
   function ensureBuffGuideOverlay() {
     if (buffGuideOverlay) return;
 
@@ -3584,29 +3744,24 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     card.appendChild(header);
 
     // Intro / description
-    const desc = document.createElement("div");
-    desc.className = "frog-buff-guide-description";
-    desc.textContent = "Every orb and frog icon does something specific. Use this panel to quickly check what your build is doing before you grab the next buff.";
-    card.appendChild(desc);
+    buffGuideDescEl = document.createElement("div");
+    buffGuideDescEl.className = "frog-buff-guide-description";
+    card.appendChild(buffGuideDescEl);
 
     // Tabs
     const tabs = document.createElement("div");
     tabs.className = "frog-buff-guide-tabs";
-
-    function makeTab(label, active) {
+    buffGuideTabEls = BUFF_GUIDE_PAGES.map((page, idx) => {
       const t = document.createElement("div");
-      t.className = "frog-buff-guide-tab" + (active ? " frog-buff-guide-tab-active" : "");
-      t.textContent = label;
+      t.className = "frog-buff-guide-tab";
+      t.textContent = page.label;
+      t.addEventListener("click", () => {
+        playButtonClick();
+        setBuffGuidePage(idx);
+      });
+      tabs.appendChild(t);
       return t;
-    }
-
-    const tabBuffs = makeTab("Buffs", true);
-    const tabRoles = makeTab("Frog roles", false);
-    const tabTips  = makeTab("Tips", false);
-
-    tabs.appendChild(tabBuffs);
-    tabs.appendChild(tabRoles);
-    tabs.appendChild(tabTips);
+    });
     card.appendChild(tabs);
 
     // Layout columns
@@ -3622,14 +3777,18 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     layout.appendChild(colLeft);
     layout.appendChild(colRight);
 
-    // Left: core buffs
-    const leftTitle = document.createElement("h3");
-    leftTitle.textContent = "Core buffs";
-    colLeft.appendChild(leftTitle);
+    const leftTitleEl = document.createElement("h3");
+    const rightTitleEl = document.createElement("h3");
+    colLeft.appendChild(leftTitleEl);
+    colRight.appendChild(rightTitleEl);
 
-    const leftList = document.createElement("ul");
-    leftList.className = "frog-buff-guide-list";
-    colLeft.appendChild(leftList);
+    buffGuideLeftListEl = document.createElement("ul");
+    buffGuideLeftListEl.className = "frog-buff-guide-list";
+    colLeft.appendChild(buffGuideLeftListEl);
+
+    buffGuideRightListEl = document.createElement("ul");
+    buffGuideRightListEl.className = "frog-buff-guide-list";
+    colRight.appendChild(buffGuideRightListEl);
 
     function addBuffItem(parentUl, icon, title, body, tags) {
       const li = document.createElement("li");
@@ -3669,75 +3828,17 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       parentUl.appendChild(li);
     }
 
-    addBuffItem(
-      leftList,
-      "⚡",
-      "Speed boost",
-      "Frogs move faster. Stacks with other speed buffs. Great early, risky if you can't control it later.",
-      ["mobility", "stacking"]
-    );
-
-    addBuffItem(
-      leftList,
-      "🧲",
-      "Orb magnet",
-      "Pulls nearby orbs into your frogs. Helps keep you safer when the snake covers more of the map.",
-      ["economy", "orb builds"]
-    );
-
-    addBuffItem(
-      leftList,
-      "🛡",
-      "Shield",
-      "Lets one frog survive a single hit. Good while learning or playing high-speed builds.",
-      ["defense", "forgiving"]
-    );
-
-    // Right: roles / synergy
-    const rightTitle = document.createElement("h3");
-    rightTitle.textContent = "Frog roles & synergy";
-    colRight.appendChild(rightTitle);
-
-    const rightList = document.createElement("ul");
-    rightList.className = "frog-buff-guide-list";
-    colRight.appendChild(rightList);
-
-    addBuffItem(
-      rightList,
-      "🍖",
-      "Cannibal",
-      "Gains extra benefits when frogs die. Works best in risky builds with expected casualties.",
-      []
-    );
-
-    addBuffItem(
-      rightList,
-      "💀",
-      "Deathrattle",
-      "Triggers a bonus effect when this frog dies. Pairs well with shields and revive effects.",
-      []
-    );
-
-    addBuffItem(
-      rightList,
-      "⭐",
-      "Legendary buffs",
-      "Very rare, game-changing perks. Don't stack as often, but they can reshape your entire run.",
-      []
-    );
-
     // Footer row
     const footerRow = document.createElement("div");
     footerRow.className = "frog-buff-guide-footer-row";
 
-    const pageIndicator = document.createElement("div");
-    pageIndicator.className = "frog-buff-guide-page-indicator";
-    pageIndicator.textContent = "Page 1 / 3";
+    buffGuidePageIndicatorEl = document.createElement("div");
+    buffGuidePageIndicatorEl.className = "frog-buff-guide-page-indicator";
 
     const footerHint = document.createElement("div");
     footerHint.textContent = "Scroll inside each panel to see the full list.";
 
-    footerRow.appendChild(pageIndicator);
+    footerRow.appendChild(buffGuidePageIndicatorEl);
     footerRow.appendChild(footerHint);
     card.appendChild(footerRow);
 
@@ -3745,26 +3846,26 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const btnRow = document.createElement("div");
     btnRow.className = "frog-btn-row";
 
-    const prevBtn = document.createElement("button");
-    prevBtn.className = "frog-btn";
-    prevBtn.textContent = "< Prev";
+    buffGuidePrevBtn = document.createElement("button");
+    buffGuidePrevBtn.className = "frog-btn";
+    buffGuidePrevBtn.textContent = "< Prev";
 
-    const nextBtn = document.createElement("button");
-    nextBtn.className = "frog-btn";
-    nextBtn.textContent = "Next >";
+    buffGuideNextBtn = document.createElement("button");
+    buffGuideNextBtn.className = "frog-btn";
+    buffGuideNextBtn.textContent = "Next >";
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "frog-btn frog-btn-primary";
     closeBtn.textContent = "Close";
 
-    prevBtn.addEventListener("click", () => {
-      // existing pagination logic can hook here if you want real pages
+    buffGuidePrevBtn.addEventListener("click", () => {
       playButtonClick();
+      setBuffGuidePage(buffGuidePageIndex - 1);
     });
 
-    nextBtn.addEventListener("click", () => {
-      // existing pagination logic can hook here if you want real pages
+    buffGuideNextBtn.addEventListener("click", () => {
       playButtonClick();
+      setBuffGuidePage(buffGuidePageIndex + 1);
     });
 
     closeBtn.addEventListener("click", () => {
@@ -3772,18 +3873,65 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       closeBuffGuideOverlay();
     });
 
-    btnRow.appendChild(prevBtn);
-    btnRow.appendChild(nextBtn);
+    btnRow.appendChild(buffGuidePrevBtn);
+    btnRow.appendChild(buffGuideNextBtn);
     btnRow.appendChild(closeBtn);
     card.appendChild(btnRow);
 
     // Attach
     container.appendChild(buffGuideOverlay);
+
+    function setBuffGuidePage(idx) {
+      const pageCount = BUFF_GUIDE_PAGES.length;
+      buffGuidePageIndex = Math.max(0, Math.min(idx, pageCount - 1));
+      const page = BUFF_GUIDE_PAGES[buffGuidePageIndex];
+
+      // Update tabs
+      buffGuideTabEls.forEach((tab, tabIdx) => {
+        tab.className =
+          "frog-buff-guide-tab" + (tabIdx === buffGuidePageIndex ? " frog-buff-guide-tab-active" : "");
+      });
+
+      // Description
+      buffGuideDescEl.textContent = page.description;
+
+      // Titles
+      leftTitleEl.textContent = page.leftTitle;
+      rightTitleEl.textContent = page.rightTitle;
+
+      // Lists
+      buffGuideLeftListEl.innerHTML = "";
+      buffGuideRightListEl.innerHTML = "";
+      page.leftItems.forEach(item => {
+        addBuffItem(buffGuideLeftListEl, item.icon, item.title, item.body, item.tags);
+      });
+      page.rightItems.forEach(item => {
+        addBuffItem(buffGuideRightListEl, item.icon, item.title, item.body, item.tags);
+      });
+
+      buffGuidePageIndicatorEl.textContent = `Page ${buffGuidePageIndex + 1} / ${pageCount}`;
+
+      if (buffGuidePrevBtn) {
+        buffGuidePrevBtn.disabled = buffGuidePageIndex === 0;
+      }
+      if (buffGuideNextBtn) {
+        buffGuideNextBtn.disabled = buffGuidePageIndex === pageCount - 1;
+      }
+    }
+
+    // Initial render
+    setBuffGuidePage(buffGuidePageIndex);
+    buffGuideOverlay.setPage = setBuffGuidePage;
   }
 
 
   function openBuffGuideOverlay() {
     ensureBuffGuideOverlay();
+    if (buffGuideOverlay && typeof buffGuideOverlay.setPage === "function") {
+      buffGuidePageIndex = 0;
+      buffGuideOverlay.setPage(0);
+    }
+    gamePaused = true;
     if (buffGuideOverlay) {
       buffGuideOverlay.style.display = "flex";
     }
@@ -3792,6 +3940,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   function closeBuffGuideOverlay() {
     if (buffGuideOverlay) {
       buffGuideOverlay.style.display = "none";
+    }
+    const menuVisible = mainMenuOverlay && mainMenuOverlay.style.display !== "none";
+    const upgradeVisible = upgradeOverlay && upgradeOverlay.style.display !== "none";
+    if (!menuVisible && !upgradeVisible) {
+      gamePaused = false;
     }
   }
 
