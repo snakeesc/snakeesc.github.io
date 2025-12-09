@@ -2475,6 +2475,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let howToOverlay = null;
   let hasShownHowToOverlay = false;
 
+  // Main menu overlay (Example 1D)
+  let mainMenuOverlay = null;
+
   // Buff guide (READ ME) overlay
   let buffGuideOverlay = null;
   let buffGuideContentEl = null;
@@ -3132,11 +3135,141 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   }
 
 
-  function openHowToOverlay() {
-    ensureHowToOverlay();
+  // --------------------------------------------------
+  // MAIN MENU OVERLAY (Example 1D style)
+  // --------------------------------------------------
+  function ensureMainMenuOverlay() {
+    if (mainMenuOverlay) return;
+
+    mainMenuOverlay = document.createElement("div");
+    mainMenuOverlay.className = "frog-main-menu-overlay";
+
+    const card = document.createElement("div");
+    card.className = "frog-main-menu-card";
+    mainMenuOverlay.appendChild(card);
+
+    // Top row: title + badge
+    const top = document.createElement("div");
+    top.className = "frog-main-menu-card-top";
+    card.appendChild(top);
+
+    const heading = document.createElement("div");
+    heading.className = "frog-main-menu-heading";
+    top.appendChild(heading);
+
+    const title = document.createElement("div");
+    title.className = "frog-main-menu-title";
+    title.textContent = "Escape the Snake";
+    heading.appendChild(title);
+
+    const subtitle = document.createElement("div");
+    subtitle.className = "frog-main-menu-subtitle";
+    subtitle.textContent = "Fresh Frogs survival";
+    heading.appendChild(subtitle);
+
+    const badge = document.createElement("div");
+    badge.className = "frog-main-menu-badge";
+    badge.textContent = "New run";
+    top.appendChild(badge);
+
+    // Description
+    const desc = document.createElement("div");
+    desc.className = "frog-main-menu-description";
+    desc.textContent =
+      "Move your cursor to guide your frogs. Avoid the snake, collect orbs, and stack buffs. The longer you survive, the more dangerous (and fun) it gets.";
+    card.appendChild(desc);
+
+    // Buttons
+    const btnWrap = document.createElement("div");
+    btnWrap.className = "frog-main-menu-buttons";
+    card.appendChild(btnWrap);
+
+    function makeButton(label, hint, isPrimary, handler) {
+      const btn = document.createElement("button");
+      btn.className =
+        "frog-main-menu-btn" + (isPrimary ? " frog-main-menu-btn-primary" : "");
+
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "frog-main-menu-btn-label";
+      labelSpan.textContent = label;
+
+      const hintSpan = document.createElement("span");
+      hintSpan.className = "frog-main-menu-btn-hint";
+      hintSpan.textContent = hint;
+
+      btn.appendChild(labelSpan);
+      btn.appendChild(hintSpan);
+
+      btn.addEventListener("click", () => {
+        playButtonClick();
+        handler();
+      });
+
+      return btn;
+    }
+
+    // ▶ Start game
+    const startBtn = makeButton("Start game", "Enter", true, () => {
+      hideMainMenu();
+      // Show the existing How To overlay.
+      // When the player presses "Let's play" in that overlay,
+      // it already calls openUpgradeOverlay("normal").
+      openHowToOverlay();
+    });
+    btnWrap.appendChild(startBtn);
+
+    // ❓ How to play
+    const howBtn = makeButton("How to play", "H", false, () => {
+      openHowToOverlay();
+    });
+    btnWrap.appendChild(howBtn);
+
+    // ℹ Learn more (updates page)
+    const learnBtn = makeButton("Learn more", "L", false, () => {
+      try {
+        window.open("updates.html", "_blank");
+      } catch (err) {
+        console.error("Failed to open updates page", err);
+      }
+    });
+    btnWrap.appendChild(learnBtn);
+
+    // Mini stats row (static for now, we can wire real data later)
+    const miniStats = document.createElement("div");
+    miniStats.className = "frog-main-menu-mini-stats";
+
+    const lastSpan = document.createElement("span");
+    lastSpan.textContent = "Last score: 0";
+    const bestSpan = document.createElement("span");
+    bestSpan.textContent = "Best: 0";
+    const runsSpan = document.createElement("span");
+    runsSpan.textContent = "Runs played: 0";
+
+    miniStats.appendChild(lastSpan);
+    miniStats.appendChild(bestSpan);
+    miniStats.appendChild(runsSpan);
+    card.appendChild(miniStats);
+
+    // Footer
+    const footer = document.createElement("div");
+    footer.className = "frog-main-menu-footer";
+    footer.innerHTML =
+      'best played at <a href="https://freshfrogs.github.io/snake" target="_blank">freshfrogs.github.io/snake</a>';
+    card.appendChild(footer);
+
+    // Attach to the main game container so frogs/snake are behind it
+    container.appendChild(mainMenuOverlay);
+  }
+
+  function showMainMenu() {
+    ensureMainMenuOverlay();
     gamePaused = true;
-    if (howToOverlay) {
-      howToOverlay.style.display = "flex";
+    mainMenuOverlay.style.display = "flex";
+  }
+
+  function hideMainMenu() {
+    if (mainMenuOverlay) {
+      mainMenuOverlay.style.display = "none";
     }
   }
 
@@ -4554,12 +4687,8 @@ function ensureUpgradeOverlay() {
     updateStatsPanel();
     updateHUD();
 
-    // Show the how-to-play menu before the first upgrade
-    openHowToOverlay();
-
-    // Always offer a common upgrade at the very start of the game
-    // (same behavior as restartGame)
-    openUpgradeOverlay("normal");
+    // 🔹 New: show the main menu instead of auto-opening how-to + upgrade
+    showMainMenu();
 
     animId = requestAnimationFrame(drawFrame);
   }
