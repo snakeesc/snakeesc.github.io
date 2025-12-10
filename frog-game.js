@@ -3906,7 +3906,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         content.appendChild(header);
         content.appendChild(table);
         content.appendChild(pager);
-        content.appendChild(legend);
+        //content.appendChild(legend);
       }
 
       renderPage(currentPage);
