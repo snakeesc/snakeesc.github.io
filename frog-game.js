@@ -3390,8 +3390,22 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     });
   }
 
+  function hideUpgradeOverlayForMenu() {
+    if (upgradeOverlay) {
+      upgradeOverlay.style.display = "none";
+    }
+
+    if (upgradeOverlayButtonsContainer) {
+      upgradeOverlayButtonsContainer.innerHTML = "";
+    }
+  }
+
   function showMainMenu() {
     if (!mainMenuOverlay) initMainMenuOverlay();
+
+    // Ensure any lingering upgrade modal is hidden before showing the menu
+    hideUpgradeOverlayForMenu();
+
     startMainMenuBackground();
     setInGameUIVisible(false);
     mainMenuActive = true;
