@@ -3079,7 +3079,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     mainMenuFrogs = [];
   }
 
-  function createMainMenuFrog(x, y) {
+  function buildMenuFrogState(x, y, tokenId) {
     const el = document.createElement("div");
     el.className = "frog-sprite";
     el.style.position = "absolute";
@@ -3088,11 +3088,27 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     el.style.pointerEvents = "none";
     el.style.zIndex = "8";
-    el.style.background = "radial-gradient(circle at 40% 40%, #9bf5a7, #3e9b4b)";
-    el.style.boxShadow = "0 0 6px rgba(0,0,0,0.25)";
     container.appendChild(el);
 
+    const personalityRoll = Math.random();
+    let idleMin, idleMax, hopMin, hopMax, heightMin, heightMax;
+
+    if (personalityRoll < 0.25) {
+      idleMin = 0.3; idleMax = 1.0;
+      hopMin = 0.25; hopMax = 0.55;
+      heightMin = 14; heightMax = 32;
+    } else if (personalityRoll < 0.6) {
+      idleMin = 0.8; idleMax = 3.0;
+      hopMin = 0.35; hopMax = 0.7;
+      heightMin = 10; heightMax = 26;
+    } else {
+      idleMin = 2.0; idleMax = 5.0;
+      hopMin = 0.45; hopMax = 0.9;
+      heightMin = 6;  heightMax = 20;
+    }
+
     const frog = {
+      tokenId,
       el,
       x,
       y,
@@ -3102,21 +3118,51 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       hopEndX: x,
       hopEndBaseY: y,
       state: "idle",
-      idleTime: randRange(0.5, 2.5),
+      idleTime: randRange(idleMin, idleMax),
       hopTime: 0,
-      hopDuration: randRange(0.35, 0.8),
-      hopHeight: randRange(10, 28)
+      hopDuration: randRange(hopMin, hopMax),
+      hopHeight: randRange(heightMin, heightMax),
+      idleMin,
+      idleMax,
+      hopDurMin: hopMin,
+      hopDurMax: hopMax,
+      hopHeightMin: heightMin,
+      hopHeightMax: heightMax,
+      speedMult: 1.0,
+      jumpMult: 1.0
     };
 
-    mainMenuFrogs.push(frog);
     return frog;
   }
 
+  function createMainMenuFrog(x, y) {
+    const tokenId = randInt(1, MAX_TOKEN_ID);
+    const frog = buildMenuFrogState(x, y, tokenId);
+    mainMenuFrogs.push(frog);
+
+    fetchMetadata(tokenId)
+      .then(meta => buildLayersForFrog(frog, meta))
+      .catch(() => {});
+
+    return frog;
+  }
+
+  function getMainMenuSpeedFactor(frog) {
+    return frog.speedMult || 1.0;
+  }
+
+  function getMainMenuJumpFactor(frog) {
+    return frog.jumpMult || 1.0;
+  }
+
   function chooseMainMenuHopDestination(frog, width, height) {
-    const marginX = 12;
-    const marginY = 28;
+    const marginX = 8;
+    const marginY = 24;
     const centerX = frog.x + FROG_SIZE / 2;
     const centerY = frog.baseY + FROG_SIZE / 2;
+
+    let targetX = frog.x + randRange(-12, 12);
+    let targetBaseY = frog.baseY + randRange(-6, 6);
 
     let fleeAngle = null;
     let nearestD2 = Infinity;
@@ -3132,29 +3178,28 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     }
 
-    const hopDist = fleeAngle === null
-      ? randRange(40, 120)
-      : randRange(120, 220);
-
-    const angle = fleeAngle === null
-      ? randRange(-Math.PI, Math.PI)
-      : fleeAngle + randRange(-0.35, 0.35);
-
-    let targetX = frog.x + Math.cos(angle) * hopDist;
-    let targetY = frog.baseY + Math.sin(angle) * hopDist;
+    if (fleeAngle !== null && nearestD2 < 320 * 320) {
+      const hopDist = randRange(120, 220);
+      const angle = fleeAngle + randRange(-0.35, 0.35);
+      targetX = frog.x + Math.cos(angle) * hopDist;
+      targetBaseY = frog.baseY + Math.sin(angle) * hopDist;
+    }
 
     targetX = Math.max(marginX, Math.min(width - marginX - FROG_SIZE, targetX));
-    targetY = Math.max(marginY, Math.min(height - marginY - FROG_SIZE, targetY));
+    targetBaseY = Math.max(
+      marginY,
+      Math.min(height - marginY - FROG_SIZE, targetBaseY)
+    );
 
     frog.hopStartX = frog.x;
     frog.hopStartBaseY = frog.baseY;
     frog.hopEndX = targetX;
-    frog.hopEndBaseY = targetY;
+    frog.hopEndBaseY = targetBaseY;
   }
 
   function updateMainMenuFrogs(dt, width, height) {
-    const marginX = 12;
-    const marginY = 28;
+    const marginX = 8;
+    const marginY = 24;
 
     for (const frog of mainMenuFrogs) {
       if (frog.state === "idle") {
@@ -3165,10 +3210,25 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           frog.state = "hopping";
           frog.hopTime = 0;
 
-          frog.hopDuration = randRange(0.35, 0.9);
-          frog.hopHeight = randRange(10, 30);
+          const baseDur = randRange(frog.hopDurMin, frog.hopDurMax);
+          frog.hopDuration = baseDur * getMainMenuSpeedFactor(frog);
+
+          const spice = Math.random();
+          let hopHeight;
+          if (spice < 0.1) {
+            hopHeight = randRange(
+              frog.hopHeightMax * 1.1,
+              frog.hopHeightMax * 1.8
+            );
+          } else if (spice < 0.25) {
+            hopHeight = randRange(2, frog.hopHeightMin * 0.7);
+          } else {
+            hopHeight = randRange(frog.hopHeightMin, frog.hopHeightMax);
+          }
+          frog.hopHeight = hopHeight * getMainMenuJumpFactor(frog);
 
           chooseMainMenuHopDestination(frog, width, height);
+          playRandomRibbit();
         }
       } else if (frog.state === "hopping") {
         frog.hopTime += dt;
@@ -3186,10 +3246,19 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
         if (frog.hopTime >= frog.hopDuration) {
           frog.state = "idle";
-          frog.idleTime = randRange(0.8, 2.4);
-          frog.x = Math.max(marginX, Math.min(width - marginX - FROG_SIZE, frog.hopEndX));
-          frog.baseY = Math.max(marginY, Math.min(height - marginY - FROG_SIZE, frog.hopEndBaseY));
+
+          const baseIdle = randRange(frog.idleMin, frog.idleMax);
+          frog.idleTime = baseIdle * getMainMenuSpeedFactor(frog);
+
+          frog.x = frog.hopEndX;
+          frog.baseY = frog.hopEndBaseY;
           frog.y = frog.baseY;
+
+          frog.x = Math.max(marginX, Math.min(width - marginX - FROG_SIZE, frog.x));
+          frog.baseY = Math.max(
+            marginY,
+            Math.min(height - marginY - FROG_SIZE, frog.baseY)
+          );
         }
       }
 
