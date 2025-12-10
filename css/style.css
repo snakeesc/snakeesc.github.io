@@ -941,16 +941,17 @@ a {
   font-size: 12px;
 }
 
-/* Upgrades */
-
+/* Upgrade choices – flat, no neon shadow */
 .frog-upgrade-choice {
   text-align: left;
-  background: #1c1917;
-  border: 1px solid #84cc16;
+  background: #292524;           /* solid, slightly lighter than panel */
+  border: 1px solid #44403c;     /* subtle neutral border */
 }
 
 .frog-upgrade-choice:hover {
-  box-shadow: 0 6px 14px rgba(132, 204, 22, 0.6);
+  background: #3f3a36;           /* tiny brightness change on hover */
+  border-color: #78716c;         /* no glow, just a bit lighter */
+  box-shadow: none;              /* kill the neon shadow */
 }
 
 .frog-upgrade-title {
@@ -991,18 +992,12 @@ a {
   gap: 8px;
 }
 
+/* Summary column – same dark panel color, no green wash */
 .upgrade-column--summary {
-  background: #14532d;
+  background: #1c1917;           /* match main panel */
 }
 
-.upgrade-summary-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 6px;
-}
-
+/* Summary rows – flat, neutral border */
 .upgrade-summary-list li {
   font-size: 12px;
   line-height: 1.45;
@@ -1010,7 +1005,16 @@ a {
   padding: 6px 8px;
   border-radius: 8px;
   background: #1c1917;
-  border: 1px dashed #84cc16;
+  border: 1px solid #44403c;     /* no neon, no dashed outline */
+}
+
+
+.upgrade-summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
 }
 
 .stat-highlight {

@@ -3730,7 +3730,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     });
   }
 
-  // Add this helper to avoid errors and show current permanent upgrades in the upgrade overlay
   function updateUpgradeBuffSummary() {
     const listEl = document.getElementById("currentUpgradeList");
     if (!upgradeOverlay || !listEl) return;
@@ -3759,37 +3758,91 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       if (frog.isZombie)   roleCounts.zombie++;
     }
 
-    const items = [
-      `<strong>Squad:</strong> ${statHighlight(`${frogs.length}`)} / ${statHighlight(`${maxFrogsCap}`)} frogs on the field`,
-      `<strong>Frog speed bonus:</strong> ${statHighlight(`${speedTotalPct}%`)} faster hops`,
-      `<strong>Jump height bonus:</strong> ${statHighlight(`${jumpTotalPct}%`)} higher hops`,
-      `<strong>Buff duration:</strong> ${statHighlight(`${buffTotalPct}%`)} longer`,
-      `<strong>Orb spawn pace:</strong> ${statHighlight(`${orbTotalPct}%`)} faster spawns`,
-      `<strong>Deathrattle:</strong> ${statHighlight(`${drTotalPct}%`)} revive chance`,
-      `<strong>Orb Collector:</strong> ${statHighlight(`${orbCollectPct}%`)} chance every orb spawns a frog`,
-      `<strong>Lingering orbs:</strong> ${statHighlight(`${Math.max(0, orbLingerPct)}%`)} longer before fading`
-    ];
+    const items = [];
+
+    // Always show how many frogs you have vs cap
+    items.push(
+      `<strong>Squad:</strong> ${statHighlight(`${frogs.length}`)} / ${statHighlight(`${maxFrogsCap}`)} frogs on the field`
+    );
+
+    const effectiveLingerPct = Math.max(0, orbLingerPct);
+
+    // Only push stats that are actually doing something (non-zero)
+    if (speedTotalPct !== 0) {
+      items.push(
+        `<strong>Frog speed bonus:</strong> ${statHighlight(`${speedTotalPct}%`)} faster hops`
+      );
+    }
+    if (jumpTotalPct !== 0) {
+      items.push(
+        `<strong>Jump height bonus:</strong> ${statHighlight(`${jumpTotalPct}%`)} higher hops`
+      );
+    }
+    if (buffTotalPct !== 0) {
+      items.push(
+        `<strong>Buff duration:</strong> ${statHighlight(`${buffTotalPct}%`)} longer`
+      );
+    }
+    if (orbTotalPct !== 0) {
+      items.push(
+        `<strong>Orb spawn pace:</strong> ${statHighlight(`${orbTotalPct}%`)} faster spawns`
+      );
+    }
+    if (drTotalPct !== 0) {
+      items.push(
+        `<strong>Deathrattle:</strong> ${statHighlight(`${drTotalPct}%`)} revive chance`
+      );
+    }
+    if (orbCollectPct !== 0) {
+      items.push(
+        `<strong>Orb Collector:</strong> ${statHighlight(`${orbCollectPct}%`)} chance every orb spawns a frog`
+      );
+    }
+    if (effectiveLingerPct !== 0) {
+      items.push(
+        `<strong>Lingering orbs:</strong> ${statHighlight(`${effectiveLingerPct}%`)} longer before fading`
+      );
+    }
 
     if (lastStandActive) {
-      items.push(`<strong>Last Stand:</strong> Final frog has at least ${statHighlight(`${Math.round(LAST_STAND_MIN_CHANCE * 100)}%`)} revive odds`);
+      items.push(
+        `<strong>Last Stand:</strong> Final frog has at least ${statHighlight(`${Math.round(LAST_STAND_MIN_CHANCE * 100)}%`)} revive odds`
+      );
     }
+
     if (orbSpecialistActive) {
-      items.push(`<strong>Orb Specialist:</strong> Every orb guarantees ${statHighlight("1")} extra frog`);
+      items.push(
+        `<strong>Orb Specialist:</strong> Every orb guarantees ${statHighlight("1")} extra frog`
+      );
     }
+
     if (ouroborosPactUsed) {
-      items.push(`<strong>Ouroboros Pact:</strong> ${statHighlight("10%") } of dead frogs drop an orb`);
+      items.push(
+        `<strong>Ouroboros Pact:</strong> ${statHighlight("10%")} of dead frogs drop an orb`
+      );
     }
 
-    const roleSummary = [
-      `${statHighlight(roleCounts.champion)} champion`,
-      `${statHighlight(roleCounts.aura)} aura`,
-      `${statHighlight(roleCounts.magnet)} magnet`,
-      `${statHighlight(roleCounts.lucky)} lucky`,
-      `${statHighlight(roleCounts.zombie)} zombie`,
-      `${statHighlight(cannibalFrogCount)} cannibal`
-    ].join(" · ");
+    // Only show the special frogs line if there’s at least one special frog / cannibal
+    const totalSpecial =
+      roleCounts.champion +
+      roleCounts.aura +
+      roleCounts.magnet +
+      roleCounts.lucky +
+      roleCounts.zombie +
+      cannibalFrogCount;
 
-    items.push(`<strong>Special frogs:</strong> ${roleSummary}`);
+    if (totalSpecial > 0) {
+      const roleSummary = [
+        `${statHighlight(roleCounts.champion)} champion`,
+        `${statHighlight(roleCounts.aura)} aura`,
+        `${statHighlight(roleCounts.magnet)} magnet`,
+        `${statHighlight(roleCounts.lucky)} lucky`,
+        `${statHighlight(roleCounts.zombie)} zombie`,
+        `${statHighlight(cannibalFrogCount)} cannibal`
+      ].join(" · ");
+
+      items.push(`<strong>Special frogs:</strong> ${roleSummary}`);
+    }
 
     listEl.innerHTML = "";
     for (const item of items) {
