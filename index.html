@@ -86,21 +86,13 @@
       <div id="upgradeOverlaySub" class="frog-panel-sub">
         Pick one upgrade to apply to your frogs.
       </div>
-      <div class="upgrade-layout">
-        <div class="upgrade-column">
-          <div class="upgrade-column-title">Upgrade options</div>
-          <div id="upgradeChoicesContainer" class="upgrade-choices">
-            <!-- buttons injected by JS -->
-          </div>
-        </div>
-        <div class="upgrade-column upgrade-column--summary">
-          <div class="upgrade-column-title">Permanent boosts</div>
-          <ul id="currentUpgradeList" class="upgrade-summary-list"></ul>
-        </div>
+
+      <div id="upgradeChoicesContainer">
+        <!-- buttons injected by JS -->
       </div>
 
       <div class="frog-panel-footer">
-        Click an option to lock it in.
+        Click an option or press its number key (1/2/3).
       </div>
     </div>
   </div>
@@ -120,14 +112,15 @@
       <div class="frog-panel-section-label">Controls</div>
       <ul class="frog-panel-list">
         <li><strong>Mouse:</strong> move your cursor – your frogs try to follow.</li>
+        <li><strong>Left click (if used):</strong> any special actions you wired in.</li>
+        <li><strong>Esc:</strong> pause / open menu (if you wire this up).</li>
       </ul>
 
       <div class="frog-panel-section-label">Goal</div>
       <ul class="frog-panel-list">
         <li>Avoid letting the snake touch any frog.</li>
-        <li>The goal is to stay alive as long as possible.</li>
-        <li>Your score rises every time a frog gets eaten.</li>
-        <li>Collect orbs and upgrade buffs so your squad survives longer.</li>
+        <li>Collect orbs and buffs to survive longer.</li>
+        <li>Your score is based on how long you stay alive and what you collect.</li>
       </ul>
 
       <div class="frog-panel-section-label">Tips</div>
