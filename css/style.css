@@ -1082,3 +1082,67 @@ a {
   color: #fefce8;
   border-color: #a3e635;
 }
+/* --- Upgrade overlay – Layout B (summary on top, 3-card grid) --- */
+
+/* Top summary bar above the choices */
+.upgrade-summary-bar {
+  background: #292524;             /* flat dark brown/charcoal */
+  border-radius: 10px;
+  border: 1px solid #44403c;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.upgrade-summary-heading {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Summary list displays as inline chips */
+.upgrade-summary-inline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 12px;
+}
+
+.upgrade-summary-inline li {
+  white-space: nowrap;
+}
+
+.stat-highlight {
+  color: #a3e635;                  /* moss highlight */
+  font-weight: 800;
+}
+
+/* Upgrade choices grid */
+.upgrade-layout {
+  margin-bottom: 10px;
+}
+
+.upgrade-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Make sure the buttons behave like cards */
+.upgrade-choices .frog-upgrade-choice {
+  text-align: left;
+}
+
+/* Responsive: stack cards on small screens */
+@media (max-width: 900px) {
+  .upgrade-choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Optional: hide the unused subtext element for this overlay */
+#upgradeOverlaySub {
+  display: none;
+}
