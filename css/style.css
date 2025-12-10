@@ -1061,3 +1061,24 @@ a {
     grid-template-columns: 1fr;
   }
 }
+/* Buff guide pagination tabs */
+
+.buff-guide-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+
+.buff-guide-nav .buff-page-btn {
+  flex: 1 1 auto;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+/* active tab matches your primary moss color */
+.buff-guide-nav .buff-page-btn.is-active {
+  background: #65a30d;   /* same as frog-btn-primary */
+  color: #fefce8;
+  border-color: #a3e635;
+}

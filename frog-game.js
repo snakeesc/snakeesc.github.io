@@ -3226,10 +3226,41 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     panel.innerHTML = buildBuffGuideHtml();
 
+    // Close button
     const closeBtn = document.getElementById("buffGuideCloseBtn");
     if (closeBtn) {
       closeBtn.onclick = hideBuffGuideOverlay;
     }
+
+    // 🔹 Page buttons + pages
+    const pageButtons = panel.querySelectorAll(".buff-page-btn");
+    const pages = panel.querySelectorAll(".buff-guide-page");
+
+    function setBuffGuidePage(idx) {
+      pages.forEach((page, i) => {
+        page.style.display = i === idx ? "block" : "none";
+      });
+
+      pageButtons.forEach((btn, i) => {
+        if (i === idx) {
+          btn.classList.add("is-active");
+        } else {
+          btn.classList.remove("is-active");
+        }
+      });
+    }
+
+    pageButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-page-index"), 10);
+        if (!Number.isNaN(idx)) {
+          setBuffGuidePage(idx);
+        }
+      });
+    });
+
+    // Make sure page 0 is active when it opens
+    setBuffGuidePage(0);
 
     buffGuideOverlay.style.display = "flex";
   }
