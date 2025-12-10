@@ -814,7 +814,7 @@ a {
 }
 
 
-/* FLAT THEME 2 – Dark Blue + Mint */
+/* FLAT THEME 3 – Light Parchment + Dark Green */
 
 .frog-overlay {
   position: absolute;
@@ -828,17 +828,17 @@ a {
 }
 
 .frog-panel {
-  background: #020617;
+  background: #fefce8; /* pale parchment */
   padding: 18px 22px 16px 22px;
   border-radius: 14px;
-  border: 1px solid #22d3ee;
-  color: #e0f2fe;
+  border: 1px solid #16a34a;
+  color: #0f172a;
   font-family: monospace;
   min-width: 320px;
   max-width: 960px;
   max-height: 82vh;
   overflow: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.5);
 }
 
 .frog-panel-title {
@@ -850,7 +850,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #7dd3fc;
+  color: #166534;
 }
 
 .frog-panel-title .emoji {
@@ -859,7 +859,7 @@ a {
 
 .frog-panel-sub {
   font-size: 13px;
-  color: #9ca3af;
+  color: #4b5563;
   text-align: center;
   margin-bottom: 14px;
   line-height: 1.5;
@@ -869,7 +869,7 @@ a {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #22d3ee;
+  color: #15803d;
   margin-top: 12px;
   margin-bottom: 6px;
 }
@@ -877,7 +877,7 @@ a {
 .frog-panel-footer {
   margin-top: 12px;
   font-size: 12px;
-  color: #9ca3af;
+  color: #6b7280;
   text-align: center;
   line-height: 1.5;
 }
@@ -892,14 +892,13 @@ a {
   font-size: 13px;
   margin-bottom: 6px;
   line-height: 1.5;
-  color: #e0f2fe;
+  color: #111827;
 }
 
 /* frog UI buttons */
 
 .frog-btn {
   width: 100%;
-  border: none;
   border-radius: 12px;
   padding: 10px 12px;
   font-size: 13px;
@@ -907,8 +906,9 @@ a {
   cursor: pointer;
   text-align: center;
   margin-bottom: 8px;
+  border: 1px solid transparent;
   transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
 }
 
 .frog-btn-primary {
@@ -923,22 +923,22 @@ a {
 }
 
 .frog-btn-secondary {
-  background: #0f172a;
-  color: #e0f2fe;
-  border: 1px solid #22d3ee;
+  background: #0ea5e9;
+  color: #0f172a;
+  border-color: #0369a1;
   font-size: 13px;
   font-weight: 700;
 }
 
 .frog-btn-secondary:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.05);
   transform: translateY(-1px);
 }
 
 .frog-btn-danger {
-  background: #b91c1c;
-  color: #fee2e2;
-  border: 1px solid #ef4444;
+  background: #ef4444;
+  color: #fef2f2;
+  border-color: #b91c1c;
   font-size: 12px;
 }
 
@@ -946,24 +946,24 @@ a {
 
 .frog-upgrade-choice {
   text-align: left;
-  background: #020617;
-  border: 1px solid #1d4ed8;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 .frog-upgrade-choice:hover {
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.7);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
 }
 
 .frog-upgrade-title {
   font-size: 14px;
   font-weight: 800;
   margin-bottom: 2px;
-  color: #bfdbfe;
+  color: #166534;
 }
 
 .frog-upgrade-desc {
   font-size: 12px;
-  color: #e0f2fe;
+  color: #4b5563;
 }
 
 .upgrade-layout {
@@ -974,16 +974,16 @@ a {
 }
 
 .upgrade-column {
-  background: #020617;
-  border: 1px solid #1f2937;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 10px;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(243, 244, 246, 0.9);
 }
 
 .upgrade-column-title {
   font-weight: 800;
-  color: #bfdbfe;
+  color: #166534;
   margin-bottom: 6px;
 }
 
@@ -994,7 +994,7 @@ a {
 }
 
 .upgrade-column--summary {
-  background: #0f172a;
+  background: #ecfdf3;
 }
 
 .upgrade-summary-list {
@@ -1008,15 +1008,15 @@ a {
 .upgrade-summary-list li {
   font-size: 12px;
   line-height: 1.45;
-  color: #e0f2fe;
+  color: #111827;
   padding: 6px 8px;
   border-radius: 10px;
-  background: #020617;
-  border: 1px dashed #22d3ee;
+  background: #ffffff;
+  border: 1px dashed #d1d5db;
 }
 
 .stat-highlight {
-  color: #22d3ee;
+  color: #16a34a;
   font-weight: 800;
 }
 
@@ -1029,23 +1029,23 @@ a {
 }
 
 .buff-card {
-  background: #020617;
+  background: #ffffff;
   border-radius: 12px;
   padding: 10px 12px;
-  border: 1px solid #1d4ed8;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
 }
 
 .buff-card h4 {
   margin: 0 0 6px;
   font-size: 14px;
-  color: #bfdbfe;
+  color: #166534;
 }
 
 .buff-card ul {
   margin: 0;
   padding-left: 16px;
-  color: #e0f2fe;
+  color: #111827;
 }
 
 .buff-card li {
