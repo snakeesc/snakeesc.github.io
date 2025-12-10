@@ -1140,3 +1140,73 @@ a {
 #upgradeOverlaySub {
   display: none;
 }
+/* --- Upgrade overlay: choices left, boosts right --- */
+
+/* Two-column layout just for the upgrade overlay */
+#upgradeOverlay .upgrade-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+/* Panel columns */
+#upgradeOverlay .upgrade-column {
+  background: #1c1917;            /* Coffee & Moss panel color */
+  border: 1px solid #44403c;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+#upgradeOverlay .upgrade-column-title {
+  font-weight: 800;
+  color: #f5f5f4;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+/* LEFT: upgrade choices stacked */
+#upgradeOverlay .upgrade-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Make sure upgrade buttons look like cards, left-aligned text */
+#upgradeOverlay .frog-upgrade-choice {
+  text-align: left;
+}
+
+/* RIGHT: permanent boosts list stacked */
+#upgradeOverlay .upgrade-summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#upgradeOverlay .upgrade-summary-list li {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #f5f5f4;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #1c1917;
+  border: 1px solid #44403c;
+}
+
+/* Highlight numbers in the summary */
+.stat-highlight {
+  color: #a3e635;                 /* mossy highlight */
+  font-weight: 800;
+}
+
+/* Mobile: stack columns vertically */
+@media (max-width: 900px) {
+  #upgradeOverlay .upgrade-layout {
+    grid-template-columns: 1fr;
+  }
+}

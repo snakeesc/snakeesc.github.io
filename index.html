@@ -81,24 +81,27 @@
   <div id="upgradeOverlay" class="frog-overlay">
     <div class="frog-panel">
       <div class="frog-panel-title">
-        🧪 Choose an upgrade
+        Choose an upgrade
       </div>
 
-      <!-- We keep this for JS, but leave it empty / hidden -->
+      <!-- we keep this element for JS, but we don't actually show text here -->
       <div id="upgradeOverlaySub" class="frog-panel-sub"></div>
 
-      <!-- TOP: summary bar -->
-      <div class="upgrade-summary-bar">
-        <div class="upgrade-summary-heading">📈 Permanent boosts this run</div>
-        <ul id="currentUpgradeList" class="upgrade-summary-inline">
-          <!-- <li> items injected by updateUpgradeBuffSummary() -->
-        </ul>
-      </div>
-
-      <!-- BOTTOM: 3-card upgrade grid -->
       <div class="upgrade-layout">
-        <div id="upgradeChoicesContainer" class="upgrade-choices">
-          <!-- buttons injected by JS (frog-btn frog-upgrade-choice) -->
+        <!-- LEFT: upgrade options -->
+        <div class="upgrade-column upgrade-column-choices">
+          <div class="upgrade-column-title">📦 Available upgrades</div>
+          <div id="upgradeChoicesContainer" class="upgrade-choices">
+            <!-- buttons injected by JS -->
+          </div>
+        </div>
+
+        <!-- RIGHT: permanent boosts -->
+        <div class="upgrade-column upgrade-column--summary">
+          <div class="upgrade-column-title">📈 Permanent boosts this run</div>
+          <ul id="currentUpgradeList" class="upgrade-summary-list">
+            <!-- <li> items injected by updateUpgradeBuffSummary() -->
+          </ul>
         </div>
       </div>
     </div>
