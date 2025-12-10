@@ -2466,6 +2466,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let upgradeOverlay = null;
   let upgradeOverlayButtonsContainer = null;
   let upgradeOverlayTitleEl = null;
+  let upgradeOverlayBadgeEl = null;
   let currentUpgradeOverlayMode = "normal"; // "normal" | "epic" | "legendary"
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
@@ -2482,6 +2483,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let buffGuidePrevBtn = null;
   let buffGuideNextBtn = null;
   let buffGuidePage = 0;
+  let infoOverlayFromMenu = false;
 
   function getEpicUpgradeChoices() {
     const neon = "#4defff";
@@ -2954,169 +2956,99 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function ensureHowToOverlay() {
     if (howToOverlay) return;
-
     howToOverlay = document.createElement("div");
-    howToOverlay.className = "frog-howto-overlay";
-
-    howToOverlay.style.position = "absolute";
-    howToOverlay.style.inset = "0";
-    howToOverlay.style.background = "rgba(0,0,0,0.7)";
+    howToOverlay.className = "game-overlay";
     howToOverlay.style.display = "none";
-    howToOverlay.style.zIndex = "160";
-    howToOverlay.style.alignItems = "center";
-    howToOverlay.style.justifyContent = "center";
-    howToOverlay.style.pointerEvents = "auto";
 
     const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "18px 22px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "260px";
-    panel.style.maxWidth = "420px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    panel.className = "game-card";
 
+    const header = document.createElement("div");
+    header.className = "game-card-header";
+
+    const heading = document.createElement("div");
     const title = document.createElement("div");
-    title.textContent = "escape the snake 🐍";
-    title.style.fontSize = "18px";
-    title.style.fontWeight = "bold";
-    title.style.marginBottom = "4px";
+    title.className = "game-title";
+    title.textContent = "Escape the Snake";
 
     const subtitle = document.createElement("div");
-    subtitle.textContent = "-- How to Play & Controls --";
-    subtitle.style.marginBottom = "10px";
-    subtitle.style.fontSize = "13px";
-    subtitle.style.opacity = "0.9";
+    subtitle.className = "game-subtitle";
+    subtitle.textContent = "Main menu";
+
+    heading.appendChild(title);
+    heading.appendChild(subtitle);
+
+    const badge = document.createElement("div");
+    badge.className = "pill accent";
+    badge.textContent = "Arcade survival";
+
+    header.appendChild(heading);
+    header.appendChild(badge);
 
     const intro = document.createElement("div");
-    intro.textContent =
-      "Keep your frogs alive as long as possible. Dodge the snake, grab buffs, and climb the leaderboard.";
-    intro.style.fontSize = "13px";
-    intro.style.lineHeight = "1.4";
-    intro.style.marginBottom = "10px";
+    intro.className = "game-body";
+    intro.innerHTML =
+      "Guide the frog swarm, dodge the snake, collect glowing orbs, and survive as long as possible.";
 
-    // CONTROLS
-    const controlsLabel = document.createElement("div");
-    controlsLabel.textContent = "Controls:";
-    controlsLabel.style.fontSize = "13px";
-    controlsLabel.style.fontWeight = "bold";
-    controlsLabel.style.margin = "0 0 4px 0";
-
-    const controlsList = document.createElement("ul");
-    controlsList.style.paddingLeft = "18px";
-    controlsList.style.margin = "0 0 10px 0";
-    controlsList.style.fontSize = "13px";
-    controlsList.style.lineHeight = "1.4";
+    const grid = document.createElement("div");
+    grid.className = "game-grid";
 
     [
-      "Move your mouse – frogs follow your cursor.",
-      "No keyboard needed, just point where you want them to go.",
-      "Stay away from the snake's head – one bite and that frog is gone."
+      "🐸 Keep frogs close to your cursor – they follow your mouse.",
+      "🧪 Orbs pause the action so you can pick an upgrade before chaos resumes.",
+      "🏆 Beat your best time and score to climb the leaderboard.",
+      "🛠️ Common upgrades appear every minute; epic chains arrive every 3 minutes."
     ].forEach(text => {
-      const li = document.createElement("li");
-      li.textContent = text;
-      controlsList.appendChild(li);
+      const block = document.createElement("div");
+      block.className = "game-feature";
+      block.textContent = text;
+      grid.appendChild(block);
     });
 
-    /*
-    // TIPS / GOAL
-    const tipsLabel = document.createElement("div");
-    tipsLabel.textContent = "Tips:";
-    tipsLabel.style.fontSize = "13px";
-    tipsLabel.style.fontWeight = "bold";
-    tipsLabel.style.margin = "4px 0 4px 0";
-
-    const tipsList = document.createElement("ul");
-    tipsList.style.paddingLeft = "18px";
-    tipsList.style.margin = "0 0 12px 0";
-    tipsList.style.fontSize = "13px";
-    tipsList.style.lineHeight = "1.4";
-
-    [
-      "Collect glowing orbs to gain buffs and upgrades.",
-      "Stronger buffs help you survive longer as the snake speeds up.",
-      "Your score increases the longer you stay alive.",
-      "Beat your best run to climb the leaderboard."
-    ].forEach(text => {
-      const li = document.createElement("li");
-      li.textContent = text;
-      tipsList.appendChild(li);
-    });
-    */
-
-    const updatesLine = document.createElement("div");
-    updatesLine.style.marginTop = "6px";
-    updatesLine.style.fontSize = "11px";
-    updatesLine.style.opacity = "0.9";
-    updatesLine.innerHTML =
-      'Patch notes available at  ' +
-      '<a href="https://snakeesc.github.io/updates" ' +
-      'target="_blank" rel="noopener noreferrer" ' +
-      'style="color:#9cff9c;text-decoration:underline;">' +
-      'snakeesc.github.io/updates</a>';
-
-    // Buttons row: Start & Learn more
-    const btnRow = document.createElement("div");
-    btnRow.style.display = "flex";
-    btnRow.style.justifyContent = "space-between";
-    btnRow.style.gap = "8px";
-    btnRow.style.marginTop = "4px";
+    const actions = document.createElement("div");
+    actions.className = "game-actions";
 
     const startBtn = document.createElement("button");
-    startBtn.textContent = "Start & choose buff";
-    startBtn.style.fontFamily = "monospace";
-    startBtn.style.fontSize = "13px";
-    startBtn.style.padding = "6px 10px";
-    startBtn.style.borderRadius = "6px";
-    startBtn.style.border = "1px solid #555";
-    startBtn.style.background = "#222";
-    startBtn.style.color = "#fff";
-    startBtn.style.cursor = "pointer";
-    startBtn.style.flex = "1";
-    startBtn.onmouseenter = () => { startBtn.style.background = "#333"; };
-    startBtn.onmouseleave = () => { startBtn.style.background = "#222"; };
+    startBtn.className = "ui-button primary";
+    startBtn.textContent = "Start run";
     startBtn.onclick = () => {
       playButtonClick();
       hasShownHowToOverlay = true;
-      if (howToOverlay) {
-        howToOverlay.style.display = "none";
-      }
+      howToOverlay.style.display = "none";
       openUpgradeOverlay("normal");
     };
 
     const learnBtn = document.createElement("button");
-    learnBtn.textContent = "Learn buffs 📖";
-    learnBtn.style.fontFamily = "monospace";
-    learnBtn.style.fontSize = "13px";
-    learnBtn.style.padding = "6px 10px";
-    learnBtn.style.borderRadius = "6px";
-    learnBtn.style.border = "1px solid #555";
-    learnBtn.style.background = "#222";
-    learnBtn.style.color = "#fff";
-    learnBtn.style.cursor = "pointer";
-    learnBtn.style.flex = "0 0 auto";
-    learnBtn.onmouseenter = () => { learnBtn.style.background = "#333"; };
-    learnBtn.onmouseleave = () => { learnBtn.style.background = "#222"; };
+    learnBtn.className = "ui-button";
+    learnBtn.textContent = "How to play";
     learnBtn.onclick = () => {
       playButtonClick();
-      ensureBuffGuideOverlay();
-      openBuffGuideOverlay();
+      openInfoOverlay(1);
+      howToOverlay.style.display = "none";
     };
 
-    btnRow.appendChild(startBtn);
-    btnRow.appendChild(learnBtn);
+    const leaderboardBtn = document.createElement("button");
+    leaderboardBtn.className = "ui-button ghost";
+    leaderboardBtn.textContent = "Leaderboard";
+    leaderboardBtn.onclick = () => {
+      playButtonClick();
+      openInfoOverlay(0);
+      howToOverlay.style.display = "none";
+    };
 
-    panel.appendChild(title);
-    panel.appendChild(subtitle);
+    actions.appendChild(startBtn);
+    actions.appendChild(learnBtn);
+    actions.appendChild(leaderboardBtn);
+
+    const updatesLine = document.createElement("div");
+    updatesLine.className = "muted";
+    updatesLine.innerHTML =
+      'Patch notes at <a href="https://snakeesc.github.io/updates" target="_blank" rel="noopener noreferrer" style="color:#7cf29d;">snakeesc.github.io/updates</a>';
+
+    panel.appendChild(header);
     panel.appendChild(intro);
-    panel.appendChild(controlsLabel);
-    panel.appendChild(controlsList);
-    //panel.appendChild(tipsLabel);
-    //panel.appendChild(tipsList);
-    panel.appendChild(btnRow);
+    panel.appendChild(grid);
+    panel.appendChild(actions);
     panel.appendChild(updatesLine);
 
     howToOverlay.appendChild(panel);
@@ -3131,135 +3063,74 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
   }
 
-
-  function openHowToOverlay() {
-    ensureHowToOverlay();
-    gamePaused = true;
-    if (howToOverlay) {
-      howToOverlay.style.display = "flex";
-    }
-  }
-
   function ensureInfoOverlay() {
     if (infoOverlay) return;
 
     infoOverlay = document.createElement("div");
-    infoOverlay.className = "frog-info-overlay";
-    infoOverlay.style.position = "absolute";
-    infoOverlay.style.inset = "0";
-    infoOverlay.style.background = "rgba(0,0,0,0.75)";
+    infoOverlay.className = "game-overlay";
     infoOverlay.style.display = "none";
-    infoOverlay.style.zIndex = "180";
-    infoOverlay.style.alignItems = "center";
-    infoOverlay.style.justifyContent = "center";
-    infoOverlay.style.pointerEvents = "auto";
 
     const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px 12px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "260px";
-    panel.style.maxWidth = "480px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    panel.className = "game-card tight";
 
-    // Header row
     const headerRow = document.createElement("div");
-    headerRow.style.display = "flex";
-    headerRow.style.justifyContent = "space-between";
-    headerRow.style.alignItems = "center";
-    headerRow.style.marginBottom = "6px";
+    headerRow.className = "game-card-header";
 
+    const headerLeft = document.createElement("div");
     const title = document.createElement("div");
-    title.textContent = "escape the snake 🐍 – info";
-    title.style.fontSize = "14px";
-    title.style.fontWeight = "bold";
+    title.className = "game-title";
+    title.textContent = "Game Guide";
+
+    const subtitle = document.createElement("div");
+    subtitle.className = "game-subtitle";
+    subtitle.textContent = "Leaderboard, tips, and upgrade notes";
+
+    headerLeft.appendChild(title);
+    headerLeft.appendChild(subtitle);
 
     const pageLabel = document.createElement("div");
-    pageLabel.style.fontSize = "11px";
-    pageLabel.style.opacity = "0.8";
+    pageLabel.className = "pill";
+    pageLabel.textContent = "Page 1 / 5";
     infoPageLabel = pageLabel;
 
-    headerRow.appendChild(title);
+    headerRow.appendChild(headerLeft);
     headerRow.appendChild(pageLabel);
 
     const content = document.createElement("div");
-    content.style.fontSize = "13px";
-    content.style.marginTop = "4px";
-    content.style.lineHeight = "1.4";
+    content.className = "game-body";
     infoContentEl = content;
 
-    // Footer nav row
     const navRow = document.createElement("div");
-    navRow.style.display = "flex";
-    navRow.style.justifyContent = "space-between";
-    navRow.style.alignItems = "center";
-    navRow.style.marginTop = "10px";
-
-    const leftBtns = document.createElement("div");
-    leftBtns.style.display = "flex";
-    leftBtns.style.gap = "6px";
+    navRow.className = "game-actions";
 
     const prevBtn = document.createElement("button");
+    prevBtn.className = "ui-button ghost";
     prevBtn.textContent = "◀ Prev";
-    prevBtn.style.fontFamily = "monospace";
-    prevBtn.style.fontSize = "12px";
-    prevBtn.style.padding = "4px 8px";
-    prevBtn.style.borderRadius = "6px";
-    prevBtn.style.border = "1px solid #555";
-    prevBtn.style.background = "#222";
-    prevBtn.style.color = "#fff";
-    prevBtn.style.cursor = "pointer";
-    prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
-    prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
-      prevBtn.onclick = () => {
+    prevBtn.onclick = () => {
       playButtonClick();
       setInfoPage(infoPage - 1);
     };
     infoPrevBtn = prevBtn;
 
     const nextBtn = document.createElement("button");
+    nextBtn.className = "ui-button";
     nextBtn.textContent = "Next ▶";
-    nextBtn.style.fontFamily = "monospace";
-    nextBtn.style.fontSize = "12px";
-    nextBtn.style.padding = "4px 8px";
-    nextBtn.style.borderRadius = "6px";
-    nextBtn.style.border = "1px solid #555";
-    nextBtn.style.background = "#222";
-    nextBtn.style.color = "#fff";
-    nextBtn.style.cursor = "pointer";
-    nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
-    nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
-      nextBtn.onclick = () => {
+    nextBtn.onclick = () => {
       playButtonClick();
       setInfoPage(infoPage + 1);
     };
     infoNextBtn = nextBtn;
 
-    leftBtns.appendChild(prevBtn);
-    leftBtns.appendChild(nextBtn);
-
     const closeBtn = document.createElement("button");
-    closeBtn.textContent = "Close ×";
-    closeBtn.style.fontFamily = "monospace";
-    closeBtn.style.fontSize = "12px";
-    closeBtn.style.padding = "4px 8px";
-    closeBtn.style.borderRadius = "6px";
-    closeBtn.style.border = "1px solid #555";
-    closeBtn.style.background = "#222";
-    closeBtn.style.color = "#fff";
-    closeBtn.style.cursor = "pointer";
-    closeBtn.onmouseenter = () => { closeBtn.style.background = "#333"; };
-    closeBtn.onmouseleave = () => { closeBtn.style.background = "#222"; };
+    closeBtn.className = "ui-button primary";
+    closeBtn.textContent = "Close";
     closeBtn.onclick = () => {
       playButtonClick();
       closeInfoOverlay();
     };
 
-    navRow.appendChild(leftBtns);
+    navRow.appendChild(prevBtn);
+    navRow.appendChild(nextBtn);
     navRow.appendChild(closeBtn);
 
     panel.appendChild(headerRow);
@@ -3269,14 +3140,12 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     infoOverlay.appendChild(panel);
     container.appendChild(infoOverlay);
 
-    // clicking dark background closes the panel
     infoOverlay.addEventListener("click", (e) => {
       if (e.target === infoOverlay) {
         closeInfoOverlay();
       }
     });
 
-    // start on page 0 (leaderboard)
     setInfoPage(0);
   }
 
@@ -3424,6 +3293,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function openInfoOverlay(startPage) {
     ensureInfoOverlay();
+    infoOverlayFromMenu = !hasShownHowToOverlay;
     gamePaused = true;
     if (typeof startPage === "number") {
       setInfoPage(startPage);
@@ -3439,7 +3309,13 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (infoOverlay) {
       infoOverlay.style.display = "none";
     }
-    gamePaused = false;
+    if (infoOverlayFromMenu && !hasShownHowToOverlay) {
+      // Return to the main menu without starting the run
+      openHowToOverlay();
+    } else {
+      gamePaused = false;
+    }
+    infoOverlayFromMenu = false;
   }
 
   function ensureBuffGuideOverlay() {
@@ -3447,74 +3323,50 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     buffGuideOverlay = document.createElement("div");
     buffGuideOverlay.className = "frog-buff-guide-overlay";
-    buffGuideOverlay.style.position = "absolute";
-    buffGuideOverlay.style.inset = "0";
-    buffGuideOverlay.style.background = "rgba(0,0,0,0.75)";
     buffGuideOverlay.style.display = "none";
-    buffGuideOverlay.style.zIndex = "170";
-    buffGuideOverlay.style.alignItems = "center";
-    buffGuideOverlay.style.justifyContent = "center";
-    buffGuideOverlay.style.pointerEvents = "auto";
 
     const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px 12px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "260px";
-    panel.style.maxWidth = "440px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    panel.className = "frog-buff-guide-card";
 
     const headerRow = document.createElement("div");
-    headerRow.style.display = "flex";
-    headerRow.style.justifyContent = "space-between";
-    headerRow.style.alignItems = "center";
-    headerRow.style.marginBottom = "6px";
+    headerRow.className = "frog-buff-guide-header";
 
+    const headerLeft = document.createElement("div");
     const title = document.createElement("div");
-    title.textContent = "Buffs & upgrades";
-    title.style.fontSize = "14px";
-    title.style.fontWeight = "bold";
+    title.className = "frog-buff-guide-heading-main";
+    title.textContent = "Buff book";
+
+    const sub = document.createElement("div");
+    sub.className = "frog-buff-guide-heading-sub";
+    sub.textContent = "A friendly index of every glow and upgrade";
+
+    headerLeft.appendChild(title);
+    headerLeft.appendChild(sub);
 
     const pageLabel = document.createElement("div");
-    pageLabel.style.fontSize = "11px";
-    pageLabel.style.opacity = "0.8";
+    pageLabel.className = "frog-buff-guide-badge";
     buffGuidePageLabel = pageLabel;
 
-    headerRow.appendChild(title);
+    headerRow.appendChild(headerLeft);
     headerRow.appendChild(pageLabel);
 
+    const description = document.createElement("div");
+    description.className = "frog-buff-guide-description";
+    description.textContent = "Peek through the pages to see what each orb, chain, and upgrade does before you dive back into the pond.";
+
     const content = document.createElement("div");
-    content.style.fontSize = "13px";
-    content.style.marginTop = "4px";
-    content.style.lineHeight = "1.4";
+    content.className = "frog-buff-guide-content";
     buffGuideContentEl = content;
 
     const navRow = document.createElement("div");
-    navRow.style.display = "flex";
-    navRow.style.justifyContent = "space-between";
-    navRow.style.alignItems = "center";
-    navRow.style.marginTop = "10px";
+    navRow.className = "frog-buff-guide-footer-row";
 
-    const leftBtns = document.createElement("div");
-    leftBtns.style.display = "flex";
-    leftBtns.style.gap = "6px";
+    const navButtons = document.createElement("div");
+    navButtons.className = "frog-buff-guide-nav-buttons";
 
     const prevBtn = document.createElement("button");
+    prevBtn.className = "ui-button ghost";
     prevBtn.textContent = "◀ Prev";
-    prevBtn.style.fontFamily = "monospace";
-    prevBtn.style.fontSize = "12px";
-    prevBtn.style.padding = "4px 8px";
-    prevBtn.style.borderRadius = "6px";
-    prevBtn.style.border = "1px solid #555";
-    prevBtn.style.background = "#222";
-    prevBtn.style.color = "#fff";
-    prevBtn.style.cursor = "pointer";
-    prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
-    prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
     prevBtn.onclick = () => {
       playButtonClick();
       setBuffGuidePage(buffGuidePage - 1);
@@ -3522,47 +3374,30 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     buffGuidePrevBtn = prevBtn;
 
     const nextBtn = document.createElement("button");
+    nextBtn.className = "ui-button";
     nextBtn.textContent = "Next ▶";
-    nextBtn.style.fontFamily = "monospace";
-    nextBtn.style.fontSize = "12px";
-    nextBtn.style.padding = "4px 8px";
-    nextBtn.style.borderRadius = "6px";
-    nextBtn.style.border = "1px solid #555";
-    nextBtn.style.background = "#222";
-    nextBtn.style.color = "#fff";
-    nextBtn.style.cursor = "pointer";
-    nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
-    nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
     nextBtn.onclick = () => {
       playButtonClick();
       setBuffGuidePage(buffGuidePage + 1);
     };
     buffGuideNextBtn = nextBtn;
 
-    leftBtns.appendChild(prevBtn);
-    leftBtns.appendChild(nextBtn);
+    navButtons.appendChild(prevBtn);
+    navButtons.appendChild(nextBtn);
 
     const backBtn = document.createElement("button");
-    backBtn.textContent = "Close ×";
-    backBtn.style.fontFamily = "monospace";
-    backBtn.style.fontSize = "12px";
-    backBtn.style.padding = "4px 8px";
-    backBtn.style.borderRadius = "6px";
-    backBtn.style.border = "1px solid #555";
-    backBtn.style.background = "#222";
-    backBtn.style.color = "#fff";
-    backBtn.style.cursor = "pointer";
-    backBtn.onmouseenter = () => { backBtn.style.background = "#333"; };
-    backBtn.onmouseleave = () => { backBtn.style.background = "#222"; };
+    backBtn.className = "ui-button primary";
+    backBtn.textContent = "Close";
     backBtn.onclick = () => {
       playButtonClick();
       closeBuffGuideOverlay();
     };
 
-    navRow.appendChild(leftBtns);
+    navRow.appendChild(navButtons);
     navRow.appendChild(backBtn);
 
     panel.appendChild(headerRow);
+    panel.appendChild(description);
     panel.appendChild(content);
     panel.appendChild(navRow);
 
@@ -3809,70 +3644,53 @@ function ensureUpgradeOverlay() {
     if (upgradeOverlay) return;
 
     upgradeOverlay = document.createElement("div");
-    upgradeOverlay.className = "frog-upgrade-overlay";
-
-    upgradeOverlay.style.position = "absolute";
-    upgradeOverlay.style.inset = "0";
-    upgradeOverlay.style.background = "rgba(0,0,0,0.7)";
-    upgradeOverlay.style.display = "none"; // hidden by default
-    upgradeOverlay.style.zIndex = "150";
-    upgradeOverlay.style.alignItems = "center";
-    upgradeOverlay.style.justifyContent = "center";
-    upgradeOverlay.style.pointerEvents = "auto";
+    upgradeOverlay.className = "game-overlay";
+    upgradeOverlay.style.display = "none";
 
     const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "320px";
-    panel.style.maxWidth = "540px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    panel.className = "game-card tight";
 
+    const header = document.createElement("div");
+    header.className = "game-card-header";
+
+    const heading = document.createElement("div");
     const title = document.createElement("div");
-    title.textContent = "Choose an upgrade";
-    title.style.marginBottom = "10px";
-    title.style.fontSize = "14px";
-    title.style.textAlign = "center";
-    upgradeOverlayTitleEl = title;
+    title.className = "game-title";
+    title.textContent = "Upgrade selection";
 
-    // Main content row: choices on the left, current buffs on the right
+    const subtitle = document.createElement("div");
+    subtitle.className = "game-subtitle";
+    subtitle.textContent = "Pick an upgrade to continue";
+    upgradeOverlayTitleEl = subtitle;
+
+    heading.appendChild(title);
+    heading.appendChild(subtitle);
+
+    const badge = document.createElement("div");
+    badge.className = "pill accent";
+    badge.textContent = "Common";
+    upgradeOverlayBadgeEl = badge;
+
+    header.appendChild(heading);
+    header.appendChild(badge);
+
     const contentRow = document.createElement("div");
-    contentRow.style.display = "flex";
-    contentRow.style.alignItems = "flex-start";
+    contentRow.style.display = "grid";
+    contentRow.style.gridTemplateColumns = "2fr 1fr";
     contentRow.style.gap = "14px";
-    contentRow.style.marginTop = "4px";
 
-    // LEFT: upgrade choice buttons (stacked)
     const choicesCol = document.createElement("div");
-    choicesCol.style.display = "flex";
-    choicesCol.style.flexDirection = "column";
-    choicesCol.style.gap = "8px";
-    choicesCol.style.alignItems = "stretch";
-    choicesCol.style.minWidth = "0";
-
+    choicesCol.className = "option-grid";
     upgradeOverlayButtonsContainer = choicesCol;
 
-    // RIGHT: current buffs summary
     const buffsCol = document.createElement("div");
-    buffsCol.style.minWidth = "190px";
-    buffsCol.style.maxWidth = "220px";
-    buffsCol.style.fontSize = "11px";
-    buffsCol.style.lineHeight = "1.4";
-    buffsCol.style.borderLeft = "1px solid #333";
-    buffsCol.style.paddingLeft = "10px";
-    buffsCol.style.opacity = "0.9";
+    buffsCol.className = "stat-list";
+    upgradeBuffSummaryBox = document.createElement("div");
+    upgradeBuffSummaryBox.className = "stat-list";
 
     const buffsTitle = document.createElement("div");
+    buffsTitle.className = "game-subtitle";
     buffsTitle.textContent = "Current buffs";
-    buffsTitle.style.fontWeight = "bold";
-    buffsTitle.style.marginBottom = "4px";
-
-    upgradeBuffSummaryBox = document.createElement("div");
-    upgradeBuffSummaryBox.style.marginTop = "2px";
 
     buffsCol.appendChild(buffsTitle);
     buffsCol.appendChild(upgradeBuffSummaryBox);
@@ -3880,7 +3698,7 @@ function ensureUpgradeOverlay() {
     contentRow.appendChild(choicesCol);
     contentRow.appendChild(buffsCol);
 
-    //panel.appendChild(title);
+    panel.appendChild(header);
     panel.appendChild(contentRow);
     upgradeOverlay.appendChild(panel);
     container.appendChild(upgradeOverlay);
@@ -4022,7 +3840,7 @@ function ensureUpgradeOverlay() {
     }
 
     upgradeBuffSummaryBox.innerHTML = lines
-      .map(line => `<div>${line}</div>`)
+      .map(line => `<div class="stat-chip">${line}</div>`)
       .join("");
   }
 
@@ -4037,9 +3855,22 @@ function ensureUpgradeOverlay() {
 
     containerEl.innerHTML = "";
     const neon = "#4defff";
+    const modeLabel = isEpic
+      ? "Epic upgrade"
+      : isLegendary
+        ? "Legendary upgrade"
+        : "Common upgrade";
 
     if (upgradeOverlayTitleEl) {
-      upgradeOverlayTitleEl.textContent = "Choose an upgrade";
+      upgradeOverlayTitleEl.textContent = modeLabel;
+    }
+    if (upgradeOverlayBadgeEl) {
+      upgradeOverlayBadgeEl.textContent = isEpic
+        ? "Epic"
+        : isLegendary
+          ? "Legendary"
+          : "Common";
+      upgradeOverlayBadgeEl.className = "pill " + (isEpic ? "epic" : "accent");
     }
 
     let choices = [];
@@ -4116,18 +3947,11 @@ function ensureUpgradeOverlay() {
 
     function makeButton(label, onClick) {
       const btn = document.createElement("button");
-      btn.innerHTML = label; // allow emojis + <span> highlight
-      btn.style.fontFamily = "monospace";
-      btn.style.fontSize = "13px";
-      btn.style.padding = "6px 8px";
-      btn.style.border = "1px solid #555";
-      btn.style.borderRadius = "6px";
-      btn.style.background = "#222";
-      btn.style.color = "#fff";
-      btn.style.cursor = "pointer";
-      btn.style.textAlign = "left";
-      btn.onmouseenter = () => { btn.style.background = "#333"; };
-      btn.onmouseleave = () => { btn.style.background = "#222"; };
+      btn.className = "option-card";
+      btn.innerHTML = `
+        <div class="option-desc">${label}</div>
+        <div class="option-meta"><span>${modeLabel}</span><span>Instant apply</span></div>
+      `;
       btn.onclick = () => {
         playButtonClick();
         try {
@@ -4554,12 +4378,8 @@ function ensureUpgradeOverlay() {
     updateStatsPanel();
     updateHUD();
 
-    // Show the how-to-play menu before the first upgrade
+    // Show the main menu before the first upgrade
     openHowToOverlay();
-
-    // Always offer a common upgrade at the very start of the game
-    // (same behavior as restartGame)
-    openUpgradeOverlay("normal");
 
     animId = requestAnimationFrame(drawFrame);
   }
