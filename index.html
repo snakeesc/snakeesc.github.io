@@ -41,7 +41,7 @@
 
   <!-- MAIN MENU OVERLAY -->
   <div id="mainMenuOverlay" class="frog-overlay">
-    <div class="frog-panel">
+    <div class="frog-panel" style="background: transparent !important;">
       <div class="frog-panel-title">
         Escape the Snake
         <span class="emoji">🐍</span>
@@ -58,7 +58,6 @@
         </button>
       </div>
 
-      <div class="frog-panel-section-label">Info</div>
       <div>
         <button id="btnHowTo" class="frog-btn frog-btn-secondary">
           How to Play
@@ -69,10 +68,6 @@
         <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">
           Leaderboard
         </button>
-      </div>
-
-      <div class="frog-panel-footer">
-        Press <strong>Enter</strong> or click <strong>Start Run</strong> to begin.
       </div>
     </div>
   </div>
@@ -90,7 +85,6 @@
       <div class="upgrade-layout">
         <!-- LEFT: upgrade options -->
         <div class="upgrade-column upgrade-column-choices">
-          <div class="upgrade-column-title">📦 Choose an upgrade</div>
           <div id="upgradeChoicesContainer" class="upgrade-choices">
             <!-- buttons injected by JS -->
           </div>
@@ -118,10 +112,9 @@
 
       <div class="frog-panel-section-label">Goal</div>
       <ul class="frog-panel-list">
-        <li>Avoid letting the snake touch any frog.</li>
-        <li>The goal is to stay alive as long as possible.</li>
-        <li>Your score rises every time a frog gets eaten.</li>
-        <li>Collect orbs and upgrade buffs so your squad survives longer.</li>
+        <li>Avoid letting the snake eat your frogs!</li>
+        <li>The goal is to stay alive for as long as possible.</li>
+        <li>Collect orbs and upgrade buffs to survive longer.</li>
       </ul>
 
       <div class="frog-panel-section-label">Tips</div>
@@ -198,7 +191,7 @@
       </div>
 
       <div class="frog-panel-sub">
-        Top runs from all players. Tags are player-chosen (with profanity filter).
+        Top runs from all players.
       </div>
 
       <div id="leaderboardContent">
