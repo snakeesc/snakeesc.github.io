@@ -3341,7 +3341,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const neon = "#7dd3fc";
 
     let html = "<b>🏆 Leaderboard</b><br><br>";
-    const list = infoLeaderboardData || [];
+    const list = (infoLeaderboardData || []).filter(Boolean);
 
     if (!list.length) {
       html += "<div>No scores yet — be the first to escape the snake.</div>";
@@ -3352,9 +3352,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       html += "<tr><th>#</th><th>Tag</th><th style=\"text-align:right;\">Score</th><th style=\"text-align:right;\">Time</th></tr>";
       list.slice(0, 10).forEach((entry, idx) => {
         const rank = idx + 1;
-        const tag  = entry.tag || "anon";
-        const scoreStr = entry.score.toLocaleString();
-        const tStr = entry.time ? `${Math.round(entry.time)}s` : "";
+        const tag  = entry && entry.tag ? String(entry.tag) : "anon";
+        const scoreVal = Number(entry && entry.score != null ? entry.score : 0);
+        const scoreStr = Number.isFinite(scoreVal) ? scoreVal.toLocaleString() : "0";
+        const timeVal = Number(entry && entry.time != null ? entry.time : 0);
+        const tStr = Number.isFinite(timeVal) && timeVal > 0 ? `${Math.round(timeVal)}s` : "";
 
         const isYou = entry.isSelf === true;
         const rowStyle = isYou ? " style=\"background:rgba(125,211,252,0.08);\"" : "";
