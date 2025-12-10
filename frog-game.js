@@ -3232,8 +3232,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
-    ensureMainMenuFrogCount(8, width, height);
-    updateMainMenuFrogs(dt, width, height);
+    //ensureMainMenuFrogCount(8, width, height);
+    //updateMainMenuFrogs(dt, width, height);
     updateMainMenuSnakes(dt, width, height);
 
     mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
@@ -3265,7 +3265,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     }
 
-    ensureMainMenuFrogCount(8, width, height);
+    //ensureMainMenuFrogCount(8, width, height);
 
     mainMenuActive = true;
     mainMenuLastTime = 0;
