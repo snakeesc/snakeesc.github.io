@@ -229,26 +229,11 @@
 
     scoreboardOverlay = document.createElement("div");
     scoreboardOverlay.id = "frog-scoreboard-overlay";
-    scoreboardOverlay.style.position = "fixed";
-    scoreboardOverlay.style.inset = "0";
-    scoreboardOverlay.style.background = "rgba(0,0,0,0.65)";
+    scoreboardOverlay.className = "scoreboard-overlay";
     scoreboardOverlay.style.display = "none";
-    scoreboardOverlay.style.alignItems = "center";
-    scoreboardOverlay.style.justifyContent = "center";
-    scoreboardOverlay.style.zIndex = "9999";
 
     scoreboardOverlayInner = document.createElement("div");
-    scoreboardOverlayInner.style.background = "#111";
-    scoreboardOverlayInner.style.borderRadius = "8px";
-    scoreboardOverlayInner.style.border = "1px solid #444";
-    scoreboardOverlayInner.style.padding = "14px 18px 10px 18px";
-    scoreboardOverlayInner.style.minWidth = "260px";
-    scoreboardOverlayInner.style.maxWidth = "420px";
-    scoreboardOverlayInner.style.color = "#eee";
-    scoreboardOverlayInner.style.fontFamily = "monospace";
-    scoreboardOverlayInner.style.fontSize = "12px";
-    scoreboardOverlayInner.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
-    scoreboardOverlayInner.style.textAlign = "left";
+    scoreboardOverlayInner.className = "scoreboard-card";
 
     scoreboardOverlay.appendChild(scoreboardOverlayInner);
     containerEl.appendChild(scoreboardOverlay);
@@ -556,24 +541,56 @@
   // --------------------------------------------------
   // FULL SCOREBOARD OVERLAY (after a run)
   // --------------------------------------------------
-  function openScoreboardOverlay(entries, lastScore, lastTime, finalStats) {
+  function openScoreboardOverlay(entries, lastScore, lastTime, finalStats, options) {
 
     if (!scoreboardOverlay || !scoreboardOverlayInner) return;
-  
+
+    const safeOptions = options || {};
+    const { onPlayAgain, onReturnToMenu } = safeOptions;
+
     const safeList = Array.isArray(entries) ? entries : [];
-  
+
     scoreboardOverlayInner.innerHTML = "";
-  
-    const title = document.createElement("div");
-    title.textContent = "Run summary & leaderboard";
-    title.style.fontSize = "14px";
-    title.style.marginBottom = "10px";
-    title.style.textAlign = "center";
-    scoreboardOverlayInner.appendChild(title);
-  
+
+    const header = document.createElement("div");
+    header.className = "scoreboard-header";
+    header.innerHTML = `
+      <div class="scoreboard-title">Run summary</div>
+      <div class="scoreboard-subtitle">Leaderboard updated</div>
+    `;
+    scoreboardOverlayInner.appendChild(header);
+
     const { index: myIndex, entry: myEntry } =
       findMyIndexInList(safeList, lastScore, lastTime);
     let summary = null;
+
+    const summaryName = getDisplayName(myEntry, "You");
+
+    function renderSummary(name) {
+      if (!summary) return;
+
+      const safeName = escapeHtml(name || summaryName);
+      const displayScore = Math.floor(
+        typeof lastScore === "number" ? lastScore : getEntryScore(myEntry)
+      );
+      const displayTime = formatTime(
+        typeof lastTime === "number" ? lastTime : getEntryTime(myEntry)
+      );
+
+      summary.innerHTML = `
+        <div class="summary-heading">${safeName}</div>
+        <div class="summary-metrics">
+          <div class="summary-pill">
+            <div class="pill-label">Score</div>
+            <div class="pill-value">${displayScore}</div>
+          </div>
+          <div class="summary-pill">
+            <div class="pill-label">Time survived</div>
+            <div class="pill-value">${displayTime}</div>
+          </div>
+        </div>
+      `;
+    }
 
     // ---- Player tag input (always shown in summary; pre-filled if saved) ----
     (function setupTagInput() {
@@ -654,6 +671,11 @@
 
       scoreboardOverlayInner.appendChild(tagBox);
 
+      summary = document.createElement("div");
+      summary.className = "scoreboard-summary";
+      renderSummary(summaryName);
+      scoreboardOverlayInner.appendChild(summary);
+
       function finish(tagValue) {
         // Save to localStorage
         try {
@@ -681,15 +703,7 @@
             typeof lastTime === "number" ? lastTime : getEntryTime(myEntry);
 
           // Immediately refresh the summary text with the new tag
-          if (summary) {
-            const newName = getDisplayName(myEntry, "You");
-            summary.innerHTML =
-              "Run summary:<br>" +
-              `<span style="color:#ffd700;font-weight:bold;">${escapeHtml(
-                newName
-              )}</span>` +
-              ` — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
-          }
+          renderSummary(getDisplayName(myEntry, "You"));
 
           // Fire-and-forget: push the new tag to the server and then
           // refresh BOTH leaderboards when we get updated entries back.
@@ -717,7 +731,7 @@
 
               // 2) Rebuild the end-game summary leaderboard so it shows the new tag
               //    (this keeps the overlay open, just re-renders its inner content)
-              openScoreboardOverlay(topList, lastScore, lastTime, finalStats);
+              openScoreboardOverlay(topList, lastScore, lastTime, finalStats, safeOptions);
             } catch (err) {
               console.error(
                 "Error refreshing leaderboards after tag change:",
@@ -757,29 +771,17 @@
       });
     })();
 
-    const myName = getDisplayName(myEntry, "You");
-
-    summary = document.createElement("div");
-    summary.style.marginBottom = "12px";
-    summary.style.fontSize = "13px";
-    summary.innerHTML =
-      "Run summary:<br>" +
-      `<span style="color:#ffd700;font-weight:bold;">${escapeHtml(
-        myName
-      )}</span>` +
-      ` — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
-    scoreboardOverlayInner.appendChild(summary);
-  
     // ----- Leaderboard table with pagination (10 per page) -----
     const PAGE_SIZE = 10;
     let currentPage = 0;
     const totalEntries = safeList.length;
     const totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
 
+    const tableWrapper = document.createElement("div");
+    tableWrapper.className = "scoreboard-table-wrapper";
+
     const table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.borderCollapse = "collapse";
-    table.style.fontSize = "12px";
+    table.className = "scoreboard-table";
 
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
@@ -795,10 +797,7 @@
     thScore.textContent = "Score";
 
     for (const th of [thRank, thName, thTime, thScore]) {
-      th.style.borderBottom = "1px solid #444";
-      th.style.padding = "2px 4px";
-      th.style.textAlign = "left";
-      th.style.fontWeight = "bold";
+      th.className = "scoreboard-th";
     }
 
     headRow.appendChild(thRank);
@@ -810,43 +809,28 @@
 
     const tbody = document.createElement("tbody");
     table.appendChild(tbody);
-    scoreboardOverlayInner.appendChild(table);
+    tableWrapper.appendChild(table);
 
     // Pagination controls
     const pager = document.createElement("div");
-    pager.style.display = "flex";
-    pager.style.alignItems = "center";
-    pager.style.justifyContent = "space-between";
-    pager.style.marginTop = "6px";
-    pager.style.fontSize = "11px";
+    pager.className = "scoreboard-pager";
 
     const prevBtn = document.createElement("button");
     prevBtn.textContent = "◀ Prev";
-    prevBtn.style.padding = "2px 6px";
-    prevBtn.style.background = "#222";
-    prevBtn.style.border = "1px solid #444";
-    prevBtn.style.color = "#eee";
-    prevBtn.style.borderRadius = "3px";
-    prevBtn.style.cursor = "pointer";
+    prevBtn.className = "scoreboard-btn scoreboard-btn--ghost";
 
     const nextBtn = document.createElement("button");
     nextBtn.textContent = "Next ▶";
-    nextBtn.style.padding = "2px 6px";
-    nextBtn.style.background = "#222";
-    nextBtn.style.border = "1px solid #444";
-    nextBtn.style.color = "#eee";
-    nextBtn.style.borderRadius = "3px";
-    nextBtn.style.cursor = "pointer";
+    nextBtn.className = "scoreboard-btn scoreboard-btn--ghost";
 
     const pageInfo = document.createElement("div");
-    pageInfo.style.flex = "1";
-    pageInfo.style.textAlign = "center";
-    pageInfo.style.opacity = "0.85";
+    pageInfo.className = "scoreboard-page-info";
 
     pager.appendChild(prevBtn);
     pager.appendChild(pageInfo);
     pager.appendChild(nextBtn);
-    scoreboardOverlayInner.appendChild(pager);
+    tableWrapper.appendChild(pager);
+    scoreboardOverlayInner.appendChild(tableWrapper);
 
     function renderPage() {
       tbody.innerHTML = "";
@@ -882,6 +866,7 @@
         const time = getEntryTime(e);
 
         const tr = document.createElement("tr");
+        tr.className = "scoreboard-row";
 
         const rankCell = document.createElement("td");
         const nameCell = document.createElement("td");
@@ -893,15 +878,14 @@
         timeCell.textContent = formatTime(time);
         scoreCell.textContent = Math.floor(score);
 
-        for (const td of [rankCell, nameCell, timeCell, scoreCell]) {
-          td.style.padding = "2px 4px";
-          td.style.borderBottom = "1px solid #222";
-        }
+        rankCell.className = "scoreboard-td scoreboard-rank";
+        nameCell.className = "scoreboard-td scoreboard-name";
+        timeCell.className = "scoreboard-td";
+        scoreCell.className = "scoreboard-td scoreboard-score";
 
         // Highlight "you" if this is your entry
         if (i === myIndex) {
-          nameCell.style.color = "#ffd700";
-          nameCell.style.fontWeight = "bold";
+          tr.classList.add("scoreboard-row--me");
         }
 
         tr.appendChild(rankCell);
@@ -984,12 +968,38 @@
       */
     }
   
+    if (onPlayAgain || onReturnToMenu) {
+      const actions = document.createElement("div");
+      actions.className = "scoreboard-actions";
+
+      if (onPlayAgain) {
+        const playAgainBtn = document.createElement("button");
+        playAgainBtn.className = "scoreboard-btn scoreboard-btn--primary";
+        playAgainBtn.textContent = "Play again";
+        playAgainBtn.addEventListener("click", () => {
+          hideScoreboardOverlay();
+          onPlayAgain();
+        });
+        actions.appendChild(playAgainBtn);
+      }
+
+      if (onReturnToMenu) {
+        const menuBtn = document.createElement("button");
+        menuBtn.className = "scoreboard-btn";
+        menuBtn.textContent = "Return to menu";
+        menuBtn.addEventListener("click", () => {
+          hideScoreboardOverlay();
+          onReturnToMenu();
+        });
+        actions.appendChild(menuBtn);
+      }
+
+      scoreboardOverlayInner.appendChild(actions);
+    }
+
     const hint = document.createElement("div");
     hint.textContent = "Click outside this panel to close.";
-    hint.style.marginTop = "8px";
-    hint.style.fontSize = "11px";
-    hint.style.opacity = "0.8";
-    hint.style.textAlign = "center";
+    hint.className = "scoreboard-hint";
     scoreboardOverlayInner.appendChild(hint);
   
     scoreboardOverlay.style.display = "flex";
