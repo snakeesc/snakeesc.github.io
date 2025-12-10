@@ -3249,12 +3249,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   `;
     card.appendChild(mini);
 
-    const footer = document.createElement("div");
-    footer.className = "frog-main-menu-footer";
-    footer.innerHTML =
-      'best played at <a href="https://freshfrogs.github.io/snake" target="_blank">freshfrogs.github.io/snake</a>';
-    card.appendChild(footer);
-
     container.appendChild(mainMenuOverlay);
   }
 
@@ -3341,7 +3335,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const neon = "#7dd3fc";
 
     let html = "<b>🏆 Leaderboard</b><br><br>";
-    const list = (infoLeaderboardData || []).filter(Boolean);
+    const list = Array.isArray(infoLeaderboardData)
+      ? infoLeaderboardData.filter(entry => entry && typeof entry === "object")
+      : [];
 
     if (!list.length) {
       html += "<div>No scores yet — be the first to escape the snake.</div>";
@@ -3353,10 +3349,19 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       list.slice(0, 10).forEach((entry, idx) => {
         const rank = idx + 1;
         const tag  = entry && entry.tag ? String(entry.tag) : "anon";
-        const scoreVal = Number(entry && entry.score != null ? entry.score : 0);
-        const scoreStr = Number.isFinite(scoreVal) ? scoreVal.toLocaleString() : "0";
-        const timeVal = Number(entry && entry.time != null ? entry.time : 0);
-        const tStr = Number.isFinite(timeVal) && timeVal > 0 ? `${Math.round(timeVal)}s` : "";
+
+        const scoreValRaw = Number(entry && entry.score);
+        const scoreVal = Number.isFinite(scoreValRaw) ? scoreValRaw : 0;
+        let scoreStr = "0";
+        try {
+          scoreStr = scoreVal.toLocaleString();
+        } catch (err) {
+          scoreStr = String(scoreVal || 0);
+        }
+
+        const timeValRaw = Number(entry && entry.time);
+        const timeVal = Number.isFinite(timeValRaw) ? timeValRaw : 0;
+        const tStr = timeVal > 0 ? `${Math.round(timeVal)}s` : "";
 
         const isYou = entry.isSelf === true;
         const rowStyle = isYou ? " style=\"background:rgba(125,211,252,0.08);\"" : "";
@@ -4147,6 +4152,24 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       if (bodyHtml) {
         btn.appendChild(bodySpan);
       }
+
+      const meta = document.createElement("div");
+      meta.className = "frog-upgrade-choice-meta";
+
+      const modePill = document.createElement("span");
+      modePill.className = "frog-upgrade-choice-mode";
+      modePill.textContent = isLegendary
+        ? "Legendary"
+        : isEpic
+          ? "Epic"
+          : "Core";
+
+      const hint = document.createElement("span");
+      hint.textContent = "Instant apply";
+
+      meta.appendChild(modePill);
+      meta.appendChild(hint);
+      btn.appendChild(meta);
 
       btn.addEventListener("click", () => {
         playButtonClick();

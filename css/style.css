@@ -1036,7 +1036,7 @@ a {
 }
 
 .frog-upgrade-card {
-  background: rgba(0,0,0,0.76);
+  background: rgba(0,0,0,0.8);
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.35);
   box-shadow: 0 0 26px rgba(0,0,0,0.9);
@@ -1078,7 +1078,7 @@ a {
   padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.4);
-  background: transparent;
+  background: rgba(255,255,255,0.06);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1107,33 +1107,53 @@ a {
 }
 
 .frog-upgrade-choice {
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.4);
   background: rgba(255,255,255,0.05);
   color: #fff;
   text-align: left;
   cursor: pointer;
   transition: background 0.16s, transform 0.1s, box-shadow 0.16s, border-color 0.16s;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6);
 }
 
 .frog-upgrade-choice:hover {
-  background: rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.12);
   border-color: rgba(255,255,255,0.8);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.8);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.85);
   transform: translateY(-1px);
 }
 
 .frog-upgrade-choice-title {
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .frog-upgrade-choice-body {
   font-size: 12px;
-  line-height: 1.35;
-  opacity: 0.92;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.frog-upgrade-choice-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  opacity: 0.85;
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+}
+
+.frog-upgrade-choice-mode {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
 }
 
 .frog-upgrade-summary {
@@ -1180,7 +1200,7 @@ a {
 }
 
 .frog-buff-guide-card {
-  background: rgba(0,0,0,0.76);
+  background: rgba(0,0,0,0.8);
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.35);
   box-shadow: 0 0 26px rgba(0,0,0,0.9);
@@ -1217,7 +1237,7 @@ a {
   padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.4);
-  background: transparent;
+  background: rgba(255,255,255,0.06);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1266,8 +1286,8 @@ a {
 
 .frog-buff-guide-column {
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: radial-gradient(circle at top, #07101b 0, #02060a 100%);
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.05);
   padding: 10px 10px 9px;
   font-size: 12px;
   overflow: auto;
@@ -1371,7 +1391,7 @@ a {
 }
 
 .frog-info-card {
-  background: rgba(0,0,0,0.76);
+  background: rgba(0,0,0,0.8);
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.35);
   box-shadow: 0 0 26px rgba(0,0,0,0.9);
