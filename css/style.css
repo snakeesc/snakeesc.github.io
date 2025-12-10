@@ -895,6 +895,115 @@ a {
   color: #f5f5f4;
 }
 
+/* leaderboard table styling */
+
+#leaderboardContent {
+  width: 100%;
+}
+
+.leaderboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.leaderboard-title {
+  font-weight: 800;
+  color: #bef264;
+  font-size: 15px;
+}
+
+.leaderboard-subtitle {
+  font-size: 12px;
+  color: #a8a29e;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0f172a;
+  border: 1px solid #334155;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 12px;
+}
+
+.leaderboard-table thead {
+  background: linear-gradient(90deg, #166534, #0f766e);
+}
+
+.leaderboard-head-cell {
+  padding: 8px 10px;
+  text-align: left;
+  color: #f8fafc;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.leaderboard-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.leaderboard-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.leaderboard-row.is-me {
+  outline: 1px solid #84cc16;
+  background: rgba(132, 204, 22, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.leaderboard-cell {
+  padding: 7px 10px;
+  color: #e5e7eb;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.leaderboard-name {
+  font-weight: 700;
+  color: #e7e5e4;
+}
+
+.leaderboard-pager {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.leaderboard-page-btn {
+  width: auto;
+  padding: 8px 12px;
+  margin-bottom: 0;
+}
+
+.leaderboard-page-info {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.leaderboard-legend {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #a8a29e;
+  text-align: center;
+}
+
+.leaderboard-loading,
+.leaderboard-error,
+.leaderboard-empty {
+  text-align: center;
+  color: #e5e7eb;
+  font-size: 13px;
+  padding: 16px 0 8px;
+}
+
 /* frog UI buttons */
 
 .frog-btn {
@@ -941,17 +1050,17 @@ a {
   font-size: 12px;
 }
 
-/* Upgrade choices – flat, no neon shadow */
+/* Upgrade choices – match main menu buttons */
 .frog-upgrade-choice {
   text-align: left;
-  background: #292524;           /* solid, slightly lighter than panel */
-  border: 1px solid #44403c;     /* subtle neutral border */
+  background: #292524;
+  border: 1px solid #44403c;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 .frog-upgrade-choice:hover {
-  background: #3f3a36;           /* tiny brightness change on hover */
-  border-color: #78716c;         /* no glow, just a bit lighter */
-  box-shadow: none;              /* kill the neon shadow */
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .frog-upgrade-title {
@@ -1049,11 +1158,6 @@ a {
   font-size: 12px;
 }
 
-@media (max-width: 960px) {
-  .upgrade-layout {
-    grid-template-columns: 1fr;
-  }
-}
 /* Buff guide pagination tabs */
 
 .buff-guide-nav {
@@ -1075,141 +1179,6 @@ a {
   color: #fefce8;
   border-color: #a3e635;
 }
-/* --- Upgrade overlay – Layout B (summary on top, 3-card grid) --- */
-
-/* Top summary bar above the choices */
-.upgrade-summary-bar {
-  background: #292524;             /* flat dark brown/charcoal */
-  border-radius: 10px;
-  border: 1px solid #44403c;
-  padding: 8px 10px;
-  margin-bottom: 12px;
-}
-
-.upgrade-summary-heading {
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-/* Summary list displays as inline chips */
-.upgrade-summary-inline {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  font-size: 12px;
-}
-
-.upgrade-summary-inline li {
-  white-space: nowrap;
-}
-
-.stat-highlight {
-  color: #a3e635;                  /* moss highlight */
-  font-weight: 800;
-}
-
-/* Upgrade choices grid */
-#upgradeOverlay .upgrade-layout {
-  display: block;
-  margin-bottom: 10px;
-}
-
-.upgrade-choices {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-/* Make sure the buttons behave like cards */
-.upgrade-choices .frog-upgrade-choice {
-  text-align: left;
-}
-
-/* Responsive: stack cards on small screens */
-@media (max-width: 900px) {
-  .upgrade-choices {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Optional: hide the unused subtext element for this overlay */
-#upgradeOverlaySub {
-  display: none;
-}
-/* --- Upgrade overlay: choices left, boosts right --- */
-
-/* Two-column layout just for the upgrade overlay */
-#upgradeOverlay .upgrade-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-
-/* Panel columns */
-#upgradeOverlay .upgrade-column {
-  background: #1c1917;            /* Coffee & Moss panel color */
-  border: 1px solid #44403c;
-  border-radius: 12px;
-  padding: 10px;
-}
-
-#upgradeOverlay .upgrade-column-title {
-  font-weight: 800;
-  color: #f5f5f4;
-  margin-bottom: 6px;
-  font-size: 13px;
-}
-
-/* LEFT: upgrade choices stacked */
-#upgradeOverlay .upgrade-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Make sure upgrade buttons look like cards, left-aligned text */
-#upgradeOverlay .frog-upgrade-choice {
-  text-align: left;
-}
-
-/* RIGHT: permanent boosts list stacked */
-#upgradeOverlay .upgrade-summary-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-#upgradeOverlay .upgrade-summary-list li {
-  font-size: 12px;
-  line-height: 1.45;
-  color: #f5f5f4;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: #1c1917;
-  border: 1px solid #44403c;
-}
-
-/* Highlight numbers in the summary */
-.stat-highlight {
-  color: #a3e635;                 /* mossy highlight */
-  font-weight: 800;
-}
-
-/* Mobile: stack columns vertically */
-@media (max-width: 900px) {
-  #upgradeOverlay .upgrade-layout {
-    grid-template-columns: 1fr;
-  }
-}
 /* Upgrade overlay: floating pills only, no big box */
 #upgradeOverlay .frog-panel {
   background: transparent;
@@ -1229,12 +1198,14 @@ a {
   border: none;
   padding: 0;
 }
+
 /* Left column: stack upgrades top-down */
 #upgradeOverlay .upgrade-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 16px;
-  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 10px;
 }
 
 #upgradeOverlay .upgrade-choices {
@@ -1243,42 +1214,19 @@ a {
   gap: 8px;
 }
 
-/* Right column: permanent boosts stack */
-#upgradeOverlay .upgrade-summary-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-#upgradeOverlay .upgrade-summary-list li {
-  font-size: 12px;
-  line-height: 1.45;
-  color: #f5f5f4;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #1c1917;
-  border: 1px solid #44403c;
-  display: inline-block;
-}
-
 /* Base pill style for upgrade choices */
 #upgradeOverlay .frog-upgrade-choice {
-  border-radius: 5px;
-  border: none;
-  padding: 8px 14px;
+  border-radius: 10px;
+  padding: 12px 14px;
   font-size: 13px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 2px;
-  color: #ffffff;
-  background: #60a540;                  /* default green */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+  gap: 4px;
+  color: #fefce8;
+  background: #292524;
   text-align: left;
 }
 
@@ -1286,42 +1234,42 @@ a {
 #upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
   font-size: 14px;
   font-weight: 800;
+  color: #d9f99d;
 }
 
 #upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
   font-size: 12px;
 }
 
-/* Hover: tiny lift, slightly brighter */
-#upgradeOverlay .frog-upgrade-choice:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
-/* Color variants by “type” */
+/* Color variants by “type” – use a subtle accent strip */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
-  background: #60a540; /* green – movement / hops */
+  border-color: #65a30d;
+  box-shadow: inset 4px 0 #65a30d, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
-  background: #f2b632; /* yellow-ish – buff duration/orbs */
+  border-color: #eab308;
+  box-shadow: inset 4px 0 #eab308, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival {
-  background: #d9533f; /* red – deathrattle / last stand */
+  border-color: #ef4444;
+  box-shadow: inset 4px 0 #ef4444, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
-  background: #e27a25; /* orange – orb-related */
+  border-color: #fb923c;
+  box-shadow: inset 4px 0 #fb923c, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
-  background: #7c3aed; /* purple – special frog roles */
+  border-color: #a855f7;
+  box-shadow: inset 4px 0 #a855f7, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 /* Mobile: stack columns */
 @media (max-width: 900px) {
   #upgradeOverlay .upgrade-layout {
-    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 }

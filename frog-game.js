@@ -218,6 +218,7 @@
   // UI + audio toggles
   let soundEnabled      = true;
   let statsPanelVisible = false;
+  let mainMenuActive    = false;
 
   let lastRunScore  = 0;
   let lastRunTime   = 0;
@@ -251,6 +252,12 @@
 
   // Old snakes that are despawning chunk-by-chunk
   let dyingSnakes = [];
+
+  // Main menu background snakes/frogs
+  let mainMenuSnakes = [];
+  let mainMenuFrogs = [];
+  let mainMenuAnimId = null;
+  let mainMenuLastTime = 0;
 
   let speedBuffTime   = 0;
   let jumpBuffTime    = 0;
@@ -330,9 +337,11 @@
     }
 
     if (gameOver) {
-      showMainMenu();
+      startNewRun();
       return;
     }
+
+    if (mainMenuActive) return;
 
     mouse.follow = true;
   });
@@ -340,6 +349,8 @@
   // --------------------------------------------------
   // HUD
   // --------------------------------------------------
+  let inGameUIVisible = true;
+
   const hud = document.createElement("div");
   hud.style.position = "absolute";
   hud.style.top = "10px";
@@ -400,6 +411,7 @@
   statsPanel.style.maxWidth = "260px";
   statsPanel.style.pointerEvents = "none";
   statsPanel.style.lineHeight = "1.4";
+  statsPanel.style.display = "none";
   container.appendChild(statsPanel);
 
   // Small control buttons (top-left)
@@ -459,6 +471,24 @@
   gameOverBanner.innerHTML = "Game Over<br/><small>Click to play again</small>";
   container.appendChild(gameOverBanner);
 
+  function setInGameUIVisible(show) {
+    inGameUIVisible = show;
+
+    if (hud) hud.style.display = show ? "block" : "none";
+    if (miniBoard) miniBoard.style.display = show ? "block" : "none";
+    if (controlsBar) controlsBar.style.display = show ? "flex" : "none";
+
+    if (statsPanel) {
+      if (show && statsPanelVisible) {
+        statsPanel.style.display = "block";
+      } else {
+        statsPanel.style.display = "none";
+      }
+    }
+  }
+
+  setInGameUIVisible(false);
+
   function formatTime(t) {
     const total = Math.max(0, t);
     const m = Math.floor(total / 60);
@@ -467,6 +497,8 @@
   }
 
   function updateHUD() {
+    if (!inGameUIVisible) return;
+
     timerLabel.textContent = `Time: ${formatTime(elapsedTime)}`;
     frogsLabel.textContent = `Frogs left: ${frogs.length}`;
     scoreLabel.textContent = `Score: ${Math.floor(score)}`;
@@ -474,7 +506,7 @@
 
   function updateStatsPanel() {
     const neon = "#4defff";
-    if (!statsPanel || !statsPanelVisible) return;
+    if (!statsPanel || !statsPanelVisible || !inGameUIVisible) return;
 
     const frogsAlive = frogs.length;
     const snakesAlive =
@@ -532,13 +564,16 @@
     statsPanel.style.display = statsPanelVisible ? "block" : "none";
   }
 
+  function syncAudioMuteState() {
+    if (AudioMod && typeof AudioMod.setMuted === "function") {
+      AudioMod.setMuted(!soundEnabled || mainMenuActive);
+    }
+  }
+
   function toggleSound() {
     soundEnabled = !soundEnabled;
 
-    // If your audio module supports it, propagate mute state
-    if (AudioMod && typeof AudioMod.setMuted === "function") {
-      AudioMod.setMuted(!soundEnabled);
-    }
+    syncAudioMuteState();
 
     if (btnSound) {
       btnSound.textContent = soundEnabled ? "Sound: ON" : "Sound: OFF";
@@ -1624,6 +1659,21 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 }
 
 
+  function getShedStageFilter(stage) {
+    if (stage === 1) {
+      // yellow-ish
+      return "hue-rotate(-40deg) saturate(1.6) brightness(1.1)";
+    } else if (stage === 2) {
+      // orange-ish
+      return "hue-rotate(-20deg) saturate(1.7) brightness(1.05)";
+    } else if (stage >= 3) {
+      // red-ish
+      return "hue-rotate(-60deg) saturate(1.8)";
+    }
+
+    return "";
+  }
+
   function applySnakeAppearance() {
     if (!snake) return;
 
@@ -1635,23 +1685,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     }
 
-    let filter = "";
-
-    // Base color per shed stage:
-    // 0: default
-    // 1: yellow
-    // 2: orange
-    // 3+: red
-    if (snakeShedStage === 1) {
-      // yellow-ish
-      filter = "hue-rotate(-40deg) saturate(1.6) brightness(1.1)";
-    } else if (snakeShedStage === 2) {
-      // orange-ish
-      filter = "hue-rotate(-20deg) saturate(1.7) brightness(1.05)";
-    } else if (snakeShedStage >= 3) {
-      // red-ish
-      filter = "hue-rotate(-60deg) saturate(1.8)";
-    }
+    let filter = getShedStageFilter(snakeShedStage);
 
     // Legendary Frenzy overlay (red tint)
     if (snakeFrenzyTime > 0) {
@@ -2169,9 +2203,14 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   }
 
   // Spawn a second active snake without touching the primary one
-  function spawnAdditionalSnake(width, height) {
-    const startX = width * 0.85;  // opposite side of the screen
-    const startY = height * 0.5;
+  function spawnAdditionalSnake(width, height, opts = {}) {
+    const startX = typeof opts.startX === "number" ? opts.startX : width * 0.85;
+    const startY = typeof opts.startY === "number" ? opts.startY : height * 0.5;
+    const initialAngle = typeof opts.angle === "number" ? opts.angle : Math.PI;
+    const segmentCount = typeof opts.segmentCount === "number"
+      ? opts.segmentCount
+      : SNAKE_INITIAL_SEGMENTS;
+    const colorFilter = typeof opts.colorFilter === "string" ? opts.colorFilter : "";
 
     const headEl = document.createElement("div");
     headEl.className = "snake-head";
@@ -2187,9 +2226,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     container.appendChild(headEl);
 
     const segments = [];
-    for (let i = 0; i < SNAKE_INITIAL_SEGMENTS; i++) {
+    for (let i = 0; i < segmentCount; i++) {
       const segEl = document.createElement("div");
-      const isTail = i === SNAKE_INITIAL_SEGMENTS - 1;
+      const isTail = i === segmentCount - 1;
       segEl.className = isTail ? "snake-tail" : "snake-body";
       segEl.style.position = "absolute";
       segEl.style.width = SNAKE_SEGMENT_SIZE + "px";
@@ -2209,19 +2248,26 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
+    const maxPath = (segmentCount + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
 
     // Fresh snake: base speed + base color
     const newSnake = {
-      head: { el: headEl, x: startX, y: startY, angle: Math.PI }, // facing left
+      head: { el: headEl, x: startX, y: startY, angle: initialAngle },
       segments,
       path,
       isFrenzyVisual: false,
       speedFactor: 1.0
     };
+
+    if (colorFilter) {
+      headEl.style.filter = colorFilter;
+      for (const seg of segments) {
+        seg.el.style.filter = colorFilter;
+      }
+    }
 
     return newSnake;
   }
@@ -2350,8 +2396,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     growSnakeForSnake(snake, extraSegments);
   }
 
-  function updateSingleSnake(snakeObj, dt, width, height) {
+  function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
+
+    const frogList = Array.isArray(opts.frogsList) ? opts.frogsList : frogs;
+    const isMainMenu = !!opts.mainMenu;
 
     const marginX = 8;
     const marginY = 24;
@@ -2367,7 +2416,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     let targetFrog = null;
     let bestDist2 = Infinity;
 
-    for (const frog of frogs) {
+    for (const frog of frogList) {
       if (!frog || !frog.el) continue;
       const fx = frog.x + FROG_SIZE / 2;
       const fy = frog.baseY + FROG_SIZE / 2;
@@ -2468,8 +2517,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
 
-    for (let i = frogs.length - 1; i >= 0; i--) {
-      const frog = frogs[i];
+    for (let i = frogList.length - 1; i >= 0; i--) {
+      const frog = frogList[i];
       if (!frog || !frog.el) continue;
 
       const fx = frog.x + FROG_SIZE / 2;
@@ -2479,6 +2528,14 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       const d2 = dx * dx + dy * dy;
 
       if (d2 <= eatR2) {
+        if (isMainMenu) {
+          frogList.splice(i, 1);
+          if (frog.el.parentNode === container) {
+            container.removeChild(frog.el);
+          }
+          continue;
+        }
+
         const killed = tryKillFrogAtIndex(i, "snake");
 
         // Only the CURRENT primary snake is allowed to grow.
@@ -3007,6 +3064,300 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     ];
   }
 
+  function clearMainMenuSnakes() {
+    if (!Array.isArray(mainMenuSnakes)) return;
+    for (const s of mainMenuSnakes) {
+      removeSnakeInstance(s);
+    }
+    mainMenuSnakes = [];
+  }
+
+  function clearMainMenuFrogs() {
+    if (!Array.isArray(mainMenuFrogs)) return;
+    for (const frog of mainMenuFrogs) {
+      if (frog.el && frog.el.parentNode === container) {
+        container.removeChild(frog.el);
+      }
+    }
+    mainMenuFrogs = [];
+  }
+
+  function buildMenuFrogState(x, y, tokenId) {
+    const el = document.createElement("div");
+    el.className = "frog-sprite";
+    el.style.position = "absolute";
+    el.style.width = FROG_SIZE + "px";
+    el.style.height = FROG_SIZE + "px";
+    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    el.style.pointerEvents = "none";
+    el.style.zIndex = "8";
+    container.appendChild(el);
+
+    const personalityRoll = Math.random();
+    let idleMin, idleMax, hopMin, hopMax, heightMin, heightMax;
+
+    if (personalityRoll < 0.25) {
+      idleMin = 0.3; idleMax = 1.0;
+      hopMin = 0.25; hopMax = 0.55;
+      heightMin = 14; heightMax = 32;
+    } else if (personalityRoll < 0.6) {
+      idleMin = 0.8; idleMax = 3.0;
+      hopMin = 0.35; hopMax = 0.7;
+      heightMin = 10; heightMax = 26;
+    } else {
+      idleMin = 2.0; idleMax = 5.0;
+      hopMin = 0.45; hopMax = 0.9;
+      heightMin = 6;  heightMax = 20;
+    }
+
+    const frog = {
+      tokenId,
+      el,
+      x,
+      y,
+      baseY: y,
+      hopStartX: x,
+      hopStartBaseY: y,
+      hopEndX: x,
+      hopEndBaseY: y,
+      state: "idle",
+      idleTime: randRange(idleMin, idleMax),
+      hopTime: 0,
+      hopDuration: randRange(hopMin, hopMax),
+      hopHeight: randRange(heightMin, heightMax),
+      idleMin,
+      idleMax,
+      hopDurMin: hopMin,
+      hopDurMax: hopMax,
+      hopHeightMin: heightMin,
+      hopHeightMax: heightMax,
+      speedMult: 1.0,
+      jumpMult: 1.0
+    };
+
+    return frog;
+  }
+
+  function createMainMenuFrog(x, y) {
+    const tokenId = randInt(1, MAX_TOKEN_ID);
+    const frog = buildMenuFrogState(x, y, tokenId);
+    mainMenuFrogs.push(frog);
+
+    fetchMetadata(tokenId)
+      .then(meta => buildLayersForFrog(frog, meta))
+      .catch(() => {});
+
+    return frog;
+  }
+
+  function getMainMenuSpeedFactor(frog) {
+    return frog.speedMult || 1.0;
+  }
+
+  function getMainMenuJumpFactor(frog) {
+    return frog.jumpMult || 1.0;
+  }
+
+  function chooseMainMenuHopDestination(frog, width, height) {
+    const marginX = 8;
+    const marginY = 24;
+    const centerX = frog.x + FROG_SIZE / 2;
+    const centerY = frog.baseY + FROG_SIZE / 2;
+
+    let targetX = frog.x + randRange(-12, 12);
+    let targetBaseY = frog.baseY + randRange(-6, 6);
+
+    let fleeAngle = null;
+    let nearestD2 = Infinity;
+
+    for (const snakeObj of mainMenuSnakes) {
+      if (!snakeObj || !snakeObj.head) continue;
+      const dx = centerX - snakeObj.head.x;
+      const dy = centerY - snakeObj.head.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < nearestD2) {
+        nearestD2 = d2;
+        fleeAngle = Math.atan2(dy, dx);
+      }
+    }
+
+    if (fleeAngle !== null && nearestD2 < 320 * 320) {
+      const hopDist = randRange(120, 220);
+      const angle = fleeAngle + randRange(-0.35, 0.35);
+      targetX = frog.x + Math.cos(angle) * hopDist;
+      targetBaseY = frog.baseY + Math.sin(angle) * hopDist;
+    }
+
+    targetX = Math.max(marginX, Math.min(width - marginX - FROG_SIZE, targetX));
+    targetBaseY = Math.max(
+      marginY,
+      Math.min(height - marginY - FROG_SIZE, targetBaseY)
+    );
+
+    frog.hopStartX = frog.x;
+    frog.hopStartBaseY = frog.baseY;
+    frog.hopEndX = targetX;
+    frog.hopEndBaseY = targetBaseY;
+  }
+
+  function updateMainMenuFrogs(dt, width, height) {
+    const marginX = 8;
+    const marginY = 24;
+
+    for (const frog of mainMenuFrogs) {
+      if (frog.state === "idle") {
+        frog.idleTime -= dt;
+        frog.y = frog.baseY;
+
+        if (frog.idleTime <= 0) {
+          frog.state = "hopping";
+          frog.hopTime = 0;
+
+          const baseDur = randRange(frog.hopDurMin, frog.hopDurMax);
+          frog.hopDuration = baseDur * getMainMenuSpeedFactor(frog);
+
+          const spice = Math.random();
+          let hopHeight;
+          if (spice < 0.1) {
+            hopHeight = randRange(
+              frog.hopHeightMax * 1.1,
+              frog.hopHeightMax * 1.8
+            );
+          } else if (spice < 0.25) {
+            hopHeight = randRange(2, frog.hopHeightMin * 0.7);
+          } else {
+            hopHeight = randRange(frog.hopHeightMin, frog.hopHeightMax);
+          }
+          frog.hopHeight = hopHeight * getMainMenuJumpFactor(frog);
+
+          chooseMainMenuHopDestination(frog, width, height);
+          playRandomRibbit();
+        }
+      } else if (frog.state === "hopping") {
+        frog.hopTime += dt;
+        const t = Math.min(1, frog.hopTime / frog.hopDuration);
+
+        const groundX = frog.hopStartX + (frog.hopEndX - frog.hopStartX) * t;
+        const groundBaseY =
+          frog.hopStartBaseY + (frog.hopEndBaseY - frog.hopStartBaseY) * t;
+
+        const offset = -4 * frog.hopHeight * t * (1 - t);
+
+        frog.x = groundX;
+        frog.baseY = groundBaseY;
+        frog.y = groundBaseY + offset;
+
+        if (frog.hopTime >= frog.hopDuration) {
+          frog.state = "idle";
+
+          const baseIdle = randRange(frog.idleMin, frog.idleMax);
+          frog.idleTime = baseIdle * getMainMenuSpeedFactor(frog);
+
+          frog.x = frog.hopEndX;
+          frog.baseY = frog.hopEndBaseY;
+          frog.y = frog.baseY;
+
+          frog.x = Math.max(marginX, Math.min(width - marginX - FROG_SIZE, frog.x));
+          frog.baseY = Math.max(
+            marginY,
+            Math.min(height - marginY - FROG_SIZE, frog.baseY)
+          );
+        }
+      }
+
+      frog.el.style.transform = `translate3d(${frog.x}px, ${frog.y}px, 0)`;
+    }
+  }
+
+  function ensureMainMenuFrogCount(count, width, height) {
+    const marginX = 16;
+    const marginY = 32;
+
+    while (mainMenuFrogs.length < count) {
+      const x = randRange(marginX, width - marginX - FROG_SIZE);
+      const y = randRange(marginY, height - marginY - FROG_SIZE);
+      createMainMenuFrog(x, y);
+    }
+  }
+
+  function updateMainMenuSnakes(dt, width, height) {
+    for (const s of mainMenuSnakes) {
+      updateSingleSnake(s, dt, width, height, {
+        mainMenu: true,
+        frogsList: mainMenuFrogs
+      });
+    }
+  }
+
+  function runMainMenuFrame(time) {
+    if (!mainMenuActive) {
+      mainMenuAnimId = null;
+      mainMenuLastTime = 0;
+      return;
+    }
+
+    if (!mainMenuLastTime) mainMenuLastTime = time;
+    let dt = (time - mainMenuLastTime) / 1000;
+    if (dt > 0.1) dt = 0.1;
+    mainMenuLastTime = time;
+
+    const width  = window.innerWidth;
+    const height = window.innerHeight;
+
+    ensureMainMenuFrogCount(8, width, height);
+    updateMainMenuFrogs(dt, width, height);
+    updateMainMenuSnakes(dt, width, height);
+
+    mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
+  }
+
+  function startMainMenuBackground() {
+    const width  = window.innerWidth;
+    const height = window.innerHeight;
+
+    clearMainMenuSnakes();
+    clearMainMenuFrogs();
+
+    const stages = [1, 2, 3];
+    const shuffledStages = stages.slice().sort(() => Math.random() - 0.5);
+
+    for (let i = 0; i < 2; i++) {
+      const stage = shuffledStages[i % shuffledStages.length];
+      const snakeObj = spawnAdditionalSnake(width, height, {
+        startX: randRange(width * 0.2, width * 0.8),
+        startY: randRange(height * 0.25, height * 0.75),
+        angle: randRange(-Math.PI, Math.PI),
+        segmentCount: randInt(20, 30),
+        colorFilter: getShedStageFilter(stage)
+      });
+
+      if (snakeObj) {
+        snakeObj.isMainMenu = true;
+        snakeObj.speedFactor = 0.7 + Math.random() * 0.4;
+        mainMenuSnakes.push(snakeObj);
+      }
+    }
+
+    ensureMainMenuFrogCount(8, width, height);
+
+    mainMenuActive = true;
+    mainMenuLastTime = 0;
+    if (!mainMenuAnimId) {
+      mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
+    }
+  }
+
+  function stopMainMenuBackground() {
+    mainMenuActive = false;
+    if (mainMenuAnimId) {
+      cancelAnimationFrame(mainMenuAnimId);
+      mainMenuAnimId = null;
+    }
+    mainMenuLastTime = 0;
+    clearMainMenuSnakes();
+    clearMainMenuFrogs();
+  }
+
   function initMainMenuOverlay() {
     if (mainMenuOverlay) return;
 
@@ -3017,7 +3368,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const btnLeaderboard = document.getElementById("btnLeaderboard");
 
     btnStartRun.addEventListener("click", () => {
-      hideMainMenu();
       startRunFromMenu();
     });
 
@@ -3035,7 +3385,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     document.addEventListener("keydown", (e) => {
       if (mainMenuOverlay && mainMenuOverlay.style.display === "flex" && e.key === "Enter") {
-        hideMainMenu();
         startRunFromMenu();
       }
     });
@@ -3043,11 +3392,18 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function showMainMenu() {
     if (!mainMenuOverlay) initMainMenuOverlay();
+    startMainMenuBackground();
+    setInGameUIVisible(false);
+    mainMenuActive = true;
+    syncAudioMuteState();
     mainMenuOverlay.style.display = "flex";
     gamePaused = true;
   }
 
   function hideMainMenu() {
+    mainMenuActive = false;
+    stopMainMenuBackground();
+    syncAudioMuteState();
     if (mainMenuOverlay) {
       mainMenuOverlay.style.display = "none";
     }
@@ -3354,70 +3710,209 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (!leaderboardOverlay) return;
 
     const content = document.getElementById("leaderboardContent");
-    if (content) {
-      content.textContent = "Loading...";
+    if (!content) return;
 
-      try {
-        const entries = await fetchLeaderboard();
+    content.innerHTML = '<div class="leaderboard-loading">Loading leaderboard…</div>';
 
-        if (!Array.isArray(entries) || entries.length === 0) {
-          content.textContent = "No runs yet.";
-        } else {
-          const maxRows = Math.min(entries.length, 15);
-          const wrapper = document.createElement("div");
-          wrapper.style.fontFamily = "monospace";
-          wrapper.style.fontSize = "11px";
+    try {
+      const entries = await fetchLeaderboard();
+      const list = Array.isArray(entries) ? entries.slice(0, 50) : [];
 
-          for (let i = 0; i < maxRows; i++) {
-            const entry = entries[i] || {};
-            const rank = i + 1;
-
-            let name = "Player " + rank;
-            if (entry && typeof entry.tag === "string" && entry.tag.trim() !== "") {
-              name = entry.tag;
-            } else if (entry && typeof entry.name === "string" && entry.name.trim() !== "") {
-              name = entry.name;
-            }
-
-            // Mirror the helper logic from frog-leaderboard.js
-            let score = 0;
-            const scoreKeys = ["bestScore", "score", "maxScore", "points", "value"];
-            for (const k of scoreKeys) {
-              if (!entry || !(k in entry)) continue;
-              let v = entry[k];
-              if (typeof v === "string") v = parseFloat(v);
-              if (typeof v === "number" && isFinite(v)) {
-                score = v;
-                break;
-              }
-            }
-
-            let time = 0;
-            const timeKeys = ["bestTime", "time", "maxTime", "seconds"];
-            for (const k of timeKeys) {
-              if (!entry || !(k in entry)) continue;
-              let v = entry[k];
-              if (typeof v === "string") v = parseFloat(v);
-              if (typeof v === "number" && isFinite(v) && v >= 0) {
-                time = v;
-                break;
-              }
-            }
-
-            const row = document.createElement("div");
-            row.textContent =
-              rank + ". " + name + " — " + formatLeaderboardTime(time) + ", " + Math.floor(score);
-
-            wrapper.appendChild(row);
-          }
-
-          content.innerHTML = "";
-          content.appendChild(wrapper);
-        }
-      } catch (err) {
-        console.error("Failed to load leaderboard:", err);
-        content.textContent = "Failed to load leaderboard.";
+      if (list.length === 0) {
+        content.innerHTML = '<div class="leaderboard-empty">No runs yet.</div>';
+        leaderboardOverlay.style.display = "flex";
+        return;
       }
+
+      const userLabel =
+        (window.FrogGameLeaderboard &&
+          typeof window.FrogGameLeaderboard.getCurrentUserLabel === "function" &&
+          window.FrogGameLeaderboard.getCurrentUserLabel()) ||
+        null;
+
+      const scoreKeys = ["bestScore", "score", "maxScore", "points", "value"];
+      const timeKeys = ["bestTime", "time", "maxTime", "seconds", "duration"];
+
+      const pageSize = 10;
+      let currentPage = 0;
+
+      function normalizeTag(tag) {
+        return typeof tag === "string" ? tag.trim().toLowerCase() : "";
+      }
+
+      function entryMatchesUser(entry) {
+        if (!entry || !userLabel) return false;
+        const tag = normalizeTag(entry.tag);
+        const name = normalizeTag(entry.name);
+        const target = normalizeTag(userLabel);
+        return tag === target || name === target;
+      }
+
+      const myIndex = list.findIndex(entryMatchesUser);
+      if (myIndex >= 0) {
+        currentPage = Math.floor(myIndex / pageSize);
+      }
+
+      function getScore(entry) {
+        if (!entry) return 0;
+        for (const key of scoreKeys) {
+          if (!(key in entry)) continue;
+          let v = entry[key];
+          if (typeof v === "string") v = parseFloat(v);
+          if (typeof v === "number" && isFinite(v)) return v;
+        }
+        return 0;
+      }
+
+      function getTime(entry) {
+        if (!entry) return 0;
+        for (const key of timeKeys) {
+          if (!(key in entry)) continue;
+          let v = entry[key];
+          if (typeof v === "string") v = parseFloat(v);
+          if (typeof v === "number" && isFinite(v) && v >= 0) return v;
+        }
+        return 0;
+      }
+
+      function getFrogs(entry) {
+        if (entry && entry.stats) {
+          const stats = entry.stats;
+          if (typeof stats.totalFrogsSpawned === "number") return stats.totalFrogsSpawned;
+          if (typeof stats.frogsSpawned === "number") return stats.frogsSpawned;
+          if (typeof stats.frogCount === "number") return stats.frogCount;
+        }
+        return null;
+      }
+
+      function getBuildSnippet(entry) {
+        if (!entry || !entry.stats) return "—";
+        const s = entry.stats;
+
+        const speed = typeof s.frogSpeedFactor === "number" ? `SPD×${s.frogSpeedFactor.toFixed(2)}` : null;
+        const jump = typeof s.frogJumpFactor === "number" ? `JMP×${s.frogJumpFactor.toFixed(2)}` : null;
+        const buff = typeof s.buffDurationFactor === "number" ? `BUFF×${s.buffDurationFactor.toFixed(2)}` : null;
+        const dr = typeof s.deathrattleChance === "number" ? `DR ${(s.deathrattleChance * 100).toFixed(0)}%` : null;
+        const parts = [speed, jump, buff, dr].filter(Boolean);
+        return parts.length ? parts.join(" · ") : "—";
+      }
+
+      function getDisplayName(entry, fallback) {
+        if (entry && typeof entry.tag === "string" && entry.tag.trim() !== "") return entry.tag;
+        if (entry && typeof entry.name === "string" && entry.name.trim() !== "") return entry.name;
+        return fallback;
+      }
+
+      function buildRow(entry, index) {
+        const row = document.createElement("tr");
+        row.className = "leaderboard-row" + (entryMatchesUser(entry) ? " is-me" : "");
+
+        const rankCell = document.createElement("td");
+        rankCell.textContent = index + 1;
+
+        const nameCell = document.createElement("td");
+        const nameLabel = document.createElement("span");
+        nameLabel.className = "leaderboard-name";
+        nameLabel.textContent = getDisplayName(entry, "Player " + (index + 1));
+        nameCell.appendChild(nameLabel);
+
+        const timeCell = document.createElement("td");
+        timeCell.textContent = formatLeaderboardTime(getTime(entry));
+
+        const scoreCell = document.createElement("td");
+        scoreCell.textContent = Math.floor(getScore(entry));
+
+        const frogsCell = document.createElement("td");
+        const frogs = getFrogs(entry);
+        frogsCell.textContent = frogs != null ? frogs : "—";
+
+        const buildCell = document.createElement("td");
+        buildCell.textContent = getBuildSnippet(entry);
+
+        [rankCell, nameCell, timeCell, scoreCell, frogsCell, buildCell].forEach((cell) => {
+          cell.classList.add("leaderboard-cell");
+        });
+
+        row.appendChild(rankCell);
+        row.appendChild(nameCell);
+        row.appendChild(timeCell);
+        row.appendChild(scoreCell);
+        row.appendChild(frogsCell);
+        row.appendChild(buildCell);
+
+        return row;
+      }
+
+      function renderPage(pageIndex) {
+        currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
+
+        const table = document.createElement("table");
+        table.className = "leaderboard-table";
+
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        const headers = ["#", "Player", "Time", "Score", "Frogs", "Build Snapshot"];
+        headers.forEach((label) => {
+          const th = document.createElement("th");
+          th.textContent = label;
+          th.className = "leaderboard-head-cell";
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        const start = currentPage * pageSize;
+        const end = Math.min(start + pageSize, list.length);
+        for (let i = start; i < end; i++) {
+          tbody.appendChild(buildRow(list[i], i));
+        }
+        table.appendChild(tbody);
+
+        const pager = document.createElement("div");
+        pager.className = "leaderboard-pager";
+
+        const prevBtn = document.createElement("button");
+        prevBtn.textContent = "◀ Prev";
+        prevBtn.className = "frog-btn frog-btn-secondary leaderboard-page-btn";
+        prevBtn.disabled = currentPage === 0;
+        prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
+
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next ▶";
+        nextBtn.className = "frog-btn frog-btn-secondary leaderboard-page-btn";
+        nextBtn.disabled = end >= list.length;
+        nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
+
+        const pageInfo = document.createElement("div");
+        pageInfo.className = "leaderboard-page-info";
+        pageInfo.textContent = `Showing ${start + 1}–${end} of ${list.length}`;
+
+        pager.appendChild(prevBtn);
+        pager.appendChild(pageInfo);
+        pager.appendChild(nextBtn);
+
+        const legend = document.createElement("div");
+        legend.className = "leaderboard-legend";
+        legend.textContent = "Top 50 runs · 10 per page · your tag highlights in green";
+
+        const header = document.createElement("div");
+        header.className = "leaderboard-header";
+        header.innerHTML =
+          '<div class="leaderboard-title">Global leaderboard</div>' +
+          '<div class="leaderboard-subtitle">Fresh pulls may lag a few seconds after a run posts.</div>';
+
+        content.innerHTML = "";
+        content.appendChild(header);
+        content.appendChild(table);
+        content.appendChild(pager);
+        content.appendChild(legend);
+      }
+
+      renderPage(currentPage);
+    } catch (err) {
+      console.error("Failed to load leaderboard:", err);
+      content.innerHTML = '<div class="leaderboard-error">Failed to load leaderboard.</div>';
     }
 
     leaderboardOverlay.style.display = "flex";
@@ -4014,9 +4509,17 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     openUpgradeOverlay("normal", { context: "start" });
   }
 
-  function startRunFromMenu() {
+  function startNewRun() {
+    hideMainMenu();
+    stopMainMenuBackground();
+    setInGameUIVisible(true);
     restartGame();
+    syncAudioMuteState();
     openFirstUpgradeSelection();
+  }
+
+  function startRunFromMenu() {
+    startNewRun();
   }
 
   function triggerLegendaryFrenzy() {
