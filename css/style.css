@@ -1136,27 +1136,27 @@ a {
 /* Color variants by “type” – use a subtle accent strip */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
   border-color: #65a30d;
-  box-shadow: inset 4px 0 #65a30d, 0 4px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 4px 0 #65a30d;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
   border-color: #eab308;
-  box-shadow: inset 4px 0 #eab308, 0 4px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 4px 0 #eab308;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival {
   border-color: #ef4444;
-  box-shadow: inset 4px 0 #ef4444, 0 4px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 4px 0 #ef4444;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
   border-color: #fb923c;
-  box-shadow: inset 4px 0 #fb923c, 0 4px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 4px 0 #fb923c;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
   border-color: #a855f7;
-  box-shadow: inset 4px 0 #a855f7, 0 4px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 4px 0 #a855f7;
 }
 
 /* Mobile: stack columns */
