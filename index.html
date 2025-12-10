@@ -81,26 +81,25 @@
   <div id="upgradeOverlay" class="frog-overlay">
     <div class="frog-panel">
       <div class="frog-panel-title">
-        Choose an Upgrade
-      </div>
-      <div id="upgradeOverlaySub" class="frog-panel-sub">
-        Pick one upgrade to apply to your frogs.
-      </div>
-      <div class="upgrade-layout">
-        <div class="upgrade-column">
-          <div class="upgrade-column-title">Upgrade options</div>
-          <div id="upgradeChoicesContainer" class="upgrade-choices">
-            <!-- buttons injected by JS -->
-          </div>
-        </div>
-        <div class="upgrade-column upgrade-column--summary">
-          <div class="upgrade-column-title">Permanent boosts</div>
-          <ul id="currentUpgradeList" class="upgrade-summary-list"></ul>
-        </div>
+        🧪 Choose an upgrade
       </div>
 
-      <div class="frog-panel-footer">
-        Click an option to lock it in.
+      <!-- We keep this for JS, but leave it empty / hidden -->
+      <div id="upgradeOverlaySub" class="frog-panel-sub"></div>
+
+      <!-- TOP: summary bar -->
+      <div class="upgrade-summary-bar">
+        <div class="upgrade-summary-heading">📈 Permanent boosts this run</div>
+        <ul id="currentUpgradeList" class="upgrade-summary-inline">
+          <!-- <li> items injected by updateUpgradeBuffSummary() -->
+        </ul>
+      </div>
+
+      <!-- BOTTOM: 3-card upgrade grid -->
+      <div class="upgrade-layout">
+        <div id="upgradeChoicesContainer" class="upgrade-choices">
+          <!-- buttons injected by JS (frog-btn frog-upgrade-choice) -->
+        </div>
       </div>
     </div>
   </div>
