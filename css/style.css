@@ -828,17 +828,17 @@ a {
 }
 
 .frog-panel {
-  background: #333;
+  background: #1c1917; /* dark brown/charcoal */
   padding: 18px 22px 16px 22px;
   border-radius: 14px;
-  border: 0px solid #84cc16;
-  color: white;
+  border: 1px solid #84cc16;
+  color: #e7e5e4;
   font-family: monospace;
   min-width: 320px;
   max-width: 960px;
   max-height: 82vh;
   overflow: auto;
-  box-shadow: none;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.9);
 }
 
 .frog-panel-title {
@@ -859,7 +859,7 @@ a {
 
 .frog-panel-sub {
   font-size: 13px;
-  color: white;
+  color: #a8a29e;
   text-align: center;
   margin-bottom: 14px;
   line-height: 1.5;
@@ -906,14 +906,14 @@ a {
   cursor: pointer;
   text-align: center;
   margin-bottom: 8px;
-  border: 0px solid white;
+  border: 1px solid transparent;
   transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  box-shadow: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 .frog-btn-primary {
   background: #65a30d;
-  color: white;
+  color: #fefce8;
   font-weight: 800;
 }
 
@@ -924,10 +924,9 @@ a {
 
 .frog-btn-secondary {
   background: #292524;
-  color: white;
+  color: #e7e5e4;
   border-color: #44403c;
   font-weight: 700;
-  border: 0px solid white;
 }
 
 .frog-btn-secondary:hover {
@@ -942,17 +941,17 @@ a {
   font-size: 12px;
 }
 
-/* Upgrade choices – flat, no neon shadow */
+/* Upgrade choices – match main menu buttons */
 .frog-upgrade-choice {
   text-align: left;
-  background: #292524;           /* solid, slightly lighter than panel */
-  border: 1px solid #44403c;     /* subtle neutral border */
+  background: #292524;
+  border: 1px solid #44403c;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 .frog-upgrade-choice:hover {
-  background: #3f3a36;           /* tiny brightness change on hover */
-  border-color: #78716c;         /* no glow, just a bit lighter */
-  box-shadow: none;              /* kill the neon shadow */
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .frog-upgrade-title {
@@ -1267,54 +1266,55 @@ a {
 
 /* Base pill style for upgrade choices */
 #upgradeOverlay .frog-upgrade-choice {
-  width: 100%;
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 13px;
-  font-family: inherit;
   cursor: pointer;
-  text-align: center;
-  margin-bottom: 8px;
-  border: 1px solid transparent;
-  transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  color: #fefce8;
+  background: #292524;
+  text-align: left;
 }
 
 /* Titles / descriptions inside pills */
 #upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
   font-size: 14px;
   font-weight: 800;
+  color: #d9f99d;
 }
 
 #upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
   font-size: 12px;
 }
 
-/* Hover: tiny lift, slightly brighter */
-#upgradeOverlay .frog-upgrade-choice:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
-/* Color variants by “type” */
+/* Color variants by “type” – use a subtle accent strip */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
-  background: #60a540; /* green – movement / hops */
+  border-color: #65a30d;
+  box-shadow: inset 4px 0 #65a30d, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
-  background: #f2b632; /* yellow-ish – buff duration/orbs */
+  border-color: #eab308;
+  box-shadow: inset 4px 0 #eab308, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival {
-  background: #d9533f; /* red – deathrattle / last stand */
+  border-color: #ef4444;
+  box-shadow: inset 4px 0 #ef4444, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
-  background: #e27a25; /* orange – orb-related */
+  border-color: #fb923c;
+  box-shadow: inset 4px 0 #fb923c, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
-  background: #7c3aed; /* purple – special frog roles */
+  border-color: #a855f7;
+  box-shadow: inset 4px 0 #a855f7, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 /* Mobile: stack columns */
