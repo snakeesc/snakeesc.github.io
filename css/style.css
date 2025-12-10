@@ -966,13 +966,6 @@ a {
   color: #e7e5e4;
 }
 
-.upgrade-layout {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 12px;
-  align-items: start;
-}
-
 .upgrade-column {
   background: #1c1917;
   border: 1px solid #44403c;
@@ -1120,7 +1113,8 @@ a {
 }
 
 /* Upgrade choices grid */
-.upgrade-layout {
+#upgradeOverlay .upgrade-layout {
+  display: block;
   margin-bottom: 10px;
 }
 
