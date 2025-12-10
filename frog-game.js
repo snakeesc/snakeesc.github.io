@@ -126,6 +126,58 @@
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
 
+  function getUpgradeColorClass(upgradeId) {
+  // movement / jumping
+  const mobilityIds = [
+    "frogSpeed",
+    "frogJump",
+    "frogSpeedJump",
+    "epicSpeedJump",
+    "higherHops"
+  ];
+
+  // buff duration / orbs / magnet style
+  const buffIds = [
+    "buffDuration",
+    "epicBuffDuration",
+    "orbMagnet",
+    "orbLinger",
+    "orbSpawn",
+    "orbSpecialist"
+  ];
+
+  // survival / death-related
+  const survivalIds = [
+    "deathrattle",
+    "epicDeathrattle",
+    "lastStand",
+    "ouroborosPact"
+  ];
+
+  // orb creation / collector
+  const orbIds = [
+    "orbCollector"
+  ];
+
+  // frog role / squad / promotions
+  const roleIds = [
+    "extraFrogCap",
+    "frogPromotion",
+    "frogPromotionEpic",
+    "cannibalPromotion"
+  ];
+
+  if (mobilityIds.includes(upgradeId)) return "upgrade-type-mobility";
+  if (buffIds.includes(upgradeId)) return "upgrade-type-buff";
+  if (survivalIds.includes(upgradeId)) return "upgrade-type-survival";
+  if (orbIds.includes(upgradeId)) return "upgrade-type-orb";
+  if (roleIds.includes(upgradeId)) return "upgrade-type-role";
+
+  // default: plain green
+  return "upgrade-type-mobility";
+  }
+
+
   // --------------------------------------------------
   // PLAYER TAG STORAGE (client-side only)
   // --------------------------------------------------
@@ -3804,7 +3856,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     choices.forEach((choice) => {
       const btn = document.createElement("button");
-      btn.className = "frog-btn frog-btn-secondary frog-upgrade-choice";
+      const colorClass = getUpgradeColorClass(up.id);
+      btn.className = "frog-btn frog-upgrade-choice " + colorClass;
+      btn.dataset.upgradeId = up.id;
       btn.innerHTML = `
         <div class="frog-upgrade-desc">${choice.label}</div>
       `;
