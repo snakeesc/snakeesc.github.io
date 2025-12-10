@@ -2466,6 +2466,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let upgradeOverlay = null;
   let upgradeOverlayButtonsContainer = null;
   let upgradeOverlayTitleEl = null;
+  let upgradeOverlayBadgeEl = null;
+  let upgradeOverlayDescEl = null;
   let currentUpgradeOverlayMode = "normal"; // "normal" | "epic" | "legendary"
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
@@ -3220,10 +3222,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     });
     btnWrap.appendChild(howBtn);
 
-    const learnBtn = makeButton("Learn more", "l", false, () => {
-      window.open("updates.html", "_blank");
+    const leaderboardBtn = makeButton("Leader Board", "l", false, () => {
+      openInfoOverlay(0);
     });
-    btnWrap.appendChild(learnBtn);
+    btnWrap.appendChild(leaderboardBtn);
 
     const mini = document.createElement("div");
     mini.className = "frog-main-menu-mini-stats";
@@ -3261,138 +3263,84 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     infoOverlay = document.createElement("div");
     infoOverlay.className = "frog-info-overlay";
-    infoOverlay.style.position = "absolute";
-    infoOverlay.style.inset = "0";
-    infoOverlay.style.background = "rgba(0,0,0,0.75)";
-    infoOverlay.style.display = "none";
-    infoOverlay.style.zIndex = "180";
-    infoOverlay.style.alignItems = "center";
-    infoOverlay.style.justifyContent = "center";
-    infoOverlay.style.pointerEvents = "auto";
 
-    const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px 12px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "260px";
-    panel.style.maxWidth = "480px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    const card = document.createElement("div");
+    card.className = "frog-info-card";
 
-    // Header row
-    const headerRow = document.createElement("div");
-    headerRow.style.display = "flex";
-    headerRow.style.justifyContent = "space-between";
-    headerRow.style.alignItems = "center";
-    headerRow.style.marginBottom = "6px";
+    const header = document.createElement("div");
+    header.className = "frog-info-header";
+
+    const headingWrap = document.createElement("div");
 
     const title = document.createElement("div");
-    title.textContent = "escape the snake 🐍 – info";
-    title.style.fontSize = "14px";
-    title.style.fontWeight = "bold";
+    title.className = "frog-info-title";
+    title.textContent = "Leaderboard & info";
+
+    const subtitle = document.createElement("div");
+    subtitle.className = "frog-info-subtitle";
+    subtitle.textContent = "Fresh Frogs community";
+
+    headingWrap.appendChild(title);
+    headingWrap.appendChild(subtitle);
 
     const pageLabel = document.createElement("div");
-    pageLabel.style.fontSize = "11px";
-    pageLabel.style.opacity = "0.8";
+    pageLabel.className = "frog-info-badge";
+    pageLabel.textContent = "Page 1 / 5";
     infoPageLabel = pageLabel;
 
-    headerRow.appendChild(title);
-    headerRow.appendChild(pageLabel);
+    header.appendChild(headingWrap);
+    header.appendChild(pageLabel);
 
     const content = document.createElement("div");
-    content.style.fontSize = "13px";
-    content.style.marginTop = "4px";
-    content.style.lineHeight = "1.4";
+    content.className = "frog-info-content";
     infoContentEl = content;
 
-    // Footer nav row
     const navRow = document.createElement("div");
-    navRow.style.display = "flex";
-    navRow.style.justifyContent = "space-between";
-    navRow.style.alignItems = "center";
-    navRow.style.marginTop = "10px";
-
-    const leftBtns = document.createElement("div");
-    leftBtns.style.display = "flex";
-    leftBtns.style.gap = "6px";
+    navRow.className = "frog-btn-row";
 
     const prevBtn = document.createElement("button");
-    prevBtn.textContent = "◀ Prev";
-    prevBtn.style.fontFamily = "monospace";
-    prevBtn.style.fontSize = "12px";
-    prevBtn.style.padding = "4px 8px";
-    prevBtn.style.borderRadius = "6px";
-    prevBtn.style.border = "1px solid #555";
-    prevBtn.style.background = "#222";
-    prevBtn.style.color = "#fff";
-    prevBtn.style.cursor = "pointer";
-    prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
-    prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
-      prevBtn.onclick = () => {
+    prevBtn.className = "frog-btn";
+    prevBtn.textContent = "< Prev";
+    prevBtn.addEventListener("click", () => {
       playButtonClick();
       setInfoPage(infoPage - 1);
-    };
+    });
     infoPrevBtn = prevBtn;
 
     const nextBtn = document.createElement("button");
-    nextBtn.textContent = "Next ▶";
-    nextBtn.style.fontFamily = "monospace";
-    nextBtn.style.fontSize = "12px";
-    nextBtn.style.padding = "4px 8px";
-    nextBtn.style.borderRadius = "6px";
-    nextBtn.style.border = "1px solid #555";
-    nextBtn.style.background = "#222";
-    nextBtn.style.color = "#fff";
-    nextBtn.style.cursor = "pointer";
-    nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
-    nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
-      nextBtn.onclick = () => {
+    nextBtn.className = "frog-btn";
+    nextBtn.textContent = "Next >";
+    nextBtn.addEventListener("click", () => {
       playButtonClick();
       setInfoPage(infoPage + 1);
-    };
+    });
     infoNextBtn = nextBtn;
 
-    leftBtns.appendChild(prevBtn);
-    leftBtns.appendChild(nextBtn);
-
     const closeBtn = document.createElement("button");
-    closeBtn.textContent = "Close ×";
-    closeBtn.style.fontFamily = "monospace";
-    closeBtn.style.fontSize = "12px";
-    closeBtn.style.padding = "4px 8px";
-    closeBtn.style.borderRadius = "6px";
-    closeBtn.style.border = "1px solid #555";
-    closeBtn.style.background = "#222";
-    closeBtn.style.color = "#fff";
-    closeBtn.style.cursor = "pointer";
-    closeBtn.onmouseenter = () => { closeBtn.style.background = "#333"; };
-    closeBtn.onmouseleave = () => { closeBtn.style.background = "#222"; };
-    closeBtn.onclick = () => {
+    closeBtn.className = "frog-btn frog-btn-primary";
+    closeBtn.textContent = "Close";
+    closeBtn.addEventListener("click", () => {
       playButtonClick();
       closeInfoOverlay();
-    };
+    });
 
-    navRow.appendChild(leftBtns);
+    navRow.appendChild(prevBtn);
+    navRow.appendChild(nextBtn);
     navRow.appendChild(closeBtn);
 
-    panel.appendChild(headerRow);
-    panel.appendChild(content);
-    panel.appendChild(navRow);
+    card.appendChild(header);
+    card.appendChild(content);
+    card.appendChild(navRow);
 
-    infoOverlay.appendChild(panel);
+    infoOverlay.appendChild(card);
     container.appendChild(infoOverlay);
 
-    // clicking dark background closes the panel
     infoOverlay.addEventListener("click", (e) => {
       if (e.target === infoOverlay) {
         closeInfoOverlay();
       }
     });
 
-    // start on page 0 (leaderboard)
     setInfoPage(0);
   }
 
@@ -3529,12 +3477,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     infoPageLabel.textContent = `Page ${infoPage + 1} / 5`;
 
     if (infoPrevBtn) {
-      infoPrevBtn.disabled = (infoPage === 0);
-      infoPrevBtn.style.opacity = infoPage === 0 ? "0.5" : "1";
+      infoPrevBtn.disabled = infoPage === 0;
     }
     if (infoNextBtn) {
-      infoNextBtn.disabled = (infoPage === maxPage);
-      infoNextBtn.style.opacity = infoNextBtn.disabled ? "0.5" : "1";
+      infoNextBtn.disabled = infoPage === maxPage;
     }
   }
 
@@ -3560,11 +3506,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   const BUFF_GUIDE_PAGES = [
     {
-      label: "Buffs",
+      label: "Buffs A",
       description:
-        "Every orb and frog icon does something specific. Use this panel to quickly check what your build is doing before you grab the next buff.",
-      leftTitle: "Core buffs",
-      rightTitle: "Frog roles & synergy",
+        "Movement and safety buffs you’ll see early. Stack them to stay alive long enough to scale.",
+      leftTitle: "Movement buffs",
+      rightTitle: "Safety buffs",
       leftItems: [
         {
           icon: "⚡",
@@ -3574,46 +3520,66 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           tags: ["mobility", "stacking"]
         },
         {
-          icon: "🧲",
-          title: "Orb magnet",
-          body:
-            "Pulls nearby orbs into your frogs. Helps keep you safer when the snake covers more of the map.",
-          tags: ["economy", "orb builds"]
-        },
-        {
-          icon: "🛡",
-          title: "Shield",
-          body:
-            "Lets one frog survive a single hit. Good while learning or playing high-speed builds.",
-          tags: ["defense", "forgiving"]
+          icon: "🦘",
+          title: "Higher hops",
+          body: "Leap over the snake more reliably. Pair with shields if you’re new to fast runs.",
+          tags: ["mobility"]
         }
       ],
       rightItems: [
         {
-          icon: "🍖",
-          title: "Cannibal",
-          body: "Gains extra benefits when frogs die. Works best in risky builds with expected casualties.",
-          tags: []
+          icon: "🛡",
+          title: "Shield",
+          body: "Lets one frog survive a single hit. Good while learning or playing high-speed builds.",
+          tags: ["defense", "forgiving"]
         },
         {
-          icon: "💀",
-          title: "Deathrattle",
-          body: "Triggers a bonus effect when this frog dies. Pairs well with shields and revive effects.",
-          tags: []
-        },
-        {
-          icon: "⭐",
-          title: "Legendary buffs",
-          body: "Very rare, game-changing perks. Don't stack as often, but they can reshape your entire run.",
-          tags: []
+          icon: "🌀",
+          title: "Orb whisperer",
+          body: "Orbs last longer before fading. Gives you breathing room when the map is crowded.",
+          tags: ["orb control"]
         }
       ]
     },
     {
-      label: "Frog roles",
-      description: "Permanent roles change how a single frog behaves and how the whole swarm scales.",
+      label: "Buffs B",
+      description: "Economy and cadence buffs that fuel bigger runs.",
+      leftTitle: "Economy",
+      rightTitle: "Tempo",
+      leftItems: [
+        {
+          icon: "🧲",
+          title: "Orb magnet",
+          body: "Pulls nearby orbs into your frogs. Helps keep you safer when the snake covers more of the map.",
+          tags: ["economy", "orb builds"]
+        },
+        {
+          icon: "💰",
+          title: "Score surge",
+          body: "Temporary score boosts pair well with magnet and spawn chains for huge gains.",
+          tags: ["economy"]
+        }
+      ],
+      rightItems: [
+        {
+          icon: "⏳",
+          title: "Buff extender",
+          body: "Increases buff duration so each pick lasts longer. Synergizes with lucky roles.",
+          tags: ["longevity"]
+        },
+        {
+          icon: "🎯",
+          title: "Orb spawn rate",
+          body: "More orbs appear. Great with magnets, risky if you can’t control the snake.",
+          tags: ["tempo"]
+        }
+      ]
+    },
+    {
+      label: "Roles",
+      description: "Permanent roles change how a single frog behaves and how the swarm scales.",
       leftTitle: "Permanent roles",
-      rightTitle: "Risky roles",
+      rightTitle: "Support roles",
       leftItems: [
         {
           icon: "🏅",
@@ -3621,6 +3587,14 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           body: "Faster hop cycles and higher jumps. Great carrier for speed builds.",
           tags: ["tempo"]
         },
+        {
+          icon: "🍀",
+          title: "Lucky",
+          body: "Buffs last longer and score is boosted slightly. Synergizes with spawn buffs.",
+          tags: ["economy", "longevity"]
+        }
+      ],
+      rightItems: [
         {
           icon: "🌈",
           title: "Aura",
@@ -3632,32 +3606,40 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           title: "Magnet",
           body: "Orbs in a radius are pulled toward this frog. Safe orb collection in late game.",
           tags: ["economy"]
-        },
-        {
-          icon: "🍀",
-          title: "Lucky",
-          body: "Buffs last longer and score is boosted slightly. Synergizes with spawn buffs.",
-          tags: ["economy", "longevity"]
         }
-      ],
-      rightItems: [
+      ]
+    },
+    {
+      label: "Risky",
+      description: "Glass-cannon picks that pay off if you manage the danger.",
+      leftTitle: "High risk",
+      rightTitle: "Game changers",
+      leftItems: [
         {
           icon: "🍖",
           title: "Cannibal",
-          body: "Eats nearby frogs to grant global deathrattle bonuses while alive.",
+          body: "Gains extra benefits when frogs die. Works best in risky builds with expected casualties.",
           tags: ["risky"]
         },
         {
           icon: "💀",
           title: "Deathrattle",
-          body: "Triggers extra effects when this frog dies. Great with shields or revive loops.",
+          body: "Triggers a bonus effect when this frog dies. Pairs well with shields and revive effects.",
           tags: ["burst"]
-        },
+        }
+      ],
+      rightItems: [
         {
           icon: "⭐",
-          title: "Legendary",
-          body: "Rare, game-changing perks that redefine the run. Choose with care.",
+          title: "Legendary buffs",
+          body: "Very rare, game-changing perks. Don't stack as often, but they can reshape your entire run.",
           tags: ["unique"]
+        },
+        {
+          icon: "🏹",
+          title: "Last stand",
+          body: "Gives low-chance saves in desperate moments. Treat it as backup, not a plan.",
+          tags: ["defense"]
         }
       ]
     },
@@ -3672,12 +3654,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           title: "Lead the swarm",
           body: "Slow, smooth cursor paths keep frogs grouped so fewer get sniped by the snake.",
           tags: []
-        },
-        {
-          icon: "🎯",
-          title: "Pick safe orbs",
-          body: "When the snake crowds the center, drag frogs to edges and let magnets pull orbs in.",
-          tags: ["positioning"]
         },
         {
           icon: "🛡️",
@@ -3698,12 +3674,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           title: "Pathing",
           body: "After a shed, steer wide until the snake slows; then go collect again.",
           tags: ["routing"]
-        },
-        {
-          icon: "📈",
-          title: "Upgrade cadence",
-          body: "Normal upgrades every ~60s, epic chains every ~3m. Plan roles around that timing.",
-          tags: []
         }
       ]
     }
@@ -3948,84 +3918,71 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
   }
 
-function ensureUpgradeOverlay() {
+  function ensureUpgradeOverlay() {
     if (upgradeOverlay) return;
 
     upgradeOverlay = document.createElement("div");
     upgradeOverlay.className = "frog-upgrade-overlay";
 
-    upgradeOverlay.style.position = "absolute";
-    upgradeOverlay.style.inset = "0";
-    upgradeOverlay.style.background = "rgba(0,0,0,0.7)";
-    upgradeOverlay.style.display = "none"; // hidden by default
-    upgradeOverlay.style.zIndex = "150";
-    upgradeOverlay.style.alignItems = "center";
-    upgradeOverlay.style.justifyContent = "center";
-    upgradeOverlay.style.pointerEvents = "auto";
+    const card = document.createElement("div");
+    card.className = "frog-upgrade-card";
 
-    const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "320px";
-    panel.style.maxWidth = "540px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    const header = document.createElement("div");
+    header.className = "frog-upgrade-header";
+
+    const titleWrap = document.createElement("div");
+    titleWrap.className = "frog-upgrade-title-wrap";
 
     const title = document.createElement("div");
+    title.className = "frog-upgrade-title";
     title.textContent = "Choose an upgrade";
-    title.style.marginBottom = "10px";
-    title.style.fontSize = "14px";
-    title.style.textAlign = "center";
     upgradeOverlayTitleEl = title;
 
-    // Main content row: choices on the left, current buffs on the right
-    const contentRow = document.createElement("div");
-    contentRow.style.display = "flex";
-    contentRow.style.alignItems = "flex-start";
-    contentRow.style.gap = "14px";
-    contentRow.style.marginTop = "4px";
+    const subtitle = document.createElement("div");
+    subtitle.className = "frog-upgrade-subtitle";
+    subtitle.textContent = "Keep stacking buffs";
 
-    // LEFT: upgrade choice buttons (stacked)
+    titleWrap.appendChild(title);
+    titleWrap.appendChild(subtitle);
+
+    const badge = document.createElement("div");
+    badge.className = "frog-upgrade-badge";
+    badge.textContent = "normal";
+    upgradeOverlayBadgeEl = badge;
+
+    header.appendChild(titleWrap);
+    header.appendChild(badge);
+
+    const desc = document.createElement("div");
+    desc.className = "frog-upgrade-description";
+    desc.textContent = "Pick one buff to apply right now. Your previous bonuses are listed on the right.";
+    upgradeOverlayDescEl = desc;
+
+    const layout = document.createElement("div");
+    layout.className = "frog-upgrade-layout";
+
     const choicesCol = document.createElement("div");
-    choicesCol.style.display = "flex";
-    choicesCol.style.flexDirection = "column";
-    choicesCol.style.gap = "8px";
-    choicesCol.style.alignItems = "stretch";
-    choicesCol.style.minWidth = "0";
-
+    choicesCol.className = "frog-upgrade-choices";
     upgradeOverlayButtonsContainer = choicesCol;
 
-    // RIGHT: current buffs summary
     const buffsCol = document.createElement("div");
-    buffsCol.style.minWidth = "190px";
-    buffsCol.style.maxWidth = "220px";
-    buffsCol.style.fontSize = "11px";
-    buffsCol.style.lineHeight = "1.4";
-    buffsCol.style.borderLeft = "1px solid #333";
-    buffsCol.style.paddingLeft = "10px";
-    buffsCol.style.opacity = "0.9";
+    buffsCol.className = "frog-upgrade-summary";
 
-    const buffsTitle = document.createElement("div");
+    const buffsTitle = document.createElement("h3");
     buffsTitle.textContent = "Current buffs";
-    buffsTitle.style.fontWeight = "bold";
-    buffsTitle.style.marginBottom = "4px";
-
     upgradeBuffSummaryBox = document.createElement("div");
-    upgradeBuffSummaryBox.style.marginTop = "2px";
 
     buffsCol.appendChild(buffsTitle);
     buffsCol.appendChild(upgradeBuffSummaryBox);
 
-    contentRow.appendChild(choicesCol);
-    contentRow.appendChild(buffsCol);
+    layout.appendChild(choicesCol);
+    layout.appendChild(buffsCol);
 
-    //panel.appendChild(title);
-    panel.appendChild(contentRow);
-    upgradeOverlay.appendChild(panel);
+    card.appendChild(header);
+    card.appendChild(desc);
+    card.appendChild(layout);
+
+    upgradeOverlay.appendChild(card);
     container.appendChild(upgradeOverlay);
   }
 
@@ -4182,7 +4139,28 @@ function ensureUpgradeOverlay() {
     const neon = "#4defff";
 
     if (upgradeOverlayTitleEl) {
-      upgradeOverlayTitleEl.textContent = "Choose an upgrade";
+      upgradeOverlayTitleEl.textContent =
+        isLegendary
+          ? "Legendary choice"
+          : isEpic
+            ? "Epic choice"
+            : "Choose an upgrade";
+    }
+
+    if (upgradeOverlayBadgeEl) {
+      upgradeOverlayBadgeEl.textContent = isLegendary
+        ? "legendary"
+        : isEpic
+          ? "epic"
+          : "normal";
+    }
+
+    if (upgradeOverlayDescEl) {
+      upgradeOverlayDescEl.textContent = isLegendary
+        ? "Rare, run-defining perks. Pick carefully."
+        : isEpic
+          ? "High-impact buffs that spike your power."
+          : "Pick one buff to apply right now. Your previous bonuses are listed on the right.";
     }
 
     let choices = [];
@@ -4259,19 +4237,29 @@ function ensureUpgradeOverlay() {
 
     function makeButton(label, onClick) {
       const btn = document.createElement("button");
-      btn.innerHTML = label; // allow emojis + <span> highlight
-      btn.style.fontFamily = "monospace";
-      btn.style.fontSize = "13px";
-      btn.style.padding = "6px 8px";
-      btn.style.border = "1px solid #555";
-      btn.style.borderRadius = "6px";
-      btn.style.background = "#222";
-      btn.style.color = "#fff";
-      btn.style.cursor = "pointer";
-      btn.style.textAlign = "left";
-      btn.onmouseenter = () => { btn.style.background = "#333"; };
-      btn.onmouseleave = () => { btn.style.background = "#222"; };
-      btn.onclick = () => {
+      btn.className = "frog-upgrade-choice";
+      btn.type = "button";
+
+      const temp = document.createElement("div");
+      temp.innerHTML = label;
+      const parts = temp.innerHTML.split("<br>");
+      const titleHtml = parts.shift() || "Upgrade";
+      const bodyHtml = parts.join("<br>").trim();
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "frog-upgrade-choice-title";
+      titleSpan.innerHTML = titleHtml;
+
+      const bodySpan = document.createElement("span");
+      bodySpan.className = "frog-upgrade-choice-body";
+      bodySpan.innerHTML = bodyHtml || "";
+
+      btn.appendChild(titleSpan);
+      if (bodyHtml) {
+        btn.appendChild(bodySpan);
+      }
+
+      btn.addEventListener("click", () => {
         playButtonClick();
         try {
           onClick();
@@ -4280,7 +4268,8 @@ function ensureUpgradeOverlay() {
         }
         playPermanentChoiceSound();
         closeUpgradeOverlay();
-      };
+      });
+
       return btn;
     }
 
