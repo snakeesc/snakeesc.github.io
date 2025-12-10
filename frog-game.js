@@ -218,6 +218,7 @@
   // UI + audio toggles
   let soundEnabled      = true;
   let statsPanelVisible = false;
+  let mainMenuActive    = false;
 
   let lastRunScore  = 0;
   let lastRunTime   = 0;
@@ -251,6 +252,11 @@
 
   // Old snakes that are despawning chunk-by-chunk
   let dyingSnakes = [];
+
+  // Main menu background snakes
+  let mainMenuSnakes = [];
+  let mainMenuAnimId = null;
+  let mainMenuLastTime = 0;
 
   let speedBuffTime   = 0;
   let jumpBuffTime    = 0;
@@ -330,9 +336,11 @@
     }
 
     if (gameOver) {
-      showMainMenu();
+      startNewRun();
       return;
     }
+
+    if (mainMenuActive) return;
 
     mouse.follow = true;
   });
@@ -340,6 +348,8 @@
   // --------------------------------------------------
   // HUD
   // --------------------------------------------------
+  let inGameUIVisible = true;
+
   const hud = document.createElement("div");
   hud.style.position = "absolute";
   hud.style.top = "10px";
@@ -400,6 +410,7 @@
   statsPanel.style.maxWidth = "260px";
   statsPanel.style.pointerEvents = "none";
   statsPanel.style.lineHeight = "1.4";
+  statsPanel.style.display = "none";
   container.appendChild(statsPanel);
 
   // Small control buttons (top-left)
@@ -459,6 +470,24 @@
   gameOverBanner.innerHTML = "Game Over<br/><small>Click to play again</small>";
   container.appendChild(gameOverBanner);
 
+  function setInGameUIVisible(show) {
+    inGameUIVisible = show;
+
+    if (hud) hud.style.display = show ? "block" : "none";
+    if (miniBoard) miniBoard.style.display = show ? "block" : "none";
+    if (controlsBar) controlsBar.style.display = show ? "flex" : "none";
+
+    if (statsPanel) {
+      if (show && statsPanelVisible) {
+        statsPanel.style.display = "block";
+      } else {
+        statsPanel.style.display = "none";
+      }
+    }
+  }
+
+  setInGameUIVisible(false);
+
   function formatTime(t) {
     const total = Math.max(0, t);
     const m = Math.floor(total / 60);
@@ -467,6 +496,8 @@
   }
 
   function updateHUD() {
+    if (!inGameUIVisible) return;
+
     timerLabel.textContent = `Time: ${formatTime(elapsedTime)}`;
     frogsLabel.textContent = `Frogs left: ${frogs.length}`;
     scoreLabel.textContent = `Score: ${Math.floor(score)}`;
@@ -474,7 +505,7 @@
 
   function updateStatsPanel() {
     const neon = "#4defff";
-    if (!statsPanel || !statsPanelVisible) return;
+    if (!statsPanel || !statsPanelVisible || !inGameUIVisible) return;
 
     const frogsAlive = frogs.length;
     const snakesAlive =
@@ -2169,9 +2200,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   }
 
   // Spawn a second active snake without touching the primary one
-  function spawnAdditionalSnake(width, height) {
-    const startX = width * 0.85;  // opposite side of the screen
-    const startY = height * 0.5;
+  function spawnAdditionalSnake(width, height, opts = {}) {
+    const startX = typeof opts.startX === "number" ? opts.startX : width * 0.85;
+    const startY = typeof opts.startY === "number" ? opts.startY : height * 0.5;
+    const initialAngle = typeof opts.angle === "number" ? opts.angle : Math.PI;
 
     const headEl = document.createElement("div");
     headEl.className = "snake-head";
@@ -2216,7 +2248,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     // Fresh snake: base speed + base color
     const newSnake = {
-      head: { el: headEl, x: startX, y: startY, angle: Math.PI }, // facing left
+      head: { el: headEl, x: startX, y: startY, angle: initialAngle },
       segments,
       path,
       isFrenzyVisual: false,
@@ -3007,6 +3039,77 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     ];
   }
 
+  function clearMainMenuSnakes() {
+    if (!Array.isArray(mainMenuSnakes)) return;
+    for (const s of mainMenuSnakes) {
+      removeSnakeInstance(s);
+    }
+    mainMenuSnakes = [];
+  }
+
+  function updateMainMenuSnakes(dt, width, height) {
+    for (const s of mainMenuSnakes) {
+      updateSingleSnake(s, dt, width, height);
+    }
+  }
+
+  function runMainMenuFrame(time) {
+    if (!mainMenuActive) {
+      mainMenuAnimId = null;
+      mainMenuLastTime = 0;
+      return;
+    }
+
+    if (!mainMenuLastTime) mainMenuLastTime = time;
+    let dt = (time - mainMenuLastTime) / 1000;
+    if (dt > 0.1) dt = 0.1;
+    mainMenuLastTime = time;
+
+    const width  = window.innerWidth;
+    const height = window.innerHeight;
+
+    updateMainMenuSnakes(dt, width, height);
+
+    mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
+  }
+
+  function startMainMenuBackground() {
+    const width  = window.innerWidth;
+    const height = window.innerHeight;
+
+    clearMainMenuSnakes();
+
+    for (let i = 0; i < 3; i++) {
+      const snakeObj = spawnAdditionalSnake(width, height, {
+        startX: randRange(width * 0.2, width * 0.8),
+        startY: randRange(height * 0.25, height * 0.75),
+        angle: randRange(-Math.PI, Math.PI)
+      });
+
+      if (snakeObj) {
+        snakeObj.isMainMenu = true;
+        snakeObj.speedFactor = 0.7 + Math.random() * 0.4;
+        mainMenuSnakes.push(snakeObj);
+      }
+    }
+
+    mainMenuActive = true;
+    mainMenuLastTime = 0;
+    if (!mainMenuAnimId) {
+      mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
+    }
+  }
+
+  function stopMainMenuBackground() {
+    mainMenuActive = false;
+    if (mainMenuAnimId) {
+      cancelAnimationFrame(mainMenuAnimId);
+      mainMenuAnimId = null;
+    }
+    mainMenuLastTime = 0;
+    clearMainMenuSnakes();
+  }
+
   function initMainMenuOverlay() {
     if (mainMenuOverlay) return;
 
@@ -3017,7 +3120,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const btnLeaderboard = document.getElementById("btnLeaderboard");
 
     btnStartRun.addEventListener("click", () => {
-      hideMainMenu();
       startRunFromMenu();
     });
 
@@ -3035,7 +3137,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     document.addEventListener("keydown", (e) => {
       if (mainMenuOverlay && mainMenuOverlay.style.display === "flex" && e.key === "Enter") {
-        hideMainMenu();
         startRunFromMenu();
       }
     });
@@ -3043,11 +3144,16 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function showMainMenu() {
     if (!mainMenuOverlay) initMainMenuOverlay();
+    startMainMenuBackground();
+    setInGameUIVisible(false);
+    mainMenuActive = true;
     mainMenuOverlay.style.display = "flex";
     gamePaused = true;
   }
 
   function hideMainMenu() {
+    mainMenuActive = false;
+    stopMainMenuBackground();
     if (mainMenuOverlay) {
       mainMenuOverlay.style.display = "none";
     }
@@ -4014,9 +4120,16 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     openUpgradeOverlay("normal", { context: "start" });
   }
 
-  function startRunFromMenu() {
+  function startNewRun() {
+    hideMainMenu();
+    stopMainMenuBackground();
+    setInGameUIVisible(true);
     restartGame();
     openFirstUpgradeSelection();
+  }
+
+  function startRunFromMenu() {
+    startNewRun();
   }
 
   function triggerLegendaryFrenzy() {
