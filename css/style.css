@@ -908,10 +908,9 @@ a {
 }
 
 .frog-btn-primary {
-  background: #f39c12;
+  background: greenyellow;
   color: #111;
   font-weight: bold;
-  box-shadow: 0 0 10px rgba(243, 156, 18, 0.45);
 }
 
 .frog-btn-primary:hover {
@@ -1059,15 +1058,13 @@ a {
 }
 
 .frog-btn-primary {
-  background: #f39c12;
+  background: greenyellow;
   color: #111;
   font-weight: bold;
-  box-shadow: 0 0 10px rgba(243, 156, 18, 0.45);
 }
 .frog-btn-primary:hover {
   background: #f5b041;
   transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(243, 156, 18, 0.8);
 }
 
 .frog-btn-secondary {
