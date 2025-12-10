@@ -828,17 +828,17 @@ a {
 }
 
 .frog-panel {
-  background: #1c1917; /* dark brown/charcoal */
+  background: transparent;
   padding: 18px 22px 16px 22px;
   border-radius: 14px;
-  border: 1px solid #84cc16;
-  color: #e7e5e4;
+  border: 0px solid #84cc16;
+  color: white;
   font-family: monospace;
   min-width: 320px;
   max-width: 960px;
   max-height: 82vh;
   overflow: auto;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.9);
+  box-shadow: none;
 }
 
 .frog-panel-title {
@@ -859,7 +859,7 @@ a {
 
 .frog-panel-sub {
   font-size: 13px;
-  color: #a8a29e;
+  color: white;
   text-align: center;
   margin-bottom: 14px;
   line-height: 1.5;
@@ -908,7 +908,7 @@ a {
   margin-bottom: 8px;
   border: 1px solid transparent;
   transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: none;
 }
 
 .frog-btn-primary {
@@ -1267,7 +1267,7 @@ a {
 /* Base pill style for upgrade choices */
 #upgradeOverlay .frog-upgrade-choice {
   border-radius: 5px;
-  border: none;
+  border: 1px solid white;
   padding: 8px 14px;
   font-size: 13px;
   cursor: pointer;
