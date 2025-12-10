@@ -3112,6 +3112,31 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       </div>
     `;
 
+    // 🔹 Each section gets its own "page"
+    // Legendary upgrades are deliberately NOT included.
+    const pages = [
+      {
+        id: "temp",
+        label: "Temp buff orbs",
+        content: renderCard("Temporary Buff Orbs", tempBuffs),
+      },
+      {
+        id: "perma",
+        label: "Permanent upgrades",
+        content: renderCard("Permanent Upgrades", commonUpgrades),
+      },
+      {
+        id: "epic",
+        label: "Epic upgrades",
+        content: renderCard("Epic Upgrades", epicUpgrades),
+      },
+      {
+        id: "roles",
+        label: "Frog roles",
+        content: renderCard("Frog Roles", roleDescriptions),
+      },
+    ];
+
     return `
       <div class="frog-panel-title">
         Buffs & Upgrades
@@ -3122,12 +3147,39 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         Live stats from the current build: every value is pulled straight from the game variables.
       </div>
 
-      <div class="buff-guide-grid">
-        ${renderCard("Temporary Buff Orbs", tempBuffs)}
-        ${renderCard("Permanent Upgrades", commonUpgrades)}
-        ${renderCard("Epic Upgrades", epicUpgrades)}
-        ${renderCard("Legendary Upgrades", legendaryUpgrades)}
-        ${renderCard("Frog Roles", roleDescriptions)}
+      <!-- Page tabs -->
+      <div class="buff-guide-nav">
+        ${pages
+          .map(
+            (p, idx) => `
+              <button
+                class="frog-btn frog-btn-secondary buff-page-btn${idx === 0 ? " is-active" : ""}"
+                data-page-index="${idx}"
+              >
+                ${p.label}
+              </button>
+            `
+          )
+          .join("")}
+      </div>
+
+      <!-- Paged content -->
+      <div class="buff-guide-pages">
+        ${pages
+          .map(
+            (p, idx) => `
+              <div
+                class="buff-guide-page"
+                data-page-index="${idx}"
+                style="display: ${idx === 0 ? "block" : "none"};"
+              >
+                <div class="buff-guide-grid">
+                  ${p.content}
+                </div>
+              </div>
+            `
+          )
+          .join("")}
       </div>
 
       <div class="frog-panel-footer">
