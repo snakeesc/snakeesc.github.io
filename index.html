@@ -77,22 +77,35 @@
     </div>
   </div>
 
-  <!-- UPGRADE SELECTION OVERLAY -->
+  <!-- UPGRADE OVERLAY -->
   <div id="upgradeOverlay" class="frog-overlay">
     <div class="frog-panel">
       <div class="frog-panel-title">
         Choose an Upgrade
+        <span class="emoji">✨</span>
       </div>
+
       <div id="upgradeOverlaySub" class="frog-panel-sub">
         Pick one upgrade to apply to your frogs.
       </div>
 
-      <div id="upgradeChoicesContainer">
-        <!-- buttons injected by JS -->
+      <div class="upgrade-columns">
+        <div class="upgrade-left">
+          <div id="upgradeChoicesContainer">
+            <!-- buttons injected by JS -->
+          </div>
+        </div>
+
+        <div class="upgrade-right">
+          <div class="frog-panel-section-label">Current permanent upgrades</div>
+          <div id="upgradeSummaryBox" class="upgrade-summary-body">
+            <!-- filled by updateUpgradeBuffSummary() -->
+          </div>
+        </div>
       </div>
 
       <div class="frog-panel-footer">
-        Click an option or press its number key (1/2/3).
+        Click an option to apply it.
       </div>
     </div>
   </div>
@@ -112,22 +125,20 @@
       <div class="frog-panel-section-label">Controls</div>
       <ul class="frog-panel-list">
         <li><strong>Mouse:</strong> move your cursor – your frogs try to follow.</li>
-        <li><strong>Left click (if used):</strong> any special actions you wired in.</li>
-        <li><strong>Esc:</strong> pause / open menu (if you wire this up).</li>
       </ul>
 
       <div class="frog-panel-section-label">Goal</div>
       <ul class="frog-panel-list">
-        <li>Avoid letting the snake touch any frog.</li>
-        <li>Collect orbs and buffs to survive longer.</li>
-        <li>Your score is based on how long you stay alive and what you collect.</li>
+        <li>Stay alive as long as possible.</li>
+        <li>Your score increases every time a frog gets eaten.</li>
+        <li>Collect orbs and upgrades to keep your swarm alive longer.</li>
       </ul>
 
       <div class="frog-panel-section-label">Tips</div>
       <ul class="frog-panel-list">
-        <li>Plan your path early when the snake sheds (it gets faster).</li>
+        <li>Plan your path early when the snake sheds (it gets faster over time).</li>
         <li>Don’t chase every orb; staying alive is more important.</li>
-        <li>Some buffs make the snake slower, some make frogs safer – learn which is which.</li>
+        <li>Some buffs slow the snake, some protect frogs, some spawn more frogs – learn which is which.</li>
       </ul>
 
       <div class="frog-panel-footer">
@@ -143,48 +154,7 @@
   <!-- BUFF / UPGRADE GUIDE OVERLAY -->
   <div id="buffGuideOverlay" class="frog-overlay">
     <div class="frog-panel">
-      <div class="frog-panel-title">
-        Buffs & Upgrades
-        <span class="emoji">⚡</span>
-      </div>
-
-      <div class="frog-panel-sub">
-        A quick reference for what the in-game buffs, upgrades, and frog roles do.
-      </div>
-
-      <div class="frog-panel-section-label">Temporary Buff Orbs</div>
-      <ul class="frog-panel-list">
-        <li><strong>Speed Boost:</strong> frogs move faster for a short time.</li>
-        <li><strong>Snake Slow:</strong> the snake moves slower temporarily.</li>
-        <li><strong>Magnet:</strong> nearby orbs are pulled toward your frogs.</li>
-        <li><strong>Shield:</strong> protects a frog from one hit (if you use this).</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Permanent Upgrades</div>
-      <ul class="frog-panel-list">
-        <li><strong>More Frogs:</strong> adds extra frogs to your group.</li>
-        <li><strong>Movement Control:</strong> frogs respond more tightly to your mouse.</li>
-        <li><strong>Buff Duration:</strong> buffs last longer when collected.</li>
-        <li><strong>Orb Frequency:</strong> orbs spawn more often.</li>
-        <!-- replace with your real ones -->
-      </ul>
-
-      <div class="frog-panel-section-label">Frog Roles (Examples)</div>
-      <ul class="frog-panel-list">
-        <li><strong>Cannibal Frog:</strong> gains bonuses when other frogs die.</li>
-        <li><strong>Guardian Frog:</strong> takes hits for nearby frogs.</li>
-        <li><strong>Deathrattle Frog:</strong> triggers a buff when it dies.</li>
-        <li><strong>Lucky Frog:</strong> increased chance for better buffs/upgrades.</li>
-        <!-- fill in your actual roles -->
-      </ul>
-
-      <div class="frog-panel-footer">
-        Tune this text to match your current build.
-        <br />
-        <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
-          Close
-        </button>
-      </div>
+      <!-- JS will inject full content here -->
     </div>
   </div>
 

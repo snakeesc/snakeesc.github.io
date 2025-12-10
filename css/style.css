@@ -832,7 +832,9 @@ a {
 .frog-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: radial-gradient(circle at 20% 20%, rgba(255, 240, 200, 0.55), rgba(255, 255, 255, 0.4)),
+    rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(4px);
   display: none;
   align-items: center;
   justify-content: center;
@@ -841,110 +843,137 @@ a {
 }
 
 .frog-panel {
-  background: #111;
+  background: linear-gradient(145deg, #fff8e6, #e7f6ff);
   padding: 18px 22px 16px 22px;
-  border-radius: 10px;
-  border: 1px solid #444;
-  color: #fff;
+  border-radius: 14px;
+  border: 2px solid #ffd876;
+  color: #0f1b2c;
   font-family: monospace;
-  min-width: 280px;
-  max-width: 480px;
-  max-height: 80vh;
+  min-width: 320px;
+  max-width: 720px;
+  max-height: 82vh;
   overflow: auto;
-  box-shadow: 0 0 18px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 
 .frog-panel-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  color: #0a2335;
 }
 
 .frog-panel-title .emoji {
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .frog-panel-sub {
-  font-size: 12px;
-  color: #ccc;
+  font-size: 13px;
+  color: #253d50;
   text-align: center;
-  margin-bottom: 12px;
-  line-height: 1.4;
+  margin-bottom: 14px;
+  line-height: 1.5;
 }
 
 .frog-panel-section-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #aaa;
-  margin-top: 10px;
-  margin-bottom: 4px;
+  color: #3d4f5a;
+  margin-top: 12px;
+  margin-bottom: 6px;
 }
 
 .frog-panel-footer {
-  margin-top: 10px;
-  font-size: 11px;
-  color: #888;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #2c3a48;
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .frog-btn {
   width: 100%;
   border: none;
-  border-radius: 999px;
-  padding: 8px 12px;
+  border-radius: 12px;
+  padding: 10px 12px;
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
   text-align: center;
-  margin-bottom: 6px;
-  transition: background 0.12s ease, transform 0.06s ease, box-shadow 0.12s ease;
+  margin-bottom: 8px;
+  transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+.frog-btn-primary {
+  background: linear-gradient(120deg, #ffb347, #ffd76f);
+  color: #231100;
+  font-weight: 800;
+}
+
+.frog-btn-primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
 }
 
 .frog-btn-secondary {
-  background: #181818;
-  color: #f5f5f5;
-  border: 1px solid #444;
-  font-size: 12px;
+  background: linear-gradient(120deg, #2ec7a6, #3ea8f5);
+  color: #082333;
+  border: 1px solid rgba(8, 35, 51, 0.1);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .frog-btn-secondary:hover {
-  background: #222;
+  filter: brightness(1.05);
   transform: translateY(-1px);
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
 }
 
 .frog-btn-danger {
-  background: #b33939;
+  background: linear-gradient(120deg, #f06a6a, #ff9671);
   color: #fff;
-  border: 1px solid #ff6b6b;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 12px;
 }
 
 .frog-btn-danger:hover {
-  background: #c44545;
+  filter: brightness(1.05);
 }
 
 .frog-panel-list {
   list-style: none;
   padding-left: 0;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
 }
 
 .frog-panel-list li {
-  font-size: 12px;
-  margin-bottom: 4px;
-  line-height: 1.4;
+  font-size: 13px;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  color: #0f1b2c;
 }
 
 .frog-upgrade-choice {
   text-align: left;
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  background: #151515;
+  border: 1px solid #444;
+  padding: 8px 10px;
+}
+
+.frog-upgrade-choice:hover {
+  background: #1f1f1f;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
 }
 
 .frog-upgrade-title {
@@ -957,122 +986,113 @@ a {
   font-size: 11px;
   color: #ccc;
 }
-.frog-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  pointer-events: auto;
+
+.upgrade-columns {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-.frog-panel {
-  background: #111;
-  padding: 18px 22px 16px 22px;
+.upgrade-left,
+.upgrade-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.upgrade-summary-body {
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid #444;
-  color: #fff;
-  font-family: monospace;
-  min-width: 280px;
-  max-width: 480px;
-  max-height: 80vh;
-  overflow: auto;
-  box-shadow: 0 0 18px rgba(0, 0, 0, 0.7);
+  background: #181818;
 }
 
-.frog-panel-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 4px;
-  text-align: center;
+.stat-highlight {
+  color: #d6ff6b;
+}
+
+.upgrade-column {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(12, 36, 52, 0.12);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.upgrade-column-title {
+  font-weight: 800;
+  color: #0d273b;
+  margin-bottom: 6px;
+}
+
+.upgrade-choices {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upgrade-column--summary {
+  background: linear-gradient(135deg, rgba(251, 255, 222, 0.9), rgba(218, 244, 255, 0.85));
+}
+
+.upgrade-summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
   gap: 6px;
 }
-.frog-panel-title .emoji {
-  font-size: 20px;
-}
 
-.frog-panel-sub {
+.upgrade-summary-list li {
   font-size: 12px;
-  color: #ccc;
-  text-align: center;
-  margin-bottom: 12px;
-  line-height: 1.4;
+  line-height: 1.45;
+  color: #0f1b2c;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed rgba(12, 36, 52, 0.1);
 }
 
-.frog-panel-section-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #aaa;
-  margin-top: 10px;
-  margin-bottom: 4px;
+.stat-highlight {
+  color: #c4ec3b;
+  font-weight: 800;
 }
 
-.frog-panel-footer {
-  margin-top: 10px;
-  font-size: 11px;
-  color: #888;
-  text-align: center;
-  line-height: 1.4;
+.buff-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
 }
 
-.frog-panel-list {
-  list-style: none;
-  padding-left: 0;
-  margin: 0 0 4px 0;
-}
-.frog-panel-list li {
-  font-size: 12px;
-  margin-bottom: 4px;
-  line-height: 1.4;
+.buff-card {
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(12, 36, 52, 0.1);
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.08);
 }
 
-.frog-btn {
-  width: 100%;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: center;
+.buff-card h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: #0b2f45;
+}
+
+.buff-card ul {
+  margin: 0;
+  padding-left: 16px;
+  color: #0f1b2c;
+}
+
+.buff-card li {
   margin-bottom: 6px;
-  transition: background 0.12s ease, transform 0.06s ease, box-shadow 0.12s ease;
-}
-
-.frog-btn-primary {
-  background: greenyellow;
-  color: #111;
-  font-weight: bold;
-}
-.frog-btn-primary:hover {
-  background: #f5b041;
-  transform: translateY(-1px);
-}
-
-.frog-btn-secondary {
-  background: #181818;
-  color: #f5f5f5;
-  border: 1px solid #444;
+  line-height: 1.4;
   font-size: 12px;
 }
-.frog-btn-secondary:hover {
-  background: #222;
-  transform: translateY(-1px);
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
-}
 
-.frog-btn-danger {
-  background: #b33939;
-  color: #fff;
-  border: 1px solid #ff6b6b;
-  font-size: 12px;
-}
-.frog-btn-danger:hover {
-  background: #c44545;
+@media (max-width: 960px) {
+  .upgrade-layout {
+    grid-template-columns: 1fr;
+  }
 }
