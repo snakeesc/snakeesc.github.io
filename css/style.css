@@ -825,111 +825,109 @@ a {
   border-radius: 100%;
 }
 
-/* THEME 2 – Marsh Arcade */
+/* THEME 1 – Forest Daylight */
 
 .frog-overlay {
   background:
-    radial-gradient(circle at 10% 5%, rgba(74, 222, 128, 0.22), transparent 55%),
-    radial-gradient(circle at 90% 95%, rgba(52, 211, 153, 0.18), transparent 55%),
-    #020617;
+    radial-gradient(circle at 15% 10%, rgba(190, 242, 100, 0.35), transparent 55%),
+    radial-gradient(circle at 85% 90%, rgba(52, 211, 153, 0.20), transparent 55%),
+    rgba(248, 250, 252, 0.95);
 }
 
 .frog-panel {
-  background: linear-gradient(145deg, #020617, #022c22);
-  color: #e5fbea;
-  border-color: rgba(34, 197, 94, 0.7);
+  background: linear-gradient(145deg, #fefce8, #ecfdf3);
+  color: #022c22;
+  border-color: #86efac;
 }
 
 .frog-panel-title {
-  color: #bbf7d0;
+  color: #14532d;
 }
 
 .frog-panel-sub {
-  color: #a5f3fc;
+  color: #4b5563;
 }
 
 .frog-panel-section-label {
-  color: #4ade80;
+  color: #15803d;
 }
 
 .frog-panel-footer {
-  color: #bae6fd;
+  color: #374151;
 }
 
 .frog-panel-list li {
-  color: #e5fbea;
+  color: #022c22;
 }
 
 /* Buttons */
 
 .frog-btn-primary {
-  background: linear-gradient(120deg, #22c55e, #4ade80);
+  background: linear-gradient(120deg, #22c55e, #84cc16);
   color: #022c22;
 }
 
 .frog-btn-secondary {
-  background: linear-gradient(120deg, #0f172a, #0369a1);
-  color: #e0f2fe;
-  border-color: rgba(56, 189, 248, 0.6);
+  background: linear-gradient(120deg, #0ea5e9, #22c55e);
+  color: #022c22;
+  border-color: rgba(34, 197, 94, 0.6);
 }
 
 .frog-btn-danger {
-  background: linear-gradient(120deg, #b91c1c, #f97373);
-  color: #fee2e2;
-  border-color: rgba(248, 113, 113, 0.7);
+  background: linear-gradient(120deg, #ef4444, #f97316);
+  color: #fef2f2;
+  border-color: rgba(239, 68, 68, 0.7);
 }
 
 /* Upgrades */
 
 .frog-upgrade-choice {
-  background: rgba(15, 23, 42, 0.95);
-  border-color: rgba(74, 222, 128, 0.6);
+  background: rgba(255, 255, 255, 0.96);
+  border-color: #bbf7d0;
 }
 
 .frog-upgrade-title {
-  color: #bbf7d0;
+  color: #14532d;
 }
 
 .frog-upgrade-desc {
-  color: #e0f2fe;
+  color: #374151;
 }
 
 .upgrade-column {
-  background: rgba(15, 23, 42, 0.95);
-  border-color: rgba(30, 64, 175, 0.8);
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
 .upgrade-column-title {
-  color: #93c5fd;
+  color: #14532d;
 }
 
 .upgrade-column--summary {
-  background:
-    radial-gradient(circle at 0 0, rgba(34, 197, 94, 0.25), transparent 65%),
-    rgba(6, 78, 59, 0.98);
+  background: linear-gradient(145deg, #dcfce7, #fef9c3);
 }
 
 .upgrade-summary-list li {
-  background: rgba(15, 23, 42, 0.95);
-  border-color: rgba(45, 212, 191, 0.6);
-  color: #e5fbea;
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.7);
+  color: #1f2937;
 }
 
 .stat-highlight {
-  color: #4ade80;
+  color: #15803d;
 }
 
 /* Buff cards */
 
 .buff-card {
-  background: rgba(15, 23, 42, 0.98);
-  border-color: rgba(34, 197, 94, 0.6);
+  background: #ffffff;
+  border-color: #d1d5db;
 }
 
 .buff-card h4 {
-  color: #bbf7d0;
+  color: #166534;
 }
 
 .buff-card li {
-  color: #e5fbea;
+  color: #111827;
 }
