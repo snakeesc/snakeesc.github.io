@@ -26,6 +26,8 @@ a {
   padding: 0 1rem 2rem;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 /* HEADER */
@@ -56,15 +58,16 @@ a {
   font-size: 0.9rem;
 }
 
-/* Make hero links look just like nav links */
+/* NAV + HERO LINKS */
+
 .nav a,
 .hero-actions a {
-    color: inherit;
-    text-decoration: none;
-    padding: 0.2rem 0;
-    position: relative;
-    margin: 8px;
-    border-bottom: 0px solid white;
+  color: inherit;
+  text-decoration: none;
+  padding: 0.2rem 0;
+  position: relative;
+  margin: 8px;
+  border-bottom: 0 solid white;
 }
 
 .nav a::after,
@@ -89,11 +92,12 @@ a {
   width: 80%;
 }
 
+/* HEADER CTA BUTTON */
+
 .cta-btn {
   padding: 0.55rem 1.2rem;
   border-radius: 5px;
   border: none;
-  color: #022c22;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -155,16 +159,9 @@ a {
   width: 100%;
   aspect-ratio: 4 / 3;
   border-radius: 18px;
-  background: radial-gradient(
-      circle at top left,
-      rgba(74, 222, 128, 0.18),
-      transparent 55%
-    ),
-    radial-gradient(
-      circle at bottom right,
-      rgba(56, 189, 248, 0.18),
-      transparent 55%
-    ),
+  background:
+    radial-gradient(circle at top left, rgba(74, 222, 128, 0.18), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.18), transparent 55%),
     #020617;
   border: 1px solid rgba(148, 163, 184, 0.4);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65);
@@ -175,7 +172,7 @@ a {
   color: #9ca3af;
 }
 
-/* BUTTONS */
+/* GENERIC BUTTONS */
 
 .btn {
   border-radius: 999px;
@@ -191,11 +188,10 @@ a {
     transform 140ms ease-out;
 }
 
-.btn.primary {  
+.btn.primary {
   padding: 0.55rem 1.2rem;
-  border-radius: 0px;
+  border-radius: 0;
   border: none;
-  color: #022c22;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -207,9 +203,8 @@ a {
 
 .btn.secondary {
   padding: 0.55rem 1.2rem;
-  border-radius: 0px;
+  border-radius: 0;
   border: none;
-  color: #022c22;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -224,7 +219,6 @@ a {
 }
 
 /* MAIN – DASHBOARD LAYOUT */
-/* Single column layout: all panels full-width, stacked vertically */
 
 .dashboard-main {
   display: flex;
@@ -235,12 +229,14 @@ a {
   margin: 0 auto;
 }
 
+/* PANELS */
+
 .panel {
   background: lightseagreen;
-  border: 0px solid white;
+  border: 0 solid white;
   padding: 1.2rem 1.3rem 1.3rem;
   box-shadow: 2px 2px darkslateblue;
-  border-radius: 0px;
+  border-radius: 0;
 }
 
 .panel h2 {
@@ -315,8 +311,7 @@ a {
   image-rendering: pixelated;
 }
 
-/* SHARED GRID LAYOUT FOR ALL FROG LISTS
-   (recent sales, mints, pond, owned, staked, rarity) */
+/* SHARED GRID LAYOUT FOR FROG LISTS */
 
 .recent_sales,
 .nft-grid {
@@ -341,7 +336,7 @@ a {
   }
 }
 
-/* FROG CARD (used everywhere: owned, staked, sales, mints, pond, rarity) */
+/* FROG CARD */
 
 .sale_card_title {
   float: left;
@@ -361,15 +356,11 @@ a {
   height: 16px;
 }
 
-.frog_img {
-  height: 128px;
-  width: 128px;
-  image-rendering: pixelated;
-}
-
+/* shared frog image styles */
+.frog_img,
 .recent_sale_img {
-  height: 128px;
   width: 128px;
+  height: 128px;
   image-rendering: pixelated;
 }
 
@@ -378,7 +369,7 @@ a {
   padding: 8px;
   margin: 8px;
   color: lightseagreen;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   font-size: 0.9em;
 }
 
@@ -390,9 +381,10 @@ a {
 }
 
 .recent_sale_traits {
+  /* empty but reserved */
 }
 
-/* Layered frog container (used by ethereum-dapp.js helpers) */
+/* LAYERED FROG CONTAINER */
 
 .frog_img_cont {
   position: relative;
@@ -400,7 +392,7 @@ a {
   width: 128px;
   height: 128px;
   overflow: hidden;
-  border-radius: 0px;
+  border-radius: 0;
   box-shadow: 2px 2px darkslateblue;
   background-color: #020617;
   background-repeat: no-repeat;
@@ -408,7 +400,7 @@ a {
   background-position: bottom right;
 }
 
-/* Attribute layers (built by build_trait) */
+/* ATTRIBUTE LAYERS */
 
 .trait_overlay,
 .attribute_overlay {
@@ -453,7 +445,7 @@ a {
   z-index: 5;
 }
 
-/* WALLET SIDEBAR / DASHBOARD (legacy IDs safe even if not shown) */
+/* WALLET SIDEBAR / DASHBOARD */
 
 .sidebar .wallet-summary {
   display: flex;
@@ -509,7 +501,7 @@ a {
 .wallet-stat {
   background: antiquewhite;
   padding: 0.35rem 0.45rem;
-  border-radius: 0px;
+  border-radius: 0;
   color: #333;
 }
 
@@ -561,18 +553,17 @@ a {
   opacity: 0.7;
 }
 
-/* RECENT SALE / FROG CARD LINK BUTTONS (used for all frog cards) */
+/* RECENT SALE / FROG CARD LINK BUTTONS */
 
 .recent_sale_links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0px;
-  margin: 0px;
+  gap: 0;
+  margin: 0;
   margin-top: 10px;
 }
 
 .sale_link_btn {
-  background: cornflowerblue;
   color: white;
   border: none;
   box-shadow: 2px 2px darkslateblue;
@@ -617,12 +608,12 @@ a {
   color: white;
 }
 
-/* STAKING LEVEL + PROGRESS (dashboard cards) */
+/* STAKING LEVEL + PROGRESS */
 
 .stake-meta {
   margin: 8px;
-  margin-top: 0px;
-  padding-top: 0px;
+  margin-top: 0;
+  padding-top: 0;
   font-size: 0.75rem;
   color: #e5e7eb;
 }
@@ -687,8 +678,8 @@ a {
   margin-bottom: 0.6rem;
 }
 
-/* Reuse recent_sale_card style for owned / staked NFTs */
-/* Make cards a bit slimmer and stop stretching them to full row height */
+/* RECENT SALE CARD */
+
 .recent_sale_card {
   width: 240px;
   max-width: 240px;
@@ -701,7 +692,7 @@ a {
 
 /* Reuse recent_sale_card style for owned / staked NFTs */
 .nft-grid .recent_sale_card {
-  max-width: 240px;      /* 🔹 same cap for wallet grids */
+  max-width: 240px;
   width: 240px;
   margin: 8px auto;
 }
@@ -730,6 +721,7 @@ a {
 }
 
 /* Morph gallery */
+
 .morph-gallery {
   display: flex;
   flex-wrap: wrap;
@@ -760,26 +752,27 @@ a {
   bottom: 2px;
   left: 4px;
   font-size: 12px;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0, 0, 0, 0.65);
   color: white;
   padding: 1px 4px;
   border-radius: 4px;
 }
 
 .morph-thumb.selected {
-  border-color: #52ff9b; /* neon-ish frog green */
-  box-shadow: 0 0 0 2px rgba(82,255,155,0.5);
+  border-color: #52ff9b;
+  box-shadow: 0 0 0 2px rgba(82, 255, 155, 0.5);
 }
 
-/* your existing button styles stay the same */
-.recent_sale_card .frog-actions{
+/* frog card actions */
+
+.recent_sale_card .frog-actions {
   display: flex;
-  gap: 0px;
+  gap: 0;
   justify-content: center;
 }
 
 /* makes <a> behave exactly like your <button> */
-.frog-actions .frog_action_btn{
+.frog-actions .frog_action_btn {
   background: cornflowerblue;
   color: white;
   border: none;
@@ -797,22 +790,18 @@ a {
   color: #333;
 }
 
+/* FROG BACKGROUND + SPRITES */
+
 #frog-bg {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: #7cc1ff; /* your sky */
+  background: #7cc1ff; /* sky */
   overflow: hidden;
   image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  pointer-events: none; /* don't block clicks on the site */
-}
-
-.page {
-  position: relative;
-  z-index: 1;
+  pointer-events: none;
 }
 
 .frog-sprite {
@@ -820,12 +809,11 @@ a {
   width: 64px;
   height: 64px;
   image-rendering: pixelated;
-  image-rendering: crisp-edges;
   pointer-events: none;
   border-radius: 100%;
 }
 
-/* THEME 1 – Swamp Night */
+/* THEME 1 – Swamp Night (Overlay / Game UI) */
 
 .frog-overlay {
   position: absolute;
@@ -909,7 +897,7 @@ a {
   color: #e5fbea;
 }
 
-/* Buttons */
+/* frog UI buttons */
 
 .frog-btn {
   width: 100%;
@@ -1008,8 +996,9 @@ a {
 }
 
 .upgrade-column--summary {
-  background: radial-gradient(circle at 0 0, rgba(34, 197, 94, 0.28), transparent 70%),
-              rgba(6, 78, 59, 0.95);
+  background:
+    radial-gradient(circle at 0 0, rgba(34, 197, 94, 0.28), transparent 70%),
+    rgba(6, 78, 59, 0.95);
 }
 
 .upgrade-summary-list {
