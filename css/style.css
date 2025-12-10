@@ -1184,6 +1184,7 @@ a {
   border: none;
   box-shadow: none;
   padding: 8px 16px;
+  background: transparent;
 }
 
 /* Hide the big “Choose an upgrade” title bar */
