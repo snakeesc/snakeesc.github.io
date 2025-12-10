@@ -1109,7 +1109,7 @@ a {
 #upgradeOverlay .frog-upgrade-choice {
     width: 100%;
     border-radius: 10px;
-    padding: 10px 10px;
+    padding: 8px 10px;
     font-size: 13px;
     font-family: inherit;
     cursor: pointer;
