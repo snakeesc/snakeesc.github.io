@@ -3710,70 +3710,209 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (!leaderboardOverlay) return;
 
     const content = document.getElementById("leaderboardContent");
-    if (content) {
-      content.textContent = "Loading...";
+    if (!content) return;
 
-      try {
-        const entries = await fetchLeaderboard();
+    content.innerHTML = '<div class="leaderboard-loading">Loading leaderboard…</div>';
 
-        if (!Array.isArray(entries) || entries.length === 0) {
-          content.textContent = "No runs yet.";
-        } else {
-          const maxRows = Math.min(entries.length, 15);
-          const wrapper = document.createElement("div");
-          wrapper.style.fontFamily = "monospace";
-          wrapper.style.fontSize = "11px";
+    try {
+      const entries = await fetchLeaderboard();
+      const list = Array.isArray(entries) ? entries.slice(0, 50) : [];
 
-          for (let i = 0; i < maxRows; i++) {
-            const entry = entries[i] || {};
-            const rank = i + 1;
-
-            let name = "Player " + rank;
-            if (entry && typeof entry.tag === "string" && entry.tag.trim() !== "") {
-              name = entry.tag;
-            } else if (entry && typeof entry.name === "string" && entry.name.trim() !== "") {
-              name = entry.name;
-            }
-
-            // Mirror the helper logic from frog-leaderboard.js
-            let score = 0;
-            const scoreKeys = ["bestScore", "score", "maxScore", "points", "value"];
-            for (const k of scoreKeys) {
-              if (!entry || !(k in entry)) continue;
-              let v = entry[k];
-              if (typeof v === "string") v = parseFloat(v);
-              if (typeof v === "number" && isFinite(v)) {
-                score = v;
-                break;
-              }
-            }
-
-            let time = 0;
-            const timeKeys = ["bestTime", "time", "maxTime", "seconds"];
-            for (const k of timeKeys) {
-              if (!entry || !(k in entry)) continue;
-              let v = entry[k];
-              if (typeof v === "string") v = parseFloat(v);
-              if (typeof v === "number" && isFinite(v) && v >= 0) {
-                time = v;
-                break;
-              }
-            }
-
-            const row = document.createElement("div");
-            row.textContent =
-              rank + ". " + name + " — " + formatLeaderboardTime(time) + ", " + Math.floor(score);
-
-            wrapper.appendChild(row);
-          }
-
-          content.innerHTML = "";
-          content.appendChild(wrapper);
-        }
-      } catch (err) {
-        console.error("Failed to load leaderboard:", err);
-        content.textContent = "Failed to load leaderboard.";
+      if (list.length === 0) {
+        content.innerHTML = '<div class="leaderboard-empty">No runs yet.</div>';
+        leaderboardOverlay.style.display = "flex";
+        return;
       }
+
+      const userLabel =
+        (window.FrogGameLeaderboard &&
+          typeof window.FrogGameLeaderboard.getCurrentUserLabel === "function" &&
+          window.FrogGameLeaderboard.getCurrentUserLabel()) ||
+        null;
+
+      const scoreKeys = ["bestScore", "score", "maxScore", "points", "value"];
+      const timeKeys = ["bestTime", "time", "maxTime", "seconds", "duration"];
+
+      const pageSize = 10;
+      let currentPage = 0;
+
+      function normalizeTag(tag) {
+        return typeof tag === "string" ? tag.trim().toLowerCase() : "";
+      }
+
+      function entryMatchesUser(entry) {
+        if (!entry || !userLabel) return false;
+        const tag = normalizeTag(entry.tag);
+        const name = normalizeTag(entry.name);
+        const target = normalizeTag(userLabel);
+        return tag === target || name === target;
+      }
+
+      const myIndex = list.findIndex(entryMatchesUser);
+      if (myIndex >= 0) {
+        currentPage = Math.floor(myIndex / pageSize);
+      }
+
+      function getScore(entry) {
+        if (!entry) return 0;
+        for (const key of scoreKeys) {
+          if (!(key in entry)) continue;
+          let v = entry[key];
+          if (typeof v === "string") v = parseFloat(v);
+          if (typeof v === "number" && isFinite(v)) return v;
+        }
+        return 0;
+      }
+
+      function getTime(entry) {
+        if (!entry) return 0;
+        for (const key of timeKeys) {
+          if (!(key in entry)) continue;
+          let v = entry[key];
+          if (typeof v === "string") v = parseFloat(v);
+          if (typeof v === "number" && isFinite(v) && v >= 0) return v;
+        }
+        return 0;
+      }
+
+      function getFrogs(entry) {
+        if (entry && entry.stats) {
+          const stats = entry.stats;
+          if (typeof stats.totalFrogsSpawned === "number") return stats.totalFrogsSpawned;
+          if (typeof stats.frogsSpawned === "number") return stats.frogsSpawned;
+          if (typeof stats.frogCount === "number") return stats.frogCount;
+        }
+        return null;
+      }
+
+      function getBuildSnippet(entry) {
+        if (!entry || !entry.stats) return "—";
+        const s = entry.stats;
+
+        const speed = typeof s.frogSpeedFactor === "number" ? `SPD×${s.frogSpeedFactor.toFixed(2)}` : null;
+        const jump = typeof s.frogJumpFactor === "number" ? `JMP×${s.frogJumpFactor.toFixed(2)}` : null;
+        const buff = typeof s.buffDurationFactor === "number" ? `BUFF×${s.buffDurationFactor.toFixed(2)}` : null;
+        const dr = typeof s.deathrattleChance === "number" ? `DR ${(s.deathrattleChance * 100).toFixed(0)}%` : null;
+        const parts = [speed, jump, buff, dr].filter(Boolean);
+        return parts.length ? parts.join(" · ") : "—";
+      }
+
+      function getDisplayName(entry, fallback) {
+        if (entry && typeof entry.tag === "string" && entry.tag.trim() !== "") return entry.tag;
+        if (entry && typeof entry.name === "string" && entry.name.trim() !== "") return entry.name;
+        return fallback;
+      }
+
+      function buildRow(entry, index) {
+        const row = document.createElement("tr");
+        row.className = "leaderboard-row" + (entryMatchesUser(entry) ? " is-me" : "");
+
+        const rankCell = document.createElement("td");
+        rankCell.textContent = index + 1;
+
+        const nameCell = document.createElement("td");
+        const nameLabel = document.createElement("span");
+        nameLabel.className = "leaderboard-name";
+        nameLabel.textContent = getDisplayName(entry, "Player " + (index + 1));
+        nameCell.appendChild(nameLabel);
+
+        const timeCell = document.createElement("td");
+        timeCell.textContent = formatLeaderboardTime(getTime(entry));
+
+        const scoreCell = document.createElement("td");
+        scoreCell.textContent = Math.floor(getScore(entry));
+
+        const frogsCell = document.createElement("td");
+        const frogs = getFrogs(entry);
+        frogsCell.textContent = frogs != null ? frogs : "—";
+
+        const buildCell = document.createElement("td");
+        buildCell.textContent = getBuildSnippet(entry);
+
+        [rankCell, nameCell, timeCell, scoreCell, frogsCell, buildCell].forEach((cell) => {
+          cell.classList.add("leaderboard-cell");
+        });
+
+        row.appendChild(rankCell);
+        row.appendChild(nameCell);
+        row.appendChild(timeCell);
+        row.appendChild(scoreCell);
+        row.appendChild(frogsCell);
+        row.appendChild(buildCell);
+
+        return row;
+      }
+
+      function renderPage(pageIndex) {
+        currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
+
+        const table = document.createElement("table");
+        table.className = "leaderboard-table";
+
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        const headers = ["#", "Player", "Time", "Score", "Frogs", "Build Snapshot"];
+        headers.forEach((label) => {
+          const th = document.createElement("th");
+          th.textContent = label;
+          th.className = "leaderboard-head-cell";
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        const start = currentPage * pageSize;
+        const end = Math.min(start + pageSize, list.length);
+        for (let i = start; i < end; i++) {
+          tbody.appendChild(buildRow(list[i], i));
+        }
+        table.appendChild(tbody);
+
+        const pager = document.createElement("div");
+        pager.className = "leaderboard-pager";
+
+        const prevBtn = document.createElement("button");
+        prevBtn.textContent = "◀ Prev";
+        prevBtn.className = "frog-btn frog-btn-secondary leaderboard-page-btn";
+        prevBtn.disabled = currentPage === 0;
+        prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
+
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next ▶";
+        nextBtn.className = "frog-btn frog-btn-secondary leaderboard-page-btn";
+        nextBtn.disabled = end >= list.length;
+        nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
+
+        const pageInfo = document.createElement("div");
+        pageInfo.className = "leaderboard-page-info";
+        pageInfo.textContent = `Showing ${start + 1}–${end} of ${list.length}`;
+
+        pager.appendChild(prevBtn);
+        pager.appendChild(pageInfo);
+        pager.appendChild(nextBtn);
+
+        const legend = document.createElement("div");
+        legend.className = "leaderboard-legend";
+        legend.textContent = "Top 50 runs · 10 per page · your tag highlights in green";
+
+        const header = document.createElement("div");
+        header.className = "leaderboard-header";
+        header.innerHTML =
+          '<div class="leaderboard-title">Global leaderboard</div>' +
+          '<div class="leaderboard-subtitle">Fresh pulls may lag a few seconds after a run posts.</div>';
+
+        content.innerHTML = "";
+        content.appendChild(header);
+        content.appendChild(table);
+        content.appendChild(pager);
+        content.appendChild(legend);
+      }
+
+      renderPage(currentPage);
+    } catch (err) {
+      console.error("Failed to load leaderboard:", err);
+      content.innerHTML = '<div class="leaderboard-error">Failed to load leaderboard.</div>';
     }
 
     leaderboardOverlay.style.display = "flex";
