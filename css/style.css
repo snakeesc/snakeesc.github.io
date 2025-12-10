@@ -1283,9 +1283,7 @@ a {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: radial-gradient(circle at 20% 20%, rgba(101, 163, 13, 0.18), transparent 35%),
-    radial-gradient(circle at 80% 0%, rgba(22, 163, 74, 0.2), transparent 30%),
-    rgba(0, 0, 0, 0.75);
+  background: transparent;
   z-index: 9999;
 }
 
@@ -1342,11 +1340,11 @@ a {
 }
 
 .summary-pill {
-  background: linear-gradient(135deg, rgba(52, 211, 153, 0.08), rgba(101, 163, 13, 0.08));
-  border: 1px solid #3f6212;
+  background: transparent;
+  border: 1px solid darkgoldenrod;
   border-radius: 10px;
   padding: 10px 12px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+  box-shadow: none;
 }
 
 .pill-label {
@@ -1439,7 +1437,7 @@ a {
 .scoreboard-btn {
   padding: 8px 12px;
   background: #111827;
-  border: 1px solid #334155;
+  border: 0px solid #334155;
   color: #e2e8f0;
   border-radius: 8px;
   cursor: pointer;
@@ -1454,10 +1452,9 @@ a {
 }
 
 .scoreboard-btn--primary {
-  background: linear-gradient(135deg, #65a30d, #3f6212);
-  border-color: #65a30d;
-  color: #fefce8;
-  box-shadow: 0 10px 24px rgba(101, 163, 13, 0.28);
+background: #65a30d;
+  color: white;
+  box-shadow: none;
 }
 
 .scoreboard-btn--ghost {
