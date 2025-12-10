@@ -824,3 +824,619 @@ a {
   pointer-events: none;
   border-radius: 100%;
 }
+
+/* Escape the Snake main menu (Example 1D) */
+.frog-main-menu-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 140;
+  pointer-events: auto;
+}
+
+.frog-main-menu-card {
+  background: rgba(0,0,0,0.76);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 0 26px rgba(0,0,0,0.9);
+  padding: 22px 26px 18px;
+  max-width: 480px;
+  width: 100%;
+  color: #fff;
+  font-family: monospace;
+}
+
+.frog-main-menu-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.frog-main-menu-heading { flex: 1; }
+
+.frog-main-menu-title {
+  font-size: 25px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-shadow: 2px 2px darkslateblue;
+  margin-bottom: 2px;
+}
+
+.frog-main-menu-subtitle {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.85;
+}
+
+.frog-main-menu-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.4);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.frog-main-menu-description {
+  font-size: 13px;
+  opacity: 0.92;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.frog-main-menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.frog-main-menu-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.8);
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-shadow: 0 0 4px rgba(0,0,0,0.6);
+  transition: background 0.16s, transform 0.1s, box-shadow 0.16s, color 0.16s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.frog-main-menu-btn-label { flex: 1; }
+
+.frog-main-menu-btn-hint {
+  font-size: 10px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.frog-main-menu-btn-primary {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #021309;
+  text-shadow: none;
+}
+
+.frog-main-menu-btn:hover {
+  background: rgba(255,255,255,0.16);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.8);
+  transform: translateY(-1px);
+}
+
+.frog-main-menu-btn-primary:hover { background: #4ade80; }
+
+.frog-main-menu-mini-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.frog-main-menu-mini-stats span { white-space: nowrap; }
+
+.frog-main-menu-footer {
+  font-size: 11px;
+  opacity: 0.85;
+  text-align: right;
+}
+
+.frog-main-menu-footer a {
+  color: #a5f3fc;
+  text-decoration: none;
+}
+
+.frog-main-menu-footer a:hover { text-decoration: underline; }
+
+@media (max-width: 520px) {
+  .frog-main-menu-card { padding: 18px 18px 16px; }
+  .frog-main-menu-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Shared button row for overlay panels */
+.frog-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.frog-btn {
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  font-family: monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.16s, transform 0.1s, box-shadow 0.16s;
+}
+
+.frog-btn:hover {
+  background: rgba(255,255,255,0.14);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+  transform: translateY(-1px);
+}
+
+.frog-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+  transform: none;
+}
+
+.frog-btn-primary {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #021309;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(34,197,94,0.35);
+}
+
+.frog-btn-primary:hover {
+  background: #4ade80;
+}
+
+/* Upgrade overlay (Example 1D inspired) */
+.frog-upgrade-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 150;
+  pointer-events: auto;
+}
+
+.frog-upgrade-card {
+  background: rgba(0, 0, 0, 0.76);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 26px rgba(0, 0, 0, 0.9);
+  padding: 20px 22px 16px;
+  color: #fff;
+  max-width: 760px;
+  width: 100%;
+  font-family: monospace;
+}
+
+.frog-upgrade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.frog-upgrade-title-wrap {
+  flex: 1;
+}
+
+.frog-upgrade-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-shadow: 2px 2px darkslateblue;
+}
+
+.frog-upgrade-subtitle {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.82;
+  margin-top: 2px;
+}
+
+.frog-upgrade-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.frog-upgrade-description {
+  font-size: 13px;
+  opacity: 0.92;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.frog-upgrade-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.frog-upgrade-choices {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.frog-upgrade-choice {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s, transform 0.1s, box-shadow 0.16s, border-color 0.16s;
+}
+
+.frog-upgrade-choice:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(34, 197, 94, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
+  transform: translateY(-1px);
+}
+
+.frog-upgrade-choice-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.frog-upgrade-choice-body {
+  font-size: 12px;
+  line-height: 1.35;
+  opacity: 0.92;
+}
+
+.frog-upgrade-summary {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: radial-gradient(circle at top, #07101b 0, #02060a 100%);
+  padding: 10px 12px 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.frog-upgrade-summary h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.85;
+}
+
+.frog-upgrade-summary div + div {
+  margin-top: 4px;
+}
+
+@media (max-width: 760px) {
+  .frog-upgrade-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Buff guide overlay (uses same base card/btn style as other panels) */
+.frog-buff-guide-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0,0,0,0.55);
+  z-index: 170;
+  pointer-events: auto;
+  font-family: monospace;
+}
+
+.frog-buff-guide-card {
+  background: rgba(0,0,0,0.76);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 0 26px rgba(0,0,0,0.9);
+  padding: 20px 24px 16px;
+  color: #fff;
+  max-width: 720px;
+  width: 100%;
+}
+
+.frog-buff-guide-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.frog-buff-guide-heading-main {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-shadow: 2px 2px darkslateblue;
+}
+
+.frog-buff-guide-heading-sub {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.frog-buff-guide-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.4);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.frog-buff-guide-description {
+  font-size: 13px;
+  opacity: 0.92;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.frog-buff-guide-tabs {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+
+.frog-buff-guide-tab {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.22);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
+  cursor: pointer;
+  background: rgba(255,255,255,0.04);
+}
+
+.frog-buff-guide-tab-active {
+  border-color: #22c55e;
+  background: rgba(34,197,94,0.18);
+  opacity: 1;
+}
+
+.frog-buff-guide-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 14px;
+  margin-bottom: 10px;
+  max-height: 260px;
+}
+
+.frog-buff-guide-column {
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: radial-gradient(circle at top, #07101b 0, #02060a 100%);
+  padding: 10px 10px 9px;
+  font-size: 12px;
+  overflow-y: auto;
+}
+
+.frog-buff-guide-column h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.85;
+  margin-bottom: 6px;
+}
+
+.frog-buff-guide-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.frog-buff-guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.frog-buff-guide-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.24);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  margin-top: 1px;
+  background: rgba(255,255,255,0.04);
+}
+
+.frog-buff-guide-text-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+
+.frog-buff-guide-text-body {
+  font-size: 11px;
+  opacity: 0.92;
+  line-height: 1.35;
+}
+
+.frog-buff-guide-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.frog-buff-guide-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 1px 5px;
+  font-size: 10px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.frog-buff-guide-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.frog-buff-guide-page-indicator {
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .frog-buff-guide-card { max-width: 100%; }
+  .frog-buff-guide-layout {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+}
+
+/* Leaderboard/info overlay */
+.frog-info-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 180;
+  pointer-events: auto;
+  font-family: monospace;
+}
+
+.frog-info-card {
+  background: rgba(0, 0, 0, 0.76);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 26px rgba(0, 0, 0, 0.9);
+  padding: 20px 22px 16px;
+  color: #fff;
+  max-width: 780px;
+  width: 100%;
+}
+
+.frog-info-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.frog-info-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-shadow: 2px 2px darkslateblue;
+}
+
+.frog-info-subtitle {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.82;
+  margin-top: 2px;
+}
+
+.frog-info-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.frog-info-content {
+  font-size: 13px;
+  line-height: 1.45;
+  min-height: 160px;
+}
+
+.frog-info-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.frog-info-content th,
+.frog-info-content td {
+  padding: 4px 2px;
+}
+
+.frog-info-content th {
+  text-align: left;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+}
+
+.frog-info-content tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.03);
+}
