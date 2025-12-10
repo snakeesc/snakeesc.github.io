@@ -81,16 +81,16 @@
   <div id="upgradeOverlay" class="frog-overlay">
     <div class="frog-panel">
       <div class="frog-panel-title">
+        <!-- hidden via CSS, keep for structure -->
         Choose an upgrade
       </div>
 
-      <!-- we keep this element for JS, but we don't actually show text here -->
       <div id="upgradeOverlaySub" class="frog-panel-sub"></div>
 
       <div class="upgrade-layout">
         <!-- LEFT: upgrade options -->
         <div class="upgrade-column upgrade-column-choices">
-          <div class="upgrade-column-title">📦 Available upgrades</div>
+          <div class="upgrade-column-title">📦 Choose an upgrade</div>
           <div id="upgradeChoicesContainer" class="upgrade-choices">
             <!-- buttons injected by JS -->
           </div>
@@ -99,9 +99,7 @@
         <!-- RIGHT: permanent boosts -->
         <div class="upgrade-column upgrade-column--summary">
           <div class="upgrade-column-title">📈 Permanent boosts this run</div>
-          <ul id="currentUpgradeList" class="upgrade-summary-list">
-            <!-- <li> items injected by updateUpgradeBuffSummary() -->
-          </ul>
+          <ul id="currentUpgradeList" class="upgrade-summary-list"></ul>
         </div>
       </div>
     </div>
