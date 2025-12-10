@@ -3315,74 +3315,50 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     buffGuideOverlay = document.createElement("div");
     buffGuideOverlay.className = "frog-buff-guide-overlay";
-    buffGuideOverlay.style.position = "absolute";
-    buffGuideOverlay.style.inset = "0";
-    buffGuideOverlay.style.background = "rgba(0,0,0,0.75)";
     buffGuideOverlay.style.display = "none";
-    buffGuideOverlay.style.zIndex = "170";
-    buffGuideOverlay.style.alignItems = "center";
-    buffGuideOverlay.style.justifyContent = "center";
-    buffGuideOverlay.style.pointerEvents = "auto";
 
     const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px 12px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "260px";
-    panel.style.maxWidth = "440px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
+    panel.className = "frog-buff-guide-card";
 
     const headerRow = document.createElement("div");
-    headerRow.style.display = "flex";
-    headerRow.style.justifyContent = "space-between";
-    headerRow.style.alignItems = "center";
-    headerRow.style.marginBottom = "6px";
+    headerRow.className = "frog-buff-guide-header";
 
+    const headerLeft = document.createElement("div");
     const title = document.createElement("div");
-    title.textContent = "Buffs & upgrades";
-    title.style.fontSize = "14px";
-    title.style.fontWeight = "bold";
+    title.className = "frog-buff-guide-heading-main";
+    title.textContent = "Buff book";
+
+    const sub = document.createElement("div");
+    sub.className = "frog-buff-guide-heading-sub";
+    sub.textContent = "A friendly index of every glow and upgrade";
+
+    headerLeft.appendChild(title);
+    headerLeft.appendChild(sub);
 
     const pageLabel = document.createElement("div");
-    pageLabel.style.fontSize = "11px";
-    pageLabel.style.opacity = "0.8";
+    pageLabel.className = "frog-buff-guide-badge";
     buffGuidePageLabel = pageLabel;
 
-    headerRow.appendChild(title);
+    headerRow.appendChild(headerLeft);
     headerRow.appendChild(pageLabel);
 
+    const description = document.createElement("div");
+    description.className = "frog-buff-guide-description";
+    description.textContent = "Peek through the pages to see what each orb, chain, and upgrade does before you dive back into the pond.";
+
     const content = document.createElement("div");
-    content.style.fontSize = "13px";
-    content.style.marginTop = "4px";
-    content.style.lineHeight = "1.4";
+    content.className = "frog-buff-guide-content";
     buffGuideContentEl = content;
 
     const navRow = document.createElement("div");
-    navRow.style.display = "flex";
-    navRow.style.justifyContent = "space-between";
-    navRow.style.alignItems = "center";
-    navRow.style.marginTop = "10px";
+    navRow.className = "frog-buff-guide-footer-row";
 
-    const leftBtns = document.createElement("div");
-    leftBtns.style.display = "flex";
-    leftBtns.style.gap = "6px";
+    const navButtons = document.createElement("div");
+    navButtons.className = "frog-buff-guide-nav-buttons";
 
     const prevBtn = document.createElement("button");
+    prevBtn.className = "ui-button ghost";
     prevBtn.textContent = "◀ Prev";
-    prevBtn.style.fontFamily = "monospace";
-    prevBtn.style.fontSize = "12px";
-    prevBtn.style.padding = "4px 8px";
-    prevBtn.style.borderRadius = "6px";
-    prevBtn.style.border = "1px solid #555";
-    prevBtn.style.background = "#222";
-    prevBtn.style.color = "#fff";
-    prevBtn.style.cursor = "pointer";
-    prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
-    prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
     prevBtn.onclick = () => {
       playButtonClick();
       setBuffGuidePage(buffGuidePage - 1);
@@ -3390,47 +3366,30 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     buffGuidePrevBtn = prevBtn;
 
     const nextBtn = document.createElement("button");
+    nextBtn.className = "ui-button";
     nextBtn.textContent = "Next ▶";
-    nextBtn.style.fontFamily = "monospace";
-    nextBtn.style.fontSize = "12px";
-    nextBtn.style.padding = "4px 8px";
-    nextBtn.style.borderRadius = "6px";
-    nextBtn.style.border = "1px solid #555";
-    nextBtn.style.background = "#222";
-    nextBtn.style.color = "#fff";
-    nextBtn.style.cursor = "pointer";
-    nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
-    nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
     nextBtn.onclick = () => {
       playButtonClick();
       setBuffGuidePage(buffGuidePage + 1);
     };
     buffGuideNextBtn = nextBtn;
 
-    leftBtns.appendChild(prevBtn);
-    leftBtns.appendChild(nextBtn);
+    navButtons.appendChild(prevBtn);
+    navButtons.appendChild(nextBtn);
 
     const backBtn = document.createElement("button");
-    backBtn.textContent = "Close ×";
-    backBtn.style.fontFamily = "monospace";
-    backBtn.style.fontSize = "12px";
-    backBtn.style.padding = "4px 8px";
-    backBtn.style.borderRadius = "6px";
-    backBtn.style.border = "1px solid #555";
-    backBtn.style.background = "#222";
-    backBtn.style.color = "#fff";
-    backBtn.style.cursor = "pointer";
-    backBtn.onmouseenter = () => { backBtn.style.background = "#333"; };
-    backBtn.onmouseleave = () => { backBtn.style.background = "#222"; };
+    backBtn.className = "ui-button primary";
+    backBtn.textContent = "Close";
     backBtn.onclick = () => {
       playButtonClick();
       closeBuffGuideOverlay();
     };
 
-    navRow.appendChild(leftBtns);
+    navRow.appendChild(navButtons);
     navRow.appendChild(backBtn);
 
     panel.appendChild(headerRow);
+    panel.appendChild(description);
     panel.appendChild(content);
     panel.appendChild(navRow);
 
