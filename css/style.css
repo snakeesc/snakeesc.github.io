@@ -8,9 +8,24 @@
 
 body {
   margin: 0;
-  font-family: monospace;
-  background: #7cc1ff;
-  color: white;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at 18% 20%, rgba(147, 243, 190, 0.22), transparent 32%),
+    radial-gradient(circle at 80% 10%, rgba(116, 196, 255, 0.2), transparent 30%),
+    linear-gradient(160deg, #6ed8ff 0%, #7de6c7 30%, #4ca6c8 100%);
+  color: #0c1b1a;
+}
+
+/* Shared in-game UI theme */
+:root {
+  --ui-surface: rgba(20, 44, 34, 0.9);
+  --ui-panel: rgba(15, 58, 52, 0.88);
+  --ui-border: rgba(255, 255, 255, 0.1);
+  --ui-glow: rgba(102, 255, 196, 0.3);
+  --ui-accent: #9cf59f;
+  --ui-accent-2: #6fdcff;
+  --ui-text: #e8fff2;
+  --ui-muted: #a7d5c0;
+  --ui-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
 }
 
 a {
@@ -825,154 +840,191 @@ a {
   border-radius: 100%;
 }
 
-/* Escape the Snake main menu (Example 1D) */
-.frog-main-menu-overlay {
+/* Game overlay + card framework */
+.game-overlay {
   position: absolute;
   inset: 0;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  z-index: 140;
+  padding: 18px;
+  background: radial-gradient(circle at 16% 18%, rgba(156, 245, 159, 0.16), transparent 34%),
+    radial-gradient(circle at 84% 8%, rgba(111, 220, 255, 0.14), transparent 32%),
+    radial-gradient(circle at 60% 80%, rgba(63, 165, 134, 0.22), transparent 40%),
+    rgba(6, 24, 26, 0.74);
+  backdrop-filter: blur(4px);
+  z-index: 160;
   pointer-events: auto;
 }
 
-.frog-main-menu-card {
-  background: rgba(0,0,0,0.76);
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.35);
-  box-shadow: 0 0 26px rgba(0,0,0,0.9);
-  padding: 22px 26px 18px;
-  max-width: 480px;
-  width: 100%;
-  color: #fff;
-  font-family: monospace;
+.game-card {
+  width: min(960px, calc(100% - 32px));
+  background: radial-gradient(circle at 18% 20%, rgba(156, 245, 159, 0.08), transparent 36%),
+    radial-gradient(circle at 86% 4%, rgba(111, 220, 255, 0.08), transparent 34%),
+    linear-gradient(150deg, rgba(26, 70, 60, 0.95), rgba(23, 61, 82, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 22px;
+  box-shadow: var(--ui-shadow), 0 0 0 1px rgba(156, 245, 159, 0.05) inset;
+  color: var(--ui-text);
+  padding: 22px 24px;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(6px);
+  overflow: hidden;
 }
 
-.frog-main-menu-card-top {
+.game-card.tight { max-width: 620px; }
+.game-card.narrow { max-width: 520px; }
+
+.game-card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
 }
 
-.frog-main-menu-heading { flex: 1; }
-
-.frog-main-menu-title {
-  font-size: 25px;
-  font-weight: 700;
+.game-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  text-shadow: 2px 2px darkslateblue;
-  margin-bottom: 2px;
+  margin: 0;
+  color: #e9ffe9;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.frog-main-menu-subtitle {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  opacity: 0.85;
+.game-subtitle {
+  color: #c1efd8;
+  font-size: 13px;
+  margin-top: 2px;
 }
 
-.frog-main-menu-badge {
-  padding: 4px 8px;
+.pill {
+  padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.4);
-  font-size: 10px;
+  border: 1px solid var(--ui-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e9ffe9;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  opacity: 0.9;
   white-space: nowrap;
 }
 
-.frog-main-menu-description {
+.pill.accent { border-color: rgba(124, 242, 157, 0.4); color: #c6ffd8; }
+.pill.epic { border-color: rgba(255, 179, 71, 0.4); color: #ffd28f; }
+
+.game-body { line-height: 1.5; font-size: 13px; color: var(--ui-text); }
+.game-body p { margin: 0 0 10px 0; }
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.game-feature {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px;
   font-size: 13px;
-  opacity: 0.92;
   line-height: 1.4;
-  margin-bottom: 16px;
-  text-align: left;
+  color: #e9fff2;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
 }
 
-.frog-main-menu-buttons {
+.game-actions {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
-  margin-bottom: 10px;
-}
-
-.frog-main-menu-btn {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.8);
-  background: transparent;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  text-shadow: 0 0 4px rgba(0,0,0,0.6);
-  transition: background 0.16s, transform 0.1s, box-shadow 0.16s, color 0.16s;
-  display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
   align-items: center;
 }
 
-.frog-main-menu-btn-label { flex: 1; }
-
-.frog-main-menu-btn-hint {
-  font-size: 10px;
-  opacity: 0.8;
-  text-transform: uppercase;
+.ui-button {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+  color: #e9fff2;
+  border-radius: 14px;
+  padding: 10px 15px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease, filter 120ms ease;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
 }
 
-.frog-main-menu-btn-primary {
-  background: #22c55e;
-  border-color: #22c55e;
-  color: #021309;
-  text-shadow: none;
+.ui-button.primary {
+  background: linear-gradient(130deg, var(--ui-accent), var(--ui-accent-2));
+  color: #0c1b1a;
+  border: none;
+  box-shadow: 0 14px 30px rgba(16, 136, 109, 0.35);
 }
 
-.frog-main-menu-btn:hover {
-  background: rgba(255,255,255,0.16);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.8);
+.ui-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--ui-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ui-text);
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.ui-button.ghost {
+  background: rgba(233, 255, 242, 0.08);
+  color: #c1efd8;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.ui-button:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(0,0,0,0.36); filter: brightness(1.02); }
+
+.option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.option-card {
+  border: 1px solid var(--ui-border);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  color: var(--ui-text);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+.option-card:hover {
   transform: translateY(-1px);
+  border-color: rgba(124, 242, 157, 0.6);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
-.frog-main-menu-btn-primary:hover { background: #4ade80; }
+.option-title { font-weight: 800; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.option-desc { color: var(--ui-muted); font-size: 12px; line-height: 1.5; }
+.option-meta { margin-top: 8px; font-size: 11px; color: var(--ui-text); opacity: 0.8; display: flex; justify-content: space-between; }
 
-.frog-main-menu-mini-stats {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-size: 11px;
-  opacity: 0.9;
-}
+.stat-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; font-size: 12px; }
+.stat-chip { padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--ui-border); border-radius: 10px; }
+.stat-chip strong { display: block; margin-bottom: 4px; color: #c6ffd8; }
 
-.frog-main-menu-mini-stats span { white-space: nowrap; }
+.divider { height: 1px; background: var(--ui-border); margin: 4px 0; }
 
+.game-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.game-table th, .game-table td { padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--ui-border); }
+.game-table th { color: var(--ui-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.game-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.game-table tr.me { background: rgba(124, 242, 157, 0.08); color: #d8ffe6; }
 
-.frog-main-menu-footer {
-  font-size: 11px;
-  opacity: 0.85;
-  text-align: right;
-}
-
-.frog-main-menu-footer a {
-  color: #a5f3fc;
-  text-decoration: none;
-}
-
-.frog-main-menu-footer a:hover { text-decoration: underline; }
+.muted { color: var(--ui-muted); font-size: 12px; }
 
 @media (max-width: 520px) {
-  .frog-main-menu-card { padding: 18px 18px 16px; }
-  .frog-main-menu-card-top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  .game-card { padding: 18px; }
+  .game-card-header { flex-direction: column; align-items: flex-start; }
+  .game-actions { justify-content: flex-start; }
 }
 
 /* Shared button row for overlay panels */
@@ -1193,20 +1245,25 @@ a {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(0,0,0,0.55);
+  background: radial-gradient(circle at 22% 12%, rgba(156,245,159,0.16), transparent 40%),
+    radial-gradient(circle at 78% 18%, rgba(111,220,255,0.14), transparent 36%),
+    rgba(4, 20, 24, 0.8);
+  backdrop-filter: blur(4px);
   z-index: 170;
   pointer-events: auto;
-  font-family: monospace;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
 .frog-buff-guide-card {
-  background: rgba(0,0,0,0.8);
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.35);
-  box-shadow: 0 0 26px rgba(0,0,0,0.9);
-  padding: 20px 24px 16px;
-  color: #fff;
-  max-width: 720px;
+  background: radial-gradient(circle at 18% 14%, rgba(156,245,159,0.08), transparent 42%),
+    radial-gradient(circle at 86% 0%, rgba(111,220,255,0.08), transparent 42%),
+    linear-gradient(160deg, rgba(30, 72, 60, 0.94), rgba(22, 58, 74, 0.94));
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.4);
+  padding: 20px 24px 18px;
+  color: #e8fff2;
+  max-width: 760px;
   width: 100%;
 }
 
@@ -1220,36 +1277,36 @@ a {
 
 .frog-buff-guide-heading-main {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  text-shadow: 2px 2px darkslateblue;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.32);
 }
 
 .frog-buff-guide-heading-sub {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  opacity: 0.85;
+  opacity: 0.9;
   margin-top: 2px;
 }
 
 .frog-buff-guide-badge {
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.4);
-  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.32);
+  background: rgba(255,255,255,0.1);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  opacity: 0.9;
+  opacity: 0.95;
   white-space: nowrap;
 }
 
 .frog-buff-guide-description {
   font-size: 13px;
-  opacity: 0.92;
-  margin-bottom: 10px;
-  line-height: 1.4;
+  opacity: 0.94;
+  margin-bottom: 12px;
+  line-height: 1.55;
 }
 
 .frog-buff-guide-tabs {
@@ -1262,12 +1319,12 @@ a {
 .frog-buff-guide-tab {
   padding: 3px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.2);
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  opacity: 0.8;
+  opacity: 0.86;
   cursor: pointer;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.08);
 }
 
 .frog-buff-guide-tab-active {
@@ -1280,14 +1337,14 @@ a {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
   gap: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   max-height: none;
 }
 
 .frog-buff-guide-column {
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.22);
-  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
   padding: 10px 10px 9px;
   font-size: 12px;
   overflow: auto;
@@ -1324,7 +1381,7 @@ a {
   justify-content: center;
   font-size: 13px;
   margin-top: 1px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.1);
 }
 
 .frog-buff-guide-text-title {
@@ -1335,8 +1392,34 @@ a {
 
 .frog-buff-guide-text-body {
   font-size: 11px;
-  opacity: 0.92;
-  line-height: 1.35;
+  opacity: 0.94;
+  line-height: 1.45;
+}
+
+.frog-buff-guide-content {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #e8fff2;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.28);
+}
+
+.frog-buff-guide-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.frog-buff-guide-nav-buttons {
+  display: flex;
+  gap: 8px;
 }
 
 .frog-buff-guide-pill-row {
@@ -1353,15 +1436,6 @@ a {
   font-size: 10px;
   opacity: 0.8;
   white-space: nowrap;
-}
-
-.frog-buff-guide-footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6px;
-  font-size: 11px;
-  opacity: 0.85;
 }
 
 .frog-buff-guide-page-indicator {
@@ -1384,20 +1458,25 @@ a {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(0,0,0,0.55);
+  background: radial-gradient(circle at 22% 12%, rgba(156,245,159,0.16), transparent 40%),
+    radial-gradient(circle at 78% 12%, rgba(111,220,255,0.14), transparent 36%),
+    rgba(4, 18, 22, 0.82);
+  backdrop-filter: blur(4px);
   z-index: 180;
   pointer-events: auto;
-  font-family: monospace;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
 .frog-info-card {
-  background: rgba(0,0,0,0.8);
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.35);
-  box-shadow: 0 0 26px rgba(0,0,0,0.9);
+  background: radial-gradient(circle at 18% 14%, rgba(156,245,159,0.08), transparent 42%),
+    radial-gradient(circle at 86% 0%, rgba(111,220,255,0.08), transparent 42%),
+    linear-gradient(150deg, rgba(28, 68, 58, 0.95), rgba(22, 60, 78, 0.94));
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.4);
   padding: 20px 22px 16px;
-  color: #fff;
-  max-width: 780px;
+  color: #e8fff2;
+  max-width: 820px;
   width: 100%;
 }
 
