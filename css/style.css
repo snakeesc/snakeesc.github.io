@@ -814,12 +814,12 @@ a {
 }
 
 
-/* FLAT THEME 1 – Dark Slate + Lime */
+/* FLAT THEME 2 – Dark Blue + Mint */
 
 .frog-overlay {
   position: absolute;
   inset: 0;
-  background: transparent; /* show frogs behind menus */
+  background: transparent;
   display: none;
   align-items: center;
   justify-content: center;
@@ -828,11 +828,11 @@ a {
 }
 
 .frog-panel {
-  background: #020617; /* almost-black navy */
+  background: #020617;
   padding: 18px 22px 16px 22px;
   border-radius: 14px;
-  border: 1px solid #4ade80;
-  color: #e5e7eb;
+  border: 1px solid #22d3ee;
+  color: #e0f2fe;
   font-family: monospace;
   min-width: 320px;
   max-width: 960px;
@@ -850,7 +850,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #bef264;
+  color: #7dd3fc;
 }
 
 .frog-panel-title .emoji {
@@ -869,7 +869,7 @@ a {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #4ade80;
+  color: #22d3ee;
   margin-top: 12px;
   margin-bottom: 6px;
 }
@@ -892,7 +892,7 @@ a {
   font-size: 13px;
   margin-bottom: 6px;
   line-height: 1.5;
-  color: #e5e7eb;
+  color: #e0f2fe;
 }
 
 /* frog UI buttons */
@@ -912,7 +912,7 @@ a {
 }
 
 .frog-btn-primary {
-  background: #22c55e; /* flat lime */
+  background: #22c55e;
   color: #022c22;
   font-weight: 800;
 }
@@ -923,9 +923,9 @@ a {
 }
 
 .frog-btn-secondary {
-  background: #1f2937; /* dark gray-blue */
-  color: #e5e7eb;
-  border: 1px solid #4b5563;
+  background: #0f172a;
+  color: #e0f2fe;
+  border: 1px solid #22d3ee;
   font-size: 13px;
   font-weight: 700;
 }
@@ -947,23 +947,23 @@ a {
 .frog-upgrade-choice {
   text-align: left;
   background: #020617;
-  border: 1px solid #4ade80;
+  border: 1px solid #1d4ed8;
 }
 
 .frog-upgrade-choice:hover {
-  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.7);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.7);
 }
 
 .frog-upgrade-title {
   font-size: 14px;
   font-weight: 800;
   margin-bottom: 2px;
-  color: #bef264;
+  color: #bfdbfe;
 }
 
 .frog-upgrade-desc {
   font-size: 12px;
-  color: #e5e7eb;
+  color: #e0f2fe;
 }
 
 .upgrade-layout {
@@ -983,7 +983,7 @@ a {
 
 .upgrade-column-title {
   font-weight: 800;
-  color: #e5e7eb;
+  color: #bfdbfe;
   margin-bottom: 6px;
 }
 
@@ -994,7 +994,7 @@ a {
 }
 
 .upgrade-column--summary {
-  background: #022c22;
+  background: #0f172a;
 }
 
 .upgrade-summary-list {
@@ -1008,15 +1008,15 @@ a {
 .upgrade-summary-list li {
   font-size: 12px;
   line-height: 1.45;
-  color: #e5e7eb;
+  color: #e0f2fe;
   padding: 6px 8px;
   border-radius: 10px;
   background: #020617;
-  border: 1px dashed #4ade80;
+  border: 1px dashed #22d3ee;
 }
 
 .stat-highlight {
-  color: #4ade80;
+  color: #22d3ee;
   font-weight: 800;
 }
 
@@ -1032,20 +1032,20 @@ a {
   background: #020617;
   border-radius: 12px;
   padding: 10px 12px;
-  border: 1px solid #4ade80;
+  border: 1px solid #1d4ed8;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9);
 }
 
 .buff-card h4 {
   margin: 0 0 6px;
   font-size: 14px;
-  color: #bef264;
+  color: #bfdbfe;
 }
 
 .buff-card ul {
   margin: 0;
   padding-left: 16px;
-  color: #e5e7eb;
+  color: #e0f2fe;
 }
 
 .buff-card li {
