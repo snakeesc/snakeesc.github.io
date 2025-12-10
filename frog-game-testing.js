@@ -307,6 +307,24 @@
   hud.appendChild(scoreLabel);
   container.appendChild(hud);
 
+  // mini leaderboard
+  const miniBoard = document.createElement("div");
+  miniBoard.id = "frog-mini-leaderboard";
+  miniBoard.style.position = "absolute";
+  miniBoard.style.top = "10px";
+  miniBoard.style.right = "10px";
+  miniBoard.style.padding = "6px 10px";
+  miniBoard.style.borderRadius = "8px";
+  miniBoard.style.background = "rgba(0,0,0,0.55)";
+  miniBoard.style.color = "#fff";
+  miniBoard.style.fontFamily = "monospace";
+  miniBoard.style.fontSize = "11px";
+  miniBoard.style.zIndex = "100";
+  miniBoard.style.maxWidth = "220px";
+  miniBoard.style.pointerEvents = "none";
+  miniBoard.textContent = "Loading leaderboard…";
+  container.appendChild(miniBoard);
+
   // detailed stats panel (bottom-left)
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";

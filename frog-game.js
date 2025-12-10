@@ -310,6 +310,24 @@
   hud.appendChild(scoreLabel);
   container.appendChild(hud);
 
+  // mini leaderboard
+  const miniBoard = document.createElement("div");
+  miniBoard.id = "frog-mini-leaderboard";
+  miniBoard.style.position = "absolute";
+  miniBoard.style.top = "10px";
+  miniBoard.style.right = "10px";
+  miniBoard.style.padding = "6px 10px";
+  miniBoard.style.borderRadius = "8px";
+  miniBoard.style.background = "rgba(0,0,0,0.55)";
+  miniBoard.style.color = "#fff";
+  miniBoard.style.fontFamily = "monospace";
+  miniBoard.style.fontSize = "11px";
+  miniBoard.style.zIndex = "100";
+  miniBoard.style.maxWidth = "220px";
+  miniBoard.style.pointerEvents = "none";
+  miniBoard.textContent = "Loading leaderboard…";
+  container.appendChild(miniBoard);
+
   // detailed stats panel (bottom-left)
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";
@@ -2938,78 +2956,171 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (howToOverlay) return;
 
     howToOverlay = document.createElement("div");
-    howToOverlay.className = "frog-howto-overlay frog-overlay-backdrop";
-    // keep display controlled by existing show/hide logic
+    howToOverlay.className = "frog-howto-overlay";
+
+    howToOverlay.style.position = "absolute";
+    howToOverlay.style.inset = "0";
+    howToOverlay.style.background = "rgba(0,0,0,0.7)";
     howToOverlay.style.display = "none";
+    howToOverlay.style.zIndex = "160";
+    howToOverlay.style.alignItems = "center";
+    howToOverlay.style.justifyContent = "center";
+    howToOverlay.style.pointerEvents = "auto";
 
     const panel = document.createElement("div");
-    panel.className = "frog-panel";
+    panel.style.background = "#111";
+    panel.style.padding = "18px 22px";
+    panel.style.borderRadius = "10px";
+    panel.style.border = "1px solid #444";
+    panel.style.color = "#fff";
+    panel.style.fontFamily = "monospace";
+    panel.style.textAlign = "left";
+    panel.style.minWidth = "260px";
+    panel.style.maxWidth = "420px";
+    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
 
-    panel.innerHTML = `
-      <header class="frog-panel-header">
-        <div class="frog-panel-title">How to Play</div>
-        <div class="frog-panel-tag">Controls &amp; Basics</div>
-      </header>
-      <div class="frog-panel-body">
-        <div style="display:grid;grid-template-columns:minmax(0,1.3fr)minmax(0,1fr);gap:14px;">
-          <div>
-            <div class="frog-panel-section-title">Controls</div>
-            <ul style="padding-left:16px;margin:0;font-size:13px;">
-              <li>Move your mouse – your frogs follow your cursor.</li>
-              <li>Avoid the snake body and snake head at all costs.</li>
-              <li>Collect orbs and buffs to survive longer.</li>
-              <li>Click to select upgrades when a choice appears.</li>
-            </ul>
+    const title = document.createElement("div");
+    title.textContent = "escape the snake 🐍";
+    title.style.fontSize = "18px";
+    title.style.fontWeight = "bold";
+    title.style.marginBottom = "4px";
 
-            <div class="frog-panel-section-title">Goal</div>
-            <ul style="padding-left:16px;margin:0;font-size:13px;">
-              <li>Stay alive as long as possible.</li>
-              <li>Stack buffs and permanent upgrades to scale.</li>
-              <li>Beat your personal best and climb the leaderboard.</li>
-            </ul>
+    const subtitle = document.createElement("div");
+    subtitle.textContent = "-- How to Play & Controls --";
+    subtitle.style.marginBottom = "10px";
+    subtitle.style.fontSize = "13px";
+    subtitle.style.opacity = "0.9";
 
-            <div style="font-size:11px;color:#9ba3c6;margin-top:8px;">
-              Best played in browser at
-              <a href="https://freshfrogs.github.io/snake" target="_blank" style="color:#9dff9d;text-decoration:underline;text-decoration-thickness:1px;">
-                freshfrogs.github.io/snake
-              </a>
-            </div>
-          </div>
+    const intro = document.createElement("div");
+    intro.textContent =
+      "Keep your frogs alive as long as possible. Dodge the snake, grab buffs, and climb the leaderboard.";
+    intro.style.fontSize = "13px";
+    intro.style.lineHeight = "1.4";
+    intro.style.marginBottom = "10px";
 
-          <div>
-            <div class="frog-panel-section-title">Buffs &amp; Upgrades</div>
-            <ul style="padding-left:16px;margin:0;font-size:13px;">
-              <li><strong>Common upgrades</strong> are small, consistent boosts.</li>
-              <li><strong>Epic upgrades</strong> are rare, strong effects.</li>
-              <li>Some buffs stack; others have a cap or timer.</li>
-              <li>Read each choice before you pick – no undo.</li>
-            </ul>
+    // CONTROLS
+    const controlsLabel = document.createElement("div");
+    controlsLabel.textContent = "Controls:";
+    controlsLabel.style.fontSize = "13px";
+    controlsLabel.style.fontWeight = "bold";
+    controlsLabel.style.margin = "0 0 4px 0";
 
-            <div class="frog-panel-section-title">Tips</div>
-            <ul style="padding-left:16px;margin:0;font-size:13px;">
-              <li>Drag the snake wide before cutting across.</li>
-              <li>Don’t chase every orb; stay safe first.</li>
-              <li>Pay attention to snake speed after each shed.</li>
-            </ul>
-          </div>
-        </div>
+    const controlsList = document.createElement("ul");
+    controlsList.style.paddingLeft = "18px";
+    controlsList.style.margin = "0 0 10px 0";
+    controlsList.style.fontSize = "13px";
+    controlsList.style.lineHeight = "1.4";
 
-        <div class="frog-btn-row" style="margin-top:14px;justify-content:flex-end;">
-          <button class="frog-btn frog-btn--primary" id="frog-howto-close-btn">Got it</button>
-        </div>
-      </div>
-    `;
+    [
+      "Move your mouse – frogs follow your cursor.",
+      "No keyboard needed, just point where you want them to go.",
+      "Stay away from the snake's head – one bite and that frog is gone."
+    ].forEach(text => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      controlsList.appendChild(li);
+    });
+
+    /*
+    // TIPS / GOAL
+    const tipsLabel = document.createElement("div");
+    tipsLabel.textContent = "Tips:";
+    tipsLabel.style.fontSize = "13px";
+    tipsLabel.style.fontWeight = "bold";
+    tipsLabel.style.margin = "4px 0 4px 0";
+
+    const tipsList = document.createElement("ul");
+    tipsList.style.paddingLeft = "18px";
+    tipsList.style.margin = "0 0 12px 0";
+    tipsList.style.fontSize = "13px";
+    tipsList.style.lineHeight = "1.4";
+
+    [
+      "Collect glowing orbs to gain buffs and upgrades.",
+      "Stronger buffs help you survive longer as the snake speeds up.",
+      "Your score increases the longer you stay alive.",
+      "Beat your best run to climb the leaderboard."
+    ].forEach(text => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      tipsList.appendChild(li);
+    });
+    */
+
+    const updatesLine = document.createElement("div");
+    updatesLine.style.marginTop = "6px";
+    updatesLine.style.fontSize = "11px";
+    updatesLine.style.opacity = "0.9";
+    updatesLine.innerHTML =
+      'Patch notes available at  ' +
+      '<a href="https://snakeesc.github.io/updates" ' +
+      'target="_blank" rel="noopener noreferrer" ' +
+      'style="color:#9cff9c;text-decoration:underline;">' +
+      'snakeesc.github.io/updates</a>';
+
+    // Buttons row: Start & Learn more
+    const btnRow = document.createElement("div");
+    btnRow.style.display = "flex";
+    btnRow.style.justifyContent = "space-between";
+    btnRow.style.gap = "8px";
+    btnRow.style.marginTop = "4px";
+
+    const startBtn = document.createElement("button");
+    startBtn.textContent = "Start & choose buff";
+    startBtn.style.fontFamily = "monospace";
+    startBtn.style.fontSize = "13px";
+    startBtn.style.padding = "6px 10px";
+    startBtn.style.borderRadius = "6px";
+    startBtn.style.border = "1px solid #555";
+    startBtn.style.background = "#222";
+    startBtn.style.color = "#fff";
+    startBtn.style.cursor = "pointer";
+    startBtn.style.flex = "1";
+    startBtn.onmouseenter = () => { startBtn.style.background = "#333"; };
+    startBtn.onmouseleave = () => { startBtn.style.background = "#222"; };
+    startBtn.onclick = () => {
+      playButtonClick();
+      hasShownHowToOverlay = true;
+      if (howToOverlay) {
+        howToOverlay.style.display = "none";
+      }
+      openUpgradeOverlay("normal");
+    };
+
+    const learnBtn = document.createElement("button");
+    learnBtn.textContent = "Learn buffs 📖";
+    learnBtn.style.fontFamily = "monospace";
+    learnBtn.style.fontSize = "13px";
+    learnBtn.style.padding = "6px 10px";
+    learnBtn.style.borderRadius = "6px";
+    learnBtn.style.border = "1px solid #555";
+    learnBtn.style.background = "#222";
+    learnBtn.style.color = "#fff";
+    learnBtn.style.cursor = "pointer";
+    learnBtn.style.flex = "0 0 auto";
+    learnBtn.onmouseenter = () => { learnBtn.style.background = "#333"; };
+    learnBtn.onmouseleave = () => { learnBtn.style.background = "#222"; };
+    learnBtn.onclick = () => {
+      playButtonClick();
+      ensureBuffGuideOverlay();
+      openBuffGuideOverlay();
+    };
+
+    btnRow.appendChild(startBtn);
+    btnRow.appendChild(learnBtn);
+
+    panel.appendChild(title);
+    panel.appendChild(subtitle);
+    panel.appendChild(intro);
+    panel.appendChild(controlsLabel);
+    panel.appendChild(controlsList);
+    //panel.appendChild(tipsLabel);
+    //panel.appendChild(tipsList);
+    panel.appendChild(btnRow);
+    panel.appendChild(updatesLine);
 
     howToOverlay.appendChild(panel);
-    document.body.appendChild(howToOverlay);
-
-    const closeBtn = panel.querySelector("#frog-howto-close-btn");
-    if (closeBtn) {
-      closeBtn.addEventListener("click", () => {
-        howToOverlay.style.display = "none";
-        // existing resume-game logic can be called here if needed
-      });
-    }
+    container.appendChild(howToOverlay);
   }
 
   function openHowToOverlay() {
@@ -3335,51 +3446,138 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (buffGuideOverlay) return;
 
     buffGuideOverlay = document.createElement("div");
-    buffGuideOverlay.className = "frog-buff-guide-overlay frog-overlay-backdrop";
+    buffGuideOverlay.className = "frog-buff-guide-overlay";
+    buffGuideOverlay.style.position = "absolute";
+    buffGuideOverlay.style.inset = "0";
+    buffGuideOverlay.style.background = "rgba(0,0,0,0.75)";
     buffGuideOverlay.style.display = "none";
+    buffGuideOverlay.style.zIndex = "170";
+    buffGuideOverlay.style.alignItems = "center";
+    buffGuideOverlay.style.justifyContent = "center";
+    buffGuideOverlay.style.pointerEvents = "auto";
 
     const panel = document.createElement("div");
-    panel.className = "frog-panel";
+    panel.style.background = "#111";
+    panel.style.padding = "16px 20px 12px 20px";
+    panel.style.borderRadius = "10px";
+    panel.style.border = "1px solid #444";
+    panel.style.color = "#fff";
+    panel.style.fontFamily = "monospace";
+    panel.style.textAlign = "left";
+    panel.style.minWidth = "260px";
+    panel.style.maxWidth = "440px";
+    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
 
-    panel.innerHTML = `
-      <header class="frog-panel-header">
-        <div class="frog-panel-title">Buffs &amp; Rolls</div>
-        <div class="frog-panel-tag">Active Effects</div>
-      </header>
-      <div class="frog-panel-body">
-        <div class="frog-panel-section-title">Common buffs</div>
-        <ul style="padding-left:16px;margin:0;font-size:13px;">
-          <li><strong>Speed boosts</strong> – small increases to frog speed or snake slow.</li>
-          <li><strong>Magnet</strong> – orbs get pulled toward your frogs.</li>
-          <li><strong>Defense</strong> – reduced damage from hits.</li>
-        </ul>
+    const headerRow = document.createElement("div");
+    headerRow.style.display = "flex";
+    headerRow.style.justifyContent = "space-between";
+    headerRow.style.alignItems = "center";
+    headerRow.style.marginBottom = "6px";
 
-        <div class="frog-panel-section-title">Epic buffs</div>
-        <ul style="padding-left:16px;margin:0;font-size:13px;">
-          <li><strong>Frog Promotion</strong> – spawns promoted frogs with permanent roles.</li>
-          <li><strong>Second Chance</strong> – survive one lethal hit.</li>
-          <li><strong>Hyper Shed</strong> – next shed is extra powerful.</li>
-        </ul>
+    const title = document.createElement("div");
+    title.textContent = "Buffs & upgrades";
+    title.style.fontSize = "14px";
+    title.style.fontWeight = "bold";
 
-        <div style="font-size:11px;color:#9ba3c6;margin-top:8px;">
-          Some buffs have caps (max stacks). Once capped, they stop appearing.
-        </div>
+    const pageLabel = document.createElement("div");
+    pageLabel.style.fontSize = "11px";
+    pageLabel.style.opacity = "0.8";
+    buffGuidePageLabel = pageLabel;
 
-        <div class="frog-btn-row" style="margin-top:14px;justify-content:flex-end;">
-          <button class="frog-btn frog-btn--primary" id="frog-buff-guide-close-btn">Close</button>
-        </div>
-      </div>
-    `;
+    headerRow.appendChild(title);
+    headerRow.appendChild(pageLabel);
+
+    const content = document.createElement("div");
+    content.style.fontSize = "13px";
+    content.style.marginTop = "4px";
+    content.style.lineHeight = "1.4";
+    buffGuideContentEl = content;
+
+    const navRow = document.createElement("div");
+    navRow.style.display = "flex";
+    navRow.style.justifyContent = "space-between";
+    navRow.style.alignItems = "center";
+    navRow.style.marginTop = "10px";
+
+    const leftBtns = document.createElement("div");
+    leftBtns.style.display = "flex";
+    leftBtns.style.gap = "6px";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "◀ Prev";
+    prevBtn.style.fontFamily = "monospace";
+    prevBtn.style.fontSize = "12px";
+    prevBtn.style.padding = "4px 8px";
+    prevBtn.style.borderRadius = "6px";
+    prevBtn.style.border = "1px solid #555";
+    prevBtn.style.background = "#222";
+    prevBtn.style.color = "#fff";
+    prevBtn.style.cursor = "pointer";
+    prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
+    prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
+    prevBtn.onclick = () => {
+      playButtonClick();
+      setBuffGuidePage(buffGuidePage - 1);
+    };
+    buffGuidePrevBtn = prevBtn;
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next ▶";
+    nextBtn.style.fontFamily = "monospace";
+    nextBtn.style.fontSize = "12px";
+    nextBtn.style.padding = "4px 8px";
+    nextBtn.style.borderRadius = "6px";
+    nextBtn.style.border = "1px solid #555";
+    nextBtn.style.background = "#222";
+    nextBtn.style.color = "#fff";
+    nextBtn.style.cursor = "pointer";
+    nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
+    nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
+    nextBtn.onclick = () => {
+      playButtonClick();
+      setBuffGuidePage(buffGuidePage + 1);
+    };
+    buffGuideNextBtn = nextBtn;
+
+    leftBtns.appendChild(prevBtn);
+    leftBtns.appendChild(nextBtn);
+
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "Close ×";
+    backBtn.style.fontFamily = "monospace";
+    backBtn.style.fontSize = "12px";
+    backBtn.style.padding = "4px 8px";
+    backBtn.style.borderRadius = "6px";
+    backBtn.style.border = "1px solid #555";
+    backBtn.style.background = "#222";
+    backBtn.style.color = "#fff";
+    backBtn.style.cursor = "pointer";
+    backBtn.onmouseenter = () => { backBtn.style.background = "#333"; };
+    backBtn.onmouseleave = () => { backBtn.style.background = "#222"; };
+    backBtn.onclick = () => {
+      playButtonClick();
+      closeBuffGuideOverlay();
+    };
+
+    navRow.appendChild(leftBtns);
+    navRow.appendChild(backBtn);
+
+    panel.appendChild(headerRow);
+    panel.appendChild(content);
+    panel.appendChild(navRow);
 
     buffGuideOverlay.appendChild(panel);
-    document.body.appendChild(buffGuideOverlay);
+    container.appendChild(buffGuideOverlay);
 
-    const closeBtn = panel.querySelector("#frog-buff-guide-close-btn");
-    if (closeBtn) {
-      closeBtn.addEventListener("click", () => {
-        buffGuideOverlay.style.display = "none";
-      });
-    }
+    // clicking the dim background also closes it
+    buffGuideOverlay.addEventListener("click", (e) => {
+      if (e.target === buffGuideOverlay) {
+        closeBuffGuideOverlay();
+      }
+    });
+
+    // start on page 0
+    setBuffGuidePage(0);
   }
 
   function setBuffGuidePage(pageIndex) {
@@ -3607,99 +3805,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
   }
 
-  function buildUpgradeSelectionPanel(title, subtitle, rarity, choices) {
-    // rarity: "common" or "epic"
-    const overlay = document.createElement("div");
-    overlay.className = "frog-upgrade-overlay frog-overlay-backdrop";
-    overlay.style.display = "flex";
-
-    const panel = document.createElement("div");
-    panel.className = "frog-panel";
-
-    const rarityLabel = rarity === "epic" ? "Epic" : "Common";
-
-    let cardsHtml = "";
-    choices.forEach((choice, idx) => {
-      const tagClass =
-        rarity === "epic"
-          ? "frog-upgrade-tag frog-upgrade-tag--epic"
-          : "frog-upgrade-tag frog-upgrade-tag--common";
-
-      cardsHtml += `
-        <article class="frog-upgrade-card" data-upgrade-index="${idx}">
-          <div class="frog-upgrade-header">
-            <div class="frog-upgrade-name">${choice.name}</div>
-            <span class="${tagClass}">${rarityLabel}</span>
-          </div>
-          <div class="frog-upgrade-desc">${choice.desc}</div>
-          ${choice.note ? `<div class="frog-upgrade-note">${choice.note}</div>` : ``}
-          <div class="frog-upgrade-footer">
-            <span>${choice.left || ""}</span>
-            <span>${choice.right || ""}</span>
-          </div>
-        </article>
-      `;
-    });
-
-    panel.innerHTML = `
-      <header class="frog-panel-header">
-        <div class="frog-panel-title">${title}</div>
-        <div class="frog-panel-tag">${rarityLabel} Upgrade</div>
-      </header>
-      <div class="frog-panel-body">
-        <div class="frog-panel-section-title">${subtitle}</div>
-        <div class="frog-upgrade-grid">
-          ${cardsHtml}
-        </div>
-        <div style="font-size:11px;color:#9ba3c6;margin-top:8px;">
-          Choose carefully – you can only take one.
-        </div>
-      </div>
-    `;
-
-    overlay.appendChild(panel);
-    return overlay;
-  }
-
-  function showCommonUpgradeSelection(options, onPick) {
-    const overlay = buildUpgradeSelectionPanel(
-      "Upgrade Selection – Common",
-      "Choose 1 upgrade",
-      "common",
-      options
-    );
-
-    document.body.appendChild(overlay);
-
-    overlay.querySelectorAll(".frog-upgrade-card").forEach(card => {
-      card.addEventListener("click", () => {
-        const idx = parseInt(card.getAttribute("data-upgrade-index"), 10);
-        if (onPick) onPick(options[idx]);
-        document.body.removeChild(overlay);
-      });
-    });
-  }
-
-  function showEpicUpgradeSelection(options, onPick) {
-    const overlay = buildUpgradeSelectionPanel(
-      "Upgrade Selection – Epic",
-      "Choose 1 epic upgrade",
-      "epic",
-      options
-    );
-
-    document.body.appendChild(overlay);
-
-    overlay.querySelectorAll(".frog-upgrade-card").forEach(card => {
-      card.addEventListener("click", () => {
-        const idx = parseInt(card.getAttribute("data-upgrade-index"), 10);
-        if (onPick) onPick(options[idx]);
-        document.body.removeChild(overlay);
-      });
-    });
-  }
-
-  function ensureUpgradeOverlay() {
+function ensureUpgradeOverlay() {
     if (upgradeOverlay) return;
 
     upgradeOverlay = document.createElement("div");
@@ -4095,134 +4201,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       // Immediately show the EPIC choices now that the player picked a normal one
       openUpgradeOverlay("epic");
     }
-  }
-
-  function buildEndGameSummaryOverlay(runStats, bestRuns, onPlayAgain, onBackToMenu) {
-    // runStats: { time, snakes, orbs, upgrades, isNewBest, tag }
-    // bestRuns: array of { time, snakes, date }
-
-    const overlay = document.createElement("div");
-    overlay.className = "frog-overlay-backdrop frog-overlay-backdrop--summary";
-    overlay.style.display = "flex";
-
-    const panel = document.createElement("div");
-    panel.className = "frog-panel";
-
-    const bestLabel = runStats.isNewBest
-      ? "Yes (new high score 🎉)"
-      : "No";
-
-    let bestRows = "";
-    bestRuns.forEach((r, i) => {
-      bestRows += `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${i === 0 && runStats.isNewBest ? `<strong>${r.time}</strong> (new)` : r.time}</td>
-          <td>${r.snakes}</td>
-          <td>${r.date}</td>
-        </tr>
-      `;
-    });
-
-    panel.innerHTML = `
-      <header class="frog-panel-header">
-        <div class="frog-panel-title">End Game Summary</div>
-        <div class="frog-panel-tag">Run Results</div>
-      </header>
-      <div class="frog-panel-body frog-summary-layout">
-        <div>
-          <div class="frog-panel-section-title">Run stats</div>
-          <div class="frog-summary-stat-row">
-            <span class="frog-summary-stat-label">Time survived</span>
-            <span class="frog-summary-stat-value">${runStats.time}</span>
-          </div>
-          <div class="frog-summary-stat-row">
-            <span class="frog-summary-stat-label">Snakes in play</span>
-            <span class="frog-summary-stat-value">${runStats.snakes}</span>
-          </div>
-          <div class="frog-summary-stat-row">
-            <span class="frog-summary-stat-label">Orbs collected</span>
-            <span class="frog-summary-stat-value">${runStats.orbs}</span>
-          </div>
-          <div class="frog-summary-stat-row">
-            <span class="frog-summary-stat-label">Upgrades chosen</span>
-            <span class="frog-summary-stat-value">${runStats.upgrades}</span>
-          </div>
-          <div class="frog-summary-stat-row" style="margin-top:6px;">
-            <span class="frog-summary-stat-label">Personal best</span>
-            <span class="frog-summary-stat-value">${bestLabel}</span>
-          </div>
-
-          <div class="frog-panel-section-title" style="margin-top:12px;">Player tag</div>
-          <div class="frog-panel-row">
-            <input
-              class="frog-input"
-              id="frog-summary-tag-input"
-              type="text"
-              value="${runStats.tag || ""}"
-              placeholder="Enter a tag for the leaderboard"
-            />
-          </div>
-          <div style="font-size:11px;color:#8891bf;margin-top:4px;">
-            2–20 characters. No slurs or profanity.
-          </div>
-        </div>
-
-        <div>
-          <div class="frog-panel-section-title">Your best runs</div>
-          <table class="frog-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Time</th>
-                <th>Snakes</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${bestRows}
-            </tbody>
-          </table>
-
-          <div class="frog-summary-footer">
-            <button class="frog-btn frog-btn--primary" id="frog-summary-play-again">Play again</button>
-            <button class="frog-btn" id="frog-summary-back-menu">Back to main menu</button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    overlay.appendChild(panel);
-    document.body.appendChild(overlay);
-
-    const tagInput = panel.querySelector("#frog-summary-tag-input");
-    const playAgainBtn = panel.querySelector("#frog-summary-play-again");
-    const backMenuBtn = panel.querySelector("#frog-summary-back-menu");
-
-    if (playAgainBtn) {
-      playAgainBtn.addEventListener("click", () => {
-        document.body.removeChild(overlay);
-        if (tagInput) {
-          const tag = tagInput.value.trim();
-          // call your existing tag save logic here
-          // saveTagIfValid(tag);
-        }
-        if (onPlayAgain) onPlayAgain();
-      });
-    }
-
-    if (backMenuBtn) {
-      backMenuBtn.addEventListener("click", () => {
-        document.body.removeChild(overlay);
-        if (tagInput) {
-          const tag = tagInput.value.trim();
-          // saveTagIfValid(tag);
-        }
-        if (onBackToMenu) onBackToMenu();
-      });
-    }
-
-    return overlay;
   }
 
   // --------------------------------------------------

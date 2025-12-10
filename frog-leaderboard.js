@@ -398,26 +398,11 @@
   // --------------------------------------------------
   // MINI LEADERBOARD (top-right HUD / pre-game view)
   // --------------------------------------------------
-  function renderMiniLeaderboard(rows) {
-    const tbody = document.getElementById("frog-leaderboard-rows");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-
-    rows.forEach((row, i) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="frog-board-rank">${i + 1}</td>
-        <td class="frog-board-tag">${row.tag}</td>
-        <td class="frog-board-score">${row.time}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
+  // This is the one you care about.
+  // It now highlights *your* row in gold if you're on the board.
   function updateMiniLeaderboard(topList, myEntryOverride) {
-    const tbody = document.getElementById("frog-leaderboard-rows");
-    const root = document.getElementById("frog-leaderboard-root");
-    if (!tbody || !root) return;
+    const mini = document.getElementById("frog-mini-leaderboard");
+    if (!mini) return;
 
     let entries = [];
     let myEntry = myEntryOverride || null;
@@ -435,29 +420,48 @@
     }
 
     if (!Array.isArray(entries) || entries.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3">No runs yet.</td></tr>';
+      mini.textContent = "No runs yet.";
       return;
     }
 
+    // If no explicit myEntry passed, fall back to the last one from the server
     if (!myEntry && lastMyEntry) {
       myEntry = lastMyEntry;
     }
 
+    let myIndex = -1;
+    if (myEntry && myEntry.userId) {
+      myIndex = entries.findIndex(
+        (e) => e && e.userId && e.userId === myEntry.userId
+      );
+    }
+
+    mini.innerHTML = "";
     const maxRows = Math.min(5, entries.length);
-    const rows = [];
 
     for (let i = 0; i < maxRows; i++) {
       const entry = entries[i] || {};
-      const name = getDisplayName(entry, `Player ${i + 1}`);
+      const rank = i + 1;
+      const name = getDisplayName(entry, `Player ${rank}`);
+      const score = getEntryScore(entry);
       const time = getEntryTime(entry);
 
-      rows.push({
-        tag: name,
-        time: formatTime(time),
-      });
-    }
+      const row = document.createElement("div");
+      row.style.fontFamily = "monospace";
+      row.style.fontSize = "11px";
 
-    renderMiniLeaderboard(rows);
+      row.textContent = `${rank}. ${name} — ${formatTime(
+        time
+      )}, ${Math.floor(score)}`;
+
+      // Highlight your row (gold + bold) if you're on the board
+      if (i === myIndex) {
+        row.style.color = "#ffd700";
+        row.style.fontWeight = "bold";
+      }
+
+      mini.appendChild(row);
+    }
   }
 
   // --------------------------------------------------
