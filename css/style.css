@@ -1181,7 +1181,6 @@ a {
 }
 /* Upgrade overlay: floating pills only, no big box */
 #upgradeOverlay .frog-panel {
-  background: transparent;
   border: none;
   box-shadow: none;
   padding: 8px 16px;
@@ -1244,27 +1243,27 @@ a {
 
 /* Color variants by “type” – use a subtle accent strip */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
-  border-color: #65a30d;
+  border: 1px solid #65a30d;
   box-shadow: inset 4px 0 #65a30d;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
-  border-color: #eab308;
+  border: 1px solid #eab308;
   box-shadow: inset 4px 0 #eab308;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival {
-  border-color: #ef4444;
+  border: 1px solid #ef4444;
   box-shadow: inset 4px 0 #ef4444;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
-  border-color: #fb923c;
+  border: 1px solid #fb923c;
   box-shadow: inset 4px 0 #fb923c;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
-  border-color: #a855f7;
+  border: 1px solid #a855f7;
   box-shadow: inset 4px 0 #a855f7;
 }
 
