@@ -564,13 +564,16 @@
     statsPanel.style.display = statsPanelVisible ? "block" : "none";
   }
 
+  function syncAudioMuteState() {
+    if (AudioMod && typeof AudioMod.setMuted === "function") {
+      AudioMod.setMuted(!soundEnabled || mainMenuActive);
+    }
+  }
+
   function toggleSound() {
     soundEnabled = !soundEnabled;
 
-    // If your audio module supports it, propagate mute state
-    if (AudioMod && typeof AudioMod.setMuted === "function") {
-      AudioMod.setMuted(!soundEnabled);
-    }
+    syncAudioMuteState();
 
     if (btnSound) {
       btnSound.textContent = soundEnabled ? "Sound: ON" : "Sound: OFF";
@@ -3316,14 +3319,15 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     clearMainMenuFrogs();
 
     const stages = [1, 2, 3];
+    const shuffledStages = stages.slice().sort(() => Math.random() - 0.5);
 
-    for (let i = 0; i < 3; i++) {
-      const stage = stages[i % stages.length];
+    for (let i = 0; i < 2; i++) {
+      const stage = shuffledStages[i % shuffledStages.length];
       const snakeObj = spawnAdditionalSnake(width, height, {
         startX: randRange(width * 0.2, width * 0.8),
         startY: randRange(height * 0.25, height * 0.75),
         angle: randRange(-Math.PI, Math.PI),
-        segmentCount: randInt(25, 75),
+        segmentCount: randInt(20, 30),
         colorFilter: getShedStageFilter(stage)
       });
 
@@ -3391,6 +3395,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     startMainMenuBackground();
     setInGameUIVisible(false);
     mainMenuActive = true;
+    syncAudioMuteState();
     mainMenuOverlay.style.display = "flex";
     gamePaused = true;
   }
@@ -3398,6 +3403,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   function hideMainMenu() {
     mainMenuActive = false;
     stopMainMenuBackground();
+    syncAudioMuteState();
     if (mainMenuOverlay) {
       mainMenuOverlay.style.display = "none";
     }
@@ -4369,6 +4375,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     stopMainMenuBackground();
     setInGameUIVisible(true);
     restartGame();
+    syncAudioMuteState();
     openFirstUpgradeSelection();
   }
 
