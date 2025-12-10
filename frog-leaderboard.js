@@ -110,6 +110,10 @@
       .replace(/"/g, "&quot;");
   }
 
+  function normalizeLabel(str) {
+    return typeof str === "string" ? str.trim().toLowerCase() : "";
+  }
+
   function pad2(n) {
     return n < 10 ? "0" + n : String(n);
   }
@@ -159,6 +163,63 @@
       return entry.name;
     }
     return fallback || "Player";
+  }
+
+  function getEntryKey(entry) {
+    if (!entry || typeof entry !== "object") return null;
+    if (entry.userId) return `id:${entry.userId}`;
+
+    const tagKey = normalizeLabel(entry.tag);
+    if (tagKey) return `tag:${tagKey}`;
+
+    const nameKey = normalizeLabel(entry.name);
+    if (nameKey) return `name:${nameKey}`;
+
+    return null;
+  }
+
+  function isBetterEntry(candidate, current) {
+    if (!current) return true;
+    const candScore = getEntryScore(candidate);
+    const currScore = getEntryScore(current);
+    if (candScore > currScore) return true;
+    if (candScore < currScore) return false;
+
+    const candTime = getEntryTime(candidate);
+    const currTime = getEntryTime(current);
+    return candTime < currTime;
+  }
+
+  function compareEntriesByScoreTime(a, b) {
+    const diff = getEntryScore(b) - getEntryScore(a);
+    if (diff !== 0) return diff;
+    return getEntryTime(a) - getEntryTime(b);
+  }
+
+  function dedupeAndSortEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+
+    const bestByKey = new Map();
+    const leftovers = [];
+
+    for (const entry of entries) {
+      if (!entry) continue;
+
+      const key = getEntryKey(entry);
+      if (!key) {
+        leftovers.push(entry);
+        continue;
+      }
+
+      const current = bestByKey.get(key);
+      if (isBetterEntry(entry, current)) {
+        bestByKey.set(key, entry);
+      }
+    }
+
+    const merged = [...bestByKey.values(), ...leftovers];
+    merged.sort(compareEntriesByScoreTime);
+    return merged;
   }
 
   function ensureScoreboardOverlay(container) {
@@ -329,7 +390,7 @@
         if (data.myEntry) lastMyEntry = data.myEntry;
       }
 
-      return entries;
+      return dedupeAndSortEntries(entries);
     } catch (err) {
       console.error("fetchLeaderboard error", err);
       return [];
@@ -383,11 +444,15 @@
         return null;
       }
 
-      const entries = data.entries;
+      const entries = dedupeAndSortEntries(data.entries);
+
       if (data.myEntry) {
-        lastMyEntry = data.myEntry;
+        const key = getEntryKey(data.myEntry);
+        const match =
+          key && entries.find((entry) => getEntryKey(entry) === key);
+        lastMyEntry = match || data.myEntry;
       }
-      
+
       return entries;
     } catch (err) {
       console.error("Error submitting score:", err);
@@ -406,6 +471,37 @@
 
     let entries = [];
     let myEntry = myEntryOverride || null;
+    const userLabel = getCurrentUserLabelFromLeaderboard();
+
+    function entryMatchesMe(entry) {
+      if (!entry) return false;
+
+      // Prefer a hard identifier if the service provided one
+      if (myEntry && myEntry.userId && entry.userId) {
+        if (myEntry.userId === entry.userId) return true;
+      }
+
+      // Fall back to matching the score/time pair returned for this user
+      if (myEntry) {
+        const sameScore = Math.round(getEntryScore(entry)) ===
+          Math.round(getEntryScore(myEntry));
+        const sameTime = Math.abs(getEntryTime(entry) - getEntryTime(myEntry)) < 0.01;
+        if (sameScore && sameTime) return true;
+      }
+
+      const candidates = [];
+      if (myEntry) {
+        candidates.push(normalizeLabel(myEntry.tag));
+        candidates.push(normalizeLabel(myEntry.name));
+      }
+      candidates.push(normalizeLabel(userLabel));
+
+      const entryLabels = [normalizeLabel(entry.tag), normalizeLabel(entry.name)];
+
+      return candidates.some((target) =>
+        target && entryLabels.some((label) => label && label === target)
+      );
+    }
 
     // Support either:
     //  - updateMiniLeaderboard(array)
@@ -429,13 +525,6 @@
       myEntry = lastMyEntry;
     }
 
-    let myIndex = -1;
-    if (myEntry && myEntry.userId) {
-      myIndex = entries.findIndex(
-        (e) => e && e.userId && e.userId === myEntry.userId
-      );
-    }
-
     mini.innerHTML = "";
     const maxRows = Math.min(5, entries.length);
 
@@ -455,7 +544,7 @@
       )}, ${Math.floor(score)}`;
 
       // Highlight your row (gold + bold) if you're on the board
-      if (i === myIndex) {
+      if (entryMatchesMe(entry)) {
         row.style.color = "#ffd700";
         row.style.fontWeight = "bold";
       }
