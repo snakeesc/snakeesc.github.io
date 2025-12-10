@@ -3856,9 +3856,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     choices.forEach((choice) => {
       const btn = document.createElement("button");
-      const colorClass = getUpgradeColorClass(up.id);
+      const colorClass = getUpgradeColorClass(choice.id);
       btn.className = "frog-btn frog-upgrade-choice " + colorClass;
-      btn.dataset.upgradeId = up.id;
+      btn.dataset.upgradeId = choice.id;
       btn.innerHTML = `
         <div class="frog-upgrade-desc">${choice.label}</div>
       `;
