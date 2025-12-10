@@ -1063,109 +1063,110 @@ a {
     grid-template-columns: 1fr;
   }
 }
-/* THEME 5 – Tropical Day */
+/* THEME 6 – Stone & Moss */
 
 .frog-overlay {
   background:
-    radial-gradient(circle at 10% 5%, rgba(252, 211, 77, 0.35), transparent 55%),
-    radial-gradient(circle at 90% 95%, rgba(45, 212, 191, 0.23), transparent 55%),
-    #eff6ff;
+    radial-gradient(circle at 15% 0%, rgba(148, 163, 184, 0.4), transparent 60%),
+    #020617;
 }
 
 .frog-panel {
-  background: linear-gradient(145deg, #e0f2fe, #fef9c3);
-  color: #0f172a;
-  border-color: #22c55e;
+  background: linear-gradient(145deg, #020617, #111827);
+  color: #e5e7eb;
+  border-color: #6ee7b7;
 }
 
 .frog-panel-title {
-  color: #0284c7;
+  color: #a7f3d0;
 }
 
 .frog-panel-sub {
-  color: #475569;
+  color: #9ca3af;
 }
 
 .frog-panel-section-label {
-  color: #059669;
+  color: #6ee7b7;
 }
 
 .frog-panel-footer {
-  color: #334155;
+  color: #d1d5db;
 }
 
 .frog-panel-list li {
-  color: #0f172a;
+  color: #e5e7eb;
 }
 
 /* Buttons */
 
 .frog-btn-primary {
-  background: linear-gradient(120deg, #22c55e, #facc15);
+  background: linear-gradient(120deg, #16a34a, #22c55e);
   color: #022c22;
 }
 
 .frog-btn-secondary {
-  background: linear-gradient(120deg, #0ea5e9, #22c55e);
-  color: #0f172a;
-  border-color: rgba(37, 99, 235, 0.5);
+  background: linear-gradient(120deg, #4b5563, #6b7280);
+  color: #e5e7eb;
+  border-color: rgba(148, 163, 184, 0.8);
 }
 
 .frog-btn-danger {
-  background: linear-gradient(120deg, #f97316, #ef4444);
-  color: #fef2f2;
-  border-color: rgba(248, 113, 113, 0.7);
+  background: linear-gradient(120deg, #b91c1c, #f97316);
+  color: #fee2e2;
+  border-color: rgba(239, 68, 68, 0.7);
 }
 
 /* Upgrades */
 
 .frog-upgrade-choice {
-  background: #ffffff;
-  border-color: rgba(148, 163, 184, 0.5);
+  background: rgba(17, 24, 39, 0.98);
+  border-color: rgba(148, 163, 184, 0.8);
 }
 
 .frog-upgrade-title {
-  color: #0f766e;
+  color: #a7f3d0;
 }
 
 .frog-upgrade-desc {
-  color: #475569;
+  color: #e5e7eb;
 }
 
 .upgrade-column {
-  background: #f9fafb;
-  border-color: #cbd5f5;
+  background: rgba(17, 24, 39, 0.98);
+  border-color: rgba(75, 85, 99, 0.9);
 }
 
 .upgrade-column-title {
-  color: #0ea5e9;
+  color: #e5e7eb;
 }
 
 .upgrade-column--summary {
-  background: linear-gradient(145deg, #dcfce7, #fef3c7);
+  background:
+    radial-gradient(circle at 0 0, rgba(110, 231, 183, 0.28), transparent 65%),
+    #020617;
 }
 
 .upgrade-summary-list li {
-  background: #ffffff;
-  border-color: rgba(148, 163, 184, 0.7);
-  color: #0f172a;
+  background: rgba(15, 23, 42, 0.98);
+  border-color: rgba(110, 231, 183, 0.7);
+  color: #e5e7eb;
 }
 
 .stat-highlight {
-  color: #059669;
+  color: #6ee7b7;
 }
 
 /* Buff cards */
 
 .buff-card {
-  background: #ffffff;
-  border-color: rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.98);
+  border-color: rgba(75, 85, 99, 0.9);
 }
 
 .buff-card h4 {
-  color: #0ea5e9;
+  color: #a7f3d0;
 }
 
 .buff-card li {
-  color: #0f172a;
+  color: #e5e7eb;
 }
