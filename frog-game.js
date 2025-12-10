@@ -123,6 +123,9 @@
     computeInitialPositions = () => []
   } = Utils;
 
+  const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
+  const ORB_MAGNET_PULL_RANGE = 220;
+
   // --------------------------------------------------
   // PLAYER TAG STORAGE (client-side only)
   // --------------------------------------------------
@@ -1915,8 +1918,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   }
 
   function updateOrbs(dt) {
-    const MAGNET_RANGE = 220;
-    const MAGNET_RANGE2 = MAGNET_RANGE * MAGNET_RANGE;
+    const MAGNET_RANGE2 = ORB_MAGNET_PULL_RANGE * ORB_MAGNET_PULL_RANGE;
 
     for (let i = orbs.length - 1; i >= 0; i--) {
       const orb = orbs[i];
@@ -2472,7 +2474,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let upgradeOverlayContext = "mid";
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
-  let upgradeBuffSummaryBox = null;
 
   let mainMenuOverlay = null;
 
@@ -3027,71 +3028,110 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   // Build dynamic Buff & Upgrade guide content from live config / state
   function buildBuffGuideHtml() {
-    // Helper to format seconds with 0–1 decimal place
-    const fmtSec = (base) => {
-      const cur = base * buffDurationFactor;
-      const rounded = Math.round(cur * 10) / 10;
-      if (Math.abs(rounded - Math.round(rounded)) < 0.05) {
-        return Math.round(rounded) + "s";
-      }
-      return rounded.toFixed(1) + "s";
-    };
+    const fmtPct = (val) => statHighlight(`${Math.round(val)}%`);
+    const fmtSec = (val) => statHighlight(`${val}s`);
+    const fmtRange = (min, max) => statHighlight(`${min}–${max}`);
+
+    const tempBuffs = [
+      { title: "Speed Boost", desc: `Frogs hop ${fmtPct((1 - SPEED_BUFF_FACTOR) * 100)} faster for ${fmtSec(SPEED_BUFF_DURATION)} (extended by buff bonuses).` },
+      { title: "Jump Surge", desc: `Jump height increases by ${fmtPct((JUMP_BUFF_FACTOR - 1) * 100)} for ${fmtSec(JUMP_BUFF_DURATION)}.` },
+      { title: "Spawn Orb", desc: `Instantly spawns ${fmtRange(1, 10)} frogs; Lucky collectors can add up to ${statHighlight("+3")} more.` },
+      { title: "Mega Spawn", desc: `Drops ${fmtRange(10, 20)} frogs at once; Lucky collectors can add up to ${statHighlight("+8")} more.` },
+      { title: "Snake Slow", desc: `The snake moves ${fmtPct((1 - SNAKE_SLOW_FACTOR) * 100)} slower for ${fmtSec(SNAKE_SLOW_DURATION)}.` },
+      { title: "Snake Confuse", desc: `The snake zig-zags erratically for ${fmtSec(SNAKE_CONFUSE_DURATION)}.` },
+      { title: "Snake Shrink", desc: `Bite radius shrinks to about ${statHighlight(`${Math.round(SNAKE_EAT_RADIUS_BASE / 2)}px`)} for ${fmtSec(SNAKE_SHRINK_DURATION)}.` },
+      { title: "Frog Shield", desc: `Team ignores hits for ${fmtSec(FROG_SHIELD_DURATION)}.` },
+      { title: "Orb Magnet", desc: `Pulls orbs within ${statHighlight(`${ORB_MAGNET_PULL_RANGE}px`)} toward frogs for ${fmtSec(ORB_MAGNET_DURATION)}.` },
+      { title: "Time Slow", desc: `Everything runs ${fmtPct((1 - TIME_SLOW_FACTOR) * 100)} slower for ${fmtSec(TIME_SLOW_DURATION)}.` },
+      { title: "Score Multiplier", desc: `Score gains are ${fmtPct(SCORE_MULTI_FACTOR * 100)} for ${fmtSec(SCORE_MULTI_DURATION)}.` },
+      { title: "Panic Hop", desc: `Chaotic hops about ${fmtPct((1 - PANIC_HOP_SPEED_FACTOR) * 100)} faster for ${fmtSec(PANIC_HOP_DURATION)}.` },
+      { title: "Life Steal", desc: `For ${fmtSec(LIFE_STEAL_DURATION)}, every deathrattle roll is boosted to at least ${fmtPct(MAX_DEATHRATTLE_CHANCE * 100)}.` },
+      { title: "Clone Swarm", desc: `For ${fmtSec(CLONE_SWARM_DURATION)}, about ${fmtPct(65)} of snake bites snap at decoy clones instead.` },
+      { title: "Perma Frog", desc: `Grants the collector a random permanent role (Champion, Aura, Magnet, Lucky, or Zombie).` }
+    ];
 
     const speedPerPickPct = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
     const jumpPerPickPct  = Math.round((FROG_JUMP_UPGRADE_FACTOR - 1) * 100);
     const buffPerPickPct  = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
     const orbPerPickPct   = Math.round((1 - ORB_INTERVAL_UPGRADE_FACTOR) * 100);
+    const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
+    const orbCollectPct   = Math.round(ORB_COLLECTOR_CHANCE * 100);
 
-    const speedTotalPct = Math.round((1 - frogPermanentSpeedFactor) * 100);
-    const jumpTotalPct  = Math.round((frogPermanentJumpFactor - 1) * 100);
-    const buffTotalPct  = Math.round((buffDurationFactor - 1) * 100);
-    const orbTotalPct   = Math.round((1 - orbSpawnIntervalFactor) * 100);
+    const commonUpgrades = [
+      { title: "Quicker Hops", desc: `${fmtPct(speedPerPickPct)} faster hops each pick (up to ${fmtPct((1 - MIN_FROG_SPEED_FACTOR) * 100)} total).` },
+      { title: "Higher Hops", desc: `${fmtPct(jumpPerPickPct)} taller jumps per pick (cap ${fmtPct((MAX_FROG_JUMP_FACTOR - 1) * 100)}).` },
+      { title: "Spawn Frogs", desc: `Instantly adds ${statHighlight(NORMAL_SPAWN_AMOUNT)} frogs (only offered if you're below cap).` },
+      { title: "Orb Whisperer", desc: `Orbs linger ${fmtPct(20)} longer before fading.` },
+      { title: "Ouroboros Pact", desc: `${fmtPct(10)} of dead frogs drop an orb.` },
+      { title: "Coin Flip", desc: `Sacrifice ${statHighlight("1")} frog to trigger a random buff at ${statHighlight("1.75×")} duration.` },
+      { title: "Buffs Last Longer", desc: `${fmtPct(buffPerPickPct)} buff duration each pick.` },
+      { title: "More Orbs", desc: `Orb spawns speed up by ~${fmtPct(orbPerPickPct)} per pick.` },
+      { title: "Deathrattle", desc: `${fmtPct(deathPerPickPct)} revive chance per pick (caps at ${fmtPct(MAX_DEATHRATTLE_CHANCE * 100)}).` },
+      { title: "Orb Collector", desc: `Each orb gains +${fmtPct(orbCollectPct)} chance to spawn a frog (caps at ${fmtPct(MAX_ORB_COLLECTOR_TOTAL * 100)}).` },
+      { title: "Last Stand", desc: `Your final frog has at least ${fmtPct(LAST_STAND_MIN_CHANCE * 100)} chance to revive.` }
+    ];
 
-    const durBonusText =
-      buffTotalPct > 0 ? " (currently +" + buffTotalPct + "% from upgrades)" : "";
+    const epicBuffPerPickPct = Math.round(((BUFF_DURATION_UPGRADE_FACTOR + 0.15) - 1) * 100);
+    const epicDeathPct       = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
+
+    const epicUpgrades = [
+      { title: "Epic Frog Wave", desc: `Spawn ${statHighlight(EPIC_SPAWN_AMOUNT)} frogs instantly.` },
+      { title: "Epic Deathrattle", desc: `${fmtPct(epicDeathPct)} revive chance in one pick.` },
+      { title: "Epic Buff Duration", desc: `${fmtPct(epicBuffPerPickPct)} longer buffs with one choice.` },
+      { title: "Orb Storm", desc: `Drop ${statHighlight(ORB_STORM_COUNT)} random orbs across the arena right now.` },
+      { title: "Snake Egg", desc: `Next snake shed only gains ${fmtPct(15)} speed instead of a huge spike.` },
+      { title: "Frog Promotion", desc: `${statHighlight(10)} new frogs, each with a random permanent role.` },
+      { title: "Grave Wave", desc: `Every shed spawns ${fmtRange(GRAVE_WAVE_MIN_GHOSTS, GRAVE_WAVE_MAX_GHOSTS)} uncontrollable ghost frogs.` },
+      { title: "Orb Specialist", desc: `Every orb guarantees ${statHighlight("1")} frog; Orb Collector rolls can add more.` },
+      { title: "Fragile Reality", desc: `Doubles buff duration caps but halves orb spawn speed going forward.` },
+      { title: "Frog Scatter", desc: `Wipe and respawn every frog with fresh roles; deathrattles still trigger.` },
+      { title: "Eye for an Eye", desc: `Kill the slowest snake and half your frogs; frog cap drops to ${statHighlight(50)}.` }
+    ];
+
+    const legendaryUpgrades = [
+      { title: "Legendary Buff Surge", desc: `Multiply every buff duration by ${statHighlight(LEGENDARY_BUFF_DURATION_FACTOR.toFixed(1))}.` },
+      { title: "Legendary Frog Wave", desc: `Spawn ${statHighlight(LEGENDARY_SPAWN_AMOUNT)} frogs instantly.` },
+      { title: "Legendary Deathrattle", desc: `${fmtPct(LEGENDARY_DEATHRATTLE_CHANCE * 100)} revive chance in one pick.` }
+    ];
+
+    const roleDescriptions = [
+      { title: "Champion", desc: `${fmtPct((1 - CHAMPION_SPEED_FACTOR) * 100)} faster hops and ${fmtPct((CHAMPION_JUMP_FACTOR - 1) * 100)} higher jumps.` },
+      { title: "Aura", desc: `All frogs within ${statHighlight(`${AURA_RADIUS}px`)} get ${fmtPct((1 - AURA_SPEED_FACTOR) * 100)} faster hops and ${fmtPct((AURA_JUMP_FACTOR - 1) * 100)} higher jumps.` },
+      { title: "Magnet", desc: `Pulls nearby orbs from ${statHighlight(`${ORB_MAGNET_PULL_RANGE}px`)} away.` },
+      { title: "Lucky", desc: `Buffs last ${statHighlight(`${Math.round((LUCKY_BUFF_DURATION_BOOST - 1) * 100)}%`)} longer and spawn orbs can add bonus frogs.` },
+      { title: "Zombie", desc: `On death, spawns ${statHighlight(5)} frogs and slows the snake for about ${fmtSec(3)}.` },
+      { title: "Cannibal", desc: `${fmtPct((1 - 0.95) * 100)} faster hops, ${fmtPct((1.05 - 1) * 100)} higher jumps, and ${fmtPct(5)} personal deathrattle; ${fmtPct(CANNIBAL_EAT_CHANCE * 100)} chance to eat nearby frogs.` }
+    ];
+
+    const renderCard = (title, entries) => `
+      <div class="buff-card">
+        <h4>${title}</h4>
+        <ul>
+          ${entries.map((e) => `<li><strong>${e.title}:</strong> ${e.desc}</li>`).join("")}
+        </ul>
+      </div>
+    `;
 
     return `
       <div class="frog-panel-title">
-        Buffs &amp; Upgrades <span class="emoji">⚡</span>
+        Buffs & Upgrades
+        <span class="emoji">⚡</span>
       </div>
 
       <div class="frog-panel-sub">
-        Live values below use your current upgrades &amp; buff duration factor.
+        Live stats from the current build: every value is pulled straight from the game variables.
       </div>
 
-      <div class="frog-panel-section-label">Orb Buffs (current duration)</div>
-      <ul class="frog-panel-list">
-        <li><strong>Speed:</strong> frogs act faster for about ${fmtSec(SPEED_BUFF_DURATION)}${durBonusText}.</li>
-        <li><strong>Jump:</strong> frogs jump higher for about ${fmtSec(JUMP_BUFF_DURATION)}${durBonusText}.</li>
-        <li><strong>Snake Slow:</strong> snake moves slower for about ${fmtSec(SNAKE_SLOW_DURATION)}${durBonusText}.</li>
-        <li><strong>Confuse:</strong> snake turns randomly for about ${fmtSec(SNAKE_CONFUSE_DURATION)}${durBonusText}.</li>
-        <li><strong>Shrink:</strong> snake size &amp; bite radius shrink for about ${fmtSec(SNAKE_SHRINK_DURATION)}${durBonusText}.</li>
-        <li><strong>Team Shield:</strong> frogs ignore hits for about ${fmtSec(FROG_SHIELD_DURATION)}${durBonusText}.</li>
-        <li><strong>Time Slow:</strong> slows the whole game for about ${fmtSec(TIME_SLOW_DURATION)}${durBonusText}.</li>
-        <li><strong>Orb Magnet:</strong> orbs drift toward frogs for about ${fmtSec(ORB_MAGNET_DURATION)}${durBonusText}.</li>
-        <li><strong>Score ×2:</strong> score gain is doubled for about ${fmtSec(SCORE_MULTI_DURATION)}${durBonusText}.</li>
-        <li><strong>Panic Hop:</strong> frogs hop faster in random directions for about ${fmtSec(PANIC_HOP_DURATION)}${durBonusText}.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Global Upgrades (per pick / current total)</div>
-      <ul class="frog-panel-list">
-        <li><strong>Frog Speed:</strong> ~${speedPerPickPct}% faster per pick, currently +${speedTotalPct}%.</li>
-        <li><strong>Jump Height:</strong> ~${jumpPerPickPct}% higher per pick, currently +${jumpTotalPct}%.</li>
-        <li><strong>Buff Duration:</strong> ~${buffPerPickPct}% longer per pick, currently +${buffTotalPct}%.</li>
-        <li><strong>Orb Spawn Rate:</strong> ~${orbPerPickPct}% faster per pick, currently +${orbTotalPct}%.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Permanent Frog Roles</div>
-      <ul class="frog-panel-list">
-        <li><strong>Champion:</strong> that frog's hop cycle is faster and jumps are higher.</li>
-        <li><strong>Aura:</strong> nearby frogs get bonus speed and jump height in a radius.</li>
-        <li><strong>Magnet:</strong> orbs in a radius are strongly pulled toward this frog.</li>
-        <li><strong>Lucky:</strong> buffs last longer and score gain is slightly boosted.</li>
-        <li><strong>Zombie / Deathrattle:</strong> on death, can spawn chaos like extra frogs or snake debuffs.</li>
-      </ul>
+      <div class="buff-guide-grid">
+        ${renderCard("Temporary Buff Orbs", tempBuffs)}
+        ${renderCard("Permanent Upgrades", commonUpgrades)}
+        ${renderCard("Epic Upgrades", epicUpgrades)}
+        ${renderCard("Legendary Upgrades", legendaryUpgrades)}
+        ${renderCard("Frog Roles", roleDescriptions)}
+      </div>
 
       <div class="frog-panel-footer">
-        Values update as you pick more upgrades.
+        Buffs stack with your upgrade bonuses—hover back to the game and start experimenting.
         <br />
         <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
           Close
@@ -3565,17 +3605,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       ? upgradeOverlay.querySelector(".frog-panel-title")
       : null;
     upgradeOverlaySubEl = document.getElementById("upgradeOverlaySub");
-
-    document.addEventListener("keydown", (e) => {
-      if (!upgradeOverlay || upgradeOverlay.style.display !== "flex") return;
-      if (e.key === "1" && currentUpgradeChoices[0]) {
-        selectUpgrade(currentUpgradeChoices[0]);
-      } else if (e.key === "2" && currentUpgradeChoices[1]) {
-        selectUpgrade(currentUpgradeChoices[1]);
-      } else if (e.key === "3" && currentUpgradeChoices[2]) {
-        selectUpgrade(currentUpgradeChoices[2]);
-      }
-    });
   }
 
   function selectUpgrade(choice) {
@@ -3690,11 +3719,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       return;
     }
 
-    choices.forEach((choice, index) => {
+    choices.forEach((choice) => {
       const btn = document.createElement("button");
       btn.className = "frog-btn frog-btn-secondary frog-upgrade-choice";
       btn.innerHTML = `
-        <div class="frog-upgrade-title">[${index + 1}]</div>
         <div class="frog-upgrade-desc">${choice.label}</div>
       `;
       btn.addEventListener("click", () => selectUpgrade(choice));
@@ -3704,37 +3732,70 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   // Add this helper to avoid errors and show current permanent upgrades in the upgrade overlay
   function updateUpgradeBuffSummary() {
-    if (!upgradeOverlay) return;
+    const listEl = document.getElementById("currentUpgradeList");
+    if (!upgradeOverlay || !listEl) return;
 
-    const panel = upgradeOverlay.querySelector(".frog-panel");
-    if (!panel) return;
-
-    if (!upgradeBuffSummaryBox) {
-      upgradeBuffSummaryBox = document.createElement("div");
-      upgradeBuffSummaryBox.className = "frog-panel-footer";
-      upgradeBuffSummaryBox.style.marginTop = "6px";
-      upgradeBuffSummaryBox.style.fontSize = "11px";
-      panel.appendChild(upgradeBuffSummaryBox);
-    }
-
-    // Compute current permanent bonuses from live game state
     const speedTotalPct = Math.round((1 - frogPermanentSpeedFactor) * 100);
     const jumpTotalPct  = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffTotalPct  = Math.round((buffDurationFactor - 1) * 100);
     const orbTotalPct   = Math.round((1 - orbSpawnIntervalFactor) * 100);
+    const drTotalPct    = Math.round((frogDeathRattleChance || 0) * 100);
+    const orbCollectPct = Math.round((orbCollectorChance || 0) * 100);
+    const orbLingerPct  = Math.round((orbTtlFactor - 1) * 100);
 
-    const parts = [];
+    const roleCounts = {
+      champion: 0,
+      aura: 0,
+      magnet: 0,
+      lucky: 0,
+      zombie: 0
+    };
 
-    if (speedTotalPct > 0) parts.push("Frog speed +" + speedTotalPct + "%");
-    if (jumpTotalPct  > 0) parts.push("Jump height +" + jumpTotalPct + "%");
-    if (buffTotalPct  > 0) parts.push("Buff duration +" + buffTotalPct + "%");
-    if (orbTotalPct   > 0) parts.push("Orb spawn rate +" + orbTotalPct + "%");
+    for (const frog of frogs) {
+      if (frog.isChampion) roleCounts.champion++;
+      if (frog.isAura)     roleCounts.aura++;
+      if (frog.isMagnet)   roleCounts.magnet++;
+      if (frog.isLucky)    roleCounts.lucky++;
+      if (frog.isZombie)   roleCounts.zombie++;
+    }
 
-    if (!parts.length) {
-      upgradeBuffSummaryBox.textContent = "No permanent upgrades taken yet.";
-    } else {
-      upgradeBuffSummaryBox.textContent =
-        "Current permanent bonuses: " + parts.join(" · ");
+    const items = [
+      `<strong>Squad:</strong> ${statHighlight(`${frogs.length}`)} / ${statHighlight(`${maxFrogsCap}`)} frogs on the field`,
+      `<strong>Frog speed bonus:</strong> ${statHighlight(`${speedTotalPct}%`)} faster hops`,
+      `<strong>Jump height bonus:</strong> ${statHighlight(`${jumpTotalPct}%`)} higher hops`,
+      `<strong>Buff duration:</strong> ${statHighlight(`${buffTotalPct}%`)} longer`,
+      `<strong>Orb spawn pace:</strong> ${statHighlight(`${orbTotalPct}%`)} faster spawns`,
+      `<strong>Deathrattle:</strong> ${statHighlight(`${drTotalPct}%`)} revive chance`,
+      `<strong>Orb Collector:</strong> ${statHighlight(`${orbCollectPct}%`)} chance every orb spawns a frog`,
+      `<strong>Lingering orbs:</strong> ${statHighlight(`${Math.max(0, orbLingerPct)}%`)} longer before fading`
+    ];
+
+    if (lastStandActive) {
+      items.push(`<strong>Last Stand:</strong> Final frog has at least ${statHighlight(`${Math.round(LAST_STAND_MIN_CHANCE * 100)}%`)} revive odds`);
+    }
+    if (orbSpecialistActive) {
+      items.push(`<strong>Orb Specialist:</strong> Every orb guarantees ${statHighlight("1")} extra frog`);
+    }
+    if (ouroborosPactUsed) {
+      items.push(`<strong>Ouroboros Pact:</strong> ${statHighlight("10%") } of dead frogs drop an orb`);
+    }
+
+    const roleSummary = [
+      `${statHighlight(roleCounts.champion)} champion`,
+      `${statHighlight(roleCounts.aura)} aura`,
+      `${statHighlight(roleCounts.magnet)} magnet`,
+      `${statHighlight(roleCounts.lucky)} lucky`,
+      `${statHighlight(roleCounts.zombie)} zombie`,
+      `${statHighlight(cannibalFrogCount)} cannibal`
+    ].join(" · ");
+
+    items.push(`<strong>Special frogs:</strong> ${roleSummary}`);
+
+    listEl.innerHTML = "";
+    for (const item of items) {
+      const li = document.createElement("li");
+      li.innerHTML = item;
+      listEl.appendChild(li);
     }
   }
 
