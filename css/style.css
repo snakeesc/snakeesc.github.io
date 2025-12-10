@@ -814,7 +814,7 @@ a {
 }
 
 
-/* FLAT THEME 3 – Light Parchment + Dark Green */
+/* FLAT THEME 4 – Neutral Dark + Soft Mint */
 
 .frog-overlay {
   position: absolute;
@@ -828,17 +828,17 @@ a {
 }
 
 .frog-panel {
-  background: #fefce8; /* pale parchment */
+  background: #020617;
   padding: 18px 22px 16px 22px;
   border-radius: 14px;
-  border: 1px solid #16a34a;
-  color: #0f172a;
+  border: 1px solid #6ee7b7;
+  color: #e5e7eb;
   font-family: monospace;
   min-width: 320px;
   max-width: 960px;
   max-height: 82vh;
   overflow: auto;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
 }
 
 .frog-panel-title {
@@ -850,7 +850,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #166534;
+  color: #a7f3d0;
 }
 
 .frog-panel-title .emoji {
@@ -859,7 +859,7 @@ a {
 
 .frog-panel-sub {
   font-size: 13px;
-  color: #4b5563;
+  color: #9ca3af;
   text-align: center;
   margin-bottom: 14px;
   line-height: 1.5;
@@ -869,7 +869,7 @@ a {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #15803d;
+  color: #6ee7b7;
   margin-top: 12px;
   margin-bottom: 6px;
 }
@@ -877,7 +877,7 @@ a {
 .frog-panel-footer {
   margin-top: 12px;
   font-size: 12px;
-  color: #6b7280;
+  color: #9ca3af;
   text-align: center;
   line-height: 1.5;
 }
@@ -892,7 +892,7 @@ a {
   font-size: 13px;
   margin-bottom: 6px;
   line-height: 1.5;
-  color: #111827;
+  color: #e5e7eb;
 }
 
 /* frog UI buttons */
@@ -908,11 +908,11 @@ a {
   margin-bottom: 8px;
   border: 1px solid transparent;
   transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.8);
 }
 
 .frog-btn-primary {
-  background: #22c55e;
+  background: #10b981;
   color: #022c22;
   font-weight: 800;
 }
@@ -923,22 +923,22 @@ a {
 }
 
 .frog-btn-secondary {
-  background: #0ea5e9;
-  color: #0f172a;
-  border-color: #0369a1;
+  background: #111827;
+  color: #e5e7eb;
+  border-color: #4b5563;
   font-size: 13px;
   font-weight: 700;
 }
 
 .frog-btn-secondary:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.1);
   transform: translateY(-1px);
 }
 
 .frog-btn-danger {
-  background: #ef4444;
-  color: #fef2f2;
-  border-color: #b91c1c;
+  background: #b91c1c;
+  color: #fee2e2;
+  border-color: #ef4444;
   font-size: 12px;
 }
 
@@ -946,24 +946,24 @@ a {
 
 .frog-upgrade-choice {
   text-align: left;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: #020617;
+  border: 1px solid #4b5563;
 }
 
 .frog-upgrade-choice:hover {
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.7);
 }
 
 .frog-upgrade-title {
   font-size: 14px;
   font-weight: 800;
   margin-bottom: 2px;
-  color: #166534;
+  color: #a7f3d0;
 }
 
 .frog-upgrade-desc {
   font-size: 12px;
-  color: #4b5563;
+  color: #e5e7eb;
 }
 
 .upgrade-layout {
@@ -974,16 +974,16 @@ a {
 }
 
 .upgrade-column {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: #020617;
+  border: 1px solid #1f2937;
   border-radius: 12px;
   padding: 10px;
-  box-shadow: inset 0 0 0 1px rgba(243, 244, 246, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.7);
 }
 
 .upgrade-column-title {
   font-weight: 800;
-  color: #166534;
+  color: #e5e7eb;
   margin-bottom: 6px;
 }
 
@@ -994,7 +994,7 @@ a {
 }
 
 .upgrade-column--summary {
-  background: #ecfdf3;
+  background: #022c22;
 }
 
 .upgrade-summary-list {
@@ -1008,15 +1008,15 @@ a {
 .upgrade-summary-list li {
   font-size: 12px;
   line-height: 1.45;
-  color: #111827;
+  color: #e5e7eb;
   padding: 6px 8px;
   border-radius: 10px;
-  background: #ffffff;
-  border: 1px dashed #d1d5db;
+  background: #020617;
+  border: 1px dashed #6ee7b7;
 }
 
 .stat-highlight {
-  color: #16a34a;
+  color: #6ee7b7;
   font-weight: 800;
 }
 
@@ -1029,23 +1029,23 @@ a {
 }
 
 .buff-card {
-  background: #ffffff;
+  background: #020617;
   border-radius: 12px;
   padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+  border: 1px solid #4b5563;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9);
 }
 
 .buff-card h4 {
   margin: 0 0 6px;
   font-size: 14px;
-  color: #166534;
+  color: #a7f3d0;
 }
 
 .buff-card ul {
   margin: 0;
   padding-left: 16px;
-  color: #111827;
+  color: #e5e7eb;
 }
 
 .buff-card li {
