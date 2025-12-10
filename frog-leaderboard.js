@@ -168,26 +168,12 @@
 
     scoreboardOverlay = document.createElement("div");
     scoreboardOverlay.id = "frog-scoreboard-overlay";
+    scoreboardOverlay.className = "game-overlay";
     scoreboardOverlay.style.position = "fixed";
-    scoreboardOverlay.style.inset = "0";
-    scoreboardOverlay.style.background = "rgba(0,0,0,0.65)";
     scoreboardOverlay.style.display = "none";
-    scoreboardOverlay.style.alignItems = "center";
-    scoreboardOverlay.style.justifyContent = "center";
-    scoreboardOverlay.style.zIndex = "9999";
 
     scoreboardOverlayInner = document.createElement("div");
-    scoreboardOverlayInner.style.background = "#111";
-    scoreboardOverlayInner.style.borderRadius = "8px";
-    scoreboardOverlayInner.style.border = "1px solid #444";
-    scoreboardOverlayInner.style.padding = "14px 18px 10px 18px";
-    scoreboardOverlayInner.style.minWidth = "260px";
-    scoreboardOverlayInner.style.maxWidth = "420px";
-    scoreboardOverlayInner.style.color = "#eee";
-    scoreboardOverlayInner.style.fontFamily = "monospace";
-    scoreboardOverlayInner.style.fontSize = "12px";
-    scoreboardOverlayInner.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
-    scoreboardOverlayInner.style.textAlign = "left";
+    scoreboardOverlayInner.className = "game-card tight";
 
     scoreboardOverlay.appendChild(scoreboardOverlayInner);
     containerEl.appendChild(scoreboardOverlay);
@@ -472,19 +458,44 @@
     if (!scoreboardOverlay || !scoreboardOverlayInner) return;
   
     const safeList = Array.isArray(entries) ? entries : [];
-  
+
     scoreboardOverlayInner.innerHTML = "";
-  
+
+    const header = document.createElement("div");
+    header.className = "game-card-header";
+
+    const heading = document.createElement("div");
     const title = document.createElement("div");
-    title.textContent = "Run summary & leaderboard";
-    title.style.fontSize = "14px";
-    title.style.marginBottom = "10px";
-    title.style.textAlign = "center";
-    scoreboardOverlayInner.appendChild(title);
-  
+    title.className = "game-title";
+    title.textContent = "End of run";
+
+    const subtitle = document.createElement("div");
+    subtitle.className = "game-subtitle";
+    subtitle.textContent = `Score ${Math.floor(lastScore)} • Time ${formatTime(lastTime)}`;
+
+    heading.appendChild(title);
+    heading.appendChild(subtitle);
+
+    const badge = document.createElement("div");
+    badge.className = "pill accent";
+    badge.textContent = "Leaderboard";
+
+    header.appendChild(heading);
+    header.appendChild(badge);
+    scoreboardOverlayInner.appendChild(header);
+
     const { index: myIndex, entry: myEntry } =
       findMyIndexInList(safeList, lastScore, lastTime);
     let summary = null;
+
+    const statRow = document.createElement("div");
+    statRow.className = "stat-list";
+    statRow.innerHTML = `
+      <div class="stat-chip"><strong>Score</strong>${Math.floor(lastScore)}</div>
+      <div class="stat-chip"><strong>Time</strong>${formatTime(lastTime)}</div>
+      <div class="stat-chip"><strong>Rank preview</strong>${myIndex >= 0 ? myIndex + 1 : "—"}</div>
+    `;
+    scoreboardOverlayInner.appendChild(statRow);
 
     // ---- Player tag input (always shown in summary; pre-filled if saved) ----
     (function setupTagInput() {
@@ -500,27 +511,19 @@
       }
 
       const tagBox = document.createElement("div");
-      tagBox.style.marginBottom = "10px";
-      tagBox.style.fontSize = "12px";
+      tagBox.className = "game-body";
 
       const label = document.createElement("div");
+      label.className = "game-subtitle";
       label.textContent =
         "Choose a player tag to show on the leaderboard (optional):";
-      label.style.marginBottom = "4px";
       tagBox.appendChild(label);
 
       const tagInput = document.createElement("input");
       tagInput.type = "text";
       tagInput.placeholder = "Example: SwampWizard";
       tagInput.maxLength = TAG_MAX_LENGTH;
-      tagInput.style.width = "100%";
-      tagInput.style.padding = "4px 6px";
-      tagInput.style.borderRadius = "4px";
-      tagInput.style.border = "1px solid #444";
-      tagInput.style.background = "#000";
-      tagInput.style.color = "#eee";
-      tagInput.style.fontFamily = "inherit";
-      tagInput.style.fontSize = "12px";
+      tagInput.className = "ui-input";
 
       // If we already have a saved tag, pre-fill the input with it
       if (storedTag) {
@@ -530,33 +533,19 @@
       tagBox.appendChild(tagInput);
 
       const buttonsRow = document.createElement("div");
-      buttonsRow.style.display = "flex";
-      buttonsRow.style.gap = "6px";
-      buttonsRow.style.marginTop = "6px";
+      buttonsRow.className = "game-actions";
 
       const saveBtn = document.createElement("button");
       saveBtn.textContent = "Save tag";
-      saveBtn.style.padding = "2px 6px";
-      saveBtn.style.background = "#222";
-      saveBtn.style.border = "1px solid #444";
-      saveBtn.style.color = "#eee";
-      saveBtn.style.borderRadius = "3px";
-      saveBtn.style.cursor = "pointer";
+      saveBtn.className = "ui-button primary";
 
       const skipBtn = document.createElement("button");
       skipBtn.textContent = "Skip";
-      skipBtn.style.padding = "2px 6px";
-      skipBtn.style.background = "transparent";
-      skipBtn.style.border = "1px solid #444";
-      skipBtn.style.color = "#aaa";
-      skipBtn.style.borderRadius = "3px";
-      skipBtn.style.cursor = "pointer";
+      skipBtn.className = "ui-button ghost";
 
       const error = document.createElement("div");
-      error.style.marginTop = "4px";
-      error.style.fontSize = "11px";
-      error.style.color = "#ff8080";
-      error.style.minHeight = "14px";
+      error.className = "muted";
+      error.style.color = "#ff9aa2";
 
       buttonsRow.appendChild(saveBtn);
       buttonsRow.appendChild(skipBtn);
@@ -596,10 +585,7 @@
             const newName = getDisplayName(myEntry, "You");
             summary.innerHTML =
               "Run summary:<br>" +
-              `<span style="color:#ffd700;font-weight:bold;">${escapeHtml(
-                newName
-              )}</span>` +
-              ` — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
+              `<strong>${escapeHtml(newName)}</strong> — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
           }
 
           // Fire-and-forget: push the new tag to the server and then
@@ -671,14 +657,10 @@
     const myName = getDisplayName(myEntry, "You");
 
     summary = document.createElement("div");
-    summary.style.marginBottom = "12px";
-    summary.style.fontSize = "13px";
+    summary.className = "game-body";
     summary.innerHTML =
       "Run summary:<br>" +
-      `<span style="color:#ffd700;font-weight:bold;">${escapeHtml(
-        myName
-      )}</span>` +
-      ` — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
+      `<strong>${escapeHtml(myName)}</strong> — Time ${formatTime(lastTime)}, Score ${Math.floor(lastScore)}`;
     scoreboardOverlayInner.appendChild(summary);
   
     // ----- Leaderboard table with pagination (10 per page) -----
@@ -688,9 +670,7 @@
     const totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
 
     const table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.borderCollapse = "collapse";
-    table.style.fontSize = "12px";
+    table.className = "game-table";
 
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
@@ -705,12 +685,7 @@
     thTime.textContent = "Time";
     thScore.textContent = "Score";
 
-    for (const th of [thRank, thName, thTime, thScore]) {
-      th.style.borderBottom = "1px solid #444";
-      th.style.padding = "2px 4px";
-      th.style.textAlign = "left";
-      th.style.fontWeight = "bold";
-    }
+    // styling provided by .game-table
 
     headRow.appendChild(thRank);
     headRow.appendChild(thName);
@@ -725,34 +700,18 @@
 
     // Pagination controls
     const pager = document.createElement("div");
-    pager.style.display = "flex";
-    pager.style.alignItems = "center";
-    pager.style.justifyContent = "space-between";
-    pager.style.marginTop = "6px";
-    pager.style.fontSize = "11px";
+    pager.className = "game-actions";
 
     const prevBtn = document.createElement("button");
     prevBtn.textContent = "◀ Prev";
-    prevBtn.style.padding = "2px 6px";
-    prevBtn.style.background = "#222";
-    prevBtn.style.border = "1px solid #444";
-    prevBtn.style.color = "#eee";
-    prevBtn.style.borderRadius = "3px";
-    prevBtn.style.cursor = "pointer";
+    prevBtn.className = "ui-button ghost";
 
     const nextBtn = document.createElement("button");
     nextBtn.textContent = "Next ▶";
-    nextBtn.style.padding = "2px 6px";
-    nextBtn.style.background = "#222";
-    nextBtn.style.border = "1px solid #444";
-    nextBtn.style.color = "#eee";
-    nextBtn.style.borderRadius = "3px";
-    nextBtn.style.cursor = "pointer";
+    nextBtn.className = "ui-button";
 
     const pageInfo = document.createElement("div");
-    pageInfo.style.flex = "1";
-    pageInfo.style.textAlign = "center";
-    pageInfo.style.opacity = "0.85";
+    pageInfo.className = "muted";
 
     pager.appendChild(prevBtn);
     pager.appendChild(pageInfo);
@@ -767,7 +726,7 @@
         const td = document.createElement("td");
         td.colSpan = 4;
         td.textContent = "No scores yet.";
-        td.style.padding = "4px";
+        td.className = "muted";
         td.style.textAlign = "center";
         tr.appendChild(td);
         tbody.appendChild(tr);
@@ -805,14 +764,10 @@
         scoreCell.textContent = Math.floor(score);
 
         for (const td of [rankCell, nameCell, timeCell, scoreCell]) {
-          td.style.padding = "2px 4px";
-          td.style.borderBottom = "1px solid #222";
         }
 
-        // Highlight "you" if this is your entry
         if (i === myIndex) {
-          nameCell.style.color = "#ffd700";
-          nameCell.style.fontWeight = "bold";
+          tr.className = "me";
         }
 
         tr.appendChild(rankCell);
@@ -897,9 +852,7 @@
   
     const hint = document.createElement("div");
     hint.textContent = "Click outside this panel to close.";
-    hint.style.marginTop = "8px";
-    hint.style.fontSize = "11px";
-    hint.style.opacity = "0.8";
+    hint.className = "muted";
     hint.style.textAlign = "center";
     scoreboardOverlayInner.appendChild(hint);
   
