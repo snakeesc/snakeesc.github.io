@@ -275,7 +275,7 @@
     }
 
     if (gameOver) {
-      restartGame();
+      showMainMenu();
       return;
     }
 
@@ -2466,22 +2466,24 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let upgradeOverlay = null;
   let upgradeOverlayButtonsContainer = null;
   let upgradeOverlayTitleEl = null;
+  let upgradeOverlaySubEl = null;
   let currentUpgradeOverlayMode = "normal"; // "normal" | "epic" | "legendary"
+  let currentUpgradeChoices = [];
+  let upgradeOverlayContext = "mid";
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
   let upgradeBuffSummaryBox = null;
 
-  // How-to-play overlay shown once before the very first buff choice
-  let howToOverlay = null;
-  let hasShownHowToOverlay = false;
+  let mainMenuOverlay = null;
 
-  // Buff guide (READ ME) overlay
+  // How-to-play overlay
+  let howToOverlay = null;
+
+  // Buff guide overlay
   let buffGuideOverlay = null;
-  let buffGuideContentEl = null;
-  let buffGuidePageLabel = null;
-  let buffGuidePrevBtn = null;
-  let buffGuideNextBtn = null;
-  let buffGuidePage = 0;
+
+  // Leaderboard overlay (UI shell)
+  let leaderboardOverlay = null;
 
   function getEpicUpgradeChoices() {
     const neon = "#4defff";
@@ -2952,191 +2954,123 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     ];
   }
 
-  function ensureHowToOverlay() {
-    if (howToOverlay) return;
+  function initMainMenuOverlay() {
+    if (mainMenuOverlay) return;
 
-    howToOverlay = document.createElement("div");
-    howToOverlay.className = "frog-howto-overlay";
+    mainMenuOverlay = document.getElementById("mainMenuOverlay");
+    const btnStartRun = document.getElementById("btnStartRun");
+    const btnHowTo = document.getElementById("btnHowTo");
+    const btnBuffGuide = document.getElementById("btnBuffGuide");
+    const btnLeaderboard = document.getElementById("btnLeaderboard");
 
-    howToOverlay.style.position = "absolute";
-    howToOverlay.style.inset = "0";
-    howToOverlay.style.background = "rgba(0,0,0,0.7)";
-    howToOverlay.style.display = "none";
-    howToOverlay.style.zIndex = "160";
-    howToOverlay.style.alignItems = "center";
-    howToOverlay.style.justifyContent = "center";
-    howToOverlay.style.pointerEvents = "auto";
-
-    const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "18px 22px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "260px";
-    panel.style.maxWidth = "420px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
-
-    const title = document.createElement("div");
-    title.textContent = "escape the snake 🐍";
-    title.style.fontSize = "18px";
-    title.style.fontWeight = "bold";
-    title.style.marginBottom = "4px";
-
-    const subtitle = document.createElement("div");
-    subtitle.textContent = "-- How to Play & Controls --";
-    subtitle.style.marginBottom = "10px";
-    subtitle.style.fontSize = "13px";
-    subtitle.style.opacity = "0.9";
-
-    const intro = document.createElement("div");
-    intro.textContent =
-      "Keep your frogs alive as long as possible. Dodge the snake, grab buffs, and climb the leaderboard.";
-    intro.style.fontSize = "13px";
-    intro.style.lineHeight = "1.4";
-    intro.style.marginBottom = "10px";
-
-    // CONTROLS
-    const controlsLabel = document.createElement("div");
-    controlsLabel.textContent = "Controls:";
-    controlsLabel.style.fontSize = "13px";
-    controlsLabel.style.fontWeight = "bold";
-    controlsLabel.style.margin = "0 0 4px 0";
-
-    const controlsList = document.createElement("ul");
-    controlsList.style.paddingLeft = "18px";
-    controlsList.style.margin = "0 0 10px 0";
-    controlsList.style.fontSize = "13px";
-    controlsList.style.lineHeight = "1.4";
-
-    [
-      "Move your mouse – frogs follow your cursor.",
-      "No keyboard needed, just point where you want them to go.",
-      "Stay away from the snake's head – one bite and that frog is gone."
-    ].forEach(text => {
-      const li = document.createElement("li");
-      li.textContent = text;
-      controlsList.appendChild(li);
+    btnStartRun.addEventListener("click", () => {
+      hideMainMenu();
+      startRunFromMenu();
     });
 
-    /*
-    // TIPS / GOAL
-    const tipsLabel = document.createElement("div");
-    tipsLabel.textContent = "Tips:";
-    tipsLabel.style.fontSize = "13px";
-    tipsLabel.style.fontWeight = "bold";
-    tipsLabel.style.margin = "4px 0 4px 0";
-
-    const tipsList = document.createElement("ul");
-    tipsList.style.paddingLeft = "18px";
-    tipsList.style.margin = "0 0 12px 0";
-    tipsList.style.fontSize = "13px";
-    tipsList.style.lineHeight = "1.4";
-
-    [
-      "Collect glowing orbs to gain buffs and upgrades.",
-      "Stronger buffs help you survive longer as the snake speeds up.",
-      "Your score increases the longer you stay alive.",
-      "Beat your best run to climb the leaderboard."
-    ].forEach(text => {
-      const li = document.createElement("li");
-      li.textContent = text;
-      tipsList.appendChild(li);
+    btnHowTo.addEventListener("click", () => {
+      showHowToOverlay();
     });
-    */
 
-    const updatesLine = document.createElement("div");
-    updatesLine.style.marginTop = "6px";
-    updatesLine.style.fontSize = "11px";
-    updatesLine.style.opacity = "0.9";
-    updatesLine.innerHTML =
-      'Patch notes available at  ' +
-      '<a href="https://snakeesc.github.io/updates" ' +
-      'target="_blank" rel="noopener noreferrer" ' +
-      'style="color:#9cff9c;text-decoration:underline;">' +
-      'snakeesc.github.io/updates</a>';
+    btnBuffGuide.addEventListener("click", () => {
+      showBuffGuideOverlay();
+    });
 
-    // Buttons row: Start & Learn more
-    const btnRow = document.createElement("div");
-    btnRow.style.display = "flex";
-    btnRow.style.justifyContent = "space-between";
-    btnRow.style.gap = "8px";
-    btnRow.style.marginTop = "4px";
+    btnLeaderboard.addEventListener("click", () => {
+      showLeaderboardOverlay();
+    });
 
-    const startBtn = document.createElement("button");
-    startBtn.textContent = "Start & choose buff";
-    startBtn.style.fontFamily = "monospace";
-    startBtn.style.fontSize = "13px";
-    startBtn.style.padding = "6px 10px";
-    startBtn.style.borderRadius = "6px";
-    startBtn.style.border = "1px solid #555";
-    startBtn.style.background = "#222";
-    startBtn.style.color = "#fff";
-    startBtn.style.cursor = "pointer";
-    startBtn.style.flex = "1";
-    startBtn.onmouseenter = () => { startBtn.style.background = "#333"; };
-    startBtn.onmouseleave = () => { startBtn.style.background = "#222"; };
-    startBtn.onclick = () => {
-      playButtonClick();
-      hasShownHowToOverlay = true;
-      if (howToOverlay) {
-        howToOverlay.style.display = "none";
+    document.addEventListener("keydown", (e) => {
+      if (mainMenuOverlay && mainMenuOverlay.style.display === "flex" && e.key === "Enter") {
+        hideMainMenu();
+        startRunFromMenu();
       }
-      openUpgradeOverlay("normal");
-    };
-
-    const learnBtn = document.createElement("button");
-    learnBtn.textContent = "Learn buffs 📖";
-    learnBtn.style.fontFamily = "monospace";
-    learnBtn.style.fontSize = "13px";
-    learnBtn.style.padding = "6px 10px";
-    learnBtn.style.borderRadius = "6px";
-    learnBtn.style.border = "1px solid #555";
-    learnBtn.style.background = "#222";
-    learnBtn.style.color = "#fff";
-    learnBtn.style.cursor = "pointer";
-    learnBtn.style.flex = "0 0 auto";
-    learnBtn.onmouseenter = () => { learnBtn.style.background = "#333"; };
-    learnBtn.onmouseleave = () => { learnBtn.style.background = "#222"; };
-    learnBtn.onclick = () => {
-      playButtonClick();
-      ensureBuffGuideOverlay();
-      openBuffGuideOverlay();
-    };
-
-    btnRow.appendChild(startBtn);
-    btnRow.appendChild(learnBtn);
-
-    panel.appendChild(title);
-    panel.appendChild(subtitle);
-    panel.appendChild(intro);
-    panel.appendChild(controlsLabel);
-    panel.appendChild(controlsList);
-    //panel.appendChild(tipsLabel);
-    //panel.appendChild(tipsList);
-    panel.appendChild(btnRow);
-    panel.appendChild(updatesLine);
-
-    howToOverlay.appendChild(panel);
-    container.appendChild(howToOverlay);
+    });
   }
 
-  function openHowToOverlay() {
-    ensureHowToOverlay();
+  function showMainMenu() {
+    if (!mainMenuOverlay) initMainMenuOverlay();
+    mainMenuOverlay.style.display = "flex";
     gamePaused = true;
-    if (howToOverlay) {
-      howToOverlay.style.display = "flex";
+  }
+
+  function hideMainMenu() {
+    if (mainMenuOverlay) {
+      mainMenuOverlay.style.display = "none";
     }
   }
 
+  function initHowToOverlay() {
+    if (howToOverlay) return;
+    howToOverlay = document.getElementById("howToOverlay");
+    const closeBtn = document.getElementById("howToCloseBtn");
 
-  function openHowToOverlay() {
-    ensureHowToOverlay();
-    gamePaused = true;
+    closeBtn.addEventListener("click", hideHowToOverlay);
+
+    document.addEventListener("keydown", (e) => {
+      if (howToOverlay && howToOverlay.style.display === "flex" && e.key === "Escape") {
+        hideHowToOverlay();
+      }
+    });
+  }
+
+  function showHowToOverlay() {
+    if (!howToOverlay) initHowToOverlay();
+    howToOverlay.style.display = "flex";
+  }
+
+  function hideHowToOverlay() {
     if (howToOverlay) {
-      howToOverlay.style.display = "flex";
+      howToOverlay.style.display = "none";
+    }
+  }
+
+  function initBuffGuideOverlay() {
+    if (buffGuideOverlay) return;
+    buffGuideOverlay = document.getElementById("buffGuideOverlay");
+    const closeBtn = document.getElementById("buffGuideCloseBtn");
+    closeBtn.addEventListener("click", hideBuffGuideOverlay);
+
+    document.addEventListener("keydown", (e) => {
+      if (buffGuideOverlay && buffGuideOverlay.style.display === "flex" && e.key === "Escape") {
+        hideBuffGuideOverlay();
+      }
+    });
+  }
+
+  function showBuffGuideOverlay() {
+    if (!buffGuideOverlay) initBuffGuideOverlay();
+    buffGuideOverlay.style.display = "flex";
+  }
+
+  function hideBuffGuideOverlay() {
+    if (buffGuideOverlay) {
+      buffGuideOverlay.style.display = "none";
+    }
+  }
+
+  function initLeaderboardOverlay() {
+    if (leaderboardOverlay) return;
+    leaderboardOverlay = document.getElementById("leaderboardOverlay");
+    const closeBtn = document.getElementById("leaderboardCloseBtn");
+    closeBtn.addEventListener("click", hideLeaderboardOverlay);
+
+    document.addEventListener("keydown", (e) => {
+      if (leaderboardOverlay && leaderboardOverlay.style.display === "flex" && e.key === "Escape") {
+        hideLeaderboardOverlay();
+      }
+    });
+  }
+
+  function showLeaderboardOverlay() {
+    if (!leaderboardOverlay) initLeaderboardOverlay();
+    // refresh leaderboard UI hook could go here
+    leaderboardOverlay.style.display = "flex";
+  }
+
+  function hideLeaderboardOverlay() {
+    if (leaderboardOverlay) {
+      leaderboardOverlay.style.display = "none";
     }
   }
 
@@ -3442,592 +3376,44 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     gamePaused = false;
   }
 
-  function ensureBuffGuideOverlay() {
-    if (buffGuideOverlay) return;
-
-    buffGuideOverlay = document.createElement("div");
-    buffGuideOverlay.className = "frog-buff-guide-overlay";
-    buffGuideOverlay.style.position = "absolute";
-    buffGuideOverlay.style.inset = "0";
-    buffGuideOverlay.style.background = "rgba(0,0,0,0.75)";
-    buffGuideOverlay.style.display = "none";
-    buffGuideOverlay.style.zIndex = "170";
-    buffGuideOverlay.style.alignItems = "center";
-    buffGuideOverlay.style.justifyContent = "center";
-    buffGuideOverlay.style.pointerEvents = "auto";
-
-    const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px 12px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "260px";
-    panel.style.maxWidth = "440px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
-
-    const headerRow = document.createElement("div");
-    headerRow.style.display = "flex";
-    headerRow.style.justifyContent = "space-between";
-    headerRow.style.alignItems = "center";
-    headerRow.style.marginBottom = "6px";
-
-    const title = document.createElement("div");
-    title.textContent = "Buffs & upgrades";
-    title.style.fontSize = "14px";
-    title.style.fontWeight = "bold";
-
-    const pageLabel = document.createElement("div");
-    pageLabel.style.fontSize = "11px";
-    pageLabel.style.opacity = "0.8";
-    buffGuidePageLabel = pageLabel;
-
-    headerRow.appendChild(title);
-    headerRow.appendChild(pageLabel);
-
-    const content = document.createElement("div");
-    content.style.fontSize = "13px";
-    content.style.marginTop = "4px";
-    content.style.lineHeight = "1.4";
-    buffGuideContentEl = content;
-
-    const navRow = document.createElement("div");
-    navRow.style.display = "flex";
-    navRow.style.justifyContent = "space-between";
-    navRow.style.alignItems = "center";
-    navRow.style.marginTop = "10px";
-
-    const leftBtns = document.createElement("div");
-    leftBtns.style.display = "flex";
-    leftBtns.style.gap = "6px";
-
-    const prevBtn = document.createElement("button");
-    prevBtn.textContent = "◀ Prev";
-    prevBtn.style.fontFamily = "monospace";
-    prevBtn.style.fontSize = "12px";
-    prevBtn.style.padding = "4px 8px";
-    prevBtn.style.borderRadius = "6px";
-    prevBtn.style.border = "1px solid #555";
-    prevBtn.style.background = "#222";
-    prevBtn.style.color = "#fff";
-    prevBtn.style.cursor = "pointer";
-    prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
-    prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
-    prevBtn.onclick = () => {
-      playButtonClick();
-      setBuffGuidePage(buffGuidePage - 1);
-    };
-    buffGuidePrevBtn = prevBtn;
-
-    const nextBtn = document.createElement("button");
-    nextBtn.textContent = "Next ▶";
-    nextBtn.style.fontFamily = "monospace";
-    nextBtn.style.fontSize = "12px";
-    nextBtn.style.padding = "4px 8px";
-    nextBtn.style.borderRadius = "6px";
-    nextBtn.style.border = "1px solid #555";
-    nextBtn.style.background = "#222";
-    nextBtn.style.color = "#fff";
-    nextBtn.style.cursor = "pointer";
-    nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
-    nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
-    nextBtn.onclick = () => {
-      playButtonClick();
-      setBuffGuidePage(buffGuidePage + 1);
-    };
-    buffGuideNextBtn = nextBtn;
-
-    leftBtns.appendChild(prevBtn);
-    leftBtns.appendChild(nextBtn);
-
-    const backBtn = document.createElement("button");
-    backBtn.textContent = "Close ×";
-    backBtn.style.fontFamily = "monospace";
-    backBtn.style.fontSize = "12px";
-    backBtn.style.padding = "4px 8px";
-    backBtn.style.borderRadius = "6px";
-    backBtn.style.border = "1px solid #555";
-    backBtn.style.background = "#222";
-    backBtn.style.color = "#fff";
-    backBtn.style.cursor = "pointer";
-    backBtn.onmouseenter = () => { backBtn.style.background = "#333"; };
-    backBtn.onmouseleave = () => { backBtn.style.background = "#222"; };
-    backBtn.onclick = () => {
-      playButtonClick();
-      closeBuffGuideOverlay();
-    };
-
-    navRow.appendChild(leftBtns);
-    navRow.appendChild(backBtn);
-
-    panel.appendChild(headerRow);
-    panel.appendChild(content);
-    panel.appendChild(navRow);
-
-    buffGuideOverlay.appendChild(panel);
-    container.appendChild(buffGuideOverlay);
-
-    // clicking the dim background also closes it
-    buffGuideOverlay.addEventListener("click", (e) => {
-      if (e.target === buffGuideOverlay) {
-        closeBuffGuideOverlay();
-      }
-    });
-
-    // start on page 0
-    setBuffGuidePage(0);
-  }
-
-  function setBuffGuidePage(pageIndex) {
-    if (!buffGuideContentEl || !buffGuidePageLabel) return;
-
-    const neon = "#4defff";
-
-    // simple format helpers
-    const sec  = (n) => `${Math.round(n)}s`;
-    const mins = (n) => `${Math.round(n / 60)}m`;
-    const mult = (n) => `${n.toFixed(1)}×`;
-    const pct  = (n) => `${Math.round(n * 100)}%`;
-    const faster = (factor) => `${Math.round((1 - factor) * 100)}%`;
-
-    // radius from your config
-    const auraRadiusPx = AURA_RADIUS;
-
-    // Per-pick upgrade %s
-    const speedPerPickPct     = pct(1 - FROG_SPEED_UPGRADE_FACTOR);
-    const jumpPerPickPct      = pct(FROG_JUMP_UPGRADE_FACTOR - 1);
-    const buffPerPickPct      = pct(BUFF_DURATION_UPGRADE_FACTOR - 1);
-    const orbFasterPerPickPct = pct(1 - ORB_INTERVAL_UPGRADE_FACTOR);
-
-    const commonDeathPct      = pct(COMMON_DEATHRATTLE_CHANCE);
-    const epicDeathPct        = pct(EPIC_DEATHRATTLE_CHANCE);
-    const legendaryDeathPct   = pct(LEGENDARY_DEATHRATTLE_CHANCE);
-    const deathCapPct         = pct(MAX_DEATHRATTLE_CHANCE);
-
-    const orbCollectorStepPct = pct(ORB_COLLECTOR_CHANCE);
-    const orbCollectorCapPct  = pct(MAX_ORB_COLLECTOR_TOTAL);
-
-    const lastStandMinPct     = pct(LAST_STAND_MIN_CHANCE);
-
-    const snakeEggPct         = pct(SNAKE_EGG_BUFF_PCT - 1);
-    const shedSpeedPct        = pct(SNAKE_SHED_SPEEDUP - 1);
-
-    const luckyDurBoostPct    = pct(LUCKY_BUFF_DURATION_BOOST - 1);
-    const luckyScoreBonusPct  = pct(LUCKY_SCORE_BONUS_PER);
-
-    const pages = [
-      // ------------------------------------------------------------------
-      // Page 0 – Orb buffs: movement & control
-      // ------------------------------------------------------------------
-      `
-  <b>🟢 Orb buffs – movement & control</b><br><br>
-  ⚡ <b>Speed</b> – frogs act faster for
-    <span style="color:${neon};">${sec(SPEED_BUFF_DURATION)}</span>.<br>
-  🦘 <b>Jump</b> – jumps about
-    <span style="color:${neon};">${mult(JUMP_BUFF_FACTOR)}</span> higher for
-    <span style="color:${neon};">${sec(JUMP_BUFF_DURATION)}</span>.<br>
-  🧊 <b>Snake slow</b> – snake moves at roughly
-    <span style="color:${neon};">${pct(SNAKE_SLOW_FACTOR)}</span> of normal speed for
-    <span style="color:${neon};">${sec(SNAKE_SLOW_DURATION)}</span>.<br>
-  🤪 <b>Confuse</b> – snake steering is scrambled for
-    <span style="color:${neon};">${sec(SNAKE_CONFUSE_DURATION)}</span>.<br>
-  📏 <b>Shrink</b> – snake body and bite radius shrink for
-    <span style="color:${neon};">${sec(SNAKE_SHRINK_DURATION)}</span>.<br>
-  🛡️ <b>Team shield</b> – frogs ignore snake hits for
-    <span style="color:${neon};">${sec(FROG_SHIELD_DURATION)}</span>.<br>
-  ⏱️ <b>Time slow</b> – the whole game runs at about
-    <span style="color:${neon};">${pct(TIME_SLOW_FACTOR)}</span> speed for
-    <span style="color:${neon};">${sec(TIME_SLOW_DURATION)}</span>.<br>
-  😱 <b>Panic hop</b> – frogs hop faster in random directions for
-    <span style="color:${neon};">${sec(PANIC_HOP_DURATION)}</span>.<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 1 – Orb buffs: score & survival
-      // ------------------------------------------------------------------
-      `
-  <b>🟢 Orb buffs – score & survival</b><br><br>
-  <span style="color:${neon};">Each frog the snake eats is worth +1 point</span>.
-  Score multipliers stack on top of this base rate.<br><br>
-
-  🐸➕ <b>Spawn</b> – instantly spawns
-    <span style="color:${neon};">${NORMAL_SPAWN_AMOUNT}</span> frogs
-    (Lucky collectors can add a few extra).<br>
-  🐸🌊 <b>Mega spawn</b> – a larger wave of frogs (roughly 15–25) + Lucky bonus.<br>
-  🧲 <b>Orb magnet</b> – orbs drift toward frogs for
-    <span style="color:${neon};">${sec(ORB_MAGNET_DURATION)}</span> (prefers Magnet frogs).<br>
-  ⏳ <b>Longer orb life</b> – certain upgrades make orbs stay on screen longer
-    before fading, giving you more time to reach them.<br>
-  💰 <b>Score ×${SCORE_MULTI_FACTOR.toFixed(1)}</b> – score gain is multiplied by
-    <span style="color:${neon};">${mult(SCORE_MULTI_FACTOR)}</span> for
-    <span style="color:${neon};">${sec(SCORE_MULTI_DURATION)}</span>.<br>
-  🩺 <b>Lifesteal</b> – for
-    <span style="color:${neon};">${sec(LIFE_STEAL_DURATION)}</span>, dead frogs get
-    an extra respawn roll tied to your deathrattle chance.<br>
-  ⭐ <b>PermaFrog</b> – permanently upgrades that frog with a random role
-    (Champion / Aura / Magnet / Lucky / Zombie).<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 2 – Permanent frog roles
-      // ------------------------------------------------------------------
-      `
-  <b>🐸 Permanent frog roles</b><br><br>
-  🏅 <b>Champion</b> – that frog's hop cycle is about
-    <span style="color:${neon};">${faster(CHAMPION_SPEED_FACTOR)}</span> faster and jumps are
-    <span style="color:${neon};">${mult(CHAMPION_JUMP_FACTOR)}</span> higher.<br>
-  🌈 <b>Aura</b> – buffs nearby frogs in a radius of roughly
-    <span style="color:${neon};">${auraRadiusPx}px</span>, giving them extra speed and
-    about <span style="color:${neon};">${mult(AURA_JUMP_FACTOR)}</span> jump height.<br>
-  🧲 <b>Magnet</b> – orbs within range are strongly pulled toward this frog.<br>
-  🍀 <b>Lucky</b> – buffs on this frog last about
-    <span style="color:${neon};">${luckyDurBoostPct}</span> longer, and each Lucky frog adds
-    roughly <span style="color:${neon};">${luckyScoreBonusPct}</span> to your score rate.<br>
-  🧟 <b>Zombie</b> – on death, spawns extra frogs and usually slows the snake briefly.<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 3 – Global upgrades (common / epic / legendary)
-      // ------------------------------------------------------------------
-      `
-  <b>🏗️ Global upgrades</b><br><br>
-  ⏩ <b>Frogs hop faster forever</b> – each pick makes the hop cycle about
-    <span style="color:${neon};">${speedPerPickPct}</span> faster (stacks, capped).<br>
-  🦘⬆️ <b>Frogs jump higher forever</b> – each pick adds roughly
-    <span style="color:${neon};">${jumpPerPickPct}</span> jump height (stacks, capped).<br>
-  ⏳ <b>Buffs last longer</b> – each pick multiplies buff duration by
-    <span style="color:${neon};">${mult(BUFF_DURATION_UPGRADE_FACTOR)}</span>
-    (~${buffPerPickPct} longer, stacks).<br>
-  🎯 <b>More orbs over time</b> – each pick shrinks the orb interval to about
-    <span style="color:${neon};">${mult(ORB_INTERVAL_UPGRADE_FACTOR)}</span>
-    (~${orbFasterPerPickPct} more orbs, stacks).<br>
-  🐸💥 <b>Spawn frogs (common / epic / legendary)</b><br>
-  • Common: +<span style="color:${neon};">${NORMAL_SPAWN_AMOUNT}</span> frogs now.<br>
-  • Epic: +<span style="color:${neon};">${EPIC_SPAWN_AMOUNT}</span> frogs now.<br>
-  • Legendary: +<span style="color:${neon};">${LEGENDARY_SPAWN_AMOUNT}</span> frogs now.<br><br>
-  💀 <b>Deathrattle</b><br>
-  • Common pick: +<span style="color:${neon};">${commonDeathPct}</span> base respawn chance.<br>
-  • Epic pick: +<span style="color:${neon};">${epicDeathPct}</span> base respawn chance.<br>
-  • Legendary pick: +<span style="color:${neon};">${legendaryDeathPct}</span> base respawn chance.<br>
-  • All deathrattle sources are capped at about
-    <span style="color:${neon};">${deathCapPct}</span> total.<br><br>
-  🌌 <b>Orb Collector</b> – each pick adds
-    <span style="color:${neon};">${orbCollectorStepPct}</span> flat chance for a collected orb
-    to also spawn a frog (up to about
-    <span style="color:${neon};">${orbCollectorCapPct}</span> total chance).<br>
-  🏹 <b>Last Stand</b> – your final remaining frog has at least
-    <span style="color:${neon};">${lastStandMinPct}</span> chance to respawn instead of dying,
-    using your current deathrattle setup.<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 4 – Epic choices & snake rules (updated multi-snake behavior)
-      // ------------------------------------------------------------------
-      `
-  <b>🐍 Epics & snake rules</b><br><br>
-  🐸⭐ <b>Frog Promotion (epic)</b> – summons
-    <span style="color:${neon};">7</span> frogs, each getting a random permanent role.<br>
-  🌩️ <b>Orb Storm (epic)</b> – drops
-    <span style="color:${neon};">${ORB_STORM_COUNT}</span> random orbs at once; strong with
-    Magnet / Orb Collector builds.<br>
-  🥚 <b>Snake Egg (epic)</b> – the <i>next shed</i> only gives the new snake about
-    <span style="color:${neon};">${snakeEggPct}</span> speed instead of the usual
-    <span style="color:${neon};">${shedSpeedPct}</span> boost.<br>
-  👻 <b>Grave Wave (epic)</b> – every snake shed raises
-    <span style="color:${neon};">${GRAVE_WAVE_MIN_GHOSTS}–${GRAVE_WAVE_MAX_GHOSTS}</span>
-    ghost frogs that join the swarm.<br>
-  🧪 <b>Orb Specialist (epic)</b> – every collected orb guarantees at least one frog spawn;
-    Orb Collector rolls can add more.<br><br>
-
-  🔥 <b>Snake sheds & multiple snakes</b><br>
-  • Every roughly <span style="color:${neon};">${mins(SHED_INTERVAL)}</span>, the <i>active</i> snake reaches a shed breakpoint.<br>
-  • Each individual snake can shed up to <span style="color:${neon};">3</span> times, getting faster and more dangerous with each shed.<br>
-  • When a snake hits what would be its 4th shed, it <b>stops growing</b> and a <b>new snake spawns</b> instead.<br>
-  • Older snakes stay in the arena but no longer gain buffs — only the <b>newest snake</b> keeps shedding and growing.<br><br>
-
-  ⏱ <b>Upgrade timing</b><br>
-  • ~60s: common upgrade choices.<br>
-  • ~180s: common + epic chain.<br>
-  • ~${mins(SHED_INTERVAL)}: first shed phase & big difficulty spike.<br>
-  `,
-
-      // ------------------------------------------------------------------
-      // Page 5 – New limited-use upgrades
-      // ------------------------------------------------------------------
-      `
-  <b>🧪 New limited-use upgrades</b><br><br>
-  🫧 <b>Orb Whisperer (common)</b> – orbs linger about
-    <span style="color:${neon};">20%</span> longer before disappearing.<br>
-  🔄 <b>Ouroboros Pact (common)</b> – roughly
-    <span style="color:${neon};">10%</span> of dead frogs drop an orb on death.<br>
-  🪙 <b>Coin Flip (common)</b> – sacrifices 5 frogs, then triggers a random orb buff
-    with an extended duration.<br><br>
-
-  🪞 <b>Fragile Reality (epic)</b> – doubles buff duration and cap while orbs spawn
-    about <span style="color:${neon};">50%</span> slower (hard cap applied).<br>
-  🐸💨 <b>Frog Scatter (epic)</b> – instantly slays and respawns all current frogs;
-    deathrattle applies but roles are re-rolled.<br>
-  ⚖️ <b>Eye for an Eye (epic)</b> – after 15:00, kills the slowest snake, then removes half
-    your frogs and lowers the max frog cap to
-    <span style="color:${neon};">50</span> for the run.<br>
-  `
-    ];
-
-    const maxPage = pages.length - 1;
-    buffGuidePage = Math.max(0, Math.min(maxPage, pageIndex));
-
-    buffGuideContentEl.innerHTML = pages[buffGuidePage];
-    buffGuidePageLabel.textContent = `Page ${buffGuidePage + 1} / ${pages.length}`;
-
-    if (buffGuidePrevBtn) {
-      buffGuidePrevBtn.disabled = buffGuidePage === 0;
-      buffGuidePrevBtn.style.opacity = buffGuidePage === 0 ? "0.5" : "1";
-    }
-    if (buffGuideNextBtn) {
-      buffGuideNextBtn.disabled = buffGuidePage === maxPage;
-      buffGuideNextBtn.style.opacity = buffGuideNextBtn.disabled ? "0.5" : "1";
-    }
-  }
-
-
-  function openBuffGuideOverlay() {
-    ensureBuffGuideOverlay();
-    if (buffGuideOverlay) {
-      buffGuideOverlay.style.display = "flex";
-    }
-  }
-
-  function closeBuffGuideOverlay() {
-    if (buffGuideOverlay) {
-      buffGuideOverlay.style.display = "none";
-    }
-  }
-
-function ensureUpgradeOverlay() {
+  function initUpgradeOverlay() {
     if (upgradeOverlay) return;
 
-    upgradeOverlay = document.createElement("div");
-    upgradeOverlay.className = "frog-upgrade-overlay";
+    upgradeOverlay = document.getElementById("upgradeOverlay");
+    upgradeOverlayButtonsContainer = document.getElementById("upgradeChoicesContainer");
+    upgradeOverlayTitleEl = upgradeOverlay
+      ? upgradeOverlay.querySelector(".frog-panel-title")
+      : null;
+    upgradeOverlaySubEl = document.getElementById("upgradeOverlaySub");
 
-    upgradeOverlay.style.position = "absolute";
-    upgradeOverlay.style.inset = "0";
-    upgradeOverlay.style.background = "rgba(0,0,0,0.7)";
-    upgradeOverlay.style.display = "none"; // hidden by default
-    upgradeOverlay.style.zIndex = "150";
-    upgradeOverlay.style.alignItems = "center";
-    upgradeOverlay.style.justifyContent = "center";
-    upgradeOverlay.style.pointerEvents = "auto";
-
-    const panel = document.createElement("div");
-    panel.style.background = "#111";
-    panel.style.padding = "16px 20px";
-    panel.style.borderRadius = "10px";
-    panel.style.border = "1px solid #444";
-    panel.style.color = "#fff";
-    panel.style.fontFamily = "monospace";
-    panel.style.textAlign = "left";
-    panel.style.minWidth = "320px";
-    panel.style.maxWidth = "540px";
-    panel.style.boxShadow = "0 0 18px rgba(0,0,0,0.6)";
-
-    const title = document.createElement("div");
-    title.textContent = "Choose an upgrade";
-    title.style.marginBottom = "10px";
-    title.style.fontSize = "14px";
-    title.style.textAlign = "center";
-    upgradeOverlayTitleEl = title;
-
-    // Main content row: choices on the left, current buffs on the right
-    const contentRow = document.createElement("div");
-    contentRow.style.display = "flex";
-    contentRow.style.alignItems = "flex-start";
-    contentRow.style.gap = "14px";
-    contentRow.style.marginTop = "4px";
-
-    // LEFT: upgrade choice buttons (stacked)
-    const choicesCol = document.createElement("div");
-    choicesCol.style.display = "flex";
-    choicesCol.style.flexDirection = "column";
-    choicesCol.style.gap = "8px";
-    choicesCol.style.alignItems = "stretch";
-    choicesCol.style.minWidth = "0";
-
-    upgradeOverlayButtonsContainer = choicesCol;
-
-    // RIGHT: current buffs summary
-    const buffsCol = document.createElement("div");
-    buffsCol.style.minWidth = "190px";
-    buffsCol.style.maxWidth = "220px";
-    buffsCol.style.fontSize = "11px";
-    buffsCol.style.lineHeight = "1.4";
-    buffsCol.style.borderLeft = "1px solid #333";
-    buffsCol.style.paddingLeft = "10px";
-    buffsCol.style.opacity = "0.9";
-
-    const buffsTitle = document.createElement("div");
-    buffsTitle.textContent = "Current buffs";
-    buffsTitle.style.fontWeight = "bold";
-    buffsTitle.style.marginBottom = "4px";
-
-    upgradeBuffSummaryBox = document.createElement("div");
-    upgradeBuffSummaryBox.style.marginTop = "2px";
-
-    buffsCol.appendChild(buffsTitle);
-    buffsCol.appendChild(upgradeBuffSummaryBox);
-
-    contentRow.appendChild(choicesCol);
-    contentRow.appendChild(buffsCol);
-
-    //panel.appendChild(title);
-    panel.appendChild(contentRow);
-    upgradeOverlay.appendChild(panel);
-    container.appendChild(upgradeOverlay);
+    document.addEventListener("keydown", (e) => {
+      if (!upgradeOverlay || upgradeOverlay.style.display !== "flex") return;
+      if (e.key === "1" && currentUpgradeChoices[0]) {
+        selectUpgrade(currentUpgradeChoices[0]);
+      } else if (e.key === "2" && currentUpgradeChoices[1]) {
+        selectUpgrade(currentUpgradeChoices[1]);
+      } else if (e.key === "3" && currentUpgradeChoices[2]) {
+        selectUpgrade(currentUpgradeChoices[2]);
+      }
+    });
   }
 
-  function updateUpgradeBuffSummary() {
-    if (!upgradeBuffSummaryBox) return;
-
-    const lines = [];
-
-    // Percent helpers
-    const deathPct        = Math.round(frogDeathRattleChance * 100);
-    const orbCollectorPct = Math.round(orbCollectorChance * 100);
-
-    const hopSpeedBonus =
-      frogPermanentSpeedFactor < 1
-        ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100)
-        : 0;
-
-    const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
-    const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
-
-    const orbRateBonus =
-      orbSpawnIntervalFactor < 1
-        ? Math.round((1 - orbSpawnIntervalFactor) * 100)
-        : 0;
-
-    const snakeSpeedBonus =
-      snakePermanentSpeedFactor > 1
-        ? Math.round((snakePermanentSpeedFactor - 1) * 100)
-        : 0;
-
-    // NEW: Orb Whisperer (+orb lifetime)
-    const orbLingerBonusPct =
-      orbTtlFactor > 1 ? Math.round((orbTtlFactor - 1) * 100) : 0;
-
-    // NEW: Ouroboros Pact (frog death -> orb)
-    const deathOrbDropPct = Math.round(frogDeathOrbChance * 100);
-
-    const neon = "#4defff";
-
-    // -----------------------------
-    // Core permanent buffs (numeric)
-    // -----------------------------
-    if (deathPct > 0) {
-      lines.push(
-        `💀 Deathrattle: <span style="color: ${neon};">${deathPct}%</span>`
-      );
+  function selectUpgrade(choice) {
+    if (!choice) return;
+    playButtonClick();
+    try {
+      if (typeof choice.apply === "function") {
+        choice.apply();
+      }
+    } catch (e) {
+      console.error("Error applying upgrade:", e);
     }
-
-    if (orbCollectorPct > 0) {
-      lines.push(
-        `🌌 Orb Collector: <span style="color: ${neon};">+${orbCollectorPct}%</span>`
-      );
-    }
-
-    if (hopSpeedBonus > 0) {
-      lines.push(
-        `💨 Quicker Hops: <span style="color: ${neon};">+${hopSpeedBonus}%</span>`
-      );
-    }
-
-    if (jumpBonus > 0) {
-      lines.push(
-        `🦘 Higher Hops: <span style="color: ${neon};">+${jumpBonus}%</span>`
-      );
-    }
-
-    if (buffDurationBonus > 0) {
-      lines.push(
-        `⏳ Buff duration: <span style="color: ${neon};">+${buffDurationBonus}%</span>`
-      );
-    }
-
-    if (orbRateBonus > 0) {
-      lines.push(
-        `🎯 Orb spawn rate: <span style="color: ${neon};">+${orbRateBonus}%</span>`
-      );
-    }
-
-    // NEW: Orb Whisperer – 20% longer orb life (scaled if you ever change it)
-    if (orbLingerBonusPct > 0) {
-      lines.push(
-        `🌀 Orb Whisperer: <span style="color: ${neon};">+${orbLingerBonusPct}%</span> orb lifetime`
-      );
-    }
-
-    if (snakeSpeedBonus > 0) {
-      lines.push(
-        `🐍 Snake speed: <span style="color: ${neon};">+${snakeSpeedBonus}%</span>`
-      );
-    }
-
-    // NEW: Ouroboros Pact – frog death orb drop chance
-    if (deathOrbDropPct > 0) {
-      lines.push(
-        `🔄 Ouroboros Pact: <span style="color: ${neon};">${deathOrbDropPct}%</span> chance frogs drop an orb on death`
-      );
-    }
-
-    // -----------------------------
-    // Special flags / named effects
-    // -----------------------------
-    if (lastStandActive) {
-      const lastStandPct = Math.round(LAST_STAND_MIN_CHANCE * 100);
-      lines.push(
-        `🏹 Last Stand: <span style="color: ${neon};">${lastStandPct}%</span>`
-      );
-    }
-
-    if (graveWaveActive) {
-      lines.push(`👻 Grave Wave: <span style="color: ${neon};">Active</span>`);
-    }
-
-    if (orbSpecialistActive) {
-      lines.push(
-        `🧪 Orb Specialist: <span style="color: ${neon};">Active</span>`
-      );
-    }
-
-    // NEW: Fragile Reality permanent modifier
-    if (fragileRealityActive) {
-      lines.push(`🪞 Fragile Reality: <span style="color: ${neon};">Active</span>`);
-    }
-
-    // NEW: Eye for an Eye permanent modifier
-    if (eyeForEyeUsed) {
-      lines.push(
-        `👁️ Eye for an Eye: <span style="color: ${neon};">Active</span>`
-      );
-    }
-
-    if (frogEatFrogActive) {
-      lines.push("🍴 Cannibal frogs");
-    }
-
-    if (!lines.length) {
-      lines.push("No permanent buffs yet.");
-    }
-
-    upgradeBuffSummaryBox.innerHTML = lines
-      .map(line => `<div>${line}</div>`)
-      .join("");
+    playPermanentChoiceSound();
+    closeUpgradeOverlay();
   }
 
   function populateUpgradeOverlayChoices(mode) {
-    ensureUpgradeOverlay();
+    initUpgradeOverlay();
     const containerEl = upgradeOverlayButtonsContainer;
     if (!containerEl) return;
 
@@ -4114,32 +3500,7 @@ function ensureUpgradeOverlay() {
       }
     }
 
-    function makeButton(label, onClick) {
-      const btn = document.createElement("button");
-      btn.innerHTML = label; // allow emojis + <span> highlight
-      btn.style.fontFamily = "monospace";
-      btn.style.fontSize = "13px";
-      btn.style.padding = "6px 8px";
-      btn.style.border = "1px solid #555";
-      btn.style.borderRadius = "6px";
-      btn.style.background = "#222";
-      btn.style.color = "#fff";
-      btn.style.cursor = "pointer";
-      btn.style.textAlign = "left";
-      btn.onmouseenter = () => { btn.style.background = "#333"; };
-      btn.onmouseleave = () => { btn.style.background = "#222"; };
-      btn.onclick = () => {
-        playButtonClick();
-        try {
-          onClick();
-        } catch (e) {
-          console.error("Error applying upgrade:", e);
-        }
-        playPermanentChoiceSound();
-        closeUpgradeOverlay();
-      };
-      return btn;
-    }
+    currentUpgradeChoices = choices.slice();
 
     if (!choices.length) {
       const span = document.createElement("div");
@@ -4149,13 +3510,30 @@ function ensureUpgradeOverlay() {
       return;
     }
 
-    for (const choice of choices) {
-      containerEl.appendChild(makeButton(choice.label, choice.apply));
-    }
+    choices.forEach((choice, index) => {
+      const btn = document.createElement("button");
+      btn.className = "frog-btn frog-btn-secondary frog-upgrade-choice";
+      btn.innerHTML = `
+        <div class="frog-upgrade-title">[${index + 1}]</div>
+        <div class="frog-upgrade-desc">${choice.label}</div>
+      `;
+      btn.addEventListener("click", () => selectUpgrade(choice));
+      containerEl.appendChild(btn);
+    });
   }
 
-  function openUpgradeOverlay(mode) {
-    ensureUpgradeOverlay();
+  function openUpgradeOverlay(mode, opts = {}) {
+    initUpgradeOverlay();
+    upgradeOverlayContext = opts.context || "mid";
+
+    if (upgradeOverlaySubEl) {
+      if (upgradeOverlayContext === "start") {
+        upgradeOverlaySubEl.textContent = "Pick your first upgrade before the run begins.";
+      } else {
+        upgradeOverlaySubEl.textContent = "Pick one upgrade to apply to your frogs.";
+      }
+    }
+
     populateUpgradeOverlayChoices(mode);
     updateUpgradeBuffSummary();
 
@@ -4163,6 +3541,15 @@ function ensureUpgradeOverlay() {
     if (upgradeOverlay) {
       upgradeOverlay.style.display = "flex";
     }
+  }
+
+  function openFirstUpgradeSelection() {
+    openUpgradeOverlay("normal", { context: "start" });
+  }
+
+  function startRunFromMenu() {
+    restartGame();
+    openFirstUpgradeSelection();
   }
 
   function triggerLegendaryFrenzy() {
@@ -4425,9 +3812,6 @@ function ensureUpgradeOverlay() {
     updateStatsPanel();
     updateHUD();
 
-    // Show the upgrade menu again at the start of a new run
-    openUpgradeOverlay("normal");
-
     animId = requestAnimationFrame(drawFrame);
   }
 
@@ -4533,7 +3917,11 @@ function ensureUpgradeOverlay() {
   async function startGame() {
     initAudio();
     initLeaderboard(container);
-    ensureUpgradeOverlay();
+    initUpgradeOverlay();
+    initMainMenuOverlay();
+    initHowToOverlay();
+    initBuffGuideOverlay();
+    initLeaderboardOverlay();
     ensureInfoOverlay();  // unified info panel
 
     const topList = await fetchLeaderboard();
@@ -4544,24 +3932,8 @@ function ensureUpgradeOverlay() {
       infoLeaderboardData = [];
     }
 
-    const width  = window.innerWidth;
-    const height = window.innerHeight;
-
-    await createInitialFrogs(width, height);
-    initSnake(width, height);
-
-    setNextOrbTime();
-    updateStatsPanel();
-    updateHUD();
-
-    // Show the how-to-play menu before the first upgrade
-    openHowToOverlay();
-
-    // Always offer a common upgrade at the very start of the game
-    // (same behavior as restartGame)
-    openUpgradeOverlay("normal");
-
-    animId = requestAnimationFrame(drawFrame);
+    // Wait on the main menu before starting a run
+    showMainMenu();
   }
 
   window.addEventListener("load", startGame);

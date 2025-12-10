@@ -38,6 +38,179 @@
 <body>
   <!-- data-snake-game turns on snake logic in scatter-frogs.js -->
   <div id="frog-game"></div>
+
+  <!-- MAIN MENU OVERLAY -->
+  <div id="mainMenuOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Escape the Snake
+        <span class="emoji">🐍</span>
+      </div>
+
+      <div class="frog-panel-sub">
+        Keep your frogs alive as long as you can.<br />
+        Mouse to move · Frogs follow your cursor.
+      </div>
+
+      <div style="margin-bottom: 8px;">
+        <button id="btnStartRun" class="frog-btn frog-btn-primary">
+          Start Run
+        </button>
+      </div>
+
+      <div class="frog-panel-section-label">Info</div>
+      <div>
+        <button id="btnHowTo" class="frog-btn frog-btn-secondary">
+          How to Play
+        </button>
+        <button id="btnBuffGuide" class="frog-btn frog-btn-secondary">
+          Buff & Upgrade Guide
+        </button>
+        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">
+          Leaderboard
+        </button>
+      </div>
+
+      <div class="frog-panel-footer">
+        Press <strong>Enter</strong> or click <strong>Start Run</strong> to begin.
+      </div>
+    </div>
+  </div>
+
+  <!-- UPGRADE SELECTION OVERLAY -->
+  <div id="upgradeOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Choose an Upgrade
+      </div>
+      <div id="upgradeOverlaySub" class="frog-panel-sub">
+        Pick one upgrade to apply to your frogs.
+      </div>
+
+      <div id="upgradeChoicesContainer">
+        <!-- buttons injected by JS -->
+      </div>
+
+      <div class="frog-panel-footer">
+        Click an option or press its number key (1/2/3).
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO PLAY OVERLAY -->
+  <div id="howToOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        How to Play
+        <span class="emoji">❓</span>
+      </div>
+
+      <div class="frog-panel-sub">
+        Escape the Snake is a survival game. Keep your frogs alive as long as possible.
+      </div>
+
+      <div class="frog-panel-section-label">Controls</div>
+      <ul class="frog-panel-list">
+        <li><strong>Mouse:</strong> move your cursor – your frogs try to follow.</li>
+        <li><strong>Left click (if used):</strong> any special actions you wired in.</li>
+        <li><strong>Esc:</strong> pause / open menu (if you wire this up).</li>
+      </ul>
+
+      <div class="frog-panel-section-label">Goal</div>
+      <ul class="frog-panel-list">
+        <li>Avoid letting the snake touch any frog.</li>
+        <li>Collect orbs and buffs to survive longer.</li>
+        <li>Your score is based on how long you stay alive and what you collect.</li>
+      </ul>
+
+      <div class="frog-panel-section-label">Tips</div>
+      <ul class="frog-panel-list">
+        <li>Plan your path early when the snake sheds (it gets faster).</li>
+        <li>Don’t chase every orb; staying alive is more important.</li>
+        <li>Some buffs make the snake slower, some make frogs safer – learn which is which.</li>
+      </ul>
+
+      <div class="frog-panel-footer">
+        Press <strong>Esc</strong> or click Close to return.
+        <br />
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUFF / UPGRADE GUIDE OVERLAY -->
+  <div id="buffGuideOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Buffs & Upgrades
+        <span class="emoji">⚡</span>
+      </div>
+
+      <div class="frog-panel-sub">
+        A quick reference for what the in-game buffs, upgrades, and frog roles do.
+      </div>
+
+      <div class="frog-panel-section-label">Temporary Buff Orbs</div>
+      <ul class="frog-panel-list">
+        <li><strong>Speed Boost:</strong> frogs move faster for a short time.</li>
+        <li><strong>Snake Slow:</strong> the snake moves slower temporarily.</li>
+        <li><strong>Magnet:</strong> nearby orbs are pulled toward your frogs.</li>
+        <li><strong>Shield:</strong> protects a frog from one hit (if you use this).</li>
+      </ul>
+
+      <div class="frog-panel-section-label">Permanent Upgrades</div>
+      <ul class="frog-panel-list">
+        <li><strong>More Frogs:</strong> adds extra frogs to your group.</li>
+        <li><strong>Movement Control:</strong> frogs respond more tightly to your mouse.</li>
+        <li><strong>Buff Duration:</strong> buffs last longer when collected.</li>
+        <li><strong>Orb Frequency:</strong> orbs spawn more often.</li>
+        <!-- replace with your real ones -->
+      </ul>
+
+      <div class="frog-panel-section-label">Frog Roles (Examples)</div>
+      <ul class="frog-panel-list">
+        <li><strong>Cannibal Frog:</strong> gains bonuses when other frogs die.</li>
+        <li><strong>Guardian Frog:</strong> takes hits for nearby frogs.</li>
+        <li><strong>Deathrattle Frog:</strong> triggers a buff when it dies.</li>
+        <li><strong>Lucky Frog:</strong> increased chance for better buffs/upgrades.</li>
+        <!-- fill in your actual roles -->
+      </ul>
+
+      <div class="frog-panel-footer">
+        Tune this text to match your current build.
+        <br />
+        <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD OVERLAY -->
+  <div id="leaderboardOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Leaderboard
+        <span class="emoji">🏆</span>
+      </div>
+
+      <div class="frog-panel-sub">
+        Top runs from all players. Tags are player-chosen (with profanity filter).
+      </div>
+
+      <div id="leaderboardContent">
+        <!-- Your existing leaderboard table / list goes here -->
+      </div>
+
+      <div class="frog-panel-footer">
+        <button id="leaderboardCloseBtn" class="frog-btn frog-btn-secondary">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
   <script src="frog-game-config.js"></script>
   <script src="frog-game-utils.js"></script>
   <script src="frog-audio.js"></script>
