@@ -123,9 +123,6 @@
     computeInitialPositions = () => []
   } = Utils;
 
-  const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
-  const ORB_MAGNET_PULL_RANGE = 220;
-
   // --------------------------------------------------
   // PLAYER TAG STORAGE (client-side only)
   // --------------------------------------------------
@@ -1918,7 +1915,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   }
 
   function updateOrbs(dt) {
-    const MAGNET_RANGE2 = ORB_MAGNET_PULL_RANGE * ORB_MAGNET_PULL_RANGE;
+    const MAGNET_RANGE = 220;
+    const MAGNET_RANGE2 = MAGNET_RANGE * MAGNET_RANGE;
 
     for (let i = orbs.length - 1; i >= 0; i--) {
       const orb = orbs[i];
@@ -2472,9 +2470,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let currentUpgradeOverlayMode = "normal"; // "normal" | "epic" | "legendary"
   let currentUpgradeChoices = [];
   let upgradeOverlayContext = "mid";
-  let upgradeBuffSummaryBox = null;
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
+  let upgradeBuffSummaryBox = null;
 
   let mainMenuOverlay = null;
 
@@ -3027,39 +3025,30 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
   }
 
-  function buildBuffGuideInnerHtml() {
-    const STAT = "#d6ff6b";
+  // Build dynamic Buff & Upgrade guide content from live config / state
+  function buildBuffGuideHtml() {
+    // Helper to format seconds with 0–1 decimal place
+    const fmtSec = (base) => {
+      const cur = base * buffDurationFactor;
+      const rounded = Math.round(cur * 10) / 10;
+      if (Math.abs(rounded - Math.round(rounded)) < 0.05) {
+        return Math.round(rounded) + "s";
+      }
+      return rounded.toFixed(1) + "s";
+    };
 
-    // --- Orb buff numbers from config ---
-    const speedBuffPct   = Math.round((1 / SPEED_BUFF_FACTOR - 1) * 100);
-    const jumpBuffPct    = Math.round((JUMP_BUFF_FACTOR - 1) * 100);
-    const panicSpeedPct  = Math.round((1 / PANIC_HOP_SPEED_FACTOR - 1) * 100);
-    const timeSlowPct    = Math.round((1 - TIME_SLOW_FACTOR) * 100);
-    const snakeSlowPct   = Math.round((1 - SNAKE_SLOW_FACTOR) * 100);
+    const speedPerPickPct = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
+    const jumpPerPickPct  = Math.round((FROG_JUMP_UPGRADE_FACTOR - 1) * 100);
+    const buffPerPickPct  = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
+    const orbPerPickPct   = Math.round((1 - ORB_INTERVAL_UPGRADE_FACTOR) * 100);
 
-    // --- Global upgrade per-pick numbers ---
-    const speedPerPickPct     = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
-    const jumpPerPickPct      = Math.round((FROG_JUMP_UPGRADE_FACTOR - 1) * 100);
-    const buffPerPickPct      = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
-    const orbFasterPerPickPct = Math.round((1 - ORB_INTERVAL_UPGRADE_FACTOR) * 100);
-    const commonDeathPct      = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
-    const epicDeathPct        = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
-    const orbCollectorPct     = Math.round(ORB_COLLECTOR_CHANCE * 100);
-    const lastStandPct        = Math.round(LAST_STAND_MIN_CHANCE * 100);
+    const speedTotalPct = Math.round((1 - frogPermanentSpeedFactor) * 100);
+    const jumpTotalPct  = Math.round((frogPermanentJumpFactor - 1) * 100);
+    const buffTotalPct  = Math.round((buffDurationFactor - 1) * 100);
+    const orbTotalPct   = Math.round((1 - orbSpawnIntervalFactor) * 100);
 
-    const normalSpawn         = NORMAL_SPAWN_AMOUNT;
-    const epicSpawn           = EPIC_SPAWN_AMOUNT;
-    const orbStormCount       = ORB_STORM_COUNT;
-    const snakeEggBuffPct     = 15; // from getEpicUpgradeChoices
-
-    // --- Perma-role stats ---
-    const champSpeedPct = Math.round((1 / CHAMPION_SPEED_FACTOR - 1) * 100);
-    const champJumpPct  = Math.round((CHAMPION_JUMP_FACTOR - 1) * 100);
-    const auraSpeedPct  = Math.round((1 / AURA_SPEED_FACTOR - 1) * 100);
-    const auraJumpPct   = Math.round((AURA_JUMP_FACTOR - 1) * 100);
-    const luckyBuffPct  = Math.round((LUCKY_BUFF_DURATION_BOOST - 1) * 100);
-    const luckyScorePct = Math.round(LUCKY_SCORE_BONUS_PER * 100);
-    const cannibalEatPct = Math.round(CANNIBAL_EAT_CHANCE * 100);
+    const durBonusText =
+      buffTotalPct > 0 ? " (currently +" + buffTotalPct + "% from upgrades)" : "";
 
     return `
       <div class="frog-panel-title">
@@ -3067,71 +3056,42 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       </div>
 
       <div class="frog-panel-sub">
-        Numbers here are wired to the real game config.
+        Live values below use your current upgrades &amp; buff duration factor.
       </div>
 
-      <div class="frog-panel-section-label">Orb Buffs</div>
+      <div class="frog-panel-section-label">Orb Buffs (current duration)</div>
       <ul class="frog-panel-list">
-        <li><strong>Speed orb:</strong> frogs move about <span style="color:${STAT};">${speedBuffPct}%</span> faster for <span style="color:${STAT};">${SPEED_BUFF_DURATION}s</span>.</li>
-        <li><strong>Jump orb:</strong> frogs jump about <span style="color:${STAT};">${jumpBuffPct}%</span> higher for <span style="color:${STAT};">${JUMP_BUFF_DURATION}s</span>.</li>
-        <li><strong>Snake Slow:</strong> snake moves about <span style="color:${STAT};">${snakeSlowPct}%</span> slower for <span style="color:${STAT};">${SNAKE_SLOW_DURATION}s</span>.</li>
-        <li><strong>Snake Confuse:</strong> snake turns randomly for <span style="color:${STAT};">${SNAKE_CONFUSE_DURATION}s</span>.</li>
-        <li><strong>Snake Shrink:</strong> snake’s size and bite radius shrink for <span style="color:${STAT};">${SNAKE_SHRINK_DURATION}s</span>.</li>
-        <li><strong>Shield:</strong> frogs ignore snake hits for <span style="color:${STAT};">${FROG_SHIELD_DURATION}s</span>.</li>
-        <li><strong>Time Slow:</strong> slows the whole game by about <span style="color:${STAT};">${timeSlowPct}%</span> for <span style="color:${STAT};">${TIME_SLOW_DURATION}s</span>.</li>
-        <li><strong>Orb Magnet:</strong> orbs drift toward frogs for <span style="color:${STAT};">${ORB_MAGNET_DURATION}s</span>.</li>
-        <li><strong>Score ×2:</strong> score gain is multiplied by <span style="color:${STAT};">${SCORE_MULTI_FACTOR}×</span> for <span style="color:${STAT};">${SCORE_MULTI_DURATION}s</span>.</li>
-        <li><strong>Panic Hop:</strong> frogs hop about <span style="color:${STAT};">${panicSpeedPct}%</span> faster in random directions for <span style="color:${STAT};">${PANIC_HOP_DURATION}s</span>.</li>
-        <li><strong>Clone Swarm:</strong> rapid clone spawns for <span style="color:${STAT};">${CLONE_SWARM_DURATION}s</span>.</li>
-        <li><strong>Life Steal:</strong> collected orbs can heal / respawn for <span style="color:${STAT};">${LIFE_STEAL_DURATION}s</span>.</li>
+        <li><strong>Speed:</strong> frogs act faster for about ${fmtSec(SPEED_BUFF_DURATION)}${durBonusText}.</li>
+        <li><strong>Jump:</strong> frogs jump higher for about ${fmtSec(JUMP_BUFF_DURATION)}${durBonusText}.</li>
+        <li><strong>Snake Slow:</strong> snake moves slower for about ${fmtSec(SNAKE_SLOW_DURATION)}${durBonusText}.</li>
+        <li><strong>Confuse:</strong> snake turns randomly for about ${fmtSec(SNAKE_CONFUSE_DURATION)}${durBonusText}.</li>
+        <li><strong>Shrink:</strong> snake size &amp; bite radius shrink for about ${fmtSec(SNAKE_SHRINK_DURATION)}${durBonusText}.</li>
+        <li><strong>Team Shield:</strong> frogs ignore hits for about ${fmtSec(FROG_SHIELD_DURATION)}${durBonusText}.</li>
+        <li><strong>Time Slow:</strong> slows the whole game for about ${fmtSec(TIME_SLOW_DURATION)}${durBonusText}.</li>
+        <li><strong>Orb Magnet:</strong> orbs drift toward frogs for about ${fmtSec(ORB_MAGNET_DURATION)}${durBonusText}.</li>
+        <li><strong>Score ×2:</strong> score gain is doubled for about ${fmtSec(SCORE_MULTI_DURATION)}${durBonusText}.</li>
+        <li><strong>Panic Hop:</strong> frogs hop faster in random directions for about ${fmtSec(PANIC_HOP_DURATION)}${durBonusText}.</li>
       </ul>
 
-      <div class="frog-panel-section-label">Global Stat Upgrades (per pick)</div>
+      <div class="frog-panel-section-label">Global Upgrades (per pick / current total)</div>
       <ul class="frog-panel-list">
-        <li><strong>Frog Speed:</strong> frogs hop about <span style="color:${STAT};">${speedPerPickPct}%</span> faster each pick.</li>
-        <li><strong>Jump Height:</strong> frogs jump about <span style="color:${STAT};">${jumpPerPickPct}%</span> higher each pick.</li>
-        <li><strong>Buff Duration:</strong> temporary buffs last about <span style="color:${STAT};">${buffPerPickPct}%</span> longer each pick.</li>
-        <li><strong>Orb Spawn Rate:</strong> orbs spawn about <span style="color:${STAT};">${orbFasterPerPickPct}%</span> faster each pick.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Common Upgrades</div>
-      <ul class="frog-panel-list">
-        <li><strong>Spawn Frogs:</strong> instantly adds <span style="color:${STAT};">${normalSpawn}</span> frogs.</li>
-        <li><strong>Deathrattle:</strong> adds <span style="color:${STAT};">${commonDeathPct}%</span> chance dead frogs respawn (stacks with epic / legendary).</li>
-        <li><strong>Orb Collector:</strong> every orb gains <span style="color:${STAT};">${orbCollectorPct}%</span> chance to spawn a frog (stacks).</li>
-        <li><strong>Last Stand:</strong> your final frog has at least <span style="color:${STAT};">${lastStandPct}%</span> chance to respawn instead of dying.</li>
-        <li><strong>Orb Whisperer:</strong> orbs linger <span style="color:${STAT};">20%</span> longer before vanishing.</li>
-        <li><strong>Ouroboros Pact:</strong> dead frogs have a flat <span style="color:${STAT};">10%</span> chance to drop an orb.</li>
-        <li><strong>Buffs last longer:</strong> same as the global buff duration stat upgrade above.</li>
-        <li><strong>More Orbs:</strong> same as the global orb spawn rate upgrade above.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Epic Upgrades</div>
-      <ul class="frog-panel-list">
-        <li><strong>Epic Deathrattle:</strong> adds <span style="color:${STAT};">${epicDeathPct}%</span> more deathrattle chance.</li>
-        <li><strong>Epic Buff Duration:</strong> boosts buff duration by about <span style="color:${STAT};">${buffPerPickPct + 15}%</span> in one pick.</li>
-        <li><strong>Epic Spawn Frogs:</strong> instantly adds <span style="color:${STAT};">${epicSpawn}</span> frogs.</li>
-        <li><strong>Orb Storm:</strong> drops about <span style="color:${STAT};">${orbStormCount}</span> extra orbs at once.</li>
-        <li><strong>Snake Egg:</strong> the next shed only gives the new snake about <span style="color:${STAT};">${snakeEggBuffPct}%</span> speed instead of +30%.</li>
-        <li><strong>Frog Promotion:</strong> summons multiple frogs, each with a random permanent role.</li>
-        <li><strong>Grave Wave:</strong> every shed summons a wave of ghost frogs.</li>
-        <li><strong>Orb Specialist:</strong> every orb always spawns <span style="color:${STAT};">1</span> frog; Orb Collector can add more.</li>
-        <li><strong>Fragile Reality:</strong> doubles buff duration but halves orb spawn rate.</li>
-        <li><strong>Frog Scatter / Eye for an Eye:</strong> chaos-style effects that scatter frogs or punish snake kills.</li>
+        <li><strong>Frog Speed:</strong> ~${speedPerPickPct}% faster per pick, currently +${speedTotalPct}%.</li>
+        <li><strong>Jump Height:</strong> ~${jumpPerPickPct}% higher per pick, currently +${jumpTotalPct}%.</li>
+        <li><strong>Buff Duration:</strong> ~${buffPerPickPct}% longer per pick, currently +${buffTotalPct}%.</li>
+        <li><strong>Orb Spawn Rate:</strong> ~${orbPerPickPct}% faster per pick, currently +${orbTotalPct}%.</li>
       </ul>
 
       <div class="frog-panel-section-label">Permanent Frog Roles</div>
       <ul class="frog-panel-list">
-        <li><strong>Champion:</strong> this frog’s hops are about <span style="color:${STAT};">${champSpeedPct}%</span> faster and jumps <span style="color:${STAT};">${champJumpPct}%</span> higher.</li>
-        <li><strong>Aura:</strong> nearby frogs get about <span style="color:${STAT};">${auraSpeedPct}%</span> faster hops and <span style="color:${STAT};">${auraJumpPct}%</span> higher jumps inside a radius.</li>
-        <li><strong>Magnet:</strong> orbs in a large radius are strongly pulled toward this frog.</li>
-        <li><strong>Lucky:</strong> buffs this frog collects last about <span style="color:${STAT};">${luckyBuffPct}%</span> longer and give around <span style="color:${STAT};">${luckyScorePct}%</span> extra score per Lucky frog.</li>
-        <li><strong>Zombie:</strong> when this frog dies it can spawn chaos like extra frogs or snake debuffs.</li>
-        <li><strong>Cannibal:</strong> has about <span style="color:${STAT};">${cannibalEatPct}%</span> chance to eat nearby frogs for power; gains roughly <span style="color:${STAT};">+5%</span> speed, <span style="color:${STAT};">+5%</span> jump, and extra personal deathrattle.</li>
+        <li><strong>Champion:</strong> that frog's hop cycle is faster and jumps are higher.</li>
+        <li><strong>Aura:</strong> nearby frogs get bonus speed and jump height in a radius.</li>
+        <li><strong>Magnet:</strong> orbs in a radius are strongly pulled toward this frog.</li>
+        <li><strong>Lucky:</strong> buffs last longer and score gain is slightly boosted.</li>
+        <li><strong>Zombie / Deathrattle:</strong> on death, can spawn chaos like extra frogs or snake debuffs.</li>
       </ul>
 
       <div class="frog-panel-footer">
-        Click Close to return.
+        Values update as you pick more upgrades.
         <br />
         <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
           Close
@@ -3145,12 +3105,14 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     buffGuideOverlay = document.getElementById("buffGuideOverlay");
     if (!buffGuideOverlay) return;
 
+    // Click outside panel closes it
     buffGuideOverlay.addEventListener("click", (e) => {
       if (e.target === buffGuideOverlay) {
         hideBuffGuideOverlay();
       }
     });
 
+    // Escape closes it
     document.addEventListener("keydown", (e) => {
       if (buffGuideOverlay && buffGuideOverlay.style.display === "flex" && e.key === "Escape") {
         hideBuffGuideOverlay();
@@ -3162,10 +3124,15 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (!buffGuideOverlay) initBuffGuideOverlay();
     if (!buffGuideOverlay) return;
 
-    const panel = buffGuideOverlay.querySelector(".frog-panel");
-    if (!panel) return;
+    let panel = buffGuideOverlay.querySelector(".frog-panel");
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.className = "frog-panel";
+      buffGuideOverlay.innerHTML = "";
+      buffGuideOverlay.appendChild(panel);
+    }
 
-    panel.innerHTML = buildBuffGuideInnerHtml();
+    panel.innerHTML = buildBuffGuideHtml();
 
     const closeBtn = document.getElementById("buffGuideCloseBtn");
     if (closeBtn) {
@@ -3598,7 +3565,17 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       ? upgradeOverlay.querySelector(".frog-panel-title")
       : null;
     upgradeOverlaySubEl = document.getElementById("upgradeOverlaySub");
-    // No number-key shortcuts; mouse only.
+
+    document.addEventListener("keydown", (e) => {
+      if (!upgradeOverlay || upgradeOverlay.style.display !== "flex") return;
+      if (e.key === "1" && currentUpgradeChoices[0]) {
+        selectUpgrade(currentUpgradeChoices[0]);
+      } else if (e.key === "2" && currentUpgradeChoices[1]) {
+        selectUpgrade(currentUpgradeChoices[1]);
+      } else if (e.key === "3" && currentUpgradeChoices[2]) {
+        selectUpgrade(currentUpgradeChoices[2]);
+      }
+    });
   }
 
   function selectUpgrade(choice) {
@@ -3612,7 +3589,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       console.error("Error applying upgrade:", e);
     }
     playPermanentChoiceSound();
-    updateUpgradeBuffSummary();
     closeUpgradeOverlay();
   }
 
@@ -3714,10 +3690,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       return;
     }
 
-    choices.forEach((choice) => {
+    choices.forEach((choice, index) => {
       const btn = document.createElement("button");
       btn.className = "frog-btn frog-btn-secondary frog-upgrade-choice";
       btn.innerHTML = `
+        <div class="frog-upgrade-title">[${index + 1}]</div>
         <div class="frog-upgrade-desc">${choice.label}</div>
       `;
       btn.addEventListener("click", () => selectUpgrade(choice));
@@ -3725,51 +3702,40 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     });
   }
 
+  // Add this helper to avoid errors and show current permanent upgrades in the upgrade overlay
   function updateUpgradeBuffSummary() {
     if (!upgradeOverlay) return;
 
-    // Where to render
+    const panel = upgradeOverlay.querySelector(".frog-panel");
+    if (!panel) return;
+
     if (!upgradeBuffSummaryBox) {
-      upgradeBuffSummaryBox = document.getElementById("upgradeSummaryBox");
+      upgradeBuffSummaryBox = document.createElement("div");
+      upgradeBuffSummaryBox.className = "frog-panel-footer";
+      upgradeBuffSummaryBox.style.marginTop = "6px";
+      upgradeBuffSummaryBox.style.fontSize = "11px";
+      panel.appendChild(upgradeBuffSummaryBox);
     }
-    if (!upgradeBuffSummaryBox) return;
 
-    const STAT_COLOR = "#d6ff6b";
-
+    // Compute current permanent bonuses from live game state
     const speedTotalPct = Math.round((1 - frogPermanentSpeedFactor) * 100);
     const jumpTotalPct  = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffTotalPct  = Math.round((buffDurationFactor - 1) * 100);
     const orbTotalPct   = Math.round((1 - orbSpawnIntervalFactor) * 100);
-    const deathPct      = Math.round(frogDeathRattleChance * 100);
-    const orbCollectorPct = Math.round(orbCollectorChance * 100);
 
-    const lines = [];
-    lines.push("These bonuses last for the whole run:");
+    const parts = [];
 
-    if (speedTotalPct > 0) {
-      lines.push(`• Frog speed: <span style="color:${STAT_COLOR};">+${speedTotalPct}%</span>`);
-    }
-    if (jumpTotalPct > 0) {
-      lines.push(`• Jump height: <span style="color:${STAT_COLOR};">+${jumpTotalPct}%</span>`);
-    }
-    if (buffTotalPct > 0) {
-      lines.push(`• Buff duration: <span style="color:${STAT_COLOR};">+${buffTotalPct}%</span>`);
-    }
-    if (orbTotalPct > 0) {
-      lines.push(`• Orb spawn rate: <span style="color:${STAT_COLOR};">+${orbTotalPct}%</span>`);
-    }
-    if (deathPct > 0) {
-      lines.push(`• Deathrattle chance: <span style="color:${STAT_COLOR};">${deathPct}%</span>`);
-    }
-    if (orbCollectorPct > 0) {
-      lines.push(`• Orb Collector chance: <span style="color:${STAT_COLOR};">${orbCollectorPct}%</span>`);
-    }
+    if (speedTotalPct > 0) parts.push("Frog speed +" + speedTotalPct + "%");
+    if (jumpTotalPct  > 0) parts.push("Jump height +" + jumpTotalPct + "%");
+    if (buffTotalPct  > 0) parts.push("Buff duration +" + buffTotalPct + "%");
+    if (orbTotalPct   > 0) parts.push("Orb spawn rate +" + orbTotalPct + "%");
 
-    if (lines.length === 1) {
-      lines.push("• No permanent upgrades yet – pick one!");
+    if (!parts.length) {
+      upgradeBuffSummaryBox.textContent = "No permanent upgrades taken yet.";
+    } else {
+      upgradeBuffSummaryBox.textContent =
+        "Current permanent bonuses: " + parts.join(" · ");
     }
-
-    upgradeBuffSummaryBox.innerHTML = lines.join("<br>");
   }
 
   function openUpgradeOverlay(mode, opts = {}) {
