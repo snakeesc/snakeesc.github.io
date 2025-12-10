@@ -2483,6 +2483,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let buffGuidePrevBtn = null;
   let buffGuideNextBtn = null;
   let buffGuidePage = 0;
+  let infoOverlayFromMenu = false;
 
   function getEpicUpgradeChoices() {
     const neon = "#4defff";
@@ -3292,6 +3293,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function openInfoOverlay(startPage) {
     ensureInfoOverlay();
+    infoOverlayFromMenu = !hasShownHowToOverlay;
     gamePaused = true;
     if (typeof startPage === "number") {
       setInfoPage(startPage);
@@ -3307,7 +3309,13 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (infoOverlay) {
       infoOverlay.style.display = "none";
     }
-    gamePaused = false;
+    if (infoOverlayFromMenu && !hasShownHowToOverlay) {
+      // Return to the main menu without starting the run
+      openHowToOverlay();
+    } else {
+      gamePaused = false;
+    }
+    infoOverlayFromMenu = false;
   }
 
   function ensureBuffGuideOverlay() {
