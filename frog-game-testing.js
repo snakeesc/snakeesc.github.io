@@ -176,11 +176,8 @@
   let legendaryEventTriggered = false;
 
   let infoOverlay = null;
-  let infoPage = 0;
   let infoContentEl = null;
   let infoPageLabel = null;
-  let infoPrevBtn = null;
-  let infoNextBtn = null;
   let infoLeaderboardData = [];
 
   // This is the value actually used in movement and scaled on each shed
@@ -2491,6 +2488,21 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   let buffGuidePrevBtn = null;
   let buffGuideNextBtn = null;
 
+  function isOverlayVisible(el) {
+    return !!(el && el.style.display !== "none");
+  }
+
+  function refreshPauseState() {
+    const overlayOpen =
+      isOverlayVisible(mainMenuOverlay) ||
+      isOverlayVisible(upgradeOverlay) ||
+      isOverlayVisible(buffGuideOverlay) ||
+      isOverlayVisible(infoOverlay) ||
+      isOverlayVisible(howToOverlay);
+
+    gamePaused = overlayOpen;
+  }
+
   function getEpicUpgradeChoices() {
     const neon = "#4defff";
     const epicTitleColor = "#ffb347"; // soft orange for EPIC titles
@@ -3092,6 +3104,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       if (howToOverlay) {
         howToOverlay.style.display = "none";
       }
+      refreshPauseState();
       openUpgradeOverlay("normal");
     };
 
@@ -3133,10 +3146,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function openHowToOverlay() {
     ensureHowToOverlay();
-    gamePaused = true;
     if (howToOverlay) {
       howToOverlay.style.display = "flex";
     }
+    refreshPauseState();
   }
 
 
@@ -3247,15 +3260,15 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function showMainMenu() {
     ensureMainMenuOverlay();
-    gamePaused = true;
     mainMenuOverlay.style.display = "flex";
+    refreshPauseState();
   }
 
   function hideMainMenu() {
     if (mainMenuOverlay) {
       mainMenuOverlay.style.display = "none";
     }
-    gamePaused = false;
+    refreshPauseState();
   }
 
   function ensureInfoOverlay() {
@@ -3274,18 +3287,18 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     const title = document.createElement("div");
     title.className = "frog-info-title";
-    title.textContent = "Leaderboard & info";
+    title.textContent = "Leaderboard";
 
     const subtitle = document.createElement("div");
     subtitle.className = "frog-info-subtitle";
-    subtitle.textContent = "Fresh Frogs community";
+    subtitle.textContent = "Fresh Frogs top runs";
 
     headingWrap.appendChild(title);
     headingWrap.appendChild(subtitle);
 
     const pageLabel = document.createElement("div");
     pageLabel.className = "frog-info-badge";
-    pageLabel.textContent = "Page 1 / 5";
+    pageLabel.textContent = "Top scores";
     infoPageLabel = pageLabel;
 
     header.appendChild(headingWrap);
@@ -3298,24 +3311,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const navRow = document.createElement("div");
     navRow.className = "frog-btn-row";
 
-    const prevBtn = document.createElement("button");
-    prevBtn.className = "frog-btn";
-    prevBtn.textContent = "< Prev";
-    prevBtn.addEventListener("click", () => {
-      playButtonClick();
-      setInfoPage(infoPage - 1);
-    });
-    infoPrevBtn = prevBtn;
-
-    const nextBtn = document.createElement("button");
-    nextBtn.className = "frog-btn";
-    nextBtn.textContent = "Next >";
-    nextBtn.addEventListener("click", () => {
-      playButtonClick();
-      setInfoPage(infoPage + 1);
-    });
-    infoNextBtn = nextBtn;
-
     const closeBtn = document.createElement("button");
     closeBtn.className = "frog-btn frog-btn-primary";
     closeBtn.textContent = "Close";
@@ -3324,8 +3319,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       closeInfoOverlay();
     });
 
-    navRow.appendChild(prevBtn);
-    navRow.appendChild(nextBtn);
     navRow.appendChild(closeBtn);
 
     card.appendChild(header);
@@ -3340,168 +3333,66 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         closeInfoOverlay();
       }
     });
-
-    setInfoPage(0);
+    renderLeaderboardContent();
   }
 
-  function setInfoPage(pageIndex) {
+  function renderLeaderboardContent() {
     if (!infoContentEl || !infoPageLabel) return;
-    const neon = "#4defff";
+    const neon = "#7dd3fc";
 
-    const maxPage = 4; // 0..4: 5 total pages
-    infoPage = Math.max(0, Math.min(maxPage, pageIndex));
+    let html = "<b>🏆 Leaderboard</b><br><br>";
+    const list = infoLeaderboardData || [];
 
-    let html = "";
+    if (!list.length) {
+      html += "<div>No scores yet — be the first to escape the snake.</div>";
+      infoPageLabel.textContent = "No entries";
+    } else {
+      infoPageLabel.textContent = `Top ${Math.min(list.length, 10)}`;
+      html += "<table>";
+      html += "<tr><th>#</th><th>Tag</th><th style=\"text-align:right;\">Score</th><th style=\"text-align:right;\">Time</th></tr>";
+      list.slice(0, 10).forEach((entry, idx) => {
+        const rank = idx + 1;
+        const tag  = entry.tag || "anon";
+        const scoreStr = entry.score.toLocaleString();
+        const tStr = entry.time ? `${Math.round(entry.time)}s` : "";
 
-    if (infoPage === 0) {
-      // PAGE 0 – Leaderboard
-      html += "<b>🏆 Leaderboard</b><br><br>";
-      const list = infoLeaderboardData || [];
-      if (!list.length) {
-        html += "<div>No scores yet — be the first to escape the snake.</div>";
-      } else {
-        html += "<table style='width:100%; border-collapse:collapse; font-size:12px;'>";
-        html += "<tr><th style='text-align:left;'>#</th><th style='text-align:left;'>Tag</th><th style='text-align:right;'>Score</th><th style='text-align:right;'>Time</th></tr>";
-        list.slice(0, 20).forEach((entry, i) => {
-          const rank = i + 1;
-          const tagBase = entry.tag || entry.name || `Player ${rank}`;
+        const isYou = entry.isSelf === true;
+        const rowStyle = isYou ? " style=\"background:rgba(125,211,252,0.08);\"" : "";
+        const tagBase = isYou ? `<span style=\"color:${neon};\">${tag}</span>` : tag;
+        const finalTag = entry.tag === "YOU" ? tagBase : tag;
 
-          // ✅ Use bestScore / bestTime if score/time aren’t present
-          const rawScore =
-            typeof entry.score === "number"
-              ? entry.score
-              : typeof entry.bestScore === "number"
-                ? entry.bestScore
-                : null;
-
-          const scoreStr = rawScore == null ? "—" : Math.floor(rawScore);
-
-          const secs =
-            typeof entry.time === "number"
-              ? entry.time
-              : typeof entry.bestTime === "number"
-                ? entry.bestTime
-                : 0;
-
-          const m = Math.floor(secs / 60);
-          const s = Math.floor(secs % 60);
-          const tStr = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-
-          // ✅ Highlight "me" (same flag used by the game-over overlay)
-          const isMe = !!entry.isMe;
-          const rowStyle = isMe
-            ? " style='background:rgba(255,215,0,0.18);color:#ffd700;'"
-            : "";
-
-          const tag =
-            isMe
-              ? `${tagBase} <span style="font-size:10px;opacity:0.9;">(you)</span>`
-              : tagBase;
-
-          html += `
-            <tr${rowStyle}>
-              <td>${rank}</td>
-              <td>${tag}</td>
-              <td style="text-align:right;">${scoreStr}</td>
-              <td style="text-align:right;">${tStr}</td>
-            </tr>
-          `;
-        });
-        html += "</table>";
-        html += `<div style="margin-top:6px; font-size:11px; opacity:0.8;">
-          Beat your own best score to update your entry.
-        </div>`;
-      }
-    } else if (infoPage === 1) {
-      // PAGE 1 – How to Play
-      html = `
-  <b>🐍 How to Play</b><br><br>
-  • Avoid the snake and keep the frogs alive as long as possible.<br>
-  • Frogs hop around the screen. Move your mouse to guide the swarm.<br>
-  • Collect orbs to trigger buffs and upgrades.<br>
-  • Every minute you choose a <span style="color:${neon};">common</span> upgrade.<br>
-  • Every 3 minutes you get a <span style="color:${neon};">common + epic</span> upgrade chain.<br>
-  • Every 5 minutes the snake sheds, gets stronger, and changes color.<br>
-  • Your run ends when <span style="color:${neon};">all frogs are gone</span>.
-  `;
-    } else if (infoPage === 2) {
-      // PAGE 2 – Orb buffs
-      html = `
-  <b>🟢 Orb Buffs</b><br><br>
-  ⚡ <b>Speed</b> – frogs act faster for a short time (stacks with upgrades).<br>
-  🦘 <b>Jump</b> – frogs jump much higher for a short time.<br>
-  🐸➕ <b>Spawn</b> – instantly spawns extra frogs (more if the collector is Lucky).<br>
-  🧊 <b>Snake Slow</b> – snake moves slower for a few seconds (less effective as it grows).<br>
-  🤪 <b>Confuse</b> – snake turns randomly instead of targeting frogs.<br>
-  📏 <b>Shrink</b> – snake body and bite radius shrink temporarily.<br>
-  🛡️ <b>Team Shield</b> – all frogs ignore snake hits for a short duration.<br>
-  ⏱️ <b>Time Slow</b> – slows the whole game (and the snake) briefly.<br>
-  🧲 <b>Orb Magnet</b> – orbs drift toward frogs, preferring magnet frogs.<br>
-  🐸🌊 <b>Mega Spawn</b> – large wave of frogs appears at once.<br>
-  💰 <b>Score ×2</b> – score gain is multiplied for a short window.<br>
-  😱 <b>Panic Hop</b> – frogs hop faster but in random directions.<br>
-  🩺 <b>Lifeline</b> – frogs that die during the buff have a chance to instantly respawn.<br>
-  ⭐ <b>PermaFrog</b> – upgrades one frog with a permanent role (Champion, Aura, Magnet, Lucky, Zombie, etc.).
-  `;
-    } else if (infoPage === 3) {
-      // PAGE 3 – Permanent frog roles
-      html = `
-  <b>🐸 Permanent Frog Roles</b><br><br>
-  🏅 <b>Champion</b> – that frog's hop cycle is faster and jumps are higher.<br>
-  🌈 <b>Aura</b> – nearby frogs get bonus speed and jump height in a radius around this frog.<br>
-  🧲 <b>Magnet</b> – orbs in a radius are strongly pulled toward this frog.<br>
-  🍀 <b>Lucky</b> – buffs last longer, more frogs spawn from some effects, and score gain is boosted slightly per Lucky frog.<br>
-  🧟 <b>Zombie</b> – when this frog dies, it causes extra chaos (like extra frogs and snake debuffs).<br><br>
-  Perma roles stack with global upgrades and orb buffs, making some frogs into mini “heroes” of the swarm.
-  `;
-    } else if (infoPage === 4) {
-      // PAGE 4 – Global upgrades
-      html = `
-  <b>🏗️ Global Upgrades</b><br><br>
-  💨 <b>Frogs hop faster forever</b> – reduces the hop cycle, making the whole swarm act more often.<br>
-  🦘 <b>Frogs jump higher forever</b> – increases base jump height for all frogs.<br>
-  🐸 <b>Spawn frogs</b> – instant injections of frogs from common / epic menus.<br>
-  ⏳ <b>Buffs last longer</b> – multiplies the duration of all temporary buffs (orb effects).<br>
-  🎯 <b>More orbs</b> – orbs spawn more frequently over time.<br>
-  💀 <b>Deathrattle</b> – dead frogs have a chance to respawn immediately (common and epic versions stack).<br>
-  🏹 <b>Last Stand</b> – your final remaining frog has a strong chance to respawn instead of dying.<br>
-  🌌 <b>Orb Collector</b> – every collected orb has a flat chance to spawn an extra frog (one-time pick).<br>
-  🐸⭐ <b>Frog Promotion (epic)</b> – summons multiple frogs, each with a random permanent role.<br>
-  🍖 <b>Cannibal Frog (epic)</b> – spawns a cannibal frog that eats nearby frogs and buffs global deathrattle while alive.<br>
-  💫 <b>Orb Storm / Snake Egg (epic)</b> – high-impact utilities that affect orb spawns or the next snake after a shed.<br><br>
-  Synergize permanent upgrades, frog roles, and epic choices to keep the swarm alive deep into later sheds.
-  `;
+        html += `
+          <tr${rowStyle}>
+            <td>${rank}</td>
+            <td>${finalTag}</td>
+            <td style="text-align:right;">${scoreStr}</td>
+            <td style="text-align:right;">${tStr}</td>
+          </tr>
+        `;
+      });
+      html += "</table>";
+      html += `<div style="margin-top:6px; font-size:11px; opacity:0.8;">
+        Beat your own best score to update your entry.
+      </div>`;
     }
 
     infoContentEl.innerHTML = html;
-    infoPageLabel.textContent = `Page ${infoPage + 1} / 5`;
-
-    if (infoPrevBtn) {
-      infoPrevBtn.disabled = infoPage === 0;
-    }
-    if (infoNextBtn) {
-      infoNextBtn.disabled = infoPage === maxPage;
-    }
   }
 
-  function openInfoOverlay(startPage) {
+  function openInfoOverlay() {
     ensureInfoOverlay();
-    gamePaused = true;
-    if (typeof startPage === "number") {
-      setInfoPage(startPage);
-    } else {
-      setInfoPage(infoPage);
-    }
+    renderLeaderboardContent();
     if (infoOverlay) {
       infoOverlay.style.display = "flex";
     }
+    refreshPauseState();
   }
 
   function closeInfoOverlay() {
     if (infoOverlay) {
       infoOverlay.style.display = "none";
     }
-    gamePaused = false;
+    refreshPauseState();
   }
 
   const BUFF_GUIDE_PAGES = [
@@ -3901,21 +3792,17 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       buffGuidePageIndex = 0;
       buffGuideOverlay.setPage(0);
     }
-    gamePaused = true;
     if (buffGuideOverlay) {
       buffGuideOverlay.style.display = "flex";
     }
+    refreshPauseState();
   }
 
   function closeBuffGuideOverlay() {
     if (buffGuideOverlay) {
       buffGuideOverlay.style.display = "none";
     }
-    const menuVisible = mainMenuOverlay && mainMenuOverlay.style.display !== "none";
-    const upgradeVisible = upgradeOverlay && upgradeOverlay.style.display !== "none";
-    if (!menuVisible && !upgradeVisible) {
-      gamePaused = false;
-    }
+    refreshPauseState();
   }
 
   function ensureUpgradeOverlay() {
@@ -4291,10 +4178,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     populateUpgradeOverlayChoices(mode);
     updateUpgradeBuffSummary();
 
-    gamePaused = true;
     if (upgradeOverlay) {
       upgradeOverlay.style.display = "flex";
     }
+    refreshPauseState();
   }
 
   function triggerLegendaryFrenzy() {
@@ -4308,7 +4195,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (upgradeOverlay) {
       upgradeOverlay.style.display = "none";
     }
-    gamePaused = false;
+    refreshPauseState();
 
     // --- schedule next timers based on what we just picked ---
     if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
