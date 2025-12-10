@@ -941,17 +941,17 @@ a {
   font-size: 12px;
 }
 
-/* Upgrade choices – flat, no neon shadow */
+/* Upgrade choices – match main menu buttons */
 .frog-upgrade-choice {
   text-align: left;
-  background: #292524;           /* solid, slightly lighter than panel */
-  border: 1px solid #44403c;     /* subtle neutral border */
+  background: #292524;
+  border: 1px solid #44403c;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 .frog-upgrade-choice:hover {
-  background: #3f3a36;           /* tiny brightness change on hover */
-  border-color: #78716c;         /* no glow, just a bit lighter */
-  box-shadow: none;              /* kill the neon shadow */
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .frog-upgrade-title {
@@ -1266,19 +1266,17 @@ a {
 
 /* Base pill style for upgrade choices */
 #upgradeOverlay .frog-upgrade-choice {
-  border-radius: 5px;
-  border: none;
-  padding: 8px 14px;
+  border-radius: 10px;
+  padding: 12px 14px;
   font-size: 13px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 2px;
-  color: #ffffff;
-  background: #60a540;                  /* default green */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+  gap: 4px;
+  color: #fefce8;
+  background: #292524;
   text-align: left;
 }
 
@@ -1286,37 +1284,37 @@ a {
 #upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
   font-size: 14px;
   font-weight: 800;
+  color: #d9f99d;
 }
 
 #upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
   font-size: 12px;
 }
 
-/* Hover: tiny lift, slightly brighter */
-#upgradeOverlay .frog-upgrade-choice:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
-/* Color variants by “type” */
+/* Color variants by “type” – use a subtle accent strip */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
-  background: #60a540; /* green – movement / hops */
+  border-color: #65a30d;
+  box-shadow: inset 4px 0 #65a30d, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
-  background: #f2b632; /* yellow-ish – buff duration/orbs */
+  border-color: #eab308;
+  box-shadow: inset 4px 0 #eab308, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival {
-  background: #d9533f; /* red – deathrattle / last stand */
+  border-color: #ef4444;
+  box-shadow: inset 4px 0 #ef4444, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
-  background: #e27a25; /* orange – orb-related */
+  border-color: #fb923c;
+  box-shadow: inset 4px 0 #fb923c, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
-  background: #7c3aed; /* purple – special frog roles */
+  border-color: #a855f7;
+  box-shadow: inset 4px 0 #a855f7, 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 /* Mobile: stack columns */
