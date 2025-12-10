@@ -1267,7 +1267,7 @@ a {
 /* Base pill style for upgrade choices */
 #upgradeOverlay .frog-upgrade-choice {
   border-radius: 5px;
-  border: none;
+  border: 1px solid white;
   padding: 8px 14px;
   font-size: 13px;
   cursor: pointer;
