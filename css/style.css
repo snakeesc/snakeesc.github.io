@@ -828,7 +828,7 @@ a {
 }
 
 .frog-panel {
-  background: transparent;
+  background: #333;
   padding: 18px 22px 16px 22px;
   border-radius: 14px;
   border: 0px solid #84cc16;
