@@ -1219,7 +1219,7 @@ a {
 #upgradeOverlay .frog-upgrade-choice {
     width: 100%;
     border-radius: 10px;
-    padding: 16px;
+    padding: 12px;
     font-size: 13px;
     font-family: inherit;
     cursor: pointer;
