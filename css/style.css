@@ -1121,7 +1121,7 @@ a {
 }
 
 .stat-highlight {
-  color: #a3e635;
+  color: darkgoldenrod;
   font-weight: 800;
 }
 
@@ -1494,4 +1494,231 @@ background: #65a30d;
 
 .menu-announcement-text strong {
   color: #ffd700;
+}
+/* =========================================================
+   ESCAPE THE SNAKE – Cream card theme for in-game overlays
+   Matches the upgrade selection styling
+   =======================================================*/
+
+/* Shared cream card look for text panels */
+#howToOverlay .frog-panel,
+#buffGuideOverlay .frog-panel,
+#leaderboardOverlay .frog-panel {
+  background: antiquewhite;
+  border: 2px solid darksalmon;
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  color: #5b3412;
+}
+
+/* Titles + subtitles on those panels */
+#howToOverlay .frog-panel-title,
+#buffGuideOverlay .frog-panel-title,
+#leaderboardOverlay .frog-panel-title {
+  color: #b45309; /* warm orange */
+  text-shadow: none;
+  font-size: 18px;
+}
+
+#howToOverlay .frog-panel-sub,
+#buffGuideOverlay .frog-panel-sub,
+#leaderboardOverlay .frog-panel-sub {
+  color: #7c2d12;
+  font-size: 13px;
+}
+
+/* Section labels + list text */
+#howToOverlay .frog-panel-section-label,
+#buffGuideOverlay .frog-panel-section-label {
+  color: #166534;            /* mossy green */
+}
+
+#howToOverlay .frog-panel-list li,
+#buffGuideOverlay .frog-panel-list li {
+  color: #3f2a15;
+}
+
+/* Buttons inside cream panels – keep the chunky, gamey look */
+#howToOverlay .frog-btn-secondary,
+#buffGuideOverlay .frog-btn-secondary,
+#leaderboardOverlay .frog-btn-secondary {
+  background: #65a30d;
+  color: #fefce8;
+  border-color: transparent;
+  font-weight: 800;
+  box-shadow: 2px 2px tan;
+}
+
+#howToOverlay .frog-btn-secondary:hover,
+#buffGuideOverlay .frog-btn-secondary:hover,
+#leaderboardOverlay .frog-btn-secondary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+/* ==============================
+   Leaderboard overlay contents
+   ==============================*/
+
+#leaderboardOverlay .frog-panel-sub {
+  margin-bottom: 10px;
+}
+
+#leaderboardOverlay .leaderboard-title {
+  color: #b45309;
+}
+
+#leaderboardOverlay .leaderboard-subtitle {
+  color: #7c2d12;
+}
+
+/* Table inside the leaderboard overlay – light / cream look */
+#leaderboardOverlay .leaderboard-table {
+  background: #fff7eb;
+  border: 1px solid #f4b686;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+}
+
+#leaderboardOverlay .leaderboard-table thead {
+  background: linear-gradient(90deg, #65a30d, #eab308);
+}
+
+#leaderboardOverlay .leaderboard-head-cell {
+  color: #fefce8;
+}
+
+#leaderboardOverlay .leaderboard-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+#leaderboardOverlay .leaderboard-row:nth-child(even) {
+  background: rgba(255, 247, 235, 0.9);
+}
+
+#leaderboardOverlay .leaderboard-row.is-me {
+  background: #ecfccb;
+  outline: 1px solid #65a30d;
+}
+
+#leaderboardOverlay .leaderboard-cell {
+  color: #3f2a15;
+  border-bottom: 1px solid rgba(248, 196, 148, 0.7);
+}
+
+#leaderboardOverlay .leaderboard-name {
+  font-weight: 800;
+  color: #1f2933;
+}
+
+/* ==============================
+   End-game summary / scoreboard
+   ==============================*/
+
+.scoreboard-card {
+  width: min(560px, 94vw);
+  background: antiquewhite;
+  border: 2px solid darksalmon;
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+  color: #5b3412;
+  font-family: monospace;
+  padding: 18px 20px;
+}
+
+.scoreboard-title {
+  color: #b45309;
+}
+
+.scoreboard-subtitle {
+  color: #166534;
+}
+
+/* Stat pills match the upgrade pill vibe */
+.summary-pill {
+  background: #fff7eb;
+  border: 1px solid #f4b686;
+  box-shadow: 2px 2px tan;
+}
+
+.pill-label {
+  color: #166534;
+}
+
+.pill-value {
+  color: #7c2d12;
+}
+
+/* Scoreboard table area */
+.scoreboard-table-wrapper {
+  background: #fff7eb;
+  border: 1px solid #f4b686;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.scoreboard-th {
+  color: #7c2d12;
+  border-bottom-color: #f4b686;
+}
+
+.scoreboard-row {
+  border-bottom: 1px solid #f4b686;
+}
+
+.scoreboard-row--me {
+  background: #ecfccb;
+  color: #166534;
+}
+
+.scoreboard-td {
+  color: #3f2a15;
+}
+
+/* Scoreboard buttons */
+.scoreboard-btn {
+  background: #65a30d;
+  color: #fefce8;
+  border-radius: 999px;
+  border: 1px solid #3f6212;
+  box-shadow: 2px 2px tan;
+}
+
+.scoreboard-btn--primary {
+  background: #65a30d;
+}
+
+.scoreboard-btn--ghost {
+  background: #eab308;
+  color: #3f2a15;
+  border-color: #ea9b24;
+}
+
+.scoreboard-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.scoreboard-hint {
+  color: #7c2d12;
+}
+
+/* ==============================
+   Optional: buff-guide “card” look
+   (if you ever render buff cards there)
+   ==============================*/
+
+#buffGuideOverlay .buff-card {
+  background: #fff7eb;
+  border: 1px solid #f4b686;
+  border-radius: 12px;
+  box-shadow: 2px 2px tan;
+}
+
+#buffGuideOverlay .buff-card h4 {
+  color: #b45309;
+}
+
+#buffGuideOverlay .buff-card li {
+  color: #3f2a15;
 }
