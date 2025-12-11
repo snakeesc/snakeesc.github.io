@@ -1230,6 +1230,7 @@ a {
     box-shadow: 2px 2px tan;
     color: white;
     font-weight: 800;
+    min-width: 460px;
 }
 
 /* Titles / descriptions inside pills */
