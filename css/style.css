@@ -1182,10 +1182,10 @@ a {
 }
 /* Upgrade overlay: floating pills only, no big box */
 #upgradeOverlay .frog-panel {
-  border: 2px solid darkgoldenrod;
+  border: 0px solid darkgoldenrod;
   box-shadow: none;
   padding: 8px 16px;
-  background: antiquewhite;
+  background: transparent;
 }
 
 /* Hide the big “Choose an upgrade” title bar */
@@ -1225,9 +1225,9 @@ a {
     cursor: pointer;
     text-align: center;
     margin-bottom: 8px;
-    border: 1px solid darksalmon;
+    border: 0px solid darksalmon;
     transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
-    box-shadow: 2px 2px tan;
+    box-shadow: 2px 2px lightblue;
     color: white;
     font-weight: 800;
     min-width: 460px;
