@@ -5,56 +5,119 @@
   <title>Escape the Snake – Metrics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Same snake emoji favicon style as the main game (optional) -->
+  <!-- Same snake emoji favicon style as the main game -->
   <link rel="icon"
     href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%2770%27%20font-size%3D%2790%27%3E%F0%9F%90%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
 
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  <!-- Optional background if you want it consistent with other pages -->
+  <div id="frog-bg"></div>
+
   <div class="page">
-    <!-- Hero / header -->
-    <header class="hero">
-      <div class="hero-content">
-        <h1 class="hero-title">Escape the Snake – Metrics</h1>
-        <p class="hero-subtitle">
-          Live stats from the browser game: unique players, total runs, and a quick leaderboard snapshot.
-        </p>
-      </div>
+    <!-- Header / simple nav -->
+    <header class="site-header">
+      <div class="logo">Escape the Snake</div>
+      <nav class="nav">
+        <a href="index.html">Play</a>
+        <a href="metrics.html" class="active">Metrics</a>
+      </nav>
     </header>
 
     <!-- Main content -->
     <main class="dashboard-main">
-      <!-- Overview panel -->
-      <section class="panel" id="metrics-overview-panel">
-        <h2>Overview</h2>
-        <p id="metrics-overview-status">Loading metrics…</p>
-        <div id="metrics-overview" style="display:none;">
-          <p><strong>Unique players:</strong> <span id="metrics-unique"></span></p>
-          <p><strong>Total runs:</strong> <span id="metrics-total"></span></p>
-          <p><strong>Average runs per player:</strong> <span id="metrics-avg"></span></p>
+      <!-- OVERVIEW CARD -->
+      <section class="frog-panel" id="metrics-overview-panel">
+        <div class="scoreboard-header">
+          <div class="scoreboard-title">Run overview</div>
+          <div class="scoreboard-subtitle">
+            Live rollup of total players, runs, and time survived.
+          </div>
+        </div>
+
+        <div id="metrics-overview-status" class="leaderboard-loading">
+          Loading metrics…
+        </div>
+
+        <div id="metrics-overview" class="scoreboard-summary" style="display:none;">
+          <div class="summary-metrics">
+            <div class="summary-pill">
+              <div class="pill-label">Unique players</div>
+              <div class="pill-value" id="metrics-unique">–</div>
+            </div>
+
+            <div class="summary-pill">
+              <div class="pill-label">Total runs</div>
+              <div class="pill-value" id="metrics-total">–</div>
+            </div>
+
+            <div class="summary-pill">
+              <div class="pill-label">Avg runs / player</div>
+              <div class="pill-value" id="metrics-avg">–</div>
+            </div>
+
+            <div class="summary-pill">
+              <div class="pill-label">Total play time</div>
+              <div class="pill-value" id="metrics-playtime">–</div>
+            </div>
+
+            <div class="summary-pill">
+              <div class="pill-label">Avg run length</div>
+              <div class="pill-value" id="metrics-avgtime">–</div>
+            </div>
+
+            <div class="summary-pill">
+              <div class="pill-label">Runs (last 24h)</div>
+              <div class="pill-value" id="metrics-last24h">–</div>
+            </div>
+          </div>
+
+          <div class="scoreboard-hint">
+            Data is aggregated from the same Worker powering the in-game leaderboard.
+          </div>
         </div>
       </section>
 
-      <!-- Leaderboard snapshot -->
-      <section class="panel" id="metrics-leaderboard-panel">
-        <h2>Leaderboard snapshot</h2>
-        <p id="metrics-leaderboard-status">Loading leaderboard…</p>
-        <div id="metrics-leaderboard" style="display:none; overflow-x:auto;">
-          <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+      <!-- LEADERBOARD SNAPSHOT CARD -->
+      <section class="frog-panel" id="metrics-leaderboard-panel">
+        <div class="scoreboard-header">
+          <div class="scoreboard-title">Leaderboard snapshot</div>
+          <div class="scoreboard-subtitle">
+            Top 10 personal best runs.
+          </div>
+        </div>
+
+        <div id="metrics-leaderboard-status" class="leaderboard-loading">
+          Loading leaderboard…
+        </div>
+
+        <div id="metrics-leaderboard" class="scoreboard-table-wrapper" style="display:none;">
+          <table class="scoreboard-table">
             <thead>
               <tr>
-                <th style="text-align:left; padding:4px 6px;">Rank</th>
-                <th style="text-align:left; padding:4px 6px;">Player</th>
-                <th style="text-align:right; padding:4px 6px;">Best score</th>
-                <th style="text-align:right; padding:4px 6px;">Best time (s)</th>
+                <th class="scoreboard-th">Rank</th>
+                <th class="scoreboard-th">Player</th>
+                <th class="scoreboard-th">Best score</th>
+                <th class="scoreboard-th">Best time (s)</th>
               </tr>
             </thead>
             <tbody id="metrics-leaderboard-body"></tbody>
           </table>
         </div>
+
+        <div class="scoreboard-hint">
+          The full leaderboard is available in-game from the main menu.
+        </div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <span>Escape the Snake – Fresh Frogs</span>
+      <div class="footer-links">
+        <a href="index.html">Back to game</a>
+      </div>
+    </footer>
   </div>
 
   <script>
@@ -62,15 +125,45 @@
       // Use the same Worker base URL you use in frog-leaderboard.js
       const WORKER_BASE = "https://lucky-king-0d37.danielssouthworth.workers.dev";
 
-      const metricsStatusEl = document.getElementById("metrics-overview-status");
-      const metricsContainerEl = document.getElementById("metrics-overview");
-      const uniqueEl = document.getElementById("metrics-unique");
-      const totalEl = document.getElementById("metrics-total");
-      const avgEl = document.getElementById("metrics-avg");
+      // Overview elements
+      const metricsStatusEl     = document.getElementById("metrics-overview-status");
+      const metricsContainerEl  = document.getElementById("metrics-overview");
+      const uniqueEl            = document.getElementById("metrics-unique");
+      const totalEl             = document.getElementById("metrics-total");
+      const avgEl               = document.getElementById("metrics-avg");
+      const playtimeEl          = document.getElementById("metrics-playtime");
+      const avgTimeEl           = document.getElementById("metrics-avgtime");
+      const last24hEl           = document.getElementById("metrics-last24h");
 
-      const lbStatusEl = document.getElementById("metrics-leaderboard-status");
-      const lbContainerEl = document.getElementById("metrics-leaderboard");
-      const lbBodyEl = document.getElementById("metrics-leaderboard-body");
+      // Leaderboard elements
+      const lbStatusEl          = document.getElementById("metrics-leaderboard-status");
+      const lbContainerEl       = document.getElementById("metrics-leaderboard");
+      const lbBodyEl            = document.getElementById("metrics-leaderboard-body");
+
+      function formatPlaytime(secondsRaw) {
+        const seconds = Number(secondsRaw || 0);
+        if (!seconds || !isFinite(seconds)) return "0s";
+
+        if (seconds < 120) {
+          return seconds.toFixed(0) + "s";
+        }
+        const minutes = seconds / 60;
+        if (minutes < 120) {
+          return minutes.toFixed(1) + "m";
+        }
+        const hours = seconds / 3600;
+        return hours.toFixed(1) + "h";
+      }
+
+      function formatSecondsShort(secondsRaw) {
+        const seconds = Number(secondsRaw || 0);
+        if (!seconds || !isFinite(seconds)) return "0.0s";
+        if (seconds < 60) return seconds.toFixed(1) + "s";
+
+        const minutes = Math.floor(seconds / 60);
+        const rem = seconds % 60;
+        return minutes + "m " + rem.toFixed(0) + "s";
+      }
 
       // ---- Fetch metrics ----
       fetch(WORKER_BASE + "/metrics")
@@ -81,13 +174,22 @@
             return;
           }
 
-          const totalRuns = Number(data.totalRuns || 0);
-          const uniquePlayers = Number(data.uniquePlayers || 0);
-          const avgRuns = uniquePlayers > 0 ? (totalRuns / uniquePlayers) : 0;
+          const totalRuns       = Number(data.totalRuns || 0);
+          const uniquePlayers   = Number(data.uniquePlayers || 0);
+          const avgRuns         = uniquePlayers > 0 ? (totalRuns / uniquePlayers) : 0;
 
-          uniqueEl.textContent = uniquePlayers.toLocaleString();
-          totalEl.textContent = totalRuns.toLocaleString();
-          avgEl.textContent = avgRuns.toFixed(2);
+          // Optional extra fields – safe even if backend doesn't send them yet
+          const totalPlaySeconds = Number(data.totalPlaySeconds || 0);
+          const avgRunSeconds    = Number(data.avgRunSeconds || 0);
+          const runsLast24h      = Number(data.runsLast24h || 0);
+
+          uniqueEl.textContent  = uniquePlayers.toLocaleString();
+          totalEl.textContent   = totalRuns.toLocaleString();
+          avgEl.textContent     = avgRuns.toFixed(2);
+
+          playtimeEl.textContent = formatPlaytime(totalPlaySeconds);
+          avgTimeEl.textContent  = avgRunSeconds ? formatSecondsShort(avgRunSeconds) : "–";
+          last24hEl.textContent  = runsLast24h ? runsLast24h.toLocaleString() : "0";
 
           metricsStatusEl.style.display = "none";
           metricsContainerEl.style.display = "block";
@@ -111,25 +213,29 @@
 
           entries.forEach((entry, index) => {
             const tr = document.createElement("tr");
+            tr.className = "scoreboard-row";
 
             const rankTd = document.createElement("td");
-            rankTd.style.padding = "4px 6px";
+            rankTd.className = "scoreboard-td scoreboard-rank";
             rankTd.textContent = index + 1;
 
             const nameTd = document.createElement("td");
-            nameTd.style.padding = "4px 6px";
-            nameTd.textContent = (entry.tag && entry.tag.trim()) || "Anonymous Frog";
+            nameTd.className = "scoreboard-td scoreboard-name";
+            nameTd.textContent =
+              (entry.tag && entry.tag.trim()) || "Anonymous Frog";
 
             const scoreTd = document.createElement("td");
-            scoreTd.style.padding = "4px 6px";
-            scoreTd.style.textAlign = "right";
-            scoreTd.textContent = Number(entry.bestScore || 0).toLocaleString();
+            scoreTd.className = "scoreboard-td scoreboard-score";
+            scoreTd.textContent =
+              Number(entry.bestScore || 0).toLocaleString();
 
             const timeTd = document.createElement("td");
-            timeTd.style.padding = "4px 6px";
-            timeTd.style.textAlign = "right";
+            timeTd.className = "scoreboard-td";
             const bestTime = Number(entry.bestTime || 0);
-            timeTd.textContent = isFinite(bestTime) ? bestTime.toFixed(1) : "0.0";
+            timeTd.textContent =
+              isFinite(bestTime) && bestTime > 0
+                ? bestTime.toFixed(1)
+                : "0.0";
 
             tr.appendChild(rankTd);
             tr.appendChild(nameTd);
