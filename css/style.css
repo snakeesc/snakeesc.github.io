@@ -1722,3 +1722,67 @@ background: #65a30d;
 #buffGuideOverlay .buff-card li {
   color: #3f2a15;
 }
+/* ==========================================
+   Run summary polish (names, pager, tag input)
+   ==========================================*/
+
+/* Player name (in the table and the little pill) */
+.scoreboard-card .scoreboard-name {
+  color: #1f2933; /* dark text so it reads on cream */
+}
+
+/* Pager text + Prev / Next buttons under the table */
+.scoreboard-card .leaderboard-page-info {
+  color: #7c2d12;          /* warm brown/orange text */
+  font-weight: 600;
+}
+
+.scoreboard-card .leaderboard-page-btn {
+  background: #fde68a;     /* soft yellow pill */
+  color: #7c2d12;
+  border-radius: 999px;
+  border: 1px solid #f59e0b;
+  box-shadow: 2px 2px tan;
+  padding: 6px 12px;
+  font-weight: 700;
+}
+
+.scoreboard-card .leaderboard-page-btn[disabled] {
+  opacity: 0.45;
+}
+
+/* Player-tag editor area at the top of Run summary */
+
+/* Label text: "Choose a player tag..." */
+.scoreboard-card .scoreboard-tag-label {
+  color: #7c2d12;
+  font-size: 13px;
+}
+
+/* The actual input box (black bar → cream field) */
+.scoreboard-card input[type="text"] {
+  background: #fff7eb;
+  border-radius: 8px;
+  border: 1px solid #f4b686;
+  padding: 6px 8px;
+  color: #3f2a15;
+  font-family: inherit;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.scoreboard-card input[type="text"]::placeholder {
+  color: #a16207;
+  opacity: 0.8;
+}
+
+/* Optional: if the Save tag / Skip buttons are wrapped,
+   this will give them the same chunky green style */
+.scoreboard-card .scoreboard-tag-actions .frog-btn,
+.scoreboard-card .scoreboard-tag-actions button {
+  background: #65a30d;
+  color: #fefce8;
+  border-radius: 999px;
+  border: 1px solid #3f6212;
+  box-shadow: 2px 2px tan;
+}
