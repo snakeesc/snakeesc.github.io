@@ -1470,3 +1470,26 @@ background: #65a30d;
   text-align: center;
   color: #cbd5e1;
 }
+.menu-announcement {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.7);
+  background: rgba(0, 0, 0, 0.65);
+  max-width: 380px;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.menu-announcement-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+
+.menu-announcement-text strong {
+  color: #ffd700;
+}
