@@ -1582,7 +1582,7 @@ background: #65a30d;
 }
 
 #leaderboardOverlay .leaderboard-table thead {
-  background: linear-gradient(90deg, #65a30d, #eab308);
+  background: darkslategray;
 }
 
 #leaderboardOverlay .leaderboard-head-cell {
