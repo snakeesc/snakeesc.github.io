@@ -1182,7 +1182,7 @@ a {
 }
 /* Upgrade overlay: floating pills only, no big box */
 #upgradeOverlay .frog-panel {
-  border: 2px solid darksalmon;
+  border: 2px solid darkgoldenrod;
   box-shadow: none;
   padding: 8px 16px;
   background: antiquewhite;
