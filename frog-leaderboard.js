@@ -689,11 +689,20 @@
       tagInput.style.width = "100%";
       tagInput.style.padding = "4px 6px";
       tagInput.style.borderRadius = "4px";
-      tagInput.style.border = "1px solid #444";
-      tagInput.style.background = "#000";
+      tagInput.style.border = "1px solid #f4b686";
+      tagInput.style.background = "#fff7eb";
       tagInput.style.color = "#eee";
       tagInput.style.fontFamily = "inherit";
       tagInput.style.fontSize = "12px";
+      tagInput.style.boxShadow = "2px 2px tan";
+
+      /*
+
+        background: #fff7eb;
+        border: 1px solid #f4b686;
+        box-shadow: 2px 2px tan;
+
+      */
 
       // If we already have a saved tag, pre-fill the input with it
       if (storedTag) {
@@ -710,18 +719,18 @@
       const saveBtn = document.createElement("button");
       saveBtn.textContent = "Save tag";
       saveBtn.style.padding = "2px 6px";
-      saveBtn.style.background = "#222";
-      saveBtn.style.border = "1px solid #444";
-      saveBtn.style.color = "#eee";
-      saveBtn.style.borderRadius = "3px";
+      saveBtn.style.background = "#eab308";
+      saveBtn.style.border = "1px solid #ea9b24";
+      saveBtn.style.color = "#3f2a15";
+      saveBtn.style.borderRadius = "5px";
       saveBtn.style.cursor = "pointer";
 
       const skipBtn = document.createElement("button");
       skipBtn.textContent = "Skip";
       skipBtn.style.padding = "2px 6px";
-      skipBtn.style.background = "transparent";
-      skipBtn.style.border = "1px solid #444";
-      skipBtn.style.color = "#aaa";
+      skipBtn.style.background = "eab308";
+      skipBtn.style.border = "1px solid #ea9b24";
+      skipBtn.style.color = "#3f2a15";
       skipBtn.style.borderRadius = "3px";
       skipBtn.style.cursor = "pointer";
 

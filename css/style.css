@@ -1329,7 +1329,7 @@ a {
 }
 
 .summary-heading {
-  color: #fefce8;
+  color: darkgoldenrod;
   font-weight: 800;
   margin-bottom: 8px;
 }
@@ -1456,13 +1456,6 @@ a {
 background: #65a30d;
   color: white;
   box-shadow: none;
-}
-
-.scoreboard-btn--ghost {
-  background: #0b0f12;
-  border-color: #1f2937;
-  color: #e2e8f0;
-  padding: 6px 10px;
 }
 
 .scoreboard-hint {
@@ -1692,6 +1685,7 @@ background: #65a30d;
   background: #eab308;
   color: #3f2a15;
   border-color: #ea9b24;
+  border-radius: 5px;
 }
 
 .scoreboard-btn:hover {
