@@ -743,6 +743,9 @@
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
+      lastHeadX: startX,
+      lastHeadY: startY,
+      pathDistAccumulator: 0,
       isFrenzyVisual: false,
       speedFactor: newSpeedFactor
     };
@@ -2195,6 +2198,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
+      lastHeadX: startX,
+      lastHeadY: startY,
+      pathDistAccumulator: 0,
       isFrenzyVisual: false,
       speedFactor: 1.0
     };
@@ -2258,6 +2264,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       head: { el: headEl, x: startX, y: startY, angle: initialAngle },
       segments,
       path,
+      lastHeadX: startX,
+      lastHeadY: startY,
+      pathDistAccumulator: 0,
       isFrenzyVisual: false,
       speedFactor: 1.0
     };
@@ -2408,6 +2417,14 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const head = snakeObj.head;
     if (!head) return;
 
+    if (typeof snakeObj.lastHeadX !== "number") {
+      snakeObj.lastHeadX = head.x;
+      snakeObj.lastHeadY = head.y;
+    }
+    if (typeof snakeObj.pathDistAccumulator !== "number") {
+      snakeObj.pathDistAccumulator = 0;
+    }
+
     const segmentGap = computeSegmentGap();
 
     // -----------------------------
@@ -2476,11 +2493,36 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     // -----------------------------
     // Path + segments follow
     // -----------------------------
-    snakeObj.path.unshift({ x: head.x, y: head.y });
-    const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
-    while (snakeObj.path.length > maxPathLength) {
-      snakeObj.path.pop();
+    const dx = head.x - snakeObj.lastHeadX;
+    const dy = head.y - snakeObj.lastHeadY;
+    const dist = Math.hypot(dx, dy);
+
+    const STEP = segmentGap; // desired visual spacing in pixels
+    const prevAccum = snakeObj.pathDistAccumulator;
+    snakeObj.pathDistAccumulator += dist;
+
+    if (dist > 0) {
+      const samples = Math.floor(snakeObj.pathDistAccumulator / STEP);
+      const invDist = 1 / dist;
+
+      for (let i = 0; i < samples; i++) {
+        const d = STEP - prevAccum + i * STEP;
+        const t = Math.min(1, d * invDist);
+
+        snakeObj.path.unshift({
+          x: snakeObj.lastHeadX + dx * t,
+          y: snakeObj.lastHeadY + dy * t
+        });
+      }
+
+      snakeObj.pathDistAccumulator -= samples * STEP;
     }
+
+    snakeObj.lastHeadX = head.x;
+    snakeObj.lastHeadY = head.y;
+
+    const maxPath = snakeObj.segments.length * segmentGap + 8;
+    snakeObj.path.length = Math.min(snakeObj.path.length, maxPath);
 
     const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
 
