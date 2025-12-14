@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>escape the snake 🐍 – metrics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 820px;
+    }
+
+    .panel {
+      background: #111;
+      padding: 18px 22px;
+      border-radius: 10px;
+      border: 1px solid #444;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(0,0,0,0.6);
+      margin-bottom: 24px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-bottom: 14px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: #181818;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .metric-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #ffd700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #333;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      background: #222;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <!-- GLOBAL METRICS -->
+    <div class="panel">
+      <div class="title">Global Metrics</div>
+      <div class="subtitle">Aggregate statistics across all players</div>
+
+      <div id="global-status">Loading…</div>
+
+      <div id="global-metrics" style="display:none;">
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">Total Runs</div>
+            <div class="metric-value" id="gm-totalRuns">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Total Play Time</div>
+            <div class="metric-value" id="gm-playtime">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Frogs Lost</div>
+            <div class="metric-value" id="gm-frogsLost">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Orbs Collected</div>
+            <div class="metric-value" id="gm-orbs">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Upgrades Chosen</div>
+            <div class="metric-value" id="gm-upgrades">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Highest Score Ever</div>
+            <div class="metric-value" id="gm-highScore">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Longest Run (sec)</div>
+            <div class="metric-value" id="gm-longest">–</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PER USER METRICS -->
+    <div class="panel">
+      <div class="title">Your Lifetime Stats</div>
+      <div class="subtitle">Pulled from leaderboard entry (if available)</div>
+
+      <div id="user-status">Loading…</div>
+
+      <div id="user-metrics" style="display:none;">
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">Total Runs Played</div>
+            <div class="metric-value" id="um-runs">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Lifetime Frogs Lost</div>
+            <div class="metric-value" id="um-frogsLost">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Lifetime Orbs Collected</div>
+            <div class="metric-value" id="um-orbs">–</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Lifetime Play Time</div>
+            <div class="metric-value" id="um-playtime">–</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const WORKER = "https://lucky-king-0d37.danielssouthworth.workers.dev";
+
+    function formatSeconds(sec) {
+      sec = Number(sec || 0);
+      if (sec < 60) return sec.toFixed(0) + "s";
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}m ${s}s`;
+    }
+
+    // -------------------------
+    // LOAD GLOBAL METRICS
+    // -------------------------
+    fetch(WORKER + "/metrics")
+      .then(res => res.json())
+      .then(m => {
+        document.getElementById("global-status").style.display = "none";
+        document.getElementById("global-metrics").style.display = "block";
+
+        document.getElementById("gm-totalRuns").textContent = m.totalRuns.toLocaleString();
+        document.getElementById("gm-playtime").textContent = formatSeconds(m.totalPlayTimeSeconds);
+        document.getElementById("gm-frogsLost").textContent = m.totalFrogsLost.toLocaleString();
+        document.getElementById("gm-orbs").textContent = m.totalOrbsCollected.toLocaleString();
+        document.getElementById("gm-upgrades").textContent = m.totalUpgradesChosen.toLocaleString();
+        document.getElementById("gm-highScore").textContent = m.highestScoreEver.toLocaleString();
+        document.getElementById("gm-longest").textContent = m.longestRunEver.toLocaleString();
+      })
+      .catch(() => {
+        document.getElementById("global-status").textContent = "Error loading metrics.";
+      });
+
+    // -------------------------
+    // LOAD USER METRICS
+    // -------------------------
+    fetch(WORKER + "/leaderboard")
+      .then(res => res.json())
+      .then(data => {
+        const me = data.myEntry;
+
+        if (!me) {
+          document.getElementById("user-status").textContent =
+            "No personal data found. Play a run to generate stats.";
+          return;
+        }
+
+        document.getElementById("user-status").style.display = "none";
+        document.getElementById("user-metrics").style.display = "block";
+
+        document.getElementById("um-runs").textContent =
+          me.totalRunsByUser?.toLocaleString() ?? "0";
+
+        document.getElementById("um-frogsLost").textContent =
+          me.lifetimeFrogsLost?.toLocaleString() ?? "0";
+
+        document.getElementById("um-orbs").textContent =
+          me.lifetimeOrbsCollected?.toLocaleString() ?? "0";
+
+        document.getElementById("um-playtime").textContent =
+          formatSeconds(me.lifetimePlayTime ?? 0);
+      })
+      .catch(() => {
+        document.getElementById("user-status").textContent =
+          "Error loading user metrics.";
+      });
+  </script>
+</body>
+</html>

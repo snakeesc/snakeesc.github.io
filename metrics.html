@@ -2,246 +2,149 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>escape the snake 🐍 – metrics</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Escape the Snake – Metrics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <style>
-    * { box-sizing: border-box; }
+  <!-- Same snake emoji favicon style as the main game (optional) -->
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%2770%27%20font-size%3D%2790%27%3E%F0%9F%90%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: #000;
-      color: #fff;
-      font-family: monospace;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .wrap {
-      width: 100%;
-      max-width: 820px;
-    }
-
-    .panel {
-      background: #111;
-      padding: 18px 22px;
-      border-radius: 10px;
-      border: 1px solid #444;
-      color: #fff;
-      box-shadow: 0 0 18px rgba(0,0,0,0.6);
-      margin-bottom: 24px;
-    }
-
-    .title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
-
-    .subtitle {
-      font-size: 12px;
-      opacity: 0.75;
-      margin-bottom: 14px;
-    }
-
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
-    }
-
-    .metric {
-      background: #181818;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-
-    .metric-label {
-      font-size: 11px;
-      opacity: 0.7;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .metric-value {
-      font-size: 16px;
-      font-weight: bold;
-      color: #ffd700;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid #333;
-      font-size: 13px;
-      text-align: left;
-    }
-
-    th {
-      background: #222;
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-
 <body>
-  <div class="wrap">
-
-    <!-- GLOBAL METRICS -->
-    <div class="panel">
-      <div class="title">Global Metrics</div>
-      <div class="subtitle">Aggregate statistics across all players</div>
-
-      <div id="global-status">Loading…</div>
-
-      <div id="global-metrics" style="display:none;">
-        <div class="metric-grid">
-          <div class="metric">
-            <div class="metric-label">Total Runs</div>
-            <div class="metric-value" id="gm-totalRuns">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Total Play Time</div>
-            <div class="metric-value" id="gm-playtime">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Frogs Lost</div>
-            <div class="metric-value" id="gm-frogsLost">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Orbs Collected</div>
-            <div class="metric-value" id="gm-orbs">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Upgrades Chosen</div>
-            <div class="metric-value" id="gm-upgrades">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Highest Score Ever</div>
-            <div class="metric-value" id="gm-highScore">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Longest Run (sec)</div>
-            <div class="metric-value" id="gm-longest">–</div>
-          </div>
-        </div>
+  <div class="page">
+    <!-- Hero / header -->
+    <header class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">Escape the Snake – Metrics</h1>
+        <p class="hero-subtitle">
+          Live stats from the browser game: unique players, total runs, and a quick leaderboard snapshot.
+        </p>
       </div>
-    </div>
+    </header>
 
-    <!-- PER USER METRICS -->
-    <div class="panel">
-      <div class="title">Your Lifetime Stats</div>
-      <div class="subtitle">Pulled from leaderboard entry (if available)</div>
-
-      <div id="user-status">Loading…</div>
-
-      <div id="user-metrics" style="display:none;">
-        <div class="metric-grid">
-          <div class="metric">
-            <div class="metric-label">Total Runs Played</div>
-            <div class="metric-value" id="um-runs">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Lifetime Frogs Lost</div>
-            <div class="metric-value" id="um-frogsLost">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Lifetime Orbs Collected</div>
-            <div class="metric-value" id="um-orbs">–</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Lifetime Play Time</div>
-            <div class="metric-value" id="um-playtime">–</div>
-          </div>
+    <!-- Main content -->
+    <main class="dashboard-main">
+      <!-- Overview panel -->
+      <section class="panel" id="metrics-overview-panel">
+        <h2>Overview</h2>
+        <p id="metrics-overview-status">Loading metrics…</p>
+        <div id="metrics-overview" style="display:none;">
+          <p><strong>Unique players:</strong> <span id="metrics-unique"></span></p>
+          <p><strong>Total runs:</strong> <span id="metrics-total"></span></p>
+          <p><strong>Average runs per player:</strong> <span id="metrics-avg"></span></p>
         </div>
-      </div>
-    </div>
+      </section>
 
+      <!-- Leaderboard snapshot -->
+      <section class="panel" id="metrics-leaderboard-panel">
+        <h2>Leaderboard snapshot</h2>
+        <p id="metrics-leaderboard-status">Loading leaderboard…</p>
+        <div id="metrics-leaderboard" style="display:none; overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:4px 6px;">Rank</th>
+                <th style="text-align:left; padding:4px 6px;">Player</th>
+                <th style="text-align:right; padding:4px 6px;">Best score</th>
+                <th style="text-align:right; padding:4px 6px;">Best time (s)</th>
+              </tr>
+            </thead>
+            <tbody id="metrics-leaderboard-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   </div>
 
   <script>
-    const WORKER = "https://lucky-king-0d37.danielssouthworth.workers.dev";
+    (function () {
+      // Use the same Worker base URL you use in frog-leaderboard.js
+      const WORKER_BASE = "https://lucky-king-0d37.danielssouthworth.workers.dev";
 
-    function formatSeconds(sec) {
-      sec = Number(sec || 0);
-      if (sec < 60) return sec.toFixed(0) + "s";
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return `${m}m ${s}s`;
-    }
+      const metricsStatusEl = document.getElementById("metrics-overview-status");
+      const metricsContainerEl = document.getElementById("metrics-overview");
+      const uniqueEl = document.getElementById("metrics-unique");
+      const totalEl = document.getElementById("metrics-total");
+      const avgEl = document.getElementById("metrics-avg");
 
-    // -------------------------
-    // LOAD GLOBAL METRICS
-    // -------------------------
-    fetch(WORKER + "/metrics")
-      .then(res => res.json())
-      .then(m => {
-        document.getElementById("global-status").style.display = "none";
-        document.getElementById("global-metrics").style.display = "block";
+      const lbStatusEl = document.getElementById("metrics-leaderboard-status");
+      const lbContainerEl = document.getElementById("metrics-leaderboard");
+      const lbBodyEl = document.getElementById("metrics-leaderboard-body");
 
-        document.getElementById("gm-totalRuns").textContent = m.totalRuns.toLocaleString();
-        document.getElementById("gm-playtime").textContent = formatSeconds(m.totalPlayTimeSeconds);
-        document.getElementById("gm-frogsLost").textContent = m.totalFrogsLost.toLocaleString();
-        document.getElementById("gm-orbs").textContent = m.totalOrbsCollected.toLocaleString();
-        document.getElementById("gm-upgrades").textContent = m.totalUpgradesChosen.toLocaleString();
-        document.getElementById("gm-highScore").textContent = m.highestScoreEver.toLocaleString();
-        document.getElementById("gm-longest").textContent = m.longestRunEver.toLocaleString();
-      })
-      .catch(() => {
-        document.getElementById("global-status").textContent = "Error loading metrics.";
-      });
+      // ---- Fetch metrics ----
+      fetch(WORKER_BASE + "/metrics")
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data) {
+            metricsStatusEl.textContent = "Unable to load metrics.";
+            return;
+          }
 
-    // -------------------------
-    // LOAD USER METRICS
-    // -------------------------
-    fetch(WORKER + "/leaderboard")
-      .then(res => res.json())
-      .then(data => {
-        const me = data.myEntry;
+          const totalRuns = Number(data.totalRuns || 0);
+          const uniquePlayers = Number(data.uniquePlayers || 0);
+          const avgRuns = uniquePlayers > 0 ? (totalRuns / uniquePlayers) : 0;
 
-        if (!me) {
-          document.getElementById("user-status").textContent =
-            "No personal data found. Play a run to generate stats.";
-          return;
-        }
+          uniqueEl.textContent = uniquePlayers.toLocaleString();
+          totalEl.textContent = totalRuns.toLocaleString();
+          avgEl.textContent = avgRuns.toFixed(2);
 
-        document.getElementById("user-status").style.display = "none";
-        document.getElementById("user-metrics").style.display = "block";
+          metricsStatusEl.style.display = "none";
+          metricsContainerEl.style.display = "block";
+        })
+        .catch(() => {
+          metricsStatusEl.textContent = "Unable to load metrics.";
+        });
 
-        document.getElementById("um-runs").textContent =
-          me.totalRunsByUser?.toLocaleString() ?? "0";
+      // ---- Fetch leaderboard snapshot ----
+      fetch(WORKER_BASE + "/leaderboard")
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data || !Array.isArray(data.entries)) {
+            lbStatusEl.textContent = "Unable to load leaderboard.";
+            return;
+          }
 
-        document.getElementById("um-frogsLost").textContent =
-          me.lifetimeFrogsLost?.toLocaleString() ?? "0";
+          const entries = data.entries.slice(0, 10); // top 10
 
-        document.getElementById("um-orbs").textContent =
-          me.lifetimeOrbsCollected?.toLocaleString() ?? "0";
+          lbBodyEl.innerHTML = "";
 
-        document.getElementById("um-playtime").textContent =
-          formatSeconds(me.lifetimePlayTime ?? 0);
-      })
-      .catch(() => {
-        document.getElementById("user-status").textContent =
-          "Error loading user metrics.";
-      });
+          entries.forEach((entry, index) => {
+            const tr = document.createElement("tr");
+
+            const rankTd = document.createElement("td");
+            rankTd.style.padding = "4px 6px";
+            rankTd.textContent = index + 1;
+
+            const nameTd = document.createElement("td");
+            nameTd.style.padding = "4px 6px";
+            nameTd.textContent = (entry.tag && entry.tag.trim()) || "Anonymous Frog";
+
+            const scoreTd = document.createElement("td");
+            scoreTd.style.padding = "4px 6px";
+            scoreTd.style.textAlign = "right";
+            scoreTd.textContent = Number(entry.bestScore || 0).toLocaleString();
+
+            const timeTd = document.createElement("td");
+            timeTd.style.padding = "4px 6px";
+            timeTd.style.textAlign = "right";
+            const bestTime = Number(entry.bestTime || 0);
+            timeTd.textContent = isFinite(bestTime) ? bestTime.toFixed(1) : "0.0";
+
+            tr.appendChild(rankTd);
+            tr.appendChild(nameTd);
+            tr.appendChild(scoreTd);
+            tr.appendChild(timeTd);
+            lbBodyEl.appendChild(tr);
+          });
+
+          lbStatusEl.style.display = "none";
+          lbContainerEl.style.display = "block";
+        })
+        .catch(() => {
+          lbStatusEl.textContent = "Unable to load leaderboard.";
+        });
+    })();
   </script>
 </body>
 </html>

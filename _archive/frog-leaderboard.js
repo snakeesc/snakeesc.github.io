@@ -25,26 +25,93 @@
   // Root patterns we want to block after normalization.
   // (Avoid very short generic roots like "ass" to prevent false positives.)
   const PROFANE_ROOTS = [
-    "fuck",
-    "shit",
-    "bitch",
-    "cunt",
-    "asshole",
-    "dick",
+    // Core profanity
+    "fuck", "fuk", "fuc", "fawk",
+    "shit", "sh1t",
+    "bitch", "biotch",
+    "ass", "asshole", "asses",
+    "bastard",
+    "damn",
+    "hell",
+    "crap",
+
+    // Sexual content
+    "sex",
+    "porn",
+    "cum",
+    "jizz",
     "cock",
+    "dick",
+    "penis",
     "pussy",
+    "vagina",
+    "boob",
+    "titty",
+    "breast",
+    "milf",
     "slut",
     "whore",
-    "bastard",
-    "piss",
-    "damn",
-    "nigger",
-    "faggot",
-    "retard",
-    "kike",
-    "spic",
-    "chink",
+    "hoe",
+    "anal",
+    "fetish",
+
+    // Harassment terms / common weaponized words
+    "gay",
+    "lesbian",
+    "trans",
+    "queer",
+    "simp",
+    "incel",
+
+    // Insults (PG-13 safe but still unwanted in usernames)
+    "idiot",
+    "moron",
+    "dumb",
+    "stupid",
+    "loser",
+    "trash",
+    "garbage",
+    "noob",
+    "bozo",
+    "fool",
+
+    // Violence & self-harm (avoid in usernames)
+    "kill",
+    "killer",
+    "suicide",
+    "die",
+    "dead",
+    "murder",
+    "terror",
+    "bomb",
+
+    // Drug references
+    "weed",
+    "coke",
+    "meth",
+    "heroin",
+    "lsd",
+    "shroom",
+    "ketamine",
+
+    // Additional explicit profanity
+    "dipshit",
+    "bullshit",
+    "horseshit",
+    "shithead",
+    "douche",
+    "douchebag",
+
+    // Common obfuscations / leetspeak variations
+    "f*ck", "fu*k", "f**k",
+    "sh*t",
+    "b!tch",
+    "d!ck",
+    "c0ck",
+    "puss",
+    "gayy", "gaay",
   ];
+
 
   /**
    * Normalize a tag for profanity matching:
@@ -622,11 +689,20 @@
       tagInput.style.width = "100%";
       tagInput.style.padding = "4px 6px";
       tagInput.style.borderRadius = "4px";
-      tagInput.style.border = "1px solid #444";
-      tagInput.style.background = "#000";
+      tagInput.style.border = "1px solid #f4b686";
+      tagInput.style.background = "#fff7eb";
       tagInput.style.color = "#eee";
       tagInput.style.fontFamily = "inherit";
       tagInput.style.fontSize = "12px";
+      tagInput.style.boxShadow = "2px 2px tan";
+
+      /*
+
+        background: #fff7eb;
+        border: 1px solid #f4b686;
+        box-shadow: 2px 2px tan;
+
+      */
 
       // If we already have a saved tag, pre-fill the input with it
       if (storedTag) {
@@ -643,18 +719,18 @@
       const saveBtn = document.createElement("button");
       saveBtn.textContent = "Save tag";
       saveBtn.style.padding = "2px 6px";
-      saveBtn.style.background = "#222";
-      saveBtn.style.border = "1px solid #444";
-      saveBtn.style.color = "#eee";
-      saveBtn.style.borderRadius = "3px";
+      saveBtn.style.background = "#eab308";
+      saveBtn.style.border = "1px solid #ea9b24";
+      saveBtn.style.color = "#3f2a15";
+      saveBtn.style.borderRadius = "5px";
       saveBtn.style.cursor = "pointer";
 
       const skipBtn = document.createElement("button");
       skipBtn.textContent = "Skip";
       skipBtn.style.padding = "2px 6px";
-      skipBtn.style.background = "transparent";
-      skipBtn.style.border = "1px solid #444";
-      skipBtn.style.color = "#aaa";
+      skipBtn.style.background = "eab308";
+      skipBtn.style.border = "1px solid #ea9b24";
+      skipBtn.style.color = "#3f2a15";
       skipBtn.style.borderRadius = "3px";
       skipBtn.style.cursor = "pointer";
 

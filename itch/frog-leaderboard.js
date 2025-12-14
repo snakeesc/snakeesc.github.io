@@ -25,26 +25,93 @@
   // Root patterns we want to block after normalization.
   // (Avoid very short generic roots like "ass" to prevent false positives.)
   const PROFANE_ROOTS = [
-    "fuck",
-    "shit",
-    "bitch",
-    "cunt",
-    "asshole",
-    "dick",
+    // Core profanity
+    "fuck", "fuk", "fuc", "fawk",
+    "shit", "sh1t",
+    "bitch", "biotch",
+    "ass", "asshole", "asses",
+    "bastard",
+    "damn",
+    "hell",
+    "crap",
+
+    // Sexual content
+    "sex",
+    "porn",
+    "cum",
+    "jizz",
     "cock",
+    "dick",
+    "penis",
     "pussy",
+    "vagina",
+    "boob",
+    "titty",
+    "breast",
+    "milf",
     "slut",
     "whore",
-    "bastard",
-    "piss",
-    "damn",
-    "nigger",
-    "faggot",
-    "retard",
-    "kike",
-    "spic",
-    "chink",
+    "hoe",
+    "anal",
+    "fetish",
+
+    // Harassment terms / common weaponized words
+    "gay",
+    "lesbian",
+    "trans",
+    "queer",
+    "simp",
+    "incel",
+
+    // Insults (PG-13 safe but still unwanted in usernames)
+    "idiot",
+    "moron",
+    "dumb",
+    "stupid",
+    "loser",
+    "trash",
+    "garbage",
+    "noob",
+    "bozo",
+    "fool",
+
+    // Violence & self-harm (avoid in usernames)
+    "kill",
+    "killer",
+    "suicide",
+    "die",
+    "dead",
+    "murder",
+    "terror",
+    "bomb",
+
+    // Drug references
+    "weed",
+    "coke",
+    "meth",
+    "heroin",
+    "lsd",
+    "shroom",
+    "ketamine",
+
+    // Additional explicit profanity
+    "dipshit",
+    "bullshit",
+    "horseshit",
+    "shithead",
+    "douche",
+    "douchebag",
+
+    // Common obfuscations / leetspeak variations
+    "f*ck", "fu*k", "f**k",
+    "sh*t",
+    "b!tch",
+    "d!ck",
+    "c0ck",
+    "puss",
+    "gayy", "gaay",
   ];
+
 
   /**
    * Normalize a tag for profanity matching:

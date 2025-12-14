@@ -3565,10 +3565,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         <span class="emoji">⚡</span>
       </div>
 
-      <div class="frog-panel-sub">
-        Live stats from the current build: every value is pulled straight from the game variables.
-      </div>
-
       <!-- Page tabs -->
       <div class="buff-guide-nav">
         ${pages
@@ -3605,8 +3601,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       </div>
 
       <div class="frog-panel-footer">
-        Buffs stack with your upgrade bonuses—hover back to the game and start experimenting.
-        <br />
         <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
           Close
         </button>
