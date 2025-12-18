@@ -10,7 +10,7 @@
     MAX_TOKEN_ID: 4040,
     META_BASE: "https://freshfrogs.github.io/frog/json/",
     META_EXT: ".json",
-    BUILD_BASE: "https://freshfrogs.github.io/frog/build_files",
+    BUILD_BASE: "./images/build_files",
     STARTING_FROGS: 50,
     MAX_FROGS: 100,
     ORB_RADIUS: 12,
