@@ -16,7 +16,20 @@
     gtag('config', 'G-9Q540R6FC5');
   </script>
   
-  <meta name="viewport" content="width=1024, initial-scale=1">
+  <meta name="viewport" id="vp" content="width=1024, initial-scale=1, viewport-fit=cover">
+  <script>
+    (function () {
+      const BASE = 1024;
+      const w = Math.min(window.innerWidth || BASE, screen.width || BASE);
+      const s = w / BASE;
+      const vp = document.getElementById("vp");
+      vp.setAttribute(
+        "content",
+        `width=${BASE}, initial-scale=${s}, maximum-scale=${s}, viewport-fit=cover`
+      );
+    })();
+  </script>
+
   <!-- Adjust path if your CSS is elsewhere -->
   <link rel="stylesheet" href="css/style.css" />
   <style>
