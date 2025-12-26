@@ -2473,41 +2473,49 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       head.angle = -head.angle;
     }
 
-    // -----------------------------
-    // Path + segments follow (distance-sampled, FPS-independent)
-    // -----------------------------
-    const PATH_STEP_PX = 1; // 1px sampling = stable spacing across devices
-    if (!snakeObj._pathLast) snakeObj._pathLast = { x: head.x, y: head.y };
+// -----------------------------
+// Path + segments follow (FPS-independent)
+// Keep path points spaced by distance instead of "1 point per frame"
+// -----------------------------
+const PATH_STEP_PX = 1; // 1px sampling = consistent spacing across devices
 
-    const lx = snakeObj._pathLast.x;
-    const ly = snakeObj._pathLast.y;
-    const dx = head.x - lx;
-    const dy = head.y - ly;
-    const dist = Math.hypot(dx, dy);
+if (!snakeObj._pathLast) {
+  snakeObj._pathLast = { x: head.x, y: head.y };
+}
 
-    if (dist >= PATH_STEP_PX) {
-      const ux = dx / dist;
-      const uy = dy / dist;
-      const steps = Math.floor(dist / PATH_STEP_PX);
+// Add intermediate samples if the head moved more than PATH_STEP_PX this frame
+const lx = snakeObj._pathLast.x;
+const ly = snakeObj._pathLast.y;
+const dx = head.x - lx;
+const dy = head.y - ly;
+const dist = Math.hypot(dx, dy);
 
-      for (let s = 1; s <= steps; s++) {
-        snakeObj.path.unshift({
-          x: lx + ux * PATH_STEP_PX * s,
-          y: ly + uy * PATH_STEP_PX * s,
-        });
-      }
+if (dist >= PATH_STEP_PX) {
+  const ux = dx / dist;
+  const uy = dy / dist;
+  const steps = Math.floor(dist / PATH_STEP_PX);
 
-      // last inserted sample point
-      snakeObj._pathLast = {
-        x: lx + ux * PATH_STEP_PX * steps,
-        y: ly + uy * PATH_STEP_PX * steps,
-      };
-    }
+  // Insert from oldest -> newest so unshift ends with newest at the front
+  for (let s = 1; s <= steps; s++) {
+    snakeObj.path.unshift({
+      x: lx + ux * PATH_STEP_PX * s,
+      y: ly + uy * PATH_STEP_PX * s,
+    });
+  }
 
-    const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
-    while (snakeObj.path.length > maxPathLength) {
-      snakeObj.path.pop();
-    }
+  snakeObj._pathLast = { x: head.x, y: head.y };
+} else {
+  // Still keep an updated last reference
+  snakeObj._pathLast = { x: head.x, y: head.y };
+}
+
+// Ensure the current head position is always the newest sample
+snakeObj.path.unshift({ x: head.x, y: head.y });
+
+const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
+while (snakeObj.path.length > maxPathLength) {
+  snakeObj.path.pop();
+}
 
     const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
 
