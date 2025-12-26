@@ -2474,9 +2474,36 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
 
     // -----------------------------
-    // Path + segments follow
+    // Path + segments follow (distance-sampled, FPS-independent)
     // -----------------------------
-    snakeObj.path.unshift({ x: head.x, y: head.y });
+    const PATH_STEP_PX = 1; // 1px sampling = stable spacing across devices
+    if (!snakeObj._pathLast) snakeObj._pathLast = { x: head.x, y: head.y };
+
+    const lx = snakeObj._pathLast.x;
+    const ly = snakeObj._pathLast.y;
+    const dx = head.x - lx;
+    const dy = head.y - ly;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist >= PATH_STEP_PX) {
+      const ux = dx / dist;
+      const uy = dy / dist;
+      const steps = Math.floor(dist / PATH_STEP_PX);
+
+      for (let s = 1; s <= steps; s++) {
+        snakeObj.path.unshift({
+          x: lx + ux * PATH_STEP_PX * s,
+          y: ly + uy * PATH_STEP_PX * s,
+        });
+      }
+
+      // last inserted sample point
+      snakeObj._pathLast = {
+        x: lx + ux * PATH_STEP_PX * steps,
+        y: ly + uy * PATH_STEP_PX * steps,
+      };
+    }
+
     const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
     while (snakeObj.path.length > maxPathLength) {
       snakeObj.path.pop();
