@@ -851,6 +851,7 @@ a {
   justify-content: center;
   gap: 6px;
   color: #bef264;
+  text-shadow: 1px 1px darkslateblue;
 }
 
 .frog-panel-title .emoji {
