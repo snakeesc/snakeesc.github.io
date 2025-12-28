@@ -2473,51 +2473,52 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       head.angle = -head.angle;
     }
 
-// -----------------------------
-// Path + segments follow (FPS-independent)
-// Keep path points spaced by distance instead of "1 point per frame"
-// -----------------------------
-const PATH_STEP_PX = 1; // 1px sampling = consistent spacing across devices
+    // -----------------------------
+    // Path + segments follow (FPS-independent + shrink-aware)
+    // Keep path points spaced by distance, BUT also guarantee samples at low speed
+    // -----------------------------
 
-if (!snakeObj._pathLast) {
-  snakeObj._pathLast = { x: head.x, y: head.y };
-}
-
-// Add intermediate samples if the head moved more than PATH_STEP_PX this frame
-const lx = snakeObj._pathLast.x;
-const ly = snakeObj._pathLast.y;
-const dx = head.x - lx;
-const dy = head.y - ly;
-const dist = Math.hypot(dx, dy);
-
-if (dist >= PATH_STEP_PX) {
-  const ux = dx / dist;
-  const uy = dy / dist;
-  const steps = Math.floor(dist / PATH_STEP_PX);
-
-  // Insert from oldest -> newest so unshift ends with newest at the front
-  for (let s = 1; s <= steps; s++) {
-    snakeObj.path.unshift({
-      x: lx + ux * PATH_STEP_PX * s,
-      y: ly + uy * PATH_STEP_PX * s,
-    });
-  }
-
-  snakeObj._pathLast = { x: head.x, y: head.y };
-} else {
-  // Still keep an updated last reference
-  snakeObj._pathLast = { x: head.x, y: head.y };
-}
-
-// Ensure the current head position is always the newest sample
-snakeObj.path.unshift({ x: head.x, y: head.y });
-
-const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
-while (snakeObj.path.length > maxPathLength) {
-  snakeObj.path.pop();
-}
-
+    // shrink affects both sprite size AND spacing so segments stay linked
     const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
+
+    // Make anchors closer when shrunk (otherwise visible gaps)
+    const effectiveGap = Math.max(4, Math.round(segmentGap * shrinkScale));
+
+    // Dense trail sampling prevents gaps at low speed & during effects
+    const PATH_STEP_PX = 0.75; // 0.5 = tightest, 1.0 = lightest CPU
+
+    if (!snakeObj._pathLast) {
+      snakeObj._pathLast = { x: head.x, y: head.y };
+    }
+
+    // Add samples between last head pos and current head pos.
+    // IMPORTANT: at least 1 sample per frame so slow movement doesn't create sparse paths.
+    const lx = snakeObj._pathLast.x;
+    const ly = snakeObj._pathLast.y;
+    const dx = head.x - lx;
+    const dy = head.y - ly;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > 0) {
+      const steps = Math.max(1, Math.floor(dist / PATH_STEP_PX));
+
+      // Insert evenly spaced points; last point == current head
+      for (let s = 1; s <= steps; s++) {
+        const t = s / steps;
+        snakeObj.path.unshift({ x: lx + dx * t, y: ly + dy * t });
+      }
+    } else {
+      // Still push head so the body never falls behind
+      snakeObj.path.unshift({ x: head.x, y: head.y });
+    }
+
+    snakeObj._pathLast = { x: head.x, y: head.y };
+
+    // Keep enough history for all segments at this spacing
+    const maxPathLength = (snakeObj.segments.length + 2) * effectiveGap + 2;
+    while (snakeObj.path.length > maxPathLength) {
+      snakeObj.path.pop();
+    }
 
     // 🔸 Head: fully rotate with movement
     head.el.style.transform =
@@ -2525,10 +2526,8 @@ while (snakeObj.path.length > maxPathLength) {
 
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const seg = snakeObj.segments[i];
-      const idx = Math.min(
-        snakeObj.path.length - 1,
-        (i + 1) * segmentGap
-      );
+
+      const idx = Math.min(snakeObj.path.length - 1, (i + 1) * effectiveGap);
       const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
 
       const nextIdx = Math.max(0, idx - 2);
