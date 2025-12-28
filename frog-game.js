@@ -2398,24 +2398,24 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
-
+  
     const frogList = Array.isArray(opts.frogsList) ? opts.frogsList : frogs;
     const isMainMenu = !!opts.mainMenu;
-
+  
     const marginX = 8;
     const marginY = 24;
-
+  
     const head = snakeObj.head;
     if (!head) return;
-
+  
     const segmentGap = computeSegmentGap();
-
+  
     // -----------------------------
     // Targeting logic
     // -----------------------------
     let targetFrog = null;
     let bestDist2 = Infinity;
-
+  
     for (const frog of frogList) {
       if (!frog || !frog.el) continue;
       const fx = frog.x + FROG_SIZE / 2;
@@ -2428,9 +2428,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         targetFrog = frog;
       }
     }
-
+  
     let desiredAngle = head.angle;
-
+  
     if (snakeConfuseTime > 0) {
       // confused: random-ish turning
       desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
@@ -2443,20 +2443,20 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       // no frogs? just wander
       desiredAngle += (Math.random() - 0.5) * dt;
     }
-
+  
     let angleDiff =
       ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
     const maxTurn = snakeTurnRate * dt;
     if (angleDiff > maxTurn) angleDiff = maxTurn;
     if (angleDiff < -maxTurn) angleDiff = -maxTurn;
     head.angle += angleDiff;
-
+  
     const speedFactor = getSnakeSpeedFactor(snakeObj);
     const speed = SNAKE_BASE_SPEED * speedFactor * (0.8 + Math.random() * 0.4);
-
+  
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
-
+  
     // Keep inside bounds
     if (head.x < marginX) {
       head.x = marginX;
@@ -2472,57 +2472,57 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       head.y = height - marginY - SNAKE_SEGMENT_SIZE;
       head.angle = -head.angle;
     }
-
-// -----------------------------
-// Path + segments follow (FPS-independent)
-// Keep path points spaced by distance instead of "1 point per frame"
-// -----------------------------
-const PATH_STEP_PX = 1; // 1px sampling = consistent spacing across devices
-
-if (!snakeObj._pathLast) {
-  snakeObj._pathLast = { x: head.x, y: head.y };
-}
-
-// Add intermediate samples if the head moved more than PATH_STEP_PX this frame
-const lx = snakeObj._pathLast.x;
-const ly = snakeObj._pathLast.y;
-const dx = head.x - lx;
-const dy = head.y - ly;
-const dist = Math.hypot(dx, dy);
-
-if (dist >= PATH_STEP_PX) {
-  const ux = dx / dist;
-  const uy = dy / dist;
-  const steps = Math.floor(dist / PATH_STEP_PX);
-
-  // Insert from oldest -> newest so unshift ends with newest at the front
-  for (let s = 1; s <= steps; s++) {
-    snakeObj.path.unshift({
-      x: lx + ux * PATH_STEP_PX * s,
-      y: ly + uy * PATH_STEP_PX * s,
-    });
-  }
-
-  snakeObj._pathLast = { x: head.x, y: head.y };
-} else {
-  // Still keep an updated last reference
-  snakeObj._pathLast = { x: head.x, y: head.y };
-}
-
-// Ensure the current head position is always the newest sample
-snakeObj.path.unshift({ x: head.x, y: head.y });
-
-const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
-while (snakeObj.path.length > maxPathLength) {
-  snakeObj.path.pop();
-}
-
+  
+    // -----------------------------
+    // Path + segments follow (FPS-independent)
+    // Keep path points spaced by distance instead of "1 point per frame"
+    // -----------------------------
+    const PATH_STEP_PX = 1; // 1px sampling = consistent spacing across devices
+  
+    if (!snakeObj._pathLast) {
+      snakeObj._pathLast = { x: head.x, y: head.y };
+    }
+  
+    // Add intermediate samples if the head moved more than PATH_STEP_PX this frame
+    const lx = snakeObj._pathLast.x;
+    const ly = snakeObj._pathLast.y;
+    const pdx = head.x - lx;
+    const pdy = head.y - ly;
+    const dist = Math.hypot(pdx, pdy);
+  
+    if (dist >= PATH_STEP_PX) {
+      const ux = pdx / dist;
+      const uy = pdy / dist;
+      const steps = Math.floor(dist / PATH_STEP_PX);
+  
+      // Insert from oldest -> newest so unshift ends with newest at the front
+      for (let s = 1; s <= steps; s++) {
+        snakeObj.path.unshift({
+          x: lx + ux * PATH_STEP_PX * s,
+          y: ly + uy * PATH_STEP_PX * s,
+        });
+      }
+  
+      snakeObj._pathLast = { x: head.x, y: head.y };
+    } else {
+      // Still keep an updated last reference
+      snakeObj._pathLast = { x: head.x, y: head.y };
+    }
+  
+    // Ensure the current head position is always the newest sample
+    snakeObj.path.unshift({ x: head.x, y: head.y });
+  
+    const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
+    while (snakeObj.path.length > maxPathLength) {
+      snakeObj.path.pop();
+    }
+  
     const shrinkScale = snakeShrinkTime > 0 ? 0.8 : 1.0;
-
+  
     // 🔸 Head: fully rotate with movement
     head.el.style.transform =
       `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
-
+  
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const seg = snakeObj.segments[i];
       const idx = Math.min(
@@ -2530,38 +2530,38 @@ while (snakeObj.path.length > maxPathLength) {
         (i + 1) * segmentGap
       );
       const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
-
+  
       const nextIdx = Math.max(0, idx - 2);
       const q = snakeObj.path[nextIdx] || p;
       const angle = Math.atan2(p.y - q.y, p.x - q.x);
-
+  
       seg.x = p.x;
       seg.y = p.y;
-
+  
       seg.el.style.transform =
         `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
-
+  
     // -----------------------------
     // Collisions with frogs
     // -----------------------------
     const eatRadius = getSnakeEatRadius();
     const eatR2 = eatRadius * eatRadius;
-
+  
     // ✅ Use the *center* of the head sprite as the bite point
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
-
+  
     for (let i = frogList.length - 1; i >= 0; i--) {
       const frog = frogList[i];
       if (!frog || !frog.el) continue;
-
+  
       const fx = frog.x + FROG_SIZE / 2;
       const fy = frog.baseY + FROG_SIZE / 2;
       const dx = fx - headCx;
       const dy = fy - headCy;
       const d2 = dx * dx + dy * dy;
-
+  
       if (d2 <= eatR2) {
         if (isMainMenu) {
           frogList.splice(i, 1);
@@ -2570,19 +2570,19 @@ while (snakeObj.path.length > maxPathLength) {
           }
           continue;
         }
-
+  
         const killed = tryKillFrogAtIndex(i, "snake");
-
+  
         // Only the CURRENT primary snake is allowed to grow.
         if (killed) {
           frogsEatenCount++;
-
+  
           // 🔢 Scoring: 1 point per frog eaten
           let gain = 1;
           gain *= getLuckyScoreBonusFactor();
           if (scoreMultiTime > 0) gain *= SCORE_MULTI_FACTOR;
           score += gain;
-
+  
           if (frogsEatenCount % 2 === 0) {
             // Grow whichever snake actually got the kill
             growSnakeForSnake(snakeObj, 1);
@@ -2590,7 +2590,7 @@ while (snakeObj.path.length > maxPathLength) {
         }
       }
     }
-  }
+  }  
 
   function updateSnake(dt, width, height) {
     if (!snake) return;
