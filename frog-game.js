@@ -2474,62 +2474,45 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
 
 // -----------------------------
-// Path + segments follow (distance-sampled, FPS-independent)
-// Newest sample is ALWAYS path[0] (the head).
-// We insert fixed-distance samples *behind* the head so spacing stays stable.
+// Path + segments follow (FPS-independent)
+// Keep path points spaced by distance instead of "1 point per frame"
 // -----------------------------
-const PATH_STEP_PX = 2; // 2px sampling = stable + less churn than 1px
+const PATH_STEP_PX = 1; // 1px sampling = consistent spacing across devices
 
-// Init last-sampled position (used to accumulate distance cleanly)
 if (!snakeObj._pathLast) {
   snakeObj._pathLast = { x: head.x, y: head.y };
 }
 
-// Ensure we have at least one path point, and keep path[0] pinned to the head each frame
-if (!snakeObj.path || snakeObj.path.length === 0) {
-  snakeObj.path = [{ x: head.x, y: head.y }];
-} else {
-  snakeObj.path[0].x = head.x;
-  snakeObj.path[0].y = head.y;
-}
-
-// Distance from last sampled point to current head
+// Add intermediate samples if the head moved more than PATH_STEP_PX this frame
 const lx = snakeObj._pathLast.x;
 const ly = snakeObj._pathLast.y;
 const dx = head.x - lx;
 const dy = head.y - ly;
 const dist = Math.hypot(dx, dy);
 
-// Insert fixed-distance samples behind the head (at index 1..)
-// We keep residual distance by advancing _pathLast only by (steps * PATH_STEP_PX).
 if (dist >= PATH_STEP_PX) {
   const ux = dx / dist;
   const uy = dy / dist;
   const steps = Math.floor(dist / PATH_STEP_PX);
 
-  // Build samples from newest -> oldest (closest to head first)
-  const inserts = [];
-  for (let s = steps; s >= 1; s--) {
-    inserts.push({
+  // Insert from oldest -> newest so unshift ends with newest at the front
+  for (let s = 1; s <= steps; s++) {
+    snakeObj.path.unshift({
       x: lx + ux * PATH_STEP_PX * s,
       y: ly + uy * PATH_STEP_PX * s,
     });
   }
 
-  // Insert directly behind head (so head stays at path[0])
-  snakeObj.path.splice(1, 0, ...inserts);
-
-  // Advance last-sampled point by the exact stepped distance (keeps residual)
-  snakeObj._pathLast.x = lx + ux * PATH_STEP_PX * steps;
-  snakeObj._pathLast.y = ly + uy * PATH_STEP_PX * steps;
+  snakeObj._pathLast = { x: head.x, y: head.y };
+} else {
+  // Still keep an updated last reference
+  snakeObj._pathLast = { x: head.x, y: head.y };
 }
 
-// Cap path length (truncate from the tail end)
+// Ensure the current head position is always the newest sample
+snakeObj.path.unshift({ x: head.x, y: head.y });
+
 const maxPathLength = (snakeObj.segments.length + 2) * segmentGap + 2;
-if (snakeObj.path.length > maxPathLength) {
-  snakeObj.path.length = maxPathLength;
-}
-
 while (snakeObj.path.length > maxPathLength) {
   snakeObj.path.pop();
 }
