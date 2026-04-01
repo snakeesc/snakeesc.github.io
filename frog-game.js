@@ -209,6 +209,12 @@
     const runOrbs = Number(totalOrbsCollected) || 0;
     const frogsLostThisRun = Math.max(0, Number(totalFrogsSpawned) || 0);
 
+    // clear previous latest marker
+    stats.recentRuns = (stats.recentRuns || []).map((run) => ({
+      ...run,
+      isLatest: false
+    }));
+
     stats.totalRuns += 1;
     stats.totalPlayTime += runTime;
     stats.totalOrbsCollected += runOrbs;
@@ -218,7 +224,9 @@
       score: runScore,
       time: runTime,
       orbs: runOrbs,
-      at: Date.now()
+      frogsLost: frogsLostThisRun,
+      at: Date.now(),
+      isLatest: true
     });
 
     stats.recentRuns = stats.recentRuns.slice(0, 5);
@@ -4445,12 +4453,7 @@ async function showDashboardOverlay() {
 
   const recentRunsHtml = localStats.recentRuns.length
     ? localStats.recentRuns.map((run, i) => {
-        const isLatest =
-          latestCompletedRun &&
-          Math.floor(run.score) === Math.floor(latestCompletedRun.score) &&
-          Math.abs((Number(run.time) || 0) - (Number(latestCompletedRun.time) || 0)) < 0.01 &&
-          Number(run.orbs || 0) === Number(latestCompletedRun.orbs || 0) &&
-          i === 0;
+        const isLatest = !!run.isLatest;
 
         return `
           <li${isLatest ? ' style="color:#bef264;"' : ""}>
@@ -4462,15 +4465,20 @@ async function showDashboardOverlay() {
       }).join("")
     : "<li>No runs recorded on this device yet.</li>";
 
-  const latestRunHtml = latestCompletedRun
+  const savedLatestRun =
+    Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
+      ? localStats.recentRuns[0]
+      : null;
+
+  const latestRunHtml = savedLatestRun
     ? `
       <div class="frog-panel-section-label">Last Run</div>
       <ul class="frog-panel-list">
         <li style="color:#bef264;">
-          <strong>⭐ Score:</strong> <span class="stat-highlight">${Math.floor(latestCompletedRun.score)}</span>
-          · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(latestCompletedRun.time)}</span>
-          · <strong>Orbs:</strong> <span class="stat-highlight">${latestCompletedRun.orbs}</span>
-          · <strong>Frogs Lost:</strong> <span class="stat-highlight">${latestCompletedRun.frogsLost}</span>
+          <strong>⭐ Score:</strong> <span class="stat-highlight">${Math.floor(savedLatestRun.score)}</span>
+          · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(savedLatestRun.time)}</span>
+          · <strong>Orbs:</strong> <span class="stat-highlight">${savedLatestRun.orbs}</span>
+          · <strong>Frogs Lost:</strong> <span class="stat-highlight">${savedLatestRun.frogsLost || 0}</span>
         </li>
       </ul>
     `
@@ -4551,8 +4559,12 @@ async function showDashboardOverlay() {
 
     <div class="frog-panel-section-label">Best Record</div>
     <ul class="frog-panel-list">
-      <li><strong>Best Run:</strong> <span class="stat-highlight">${leaderboardBest.found ? leaderboardBest.bestRun : "—"}</span></li>
-      <li><strong>Best Time:</strong> <span class="stat-highlight">${leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime) : "—"}</span></li>
+      <li>
+        ${leaderboardBest.found
+          ? `${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
+          : "No best record yet."
+        }
+      </li>
     </ul>
 
     <div class="frog-panel-section-label">Lifetime Stats</div>
