@@ -4398,16 +4398,30 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       return;
     }
 
-    choices.forEach((choice) => {
+    choices.slice(0, 3).forEach((choice, index) => {
       const btn = document.createElement("button");
       const colorClass = getUpgradeColorClass(choice.id);
-      btn.className = "frog-btn frog-upgrade-choice " + colorClass;
+
+      btn.className = "frog-btn frog-upgrade-choice is-spawning " + colorClass;
       btn.dataset.upgradeId = choice.id;
+      btn.style.animationDelay = `${index * 70}ms`;
+
+      const rawLabel = String(choice.label || "");
+      const parts = rawLabel.split("<br>");
+      const titleHtml = parts.shift() || "";
+      const descHtml = parts.join("<br>");
+
       btn.innerHTML = `
-        <div class="frog-upgrade-desc">${choice.label}</div>
+        <div class="frog-upgrade-title">${titleHtml}</div>
+        <div class="frog-upgrade-desc">${descHtml}</div>
       `;
+
       btn.addEventListener("click", () => selectUpgrade(choice));
       containerEl.appendChild(btn);
+
+      setTimeout(() => {
+        btn.classList.remove("is-spawning");
+      }, 320);
     });
   }
 
