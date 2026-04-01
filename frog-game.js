@@ -4583,6 +4583,8 @@ async function showDashboardOverlay() {
       <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
     </div>
 
+    ${leaderboardTopHtml}
+    
     <div class="frog-panel-section-label">Best Record</div>
     <ul class="frog-panel-list">
       <li>
@@ -4601,8 +4603,6 @@ async function showDashboardOverlay() {
       <li><strong>Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>
       <li><strong>Average Run Time:</strong> <span class="stat-highlight">${formatDashboardDuration(avgRunTime)}</span></li>
     </ul>
-
-    ${leaderboardTopHtml}
 
     ${latestRunHtml}
   `;
