@@ -976,9 +976,10 @@
       isMagnet: false,
       isLucky: false,
       isZombie: false,
-      zombieDirX: 0,
-      zombieDirY: 0,
-      zombieRetargetTime: 0,
+      isMutationZombie: false,
+      mutationZombieDirX: 0,
+      mutationZombieDirY: 0,
+      mutationZombieRetargetTime: 0,
       shieldGrantedAt: null,
 
       specialDeathRattleChance: null,
@@ -1223,17 +1224,38 @@
   }
 
 function getRandomMutationUpgrade() {
+  if (frogs.length < 20) {
+    return null;
+  }
+
   return {
     id: "mutation",
     label: `
       🧬 Mutation<br>
-      Turn <span style="color:${TOTAL_HIGHLIGHT_COLOR};">half your frogs</span> into zombies<br>
-      Gain <span style="color:${TOTAL_HIGHLIGHT_COLOR};">both alternate buffs</span>
+      Turn <span style="color:${TOTAL_HIGHLIGHT_COLOR};">half your frogs</span> into zombies
     `,
     apply: () => {
       applyMutationUpgrade();
     }
   };
+}
+
+function applyMutationUpgrade() {
+  const candidates = frogs.filter(f => f && f.el && !f.isMutationZombie);
+  if (!candidates.length) return;
+
+  const convertCount = Math.max(1, Math.floor(candidates.length / 2));
+  const shuffled = candidates.slice().sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < convertCount; i++) {
+    const frog = shuffled[i];
+    if (!frog) continue;
+
+    frog.isMutationZombie = true;
+    frog.mutationZombieDirX = 0;
+    frog.mutationZombieDirY = 0;
+    frog.mutationZombieRetargetTime = 0;
+  }
 }
 
 function grantChampionFrog(frog) {
@@ -1979,7 +2001,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     let goalX = null;
     let goalY = null;
 
-    if (frog.isZombie) {
+    if (frog.isMutationZombie) {
       const frogCx = frog.x + FROG_SIZE / 2;
       const frogCy = frog.baseY + FROG_SIZE / 2;
 
@@ -1996,11 +2018,13 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
       for (const s of allSnakes) {
         if (!s || !s.head) continue;
+
         const sx = s.head.x + SNAKE_SEGMENT_SIZE / 2;
         const sy = s.head.y + SNAKE_SEGMENT_SIZE / 2;
         const dx = frogCx - sx;
         const dy = frogCy - sy;
         const d2 = dx * dx + dy * dy;
+
         if (d2 < nearestD2) {
           nearestD2 = d2;
           nearestSnake = { dx, dy };
@@ -2019,18 +2043,18 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         goalX = frog.x + nx * hopDist;
         goalY = frog.baseY + ny * hopDist;
       } else {
-        frog.zombieRetargetTime -= frog.hopDuration || 0.4;
+        frog.mutationZombieRetargetTime -= frog.hopDuration || 0.4;
 
-        if (frog.zombieRetargetTime <= 0) {
+        if (frog.mutationZombieRetargetTime <= 0) {
           const angle = randRange(0, Math.PI * 2);
-          frog.zombieDirX = Math.cos(angle);
-          frog.zombieDirY = Math.sin(angle);
-          frog.zombieRetargetTime = randRange(0.8, 2.0);
+          frog.mutationZombieDirX = Math.cos(angle);
+          frog.mutationZombieDirY = Math.sin(angle);
+          frog.mutationZombieRetargetTime = randRange(0.8, 2.0);
         }
 
         const wanderDist = randRange(40, 110);
-        goalX = frog.x + frog.zombieDirX * wanderDist;
-        goalY = frog.baseY + frog.zombieDirY * wanderDist;
+        goalX = frog.x + frog.mutationZombieDirX * wanderDist;
+        goalY = frog.baseY + frog.mutationZombieDirY * wanderDist;
       }
     } else if (mouse.follow && mouse.active && !frog.isGhost) {
       goalX = mouse.x - FROG_SIZE / 2;
@@ -3214,7 +3238,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    upgrades.push(getRandomMutationUpgrade());
+    const mutationChoice = getRandomMutationUpgrade();
+    if (mutationChoice) {
+      upgrades.push(mutationChoice);
+    }
 
     // Buff duration (capped)
     if (buffDurationFactor < buffDurationCap - 1e-4) {
