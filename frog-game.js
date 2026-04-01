@@ -3385,7 +3385,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "commonDeathRattle",
         label: `
           💀 Deathrattle<br>
-          +<span style="color:${neon};">${deathPerPickPct}%</span> chance that dead frogs respawn (stacks)
+          +<span style="color:${neon};">${deathPerPickPct}%</span> chance that dead frogs respawn
         `,
         apply: () => {
           frogDeathRattleChance = Math.min(
@@ -3402,7 +3402,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "orbCollector",
         label: `
           🌌 Orb Collector<br>
-          Every orb gains +<span style="color:${neon};">${orbPerPickPct}%</span> chance to spawn a frog (stacks)
+          Every orb gains +<span style="color:${neon};">${orbPerPickPct}%</span> chance to spawn a frog
         `,
         apply: () => {
           orbCollectorActive = true;
