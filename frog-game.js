@@ -1316,17 +1316,26 @@ function grantZombieFrog(frog) {
 function updateFrogRoleEmoji(frog) {
   if (!frog || !frog.el) return;
 
+  // Remove previous badge, if any
   if (frog.cannibalIcon && frog.cannibalIcon.parentNode === frog.el) {
     frog.el.removeChild(frog.cannibalIcon);
   }
   frog.cannibalIcon = null;
 
-  const stars = Math.max(0, Math.min(3, frog.starLevel || 0));
-  if (!stars) return;
+  const emojis = [];
+  if (frog.isChampion)     emojis.push("🏅");
+  if (frog.isAura)         emojis.push("🌈");
+  if (frog.hasPermaShield) emojis.push("🛡️");
+  if (frog.isMagnet)       emojis.push("🧲");
+  if (frog.isLucky)        emojis.push("🍀");
+  if (frog.isZombie)       emojis.push("🧟");
+  if (frog.isCannibal)     emojis.push("🦴");
+
+  if (!emojis.length) return;
 
   const badge = document.createElement("div");
   badge.className = "frog-role-emoji";
-  badge.textContent = "⭐".repeat(stars);
+  badge.textContent = emojis.join("");
   badge.style.position = "absolute";
   badge.style.bottom = "-2px";
   badge.style.right = "-2px";
