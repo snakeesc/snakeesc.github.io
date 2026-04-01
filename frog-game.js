@@ -4450,17 +4450,26 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           style="
             width:100%;
             box-sizing:border-box;
-            padding:8px 10px;
-            border-radius:8px;
+            padding:5px 8px;
+            border-radius:6px;
             border:1px solid #44403c;
             background:#292524;
             color:white;
             font-family:inherit;
-            font-size:13px;
-            margin-bottom:8px;
+            font-size:12px;
+            margin-bottom:6px;
           "
         />
-        <button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary" style="margin-bottom:4px;">
+        <button
+          id="dashboardSaveTagBtn"
+          class="frog-btn frog-btn-secondary"
+          style="
+            width:auto;
+            padding:6px 10px;
+            font-size:12px;
+            margin-bottom:4px;
+          "
+        >
           Save Tag
         </button>
         <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
