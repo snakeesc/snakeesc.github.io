@@ -4444,6 +4444,11 @@ async function showDashboardOverlay() {
   const topFiveLeaderboard = Array.isArray(leaderboardEntries)
     ? leaderboardEntries.slice(0, 5)
     : [];
+  const currentTag =
+    (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
+    (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
+    getSavedDashboardTag() ||
+    "";
   const normalizedCurrentTag =
     typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
 
@@ -4467,11 +4472,6 @@ async function showDashboardOverlay() {
   leaderboardBest.found && bestRecordRank >= 0
     ? `#${bestRecordRank + 1} `
     : "";
-  const currentTag =
-    (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
-    (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
-    getSavedDashboardTag() ||
-    "";
 
   const avgRunTime =
     localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
