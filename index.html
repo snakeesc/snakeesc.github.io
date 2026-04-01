@@ -16,20 +16,7 @@
     gtag('config', 'G-9Q540R6FC5');
   </script>
   
-  <meta name="viewport" id="vp" content="width=1024, initial-scale=1, viewport-fit=cover">
-  <script>
-    (function () {
-      const BASE = 1024;
-      const w = Math.min(window.innerWidth || BASE, screen.width || BASE);
-      const s = w / BASE;
-      const vp = document.getElementById("vp");
-      vp.setAttribute(
-        "content",
-        `width=${BASE}, initial-scale=${s}, maximum-scale=${s}, viewport-fit=cover`
-      );
-    })();
-  </script>
-
+  <meta name="viewport" content="width=1024, initial-scale=1">
   <!-- Adjust path if your CSS is elsewhere -->
   <link rel="stylesheet" href="css/style.css" />
   <style>
@@ -65,22 +52,31 @@
         Mouse to move · Frogs follow your cursor.
       </div>
 
-      <div style="margin-bottom: 8px;">
+      <div style="margin-bottom: 12px; display:grid; gap:12px;">
         <button id="btnStartRun" class="frog-btn frog-btn-primary">
-          Start Run
+          Start Game
         </button>
-      </div>
-
-      <div>
         <button id="btnHowTo" class="frog-btn frog-btn-secondary">
           How to Play
         </button>
-        <button id="btnBuffGuide" class="frog-btn frog-btn-secondary">
-          Buff & Upgrade Guide
-        </button>
-        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">
+        <button id="btnLeaderboard" class="frog-btn frog-btn-danger">
           Leaderboard
         </button>
+      </div>
+
+      <div class="card-grid" style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:4px;">
+        <div class="mini-card" style="background:#fff; border:3px solid #2b2b2b; border-radius:16px; padding:12px; text-align:center; color:#2b2b2b;">
+          <div class="label" style="font-size:11px; text-transform:uppercase; color:#555; margin-bottom:6px;">Best Score</div>
+          <div class="value" style="font-size:18px; font-weight:700;">—</div>
+        </div>
+        <div class="mini-card" style="background:#fff; border:3px solid #2b2b2b; border-radius:16px; padding:12px; text-align:center; color:#2b2b2b;">
+          <div class="label" style="font-size:11px; text-transform:uppercase; color:#555; margin-bottom:6px;">Longest Run</div>
+          <div class="value" style="font-size:18px; font-weight:700;">—</div>
+        </div>
+        <div class="mini-card" style="background:#fff; border:3px solid #2b2b2b; border-radius:16px; padding:12px; text-align:center; color:#2b2b2b;">
+          <div class="label" style="font-size:11px; text-transform:uppercase; color:#555; margin-bottom:6px;">Runs Today</div>
+          <div class="value" style="font-size:18px; font-weight:700;">—</div>
+        </div>
       </div>
     </div>
   </div>
