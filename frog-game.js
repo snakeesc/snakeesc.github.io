@@ -976,6 +976,9 @@
       isMagnet: false,
       isLucky: false,
       isZombie: false,
+      zombieDirX: 0,
+      zombieDirY: 0,
+      zombieRetargetTime: 0,
       shieldGrantedAt: null,
 
       specialDeathRattleChance: null,
@@ -1220,48 +1223,16 @@
   }
 
 function getRandomMutationUpgrade() {
-  const mutationPool = [
-    {
-      role: "champion",
-      name: "Champion",
-      apply: () => spawnRoleFrog("champion")
-    },
-    {
-      role: "aura",
-      name: "Aura",
-      apply: () => spawnRoleFrog("aura")
-    },
-    {
-      role: "magnet",
-      name: "Magnet",
-      apply: () => spawnRoleFrog("magnet")
-    },
-    {
-      role: "lucky",
-      name: "Lucky",
-      apply: () => spawnRoleFrog("lucky")
-    },
-    {
-      role: "zombie",
-      name: "Zombie",
-      apply: () => spawnRoleFrog("zombie")
-    },
-    {
-      role: "cannibal",
-      name: "Cannibal",
-      apply: () => spawnRoleFrog("cannibal")
-    }
-  ];
-
-  const picked = mutationPool[Math.floor(Math.random() * mutationPool.length)];
-
   return {
-    id: `mutation_${picked.role}`,
+    id: "mutation",
     label: `
       🧬 Mutation<br>
-      Spawn <span style="color:${TOTAL_HIGHLIGHT_COLOR};">1 ${picked.name}</span> frog
+      Turn <span style="color:${TOTAL_HIGHLIGHT_COLOR};">half your frogs</span> into zombies<br>
+      Gain <span style="color:${TOTAL_HIGHLIGHT_COLOR};">both alternate buffs</span>
     `,
-    apply: picked.apply
+    apply: () => {
+      applyMutationUpgrade();
+    }
   };
 }
 
@@ -1316,6 +1287,40 @@ function grantZombieFrog(frog) {
   playPerFrogUpgradeSound("zombie");
 }
 
+function grantAlternateMutationBuffs() {
+  for (const frog of frogs) {
+    if (!frog) continue;
+    grantMagnetFrog(frog);
+    grantLuckyFrog(frog);
+  }
+}
+
+function applyMutationUpgrade() {
+  if (!frogs.length) return;
+
+  const candidates = frogs.filter(f => f && f.el);
+  if (!candidates.length) return;
+
+  const convertCount = Math.max(1, Math.floor(candidates.length / 2));
+
+  const shuffled = candidates.slice().sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < convertCount; i++) {
+    const frog = shuffled[i];
+    if (!frog) continue;
+
+    frog.isZombie = true;
+    frog.zombieDirX = 0;
+    frog.zombieDirY = 0;
+    frog.zombieRetargetTime = 0;
+
+    refreshFrogPermaGlow(frog);
+    updateFrogRoleEmoji(frog);
+  }
+
+  grantAlternateMutationBuffs();
+}
+
 function updateFrogRoleEmoji(frog) {
   if (!frog || !frog.el) return;
 
@@ -1360,7 +1365,7 @@ function updateFrogRoleEmoji(frog) {
 
 function grantRandomPermaFrogUpgrade(frog) {
   if (!frog) return;
-  const roles = ["champion", "aura", "magnet", "lucky", "zombie"];
+  const roles = ["champion", "aura", "magnet", "lucky"];
 
   const available = roles.filter((r) => {
     switch (r) {
@@ -1950,7 +1955,60 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     let goalX = null;
     let goalY = null;
 
-    if (mouse.follow && mouse.active && !frog.isGhost) {
+    if (frog.isZombie) {
+      const frogCx = frog.x + FROG_SIZE / 2;
+      const frogCy = frog.baseY + FROG_SIZE / 2;
+
+      let nearestSnake = null;
+      let nearestD2 = Infinity;
+
+      const allSnakes = [];
+      if (snake) allSnakes.push(snake);
+      if (Array.isArray(extraSnakes)) {
+        for (const s of extraSnakes) {
+          if (s) allSnakes.push(s);
+        }
+      }
+
+      for (const s of allSnakes) {
+        if (!s || !s.head) continue;
+        const sx = s.head.x + SNAKE_SEGMENT_SIZE / 2;
+        const sy = s.head.y + SNAKE_SEGMENT_SIZE / 2;
+        const dx = frogCx - sx;
+        const dy = frogCy - sy;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < nearestD2) {
+          nearestD2 = d2;
+          nearestSnake = { dx, dy };
+        }
+      }
+
+      const EVADE_RADIUS = 180;
+      const evadeR2 = EVADE_RADIUS * EVADE_RADIUS;
+
+      if (nearestSnake && nearestD2 < evadeR2) {
+        const dist = Math.sqrt(nearestD2) || 1;
+        const nx = nearestSnake.dx / dist;
+        const ny = nearestSnake.dy / dist;
+        const hopDist = randRange(70, 140);
+
+        goalX = frog.x + nx * hopDist;
+        goalY = frog.baseY + ny * hopDist;
+      } else {
+        frog.zombieRetargetTime -= frog.hopDuration || 0.4;
+
+        if (frog.zombieRetargetTime <= 0) {
+          const angle = randRange(0, Math.PI * 2);
+          frog.zombieDirX = Math.cos(angle);
+          frog.zombieDirY = Math.sin(angle);
+          frog.zombieRetargetTime = randRange(0.8, 2.0);
+        }
+
+        const wanderDist = randRange(40, 110);
+        goalX = frog.x + frog.zombieDirX * wanderDist;
+        goalY = frog.baseY + frog.zombieDirY * wanderDist;
+      }
+    } else if (mouse.follow && mouse.active && !frog.isGhost) {
       goalX = mouse.x - FROG_SIZE / 2;
       goalY = mouse.y - FROG_SIZE / 2;
     }
