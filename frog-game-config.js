@@ -6,7 +6,7 @@
 
   const config = {
     TAG_STORAGE_KEY: "frogSnake_username",
-    FROG_SIZE: 56,
+    FROG_SIZE: 48,
     MAX_TOKEN_ID: 4040,
     META_BASE: "https://freshfrogs.github.io/frog/json/",
     META_EXT: ".json",
@@ -17,7 +17,7 @@
     ORB_TTL: 28,
     ORB_SPAWN_INTERVAL_MIN: 3.50,
     ORB_SPAWN_INTERVAL_MAX: 8.25,
-    SNAKE_SEGMENT_SIZE: 56,
+    SNAKE_SEGMENT_SIZE: 48,
     SNAKE_BASE_SPEED: 70,
     SNAKE_TURN_RATE: Math.PI * 0.75,
     // Default spacing for snake segments (in path samples) before clamping.
