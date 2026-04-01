@@ -4143,7 +4143,12 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       const list = Array.isArray(entries) ? entries.slice(0, 50) : [];
 
       if (list.length === 0) {
-        content.innerHTML = '<div class="leaderboard-empty">No runs yet.</div>';
+        content.innerHTML = `
+          <div class="frog-panel-section-label">Leaderboard</div>
+          <ul class="frog-panel-list">
+            <li>No runs yet.</li>
+          </ul>
+        `;
         leaderboardOverlay.style.display = "flex";
         return;
       }
@@ -4153,12 +4158,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           typeof window.FrogGameLeaderboard.getCurrentUserLabel === "function" &&
           window.FrogGameLeaderboard.getCurrentUserLabel()) ||
         null;
-
-      const scoreKeys = ["bestScore", "score", "maxScore", "points", "value"];
-      const timeKeys = ["bestTime", "time", "maxTime", "seconds", "duration"];
-
-      const pageSize = 10;
-      let currentPage = 0;
 
       function normalizeTag(tag) {
         return typeof tag === "string" ? tag.trim().toLowerCase() : "";
@@ -4172,14 +4171,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         return tag === target || name === target;
       }
 
-      const myIndex = list.findIndex(entryMatchesUser);
-      if (myIndex >= 0) {
-        currentPage = Math.floor(myIndex / pageSize);
-      }
-
       function getScore(entry) {
         if (!entry) return 0;
-        for (const key of scoreKeys) {
+        const keys = ["bestScore", "score", "maxScore", "points", "value"];
+        for (const key of keys) {
           if (!(key in entry)) continue;
           let v = entry[key];
           if (typeof v === "string") v = parseFloat(v);
@@ -4190,7 +4185,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
       function getTime(entry) {
         if (!entry) return 0;
-        for (const key of timeKeys) {
+        const keys = ["bestTime", "time", "maxTime", "seconds", "duration"];
+        for (const key of keys) {
           if (!(key in entry)) continue;
           let v = entry[key];
           if (typeof v === "string") v = parseFloat(v);
@@ -4199,144 +4195,94 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         return 0;
       }
 
-      function getFrogs(entry) {
-        if (entry && entry.stats) {
-          const stats = entry.stats;
-          if (typeof stats.totalFrogsSpawned === "number") return stats.totalFrogsSpawned;
-          if (typeof stats.frogsSpawned === "number") return stats.frogsSpawned;
-          if (typeof stats.frogCount === "number") return stats.frogCount;
-        }
-        return null;
-      }
-
-      function getBuildSnippet(entry) {
-        if (!entry || !entry.stats) return "—";
-        const s = entry.stats;
-
-        const speed = typeof s.frogSpeedFactor === "number" ? `SPD×${s.frogSpeedFactor.toFixed(2)}` : null;
-        const jump = typeof s.frogJumpFactor === "number" ? `JMP×${s.frogJumpFactor.toFixed(2)}` : null;
-        const buff = typeof s.buffDurationFactor === "number" ? `BUFF×${s.buffDurationFactor.toFixed(2)}` : null;
-        const dr = typeof s.deathrattleChance === "number" ? `DR ${(s.deathrattleChance * 100).toFixed(0)}%` : null;
-        const parts = [speed, jump, buff, dr].filter(Boolean);
-        return parts.length ? parts.join(" · ") : "—";
-      }
-
       function getDisplayName(entry, fallback) {
         if (entry && typeof entry.tag === "string" && entry.tag.trim() !== "") return entry.tag;
         if (entry && typeof entry.name === "string" && entry.name.trim() !== "") return entry.name;
         return fallback;
       }
 
-      function buildRow(entry, index) {
-        const row = document.createElement("tr");
-        row.className = "leaderboard-row" + (entryMatchesUser(entry) ? " is-me" : "");
+      const pageSize = 10;
+      let currentPage = 0;
 
-        const rankCell = document.createElement("td");
-        rankCell.textContent = index + 1;
-
-        const nameCell = document.createElement("td");
-        const nameLabel = document.createElement("span");
-        nameLabel.className = "leaderboard-name";
-        nameLabel.textContent = getDisplayName(entry, "Player " + (index + 1));
-        nameCell.appendChild(nameLabel);
-
-        const timeCell = document.createElement("td");
-        timeCell.textContent = formatLeaderboardTime(getTime(entry));
-
-        const scoreCell = document.createElement("td");
-        scoreCell.textContent = Math.floor(getScore(entry));
-
-        const frogsCell = document.createElement("td");
-        const frogs = getFrogs(entry);
-        frogsCell.textContent = frogs != null ? frogs : "—";
-
-        const buildCell = document.createElement("td");
-        buildCell.textContent = getBuildSnippet(entry);
-
-        [rankCell, nameCell, timeCell, scoreCell, frogsCell, buildCell].forEach((cell) => {
-          cell.classList.add("leaderboard-cell");
-        });
-
-        row.appendChild(rankCell);
-        row.appendChild(nameCell);
-        row.appendChild(timeCell);
-        row.appendChild(scoreCell);
-        row.appendChild(frogsCell);
-        row.appendChild(buildCell);
-
-        return row;
+      const myIndex = list.findIndex(entryMatchesUser);
+      if (myIndex >= 0) {
+        currentPage = Math.floor(myIndex / pageSize);
       }
 
       function renderPage(pageIndex) {
         currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
 
-        const table = document.createElement("table");
-        table.className = "leaderboard-table";
-
-        const thead = document.createElement("thead");
-        const headerRow = document.createElement("tr");
-        const headers = ["#", "Player", "Time", "Score", "Frogs", "Build Snapshot"];
-        headers.forEach((label) => {
-          const th = document.createElement("th");
-          th.textContent = label;
-          th.className = "leaderboard-head-cell";
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-
-        const tbody = document.createElement("tbody");
         const start = currentPage * pageSize;
         const end = Math.min(start + pageSize, list.length);
-        for (let i = start; i < end; i++) {
-          tbody.appendChild(buildRow(list[i], i));
+        const pageEntries = list.slice(start, end);
+
+        const itemsHtml = pageEntries.map((entry, idx) => {
+          const rank = start + idx + 1;
+          const name = getDisplayName(entry, `Player ${rank}`);
+          const score = Math.floor(getScore(entry));
+          const time = formatLeaderboardTime(getTime(entry));
+          const isMe = entryMatchesUser(entry);
+
+          return `
+            <li${isMe ? ' style="color:#bef264;"' : ""}>
+              <strong>#${rank}</strong>
+              ${isMe ? "⭐ " : ""}
+              ${name} · ${time} · ${score} score
+            </li>
+          `;
+        }).join("");
+
+        content.innerHTML = `
+          <div class="frog-panel-section-label">Global Leaderboard</div>
+          <ul class="frog-panel-list">
+            ${itemsHtml}
+          </ul>
+
+          <div class="frog-panel-footer">
+            <div style="margin-bottom:8px;">
+              Showing ${start + 1}-${end} of ${list.length}
+            </div>
+            <div style="display:flex; gap:8px; justify-content:center;">
+              <button
+                id="leaderboardPrevBtn"
+                class="frog-btn frog-btn-secondary"
+                style="width:auto; margin-bottom:0;"
+                ${currentPage === 0 ? "disabled" : ""}
+              >
+                Prev
+              </button>
+              <button
+                id="leaderboardNextBtn"
+                class="frog-btn frog-btn-secondary"
+                style="width:auto; margin-bottom:0;"
+                ${end >= list.length ? "disabled" : ""}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        `;
+
+        const prevBtn = document.getElementById("leaderboardPrevBtn");
+        const nextBtn = document.getElementById("leaderboardNextBtn");
+
+        if (prevBtn) {
+          prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
         }
-        table.appendChild(tbody);
-
-        const pager = document.createElement("div");
-        pager.className = "leaderboard-pager";
-
-        const prevBtn = document.createElement("button");
-        prevBtn.textContent = "◀ Prev";
-        prevBtn.className = "frog-btn frog-btn-secondary leaderboard-page-btn";
-        prevBtn.disabled = currentPage === 0;
-        prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
-
-        const nextBtn = document.createElement("button");
-        nextBtn.textContent = "Next ▶";
-        nextBtn.className = "frog-btn frog-btn-secondary leaderboard-page-btn";
-        nextBtn.disabled = end >= list.length;
-        nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
-
-        const pageInfo = document.createElement("div");
-        pageInfo.className = "leaderboard-page-info";
-        pageInfo.textContent = `Showing ${start + 1}–${end} of ${list.length}`;
-
-        pager.appendChild(prevBtn);
-        pager.appendChild(pageInfo);
-        pager.appendChild(nextBtn);
-
-        const legend = document.createElement("div");
-        legend.className = "leaderboard-legend";
-        legend.textContent = "Top 50 runs · 10 per page · your tag highlights in green";
-
-        const header = document.createElement("div");
-        header.className = "leaderboard-header";
-        header.innerHTML =
-          '<div class="leaderboard-title">Global leaderboard</div>' +
-          '<div class="leaderboard-subtitle">Fresh pulls may lag a few seconds after a run posts.</div>';
-
-        content.innerHTML = "";
-        content.appendChild(header);
-        content.appendChild(table);
-        content.appendChild(pager);
-        //content.appendChild(legend);
+        if (nextBtn) {
+          nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
+        }
       }
 
       renderPage(currentPage);
     } catch (err) {
       console.error("Failed to load leaderboard:", err);
-      content.innerHTML = '<div class="leaderboard-error">Failed to load leaderboard.</div>';
+      content.innerHTML = `
+        <div class="frog-panel-section-label">Leaderboard</div>
+        <ul class="frog-panel-list">
+          <li>Failed to load leaderboard.</li>
+        </ul>
+      `;
     }
 
     leaderboardOverlay.style.display = "flex";
