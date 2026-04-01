@@ -4471,7 +4471,7 @@ async function showDashboardOverlay() {
   const bestRecordPrefix =
   leaderboardBest.found && bestRecordRank >= 0
     ? `#${bestRecordRank + 1} `
-    : "";
+    : "#**";
 
   const avgRunTime =
     localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
