@@ -4440,6 +4440,10 @@ async function showDashboardOverlay() {
 
   const localStats = loadDashboardStats();
   const leaderboardBest = await getMyDashboardBestFromLeaderboard();
+    const leaderboardEntries = await fetchLeaderboard();
+  const topFiveLeaderboard = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.slice(0, 5)
+    : [];
   const currentTag =
     (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
     (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
@@ -4470,7 +4474,44 @@ async function showDashboardOverlay() {
     `
     : "";
 
+      const leaderboardTopHtml = topFiveLeaderboard.length
+    ? `
+      <div class="frog-panel-section-label">Top 5 Leaderboard</div>
+      <ul class="frog-panel-list">
+        ${topFiveLeaderboard.map((entry, i) => {
+          const name =
+            (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
+              ? entry.tag
+              : (entry && typeof entry.name === "string" && entry.name.trim() !== "")
+                ? entry.name
+                : `Player ${i + 1}`;
+
+          const score = Math.floor(
+            Number(entry?.bestScore ?? entry?.score ?? 0)
+          );
+
+          const time = formatDashboardDuration(
+            Number(entry?.bestTime ?? entry?.time ?? 0)
+          );
+
+          return `
+            <li>
+              <strong>#${i + 1}</strong>
+              ${name} · ${score} score · ${time}
+            </li>
+          `;
+        }).join("")}
+      </ul>
+    `
+    : `
+      <div class="frog-panel-section-label">Top 5 Leaderboard</div>
+      <ul class="frog-panel-list">
+        <li>No leaderboard entries yet.</li>
+      </ul>
+    `;
+
   content.innerHTML = `
+      ${leaderboardTopHtml}
     <div class="frog-panel-section-label">Player Tag</div>
     <ul class="frog-panel-list">
       <li>
