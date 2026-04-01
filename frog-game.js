@@ -4455,41 +4455,58 @@ async function showDashboardOverlay() {
     `
     : "";
 
-      const leaderboardTopHtml = topFiveLeaderboard.length
-    ? `
-      <div class="frog-panel-section-label">Top 5 Leaderboard</div>
-      <ul class="frog-panel-list">
-        ${topFiveLeaderboard.map((entry, i) => {
-          const name =
-            (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
-              ? entry.tag
-              : (entry && typeof entry.name === "string" && entry.name.trim() !== "")
-                ? entry.name
-                : `Player ${i + 1}`;
+const leaderboardTopHtml = topFiveLeaderboard.length
+  ? `
+    <div class="frog-panel-section-label">Top 5 Leaderboard</div>
+    <ul class="frog-panel-list">
+      ${topFiveLeaderboard.map((entry, i) => {
+        const name =
+          (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
+            ? entry.tag
+            : (entry && typeof entry.name === "string" && entry.name.trim() !== "")
+              ? entry.name
+              : `Player ${i + 1}`;
 
-          const score = Math.floor(
-            Number(entry?.bestScore ?? entry?.score ?? 0)
-          );
+        const score = Math.floor(
+          Number(entry?.bestScore ?? entry?.score ?? 0)
+        );
 
-          const time = formatDashboardDuration(
-            Number(entry?.bestTime ?? entry?.time ?? 0)
-          );
+        const time = formatDashboardDuration(
+          Number(entry?.bestTime ?? entry?.time ?? 0)
+        );
 
-          return `
-            <li>
-              <strong>#${i + 1}</strong>
-              ${name} · ${score} score · ${time}
-            </li>
-          `;
-        }).join("")}
-      </ul>
-    `
-    : `
-      <div class="frog-panel-section-label">Top 5 Leaderboard</div>
-      <ul class="frog-panel-list">
-        <li>No leaderboard entries yet.</li>
-      </ul>
-    `;
+        const entryTag =
+          typeof entry?.tag === "string"
+            ? entry.tag.trim().toLowerCase()
+            : typeof entry?.name === "string"
+              ? entry.name.trim().toLowerCase()
+              : "";
+
+        const isMe =
+          !!normalizedCurrentTag &&
+          !!entryTag &&
+          entryTag === normalizedCurrentTag;
+
+        return `
+          <li style="${
+            isMe
+              ? "color:#bef264; font-weight:700; background:rgba(190,242,100,0.08); border:1px solid rgba(190,242,100,0.35); padding:6px 8px; border-radius:8px;"
+              : ""
+          }">
+            <strong>#${i + 1}</strong>
+            ${isMe ? "⭐ " : ""}
+            ${name} · ${score} score · ${time}
+          </li>
+        `;
+      }).join("")}
+    </ul>
+  `
+  : `
+    <div class="frog-panel-section-label">Top 5 Leaderboard</div>
+    <ul class="frog-panel-list">
+      <li>No leaderboard entries yet.</li>
+    </ul>
+  `;
 
   content.innerHTML = `
     <div class="frog-panel-section-label">Player Tag</div>
