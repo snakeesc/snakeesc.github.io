@@ -4587,7 +4587,7 @@ async function showDashboardOverlay() {
     <ul class="frog-panel-list">
       <li>
         ${leaderboardBest.found
-          ? `${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
+          ? `${currentTag || "You"} · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
           : "No best record yet."
         }
       </li>
