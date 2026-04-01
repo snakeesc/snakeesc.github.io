@@ -125,7 +125,169 @@
 
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
+  const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
 
+  function getDefaultDashboardStats() {
+    return {
+      totalRuns: 0,
+      totalPlayTime: 0,
+      totalOrbsCollected: 0,
+      totalFrogsLost: 0,
+      recentRuns: []
+    };
+  }
+
+  function loadDashboardStats() {
+    try {
+      if (typeof localStorage === "undefined") {
+        return getDefaultDashboardStats();
+      }
+      const raw = localStorage.getItem(DASHBOARD_STORAGE_KEY);
+      if (!raw) return getDefaultDashboardStats();
+
+      const parsed = JSON.parse(raw);
+      return {
+        ...getDefaultDashboardStats(),
+        ...parsed,
+        recentRuns: Array.isArray(parsed?.recentRuns) ? parsed.recentRuns : []
+      };
+    } catch (e) {
+      return getDefaultDashboardStats();
+    }
+  }
+
+  function saveDashboardStats(stats) {
+    try {
+      if (typeof localStorage === "undefined") return;
+      localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(stats));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function formatDashboardDuration(seconds) {
+    const total = Math.max(0, Math.floor(Number(seconds) || 0));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
+
+  function getSavedDashboardTag() {
+    try {
+      if (typeof localStorage === "undefined") return null;
+      const tag = localStorage.getItem(TAG_STORAGE_KEY);
+      if (tag && String(tag).trim() !== "") return String(tag).trim();
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  }
+
+  function recordRunToDashboard() {
+    const stats = loadDashboardStats();
+
+    const runScore = Math.floor(Number(lastRunScore) || 0);
+    const runTime = Number(lastRunTime) || 0;
+    const runOrbs = Number(totalOrbsCollected) || 0;
+    const frogsLostThisRun = Math.max(0, Number(totalFrogsSpawned) || 0);
+
+    stats.totalRuns += 1;
+    stats.totalPlayTime += runTime;
+    stats.totalOrbsCollected += runOrbs;
+    stats.totalFrogsLost += frogsLostThisRun;
+
+    stats.recentRuns.unshift({
+      score: runScore,
+      time: runTime,
+      orbs: runOrbs,
+      at: Date.now()
+    });
+
+    stats.recentRuns = stats.recentRuns.slice(0, 5);
+
+    saveDashboardStats(stats);
+  }
+
+  function getLeaderboardEntryScore(entry) {
+    if (!entry || typeof entry !== "object") return 0;
+    const keys = ["bestScore", "score", "maxScore", "points", "value"];
+    for (const key of keys) {
+      if (!(key in entry)) continue;
+      let v = entry[key];
+      if (typeof v === "string") v = parseFloat(v);
+      if (typeof v === "number" && isFinite(v)) return v;
+    }
+    return 0;
+  }
+
+  function getLeaderboardEntryTime(entry) {
+    if (!entry || typeof entry !== "object") return 0;
+    const keys = ["bestTime", "time", "seconds", "duration"];
+    for (const key of keys) {
+      if (!(key in entry)) continue;
+      let v = entry[key];
+      if (typeof v === "string") v = parseFloat(v);
+      if (typeof v === "number" && isFinite(v) && v >= 0) return v;
+    }
+    return 0;
+  }
+
+  function normalizeDashboardTag(str) {
+    return typeof str === "string" ? str.trim().toLowerCase() : "";
+  }
+
+  async function getMyDashboardBestFromLeaderboard() {
+    try {
+      const entries = await fetchLeaderboard();
+      const savedTag =
+        (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
+        (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
+        getSavedDashboardTag();
+
+      if (!savedTag) {
+        return { bestRun: 0, bestTime: 0, found: false };
+      }
+
+      const target = normalizeDashboardTag(savedTag);
+      let bestEntry = null;
+
+      for (const entry of entries || []) {
+        const tag = normalizeDashboardTag(entry?.tag);
+        const name = normalizeDashboardTag(entry?.name);
+
+        if (tag === target || name === target) {
+          if (!bestEntry) {
+            bestEntry = entry;
+          } else {
+            const scoreA = getLeaderboardEntryScore(entry);
+            const scoreB = getLeaderboardEntryScore(bestEntry);
+            const timeA = getLeaderboardEntryTime(entry);
+            const timeB = getLeaderboardEntryTime(bestEntry);
+
+            if (scoreA > scoreB || (scoreA === scoreB && timeA < timeB)) {
+              bestEntry = entry;
+            }
+          }
+        }
+      }
+
+      if (!bestEntry) {
+        return { bestRun: 0, bestTime: 0, found: false };
+      }
+
+      return {
+        bestRun: Math.floor(getLeaderboardEntryScore(bestEntry)),
+        bestTime: getLeaderboardEntryTime(bestEntry),
+        found: true
+      };
+    } catch (e) {
+      return { bestRun: 0, bestTime: 0, found: false };
+    }
+  }
   function getRandomFrogSprite() {
     const files = window.FrogGameConfig.FROG_FILES || [];
     const folder = window.FrogGameConfig.FROG_FOLDER || "./images/build_files/Frog/";
@@ -2877,6 +3039,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   // Leaderboard overlay (UI shell)
   let leaderboardOverlay = null;
+  let dashboardOverlay = null;
 
   function getEpicUpgradeChoices() {
     const neon = "#4defff";
@@ -3030,26 +3193,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         }
       });
     }*/
-
-    if (!fragileRealityActive) {
-      upgrades.push({
-        id: "fragileReality",
-        label: `
-          🪞 Fragile Reality<br>
-          Double buff duration (higher cap)<br>
-          Halve orb spawn rate (hard cap)
-        `,
-        apply: () => {
-          fragileRealityActive = true;
-          buffDurationCap *= 2;
-          buffDurationFactor = Math.min(buffDurationFactor * 2, buffDurationCap);
-
-          orbSpawnIntervalFactor *= 2;
-          minOrbSpawnIntervalFactor = Math.max(minOrbSpawnIntervalFactor, orbSpawnIntervalFactor);
-          setNextOrbTime();
-        }
-      });
-    }
 
     if (!frogScatterUsed && frogs.length > 0) {
       upgrades.push({
@@ -3618,6 +3761,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const btnHowTo = document.getElementById("btnHowTo");
     const btnBuffGuide = document.getElementById("btnBuffGuide");
     const btnLeaderboard = document.getElementById("btnLeaderboard");
+    const btnDashboard = document.getElementById("btnDashboard");
 
     if (btnStartRun) {
       btnStartRun.addEventListener("click", () => {
@@ -3640,6 +3784,12 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (btnLeaderboard) {
       btnLeaderboard.addEventListener("click", () => {
         showLeaderboardOverlay();
+      });
+    }
+
+    if (btnDashboard) {
+      btnDashboard.addEventListener("click", () => {
+        showDashboardOverlay();
       });
     }
 
@@ -4197,7 +4347,78 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       leaderboardOverlay.style.display = "none";
     }
   }
+  function initDashboardOverlay() {
+    if (dashboardOverlay) return;
 
+    dashboardOverlay = document.getElementById("dashboardOverlay");
+    const closeBtn = document.getElementById("dashboardCloseBtn");
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", hideDashboardOverlay);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (dashboardOverlay && dashboardOverlay.style.display === "flex" && e.key === "Escape") {
+        hideDashboardOverlay();
+      }
+    });
+  }
+
+  async function showDashboardOverlay() {
+    if (!dashboardOverlay) initDashboardOverlay();
+    if (!dashboardOverlay) return;
+
+    const content = document.getElementById("dashboardContent");
+    if (!content) return;
+
+    dashboardOverlay.style.display = "flex";
+    content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
+
+    const localStats = loadDashboardStats();
+    const leaderboardBest = await getMyDashboardBestFromLeaderboard();
+
+    const avgRunTime =
+      localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
+
+    const recentRunsHtml = localStats.recentRuns.length
+      ? localStats.recentRuns.map((run, i) => {
+          return `
+            <li>
+              <strong>${i + 1}.</strong>
+              ${Math.floor(run.score)} score · ${formatDashboardDuration(run.time)} · ${run.orbs} orbs
+            </li>
+          `;
+        }).join("")
+      : "<li>No runs recorded on this device yet.</li>";
+
+    content.innerHTML = `
+      <div class="frog-panel-section-label">Best Record</div>
+      <ul class="frog-panel-list">
+        <li><strong>Best Run:</strong> <span class="stat-highlight">${leaderboardBest.found ? leaderboardBest.bestRun : "—"}</span></li>
+        <li><strong>Best Time:</strong> <span class="stat-highlight">${leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime) : "—"}</span></li>
+      </ul>
+
+      <div class="frog-panel-section-label">Lifetime Stats</div>
+      <ul class="frog-panel-list">
+        <li><strong>Total Runs:</strong> <span class="stat-highlight">${localStats.totalRuns}</span></li>
+        <li><strong>Total Play Time:</strong> <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>
+        <li><strong>Total Orbs Collected:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected}</span></li>
+        <li><strong>Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>
+        <li><strong>Average Run Time:</strong> <span class="stat-highlight">${formatDashboardDuration(avgRunTime)}</span></li>
+      </ul>
+
+      <div class="frog-panel-section-label">Recent Runs</div>
+      <ul class="frog-panel-list">
+        ${recentRunsHtml}
+      </ul>
+    `;
+  }
+
+  function hideDashboardOverlay() {
+    if (dashboardOverlay) {
+      dashboardOverlay.style.display = "none";
+    }
+  }
   function ensureInfoOverlay() {
     if (infoOverlay) return;
 
@@ -4865,6 +5086,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     lastRunTime  = elapsedTime;
     lastRunScore = score;
 
+    recordRunToDashboard();
+
     const finalStats = {
       // Core run results
       score: lastRunScore,
@@ -5189,7 +5412,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     initHowToOverlay();
     initBuffGuideOverlay();
     initLeaderboardOverlay();
-    ensureInfoOverlay();  // unified info panel
+    initDashboardOverlay();
+    ensureInfoOverlay();
 
     const topList = await fetchLeaderboard();
     if (topList) {

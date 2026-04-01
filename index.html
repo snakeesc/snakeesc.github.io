@@ -70,13 +70,15 @@
           Start Run
         </button>
       </div>
-
       <div>
         <button id="btnHowTo" class="frog-btn frog-btn-secondary">
           How to Play
         </button>
         <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">
           Leaderboard
+        </button>
+        <button id="btnDashboard" class="frog-btn frog-btn-secondary">
+          Dashboard
         </button>
       </div>
     </div>
@@ -208,6 +210,29 @@
 
       <div class="frog-panel-footer">
         <button id="leaderboardCloseBtn" class="frog-btn frog-btn-secondary">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+    <!-- DASHBOARD OVERLAY -->
+  <div id="dashboardOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Dashboard
+        <span class="emoji">📊</span>
+      </div>
+
+      <div class="frog-panel-sub">
+        Your lifetime frog stats.
+      </div>
+
+      <div id="dashboardContent">
+        <div class="leaderboard-loading">Loading dashboard…</div>
+      </div>
+
+      <div class="frog-panel-footer">
+        <button id="dashboardCloseBtn" class="frog-btn frog-btn-secondary">
           Close
         </button>
       </div>
