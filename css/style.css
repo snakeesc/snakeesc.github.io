@@ -852,7 +852,7 @@ a {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    color: antiquewhite;
+    color: navajowhite;
 }
 
 .frog-panel-title .emoji {
@@ -865,7 +865,6 @@ a {
   text-align: center;
   margin-bottom: 14px;
   line-height: 1.5;
-  text-shadow: 1px 1px darkslateblue;
 }
 
 .frog-panel-section-label {
