@@ -3330,7 +3330,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       upgrades.push({
         id: "ouroborosPact",
         label: `
-          🔄 Ouroboros Pact<br>
+          💀 Ouroboros Pact<br>
           <span style="color:${neon};">10%</span> chance dead frogs drop an orb
         `,
         apply: () => {
