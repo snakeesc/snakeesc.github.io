@@ -830,29 +830,30 @@ a {
 }
 
 .frog-panel {
-  background: transparent;
-  padding: 0;
-  border-radius: 0;
-  border: none;
-  color: white;
-  font-family: monospace;
-  min-width: 320px;
-  max-width: 720px;
-  max-height: 82vh;
-  overflow: visible;
-  box-shadow: none;
+    background: #1c1917;
+    padding: 18px 22px 16px 22px;
+    border-radius: 14px;
+    border: 0px solid #84cc16;
+    color: white;
+    font-family: monospace;
+    min-width: 320px;
+    max-width: 960px;
+    max-height: 82vh;
+    overflow: auto;
+    box-shadow: none;
 }
 
 .frog-panel-title {
-  font-size: 22px;
-  font-weight: 800;
-  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 6px;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  color: #d9f99d;
+  gap: 6px;
+  color: #bef264;
+  text-shadow: 1px 1px darkslateblue;
 }
 
 .frog-panel-title .emoji {
@@ -861,13 +862,11 @@ a {
 
 .frog-panel-sub {
   font-size: 13px;
-  color: #f5f5f4;
+  color: white;
   text-align: center;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   line-height: 1.5;
-  max-width: 520px;
-  margin-left: auto;
-  margin-right: auto;
+  text-shadow: 1px 1px darkslateblue;
 }
 
 .frog-panel-section-label {
@@ -1014,23 +1013,21 @@ a {
 .frog-btn {
   width: 100%;
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 10px 12px;
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
-  text-align: left;
-  margin-bottom: 10px;
-  border: 1px solid #44403c;
+  text-align: center;
+  margin-bottom: 8px;
+  border: 0px solid transparent;
   transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  box-shadow: inset 4px 0 #65a30d;
+  box-shadow: none;
 }
 
 .frog-btn-primary {
-  background: #292524;
+  background: #65a30d;
   color: white;
   font-weight: 800;
-  border-color: #65a30d;
-  box-shadow: inset 4px 0 #65a30d;
 }
 
 .frog-btn-primary:hover {
@@ -1043,7 +1040,6 @@ a {
   color: white;
   border-color: #44403c;
   font-weight: 700;
-  box-shadow: inset 4px 0 #44403c;
 }
 
 .frog-btn-secondary:hover {
@@ -1582,173 +1578,4 @@ background: #65a30d;
   opacity: 0.85;
   text-align: center;
   color: #cbd5e1;
-}
-/* =========================================
-   MENU OVERLAYS – MATCH UPGRADE CARD STYLE
-========================================= */
-
-#mainMenuOverlay,
-#howToOverlay,
-#buffGuideOverlay,
-#leaderboardOverlay {
-  background: radial-gradient(
-    circle at center,
-    rgba(0, 0, 0, 0.18) 0%,
-    rgba(0, 0, 0, 0.3) 45%,
-    rgba(0, 0, 0, 0.42) 100%
-  );
-}
-
-#mainMenuOverlay .frog-panel,
-#howToOverlay .frog-panel,
-#buffGuideOverlay .frog-panel,
-#leaderboardOverlay .frog-panel {
-  width: min(920px, 92vw);
-  max-width: 920px;
-  padding: 0;
-  background: transparent;
-  overflow: visible;
-}
-
-#mainMenuOverlay .frog-panel-title,
-#howToOverlay .frog-panel-title,
-#buffGuideOverlay .frog-panel-title,
-#leaderboardOverlay .frog-panel-title {
-  margin-bottom: 14px;
-  color: #d9f99d;
-  text-shadow: 1px 1px darkslateblue;
-}
-
-#mainMenuOverlay .frog-panel-sub,
-#howToOverlay .frog-panel-sub,
-#buffGuideOverlay .frog-panel-sub,
-#leaderboardOverlay .frog-panel-sub {
-  margin: 0 0 18px;
-  text-align: center;
-  font-size: 13px;
-  color: #f5f5f4;
-  text-shadow: 1px 1px darkslateblue;
-  max-width: 560px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* main menu = floating 3-card layout like upgrade choices */
-#mainMenuOverlay .frog-panel > div:last-child {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 220px));
-  justify-content: center;
-  gap: 28px;
-  margin-top: 10px;
-}
-
-/* start button sits above like the top-center upgrade card */
-#mainMenuOverlay .frog-panel > div[style] {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 28px !important;
-}
-
-#mainMenuOverlay .frog-btn,
-#howToOverlay .frog-btn,
-#buffGuideOverlay .frog-btn,
-#leaderboardOverlay .frog-btn {
-  min-height: 96px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(28, 25, 23, 0.96);
-  color: white;
-  border: 1px solid #44403c;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 800;
-  margin: 0;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    border-color 140ms ease,
-    filter 140ms ease;
-  backdrop-filter: blur(2px);
-}
-
-#mainMenuOverlay .frog-btn:hover,
-#howToOverlay .frog-btn:hover,
-#buffGuideOverlay .frog-btn:hover,
-#leaderboardOverlay .frog-btn:hover {
-  filter: brightness(1.06);
-  border-color: #84cc16;
-  box-shadow: 0 0 18px rgba(163, 230, 53, 0.22), 0 14px 30px rgba(0, 0, 0, 0.52);
-  transform: translateY(-6px) scale(1.04);
-}
-
-#mainMenuOverlay .frog-btn-primary {
-  width: 220px;
-  min-height: 96px;
-  background: rgba(28, 25, 23, 0.96);
-  border-color: #65a30d;
-  box-shadow: inset 5px 0 0 #65a30d, 0 10px 28px rgba(0, 0, 0, 0.45);
-}
-
-#mainMenuOverlay .frog-btn-secondary,
-#howToOverlay .frog-btn-secondary,
-#buffGuideOverlay .frog-btn-secondary,
-#leaderboardOverlay .frog-btn-secondary {
-  background: rgba(28, 25, 23, 0.96);
-  border-color: #44403c;
-  box-shadow: inset 5px 0 0 #44403c, 0 10px 28px rgba(0, 0, 0, 0.45);
-}
-
-/* text panels in help/guide/leaderboard also become cards */
-#howToOverlay .frog-panel-list,
-#buffGuideOverlay .frog-panel-list,
-#leaderboardOverlay #leaderboardContent {
-  display: grid;
-  gap: 10px;
-}
-
-#howToOverlay .frog-panel-list li,
-#buffGuideOverlay .frog-panel-list li {
-  background: rgba(28, 25, 23, 0.96);
-  border: 1px solid #44403c;
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-  color: #f5f5f4;
-}
-
-#howToOverlay .frog-panel-section-label,
-#buffGuideOverlay .frog-panel-section-label,
-#leaderboardOverlay .frog-panel-section-label {
-  margin-top: 20px;
-  margin-bottom: 8px;
-  text-align: center;
-  color: #a3e635;
-}
-
-#howToOverlay .frog-panel-footer,
-#buffGuideOverlay .frog-panel-footer,
-#leaderboardOverlay .frog-panel-footer {
-  margin-top: 18px;
-  display: flex;
-  justify-content: center;
-}
-
-/* mobile */
-@media (max-width: 900px) {
-  #mainMenuOverlay .frog-panel > div:last-child {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  #mainMenuOverlay .frog-btn-primary {
-    width: 100%;
-  }
-
-  #mainMenuOverlay .frog-btn,
-  #howToOverlay .frog-btn,
-  #buffGuideOverlay .frog-btn,
-  #leaderboardOverlay .frog-btn {
-    min-height: 0;
-  }
 }
