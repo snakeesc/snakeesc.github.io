@@ -4440,10 +4440,33 @@ async function showDashboardOverlay() {
 
   const localStats = loadDashboardStats();
   const leaderboardBest = await getMyDashboardBestFromLeaderboard();
-    const leaderboardEntries = await fetchLeaderboard();
+  const leaderboardEntries = await fetchLeaderboard();
   const topFiveLeaderboard = Array.isArray(leaderboardEntries)
     ? leaderboardEntries.slice(0, 5)
     : [];
+  const normalizedCurrentTag =
+    typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
+
+  const bestRecordRank = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.findIndex((entry) => {
+        const entryTag =
+          typeof entry?.tag === "string" ? entry.tag.trim().toLowerCase() : "";
+        const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+        const entryTime = Number(entry?.bestTime ?? entry?.time ?? 0);
+
+        return (
+          entryTag &&
+          normalizedCurrentTag &&
+          entryTag === normalizedCurrentTag &&
+          entryScore === Math.floor(Number(leaderboardBest.bestRun || 0)) &&
+          Math.abs(entryTime - Number(leaderboardBest.bestTime || 0)) < 0.01
+        );
+      })
+    : -1;
+  const bestRecordPrefix =
+  leaderboardBest.found && bestRecordRank >= 0
+    ? `#${bestRecordRank + 1} `
+    : "";
   const currentTag =
     (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
     (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
@@ -4584,12 +4607,12 @@ async function showDashboardOverlay() {
     </div>
 
     ${leaderboardTopHtml}
-    
+
     <div class="frog-panel-section-label">Best Record</div>
     <ul class="frog-panel-list">
       <li>
         ${leaderboardBest.found
-          ? `${currentTag || "You"} · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
+          ? `${bestRecordPrefix}${currentTag || "You"} · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
           : "No best record yet."
         }
       </li>
