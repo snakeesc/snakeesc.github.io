@@ -126,6 +126,14 @@
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
 
+  function getRandomFrogSprite() {
+    const files = window.FrogGameConfig.FROG_FILES || [];
+    const folder = window.FrogGameConfig.FROG_FOLDER || "./images/build_files/Frog/";
+    if (!files.length) return "";
+    const file = files[Math.floor(Math.random() * files.length)];
+    return folder + file;
+  }
+
   function getUpgradeColorClass(upgradeId) {
   // movement / jumping
   const mobilityIds = [
@@ -958,7 +966,7 @@
       hopHeightMax: heightMax,
 
       starLevel: 0,
-
+      spriteSrc: getRandomFrogSprite(),
       // per-frog permanent upgrades
       speedMult: 1.0,
       jumpMult: 1.0,
@@ -985,9 +993,10 @@
 
     totalFrogsSpawned++;
 
-    fetchMetadata(tokenId)
-      .then(meta => buildLayersForFrog(frog, meta))
-      .catch(() => {});
+    el.style.backgroundImage = `url("${frog.spriteSrc}")`;
+    el.style.backgroundSize = "contain";
+    el.style.backgroundRepeat = "no-repeat";
+    el.style.backgroundPosition = "center";
 
     return frog;
   }
@@ -996,12 +1005,10 @@
     frogs = [];
     const count = Math.min(STARTING_FROGS, maxFrogsCap);
     const positions = computeInitialPositions(width, height, count);
-    const tokenIds  = pickRandomTokenIds(positions.length);
 
     for (let i = 0; i < positions.length; i++) {
       const pos = positions[i];
-      const tokenId = tokenIds[i];
-      createFrogAt(pos.x, pos.y, tokenId);
+      createFrogAt(pos.x, pos.y, null);
     }
   }
 
@@ -1014,8 +1021,7 @@
     for (let i = 0; i < toSpawn; i++) {
       const x = margin + Math.random() * (width - margin * 2 - FROG_SIZE);
       const y = margin + Math.random() * (height - margin * 2 - FROG_SIZE);
-      const tokenId = randInt(1, MAX_TOKEN_ID);
-      const frog = createFrogAt(x, y, tokenId);
+      const frog = createFrogAt(x, y, null);
 
       // Mark these as special “Zombie Horde” zombies:
       frog.isZombie = true;
@@ -1034,8 +1040,7 @@
     for (let i = 0; i < toSpawn; i++) {
       const x = margin + Math.random() * (width - margin * 2 - FROG_SIZE);
       const y = margin + Math.random() * (height - margin * 2 - FROG_SIZE);
-      const tokenId = randInt(1, MAX_TOKEN_ID);
-      createFrogAt(x, y, tokenId);
+      createFrogAt(x, y, null);
     }
   }
 
@@ -1048,8 +1053,7 @@
     for (let i = 0; i < toSpawn; i++) {
       const x = margin + Math.random() * (width - margin * 2 - FROG_SIZE);
       const y = margin + Math.random() * (height - margin * 2 - FROG_SIZE);
-      const tokenId = randInt(1, MAX_TOKEN_ID);
-      const frog = createFrogAt(x, y, tokenId);
+      const frog = createFrogAt(x, y, null);
 
       // Give each spawned frog a random permanent role
       grantRandomPermaFrogUpgrade(frog);
@@ -1076,8 +1080,7 @@
     for (let i = 0; i < toSpawn; i++) {
       const x = margin + Math.random() * (width - margin * 2 - FROG_SIZE);
       const y = margin + Math.random() * (height - margin * 2 - FROG_SIZE);
-      const tokenId = randInt(1, MAX_TOKEN_ID);
-      const frog = createFrogAt(x, y, tokenId);
+      const frog = createFrogAt(x, y, null);
       markGhostFrog(frog);
     }
   }
@@ -1567,8 +1570,7 @@ function unmarkCannibalFrog(frog) {
 
     const x = margin + Math.random() * (width - margin * 2 - FROG_SIZE);
     const y = margin + Math.random() * (height - margin * 2 - FROG_SIZE);
-    const tokenId = randInt(1, MAX_TOKEN_ID);
-    return createFrogAt(x, y, tokenId);
+    return createFrogAt(x, y, null);
   }
 
 function computeDeathRattleChanceForFrog(frog) {
@@ -3329,7 +3331,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       hopHeightMin: heightMin,
       hopHeightMax: heightMax,
       speedMult: 1.0,
-      jumpMult: 1.0
+      jumpMult: 1.0,
+      spriteSrc: getRandomFrogSprite()
     };
 
     return frog;
@@ -3340,9 +3343,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const frog = buildMenuFrogState(x, y, tokenId);
     mainMenuFrogs.push(frog);
 
-    fetchMetadata(tokenId)
-      .then(meta => buildLayersForFrog(frog, meta))
-      .catch(() => {});
+    frog.el.style.backgroundImage = `url("${frog.spriteSrc}")`;
+    frog.el.style.backgroundSize = "contain";
+    frog.el.style.backgroundRepeat = "no-repeat";
+    frog.el.style.backgroundPosition = "center";
 
     return frog;
   }
