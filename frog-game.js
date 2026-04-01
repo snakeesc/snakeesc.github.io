@@ -4618,15 +4618,6 @@ async function showDashboardOverlay() {
       </li>
     </ul>
 
-    <div class="frog-panel-section-label">Lifetime Stats</div>
-    <ul class="frog-panel-list">
-      <li><strong>Total Runs:</strong> <span class="stat-highlight">${localStats.totalRuns}</span></li>
-      <li><strong>Total Play Time:</strong> <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>
-      <li><strong>Total Orbs Collected:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected}</span></li>
-      <li><strong>Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>
-      <li><strong>Average Run Time:</strong> <span class="stat-highlight">${formatDashboardDuration(avgRunTime)}</span></li>
-    </ul>
-
     ${latestRunHtml}
   `;
 
