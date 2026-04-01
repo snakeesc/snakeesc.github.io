@@ -3351,7 +3351,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "buffDuration",
         label: `
           ⏳ Buffs last longer<br>
-          +<span style="color:${neon};">${buffPerPickPct}%</span> buff duration (stacks)
+          +<span style="color:${neon};">${buffPerPickPct}%</span> buff duration
         `,
         apply: () => {
           buffDurationFactor *= BUFF_DURATION_UPGRADE_FACTOR;
@@ -3368,7 +3368,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "moreOrbs",
         label: `
           🎯 More orbs over time<br>
-          ~<span style="color:${neon};">${orbFasterPerPickPct}%</span> faster orb spawns (stacks)
+          +<span style="color:${neon};">${orbFasterPerPickPct}%</span> faster orb spawns
         `,
         apply: () => {
           orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
