@@ -3331,11 +3331,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "ouroborosPact",
         label: `
           💀 Ouroboros Pact<br>
-          <span style="color:${neon};">10%</span> chance dead frogs drop an orb
+          <span style="color:${neon};">15%</span> chance dead frogs drop an orb
         `,
         apply: () => {
           ouroborosPactUsed = true;
-          frogDeathOrbChance = 0.1;
+          frogDeathOrbChance = 0.15;
         }
       });
     }
