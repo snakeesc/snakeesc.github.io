@@ -60,11 +60,19 @@
       margin-bottom: 10px;
     }
 
+    .terminal-block {
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #0b0b0b;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 0;
     }
 
     .stat-card {
@@ -91,7 +99,7 @@
     .top3-list {
       display: grid;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 0;
     }
 
     .top3-item {
@@ -120,11 +128,40 @@
       opacity: 0.95;
     }
 
+    .runs-log {
+      display: grid;
+      gap: 8px;
+    }
+
+    .run-log-item {
+      background: #181818;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .run-log-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .run-log-line span {
+      white-space: nowrap;
+    }
+
+    .muted {
+      opacity: 0.8;
+    }
+
     .runs-table-wrap {
       overflow-x: auto;
       border: 1px solid #333;
       border-radius: 8px;
       background: #0b0b0b;
+      margin-top: 14px;
     }
 
     table {
@@ -183,6 +220,11 @@
       .time {
         grid-column: 2;
       }
+
+      .run-log-line {
+        flex-direction: column;
+        gap: 4px;
+      }
     }
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518470870792689"
@@ -196,14 +238,21 @@
 
       <div id="summaryStatus" class="status">Loading summary…</div>
 
-      <div class="section-title">overall totals</div>
-      <div id="statsGrid" class="stats-grid"></div>
+      <div class="terminal-block">
+        <div class="section-title">overall totals</div>
+        <div id="statsGrid" class="stats-grid"></div>
+      </div>
 
-      <div class="section-title">top 3 leaderboard holders</div>
-      <div id="top3List" class="top3-list"></div>
+      <div class="terminal-block">
+        <div class="section-title">top 3 leaderboard holders</div>
+        <div id="top3List" class="top3-list"></div>
+      </div>
 
-      <div class="section-title">recent runs</div>
-      <div id="runsStatus" class="status">Loading recent runs…</div>
+      <div class="terminal-block">
+        <div class="section-title">recent runs</div>
+        <div id="runsStatus" class="status">Loading recent runs…</div>
+        <div id="runsLog" class="runs-log"></div>
+      </div>
 
       <div class="runs-table-wrap">
         <table>
@@ -236,6 +285,7 @@
       const runsStatusEl = document.getElementById("runsStatus");
       const statsGridEl = document.getElementById("statsGrid");
       const top3ListEl = document.getElementById("top3List");
+      const runsLogEl = document.getElementById("runsLog");
       const runsBodyEl = document.getElementById("runsBody");
 
       function formatNumber(value) {
@@ -321,6 +371,7 @@
           const runs = Array.isArray(data?.runs) ? data.runs : [];
 
           runsBodyEl.innerHTML = "";
+          runsLogEl.innerHTML = "";
 
           if (!runs.length) {
             runsStatusEl.textContent = "No runs found.";
@@ -338,6 +389,22 @@
               <td class="num">${formatNumber(run.snakesSeen)}</td>
             `;
             runsBodyEl.appendChild(tr);
+          });
+
+          runs.slice(0, 12).forEach((run) => {
+            const item = document.createElement("div");
+            item.className = "run-log-item";
+            item.innerHTML = `
+              <div class="run-log-line">
+                <span>[${formatDate(run.createdAt)}]</span>
+                <span>PLAYER=${run.tag || "Anonymous Frog"}</span>
+                <span>SCORE=${formatNumber(run.score)}</span>
+                <span>TIME=${formatTimeSeconds(run.time)}s</span>
+                <span>FROGS=${formatNumber(run.frogsEaten)}</span>
+                <span>SNAKES=${formatNumber(run.snakesSeen)}</span>
+              </div>
+            `;
+            runsLogEl.appendChild(item);
           });
 
           runsStatusEl.textContent = `Showing ${runs.length} most recent runs.`;
