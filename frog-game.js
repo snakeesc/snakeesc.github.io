@@ -957,6 +957,8 @@
       hopHeightMin: heightMin,
       hopHeightMax: heightMax,
 
+      starLevel: 0,
+
       // per-frog permanent upgrades
       speedMult: 1.0,
       jumpMult: 1.0,
@@ -967,13 +969,12 @@
       isLucky: false,
       isZombie: false,
       shieldGrantedAt: null,
-      // per-frog deathrattle (for special cases like Zombie Horde)
+
       specialDeathRattleChance: null,
 
-      // NEW – special roles
       isCannibal: false,
-      extraDeathRattleChance: 0,  // per-frog extra chance (e.g. Zombie Horde)
-      cannibalIcon: null,         // overlay icon for cannibal
+      extraDeathRattleChance: 0,
+      cannibalIcon: null,
 
       cloneEl: null,
       layers: []
@@ -1215,6 +1216,51 @@
     return Math.max(0, Math.min(maxResist, extraSegments * RESIST_PER_SEGMENT));
   }
 
+function getRandomMutationUpgrade() {
+  const mutationPool = [
+    {
+      role: "champion",
+      name: "Champion",
+      apply: () => spawnRoleFrog("champion")
+    },
+    {
+      role: "aura",
+      name: "Aura",
+      apply: () => spawnRoleFrog("aura")
+    },
+    {
+      role: "magnet",
+      name: "Magnet",
+      apply: () => spawnRoleFrog("magnet")
+    },
+    {
+      role: "lucky",
+      name: "Lucky",
+      apply: () => spawnRoleFrog("lucky")
+    },
+    {
+      role: "zombie",
+      name: "Zombie",
+      apply: () => spawnRoleFrog("zombie")
+    },
+    {
+      role: "cannibal",
+      name: "Cannibal",
+      apply: () => spawnRoleFrog("cannibal")
+    }
+  ];
+
+  const picked = mutationPool[Math.floor(Math.random() * mutationPool.length)];
+
+  return {
+    id: `mutation_${picked.role}`,
+    label: `
+      🧬 Mutation<br>
+      Spawn <span style="color:${TOTAL_HIGHLIGHT_COLOR};">1 ${picked.name}</span> frog
+    `,
+    apply: picked.apply
+  };
+}
 
 function grantChampionFrog(frog) {
   if (frog.isChampion) return;
@@ -1270,26 +1316,17 @@ function grantZombieFrog(frog) {
 function updateFrogRoleEmoji(frog) {
   if (!frog || !frog.el) return;
 
-  // Remove previous badge, if any
   if (frog.cannibalIcon && frog.cannibalIcon.parentNode === frog.el) {
     frog.el.removeChild(frog.cannibalIcon);
   }
   frog.cannibalIcon = null;
 
-  const emojis = [];
-  if (frog.isChampion)     emojis.push("🏅");
-  if (frog.isAura)         emojis.push("🌈");
-  if (frog.hasPermaShield) emojis.push("🛡️");
-  if (frog.isMagnet)       emojis.push("🧲");
-  if (frog.isLucky)        emojis.push("🍀");
-  if (frog.isZombie)       emojis.push("🧟");
-  if (frog.isCannibal)     emojis.push("🦴");
-
-  if (!emojis.length) return;
+  const stars = Math.max(0, Math.min(3, frog.starLevel || 0));
+  if (!stars) return;
 
   const badge = document.createElement("div");
   badge.className = "frog-role-emoji";
-  badge.textContent = emojis.join("");
+  badge.textContent = "⭐".repeat(stars);
   badge.style.position = "absolute";
   badge.style.bottom = "-2px";
   badge.style.right = "-2px";
@@ -1325,6 +1362,150 @@ function grantRandomPermaFrogUpgrade(frog) {
     case "magnet":   grantMagnetFrog(frog);     break;
     case "lucky":    grantLuckyFrog(frog);      break;
     case "zombie":   grantZombieFrog(frog);     break;
+  }
+}
+
+function clearAllFrogRoles(frog) {
+  if (!frog) return;
+
+  if (frog.isCannibal) {
+    cannibalFrogCount = Math.max(0, cannibalFrogCount - 1);
+  }
+
+  frog.isChampion = false;
+  frog.isAura = false;
+  frog.hasPermaShield = false;
+  frog.isMagnet = false;
+  frog.isLucky = false;
+  frog.isZombie = false;
+  frog.isCannibal = false;
+  frog.extraDeathRattleChance = 0;
+  frog.specialDeathRattleChance = null;
+  frog.shieldGrantedAt = null;
+
+  frog.speedMult = 1.0;
+  frog.jumpMult = 1.0;
+
+  refreshFrogPermaGlow(frog);
+  updateFrogRoleEmoji(frog);
+}
+
+function grantStarUpgrade(frog) {
+  if (!frog) return;
+  frog.starLevel = Math.min(3, (frog.starLevel || 0) + 1);
+
+  // small stat boost per star
+  frog.speedMult *= 0.95; // 5% faster hops
+  frog.jumpMult *= 1.05;  // 5% higher jumps
+
+  refreshFrogPermaGlow(frog);
+  updateFrogRoleEmoji(frog);
+}
+
+function spawnRoleFrog(role) {
+  const frog = createRandomFrog();
+  if (!frog) return null;
+
+  clearAllFrogRoles(frog);
+
+  switch (role) {
+    case "champion":
+      grantChampionFrog(frog);
+      break;
+    case "aura":
+      grantAuraFrog(frog);
+      break;
+    case "magnet":
+      grantMagnetFrog(frog);
+      break;
+    case "lucky":
+      grantLuckyFrog(frog);
+      break;
+    case "zombie":
+      grantZombieFrog(frog);
+      break;
+    case "cannibal":
+      markCannibalFrog(frog);
+      refreshFrogPermaGlow(frog);
+      updateFrogRoleEmoji(frog);
+      break;
+  }
+
+  return frog;
+}
+
+function getMutationChoices() {
+  return [
+    {
+      id: "mutationChampion",
+      label: `⭐ Mutation<br>Spawn 1 Champion frog`,
+      apply: () => spawnRoleFrog("champion")
+    },
+    {
+      id: "mutationAura",
+      label: `⭐ Mutation<br>Spawn 1 Aura frog`,
+      apply: () => spawnRoleFrog("aura")
+    },
+    {
+      id: "mutationMagnet",
+      label: `⭐ Mutation<br>Spawn 1 Magnet frog`,
+      apply: () => spawnRoleFrog("magnet")
+    },
+    {
+      id: "mutationLucky",
+      label: `⭐ Mutation<br>Spawn 1 Lucky frog`,
+      apply: () => spawnRoleFrog("lucky")
+    },
+    {
+      id: "mutationZombie",
+      label: `⭐ Mutation<br>Spawn 1 Zombie frog`,
+      apply: () => spawnRoleFrog("zombie")
+    },
+    {
+      id: "mutationCannibal",
+      label: `⭐ Mutation<br>Spawn 1 Cannibal frog`,
+      apply: () => spawnRoleFrog("cannibal")
+    }
+  ];
+}
+
+function applyPairOfScissors() {
+  if (!snake) return;
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  const original = snake;
+  const originalStage = snakeShedStage;
+
+  const startX = original.head.x;
+  const startY = original.head.y;
+  const baseAngle = original.head.angle || 0;
+
+  // slow down original
+  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.72);
+
+  // spawn second split snake
+  const splitSnake = spawnAdditionalSnake(width, height, {
+    startX: Math.min(width - 100, startX + 40),
+    startY: Math.min(height - 100, startY + 40),
+    angle: baseAngle + Math.PI * 0.35,
+    segmentCount: Math.max(SNAKE_INITIAL_SEGMENTS, Math.floor(original.segments.length / 2))
+  });
+
+  if (splitSnake) {
+    splitSnake.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.9);
+
+    // match current snake color stage
+    const filter = getShedStageFilter(originalStage);
+    if (filter) {
+      if (splitSnake.head && splitSnake.head.el) splitSnake.head.el.style.filter = filter;
+      for (const seg of splitSnake.segments) {
+        if (seg.el) seg.el.style.filter = filter;
+      }
+    }
+
+    extraSnakes.push(splitSnake);
   }
 }
 
@@ -2089,7 +2270,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
       if (collectedBy) {
         if (orb.type === "permaFrog") {
-          grantRandomPermaFrogUpgrade(collectedBy);
+          grantStarUpgrade(collectedBy);
         } else {
           applyBuff(orb.type, collectedBy);
         }
@@ -2733,21 +2914,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }); 
     }
 
-    // Frog Promotion (epic role wave)
-    if (frogs.length < maxFrogsCap) {
-      upgrades.push({
-        id: "frogPromotion",
-        label: `
-          🐸⭐ Frog Promotion<br>
-          Summon <span style="color:${epicTitleColor};">10</span> frogs,<br>
-          each with a random permanent role
-        `,
-        apply: () => {
-          spawnFrogPromotion(10);
-        }
-      });
-    }
-
     // Grave Wave – only once
     if (!graveWaveActive) {
       upgrades.push({
@@ -2833,20 +2999,16 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    if (!eyeForEyeUsed && elapsedTime >= 900) {
-      upgrades.push({
-        id: "eyeForEye",
-        label: `
-          👁️ Eye for an Eye<br>
-          Kill the slowest snake and half your frogs<br>
-          Max frog cap drops to <span style="color:${epicTitleColor};">50</span>
-        `,
-        apply: () => {
-          eyeForEyeUsed = true;
-          applyEyeForAnEye();
-        }
-      });
-    }
+    upgrades.push({
+      id: "pairOfScissors",
+      label: `
+        ✂️ Pair of Scissors<br>
+        Cut the snake into <span style="color:${epicTitleColor};">two</span> slower snakes
+      `,
+      apply: () => {
+        applyPairOfScissors();
+      }
+    });
 
     return upgrades;
   }
@@ -2951,24 +3113,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    if (frogs.length > 5) {
-      upgrades.push({
-        id: "coinFlip",
-        label: `
-          🪙 Coin Flip<br>
-          Sacrifice <span style="color:${neon};">1</span> frog(s) to trigger a random buff with extra duration
-        `,
-        apply: () => {
-          const toKill = Math.min(1, frogs.length);
-          killRandomFrogs(toKill, "coinFlip");
-
-          const buffPool = ORB_TYPES.filter(t => t !== "permaFrog");
-          if (!buffPool.length) return;
-          const buffType = buffPool[Math.floor(Math.random() * buffPool.length)];
-          applyBuff(buffType, null, 1.75);
-        }
-      });
-    }
+    upgrades.push(getRandomMutationUpgrade());
 
     // Buff duration (capped)
     if (buffDurationFactor < buffDurationCap - 1e-4) {
