@@ -4439,16 +4439,16 @@ async function showDashboardOverlay() {
   content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
 
   const localStats = loadDashboardStats();
-  const leaderboardBest = await getMyDashboardBestFromLeaderboard();
-  const leaderboardEntries = await fetchLeaderboard();
-  const topFiveLeaderboard = Array.isArray(leaderboardEntries)
-    ? leaderboardEntries.slice(0, 5)
-    : [];
   const currentTag =
     (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
     (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
     getSavedDashboardTag() ||
     "";
+  const leaderboardBest = await getMyDashboardBestFromLeaderboard();
+  const leaderboardEntries = await fetchLeaderboard();
+  const topFiveLeaderboard = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.slice(0, 5)
+    : [];
   const normalizedCurrentTag =
     typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
 
