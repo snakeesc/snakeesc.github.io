@@ -46,94 +46,38 @@
       opacity: 0.9;
     }
 
-    .section-title {
-      font-size: 13px;
-      margin: 18px 0 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      opacity: 0.9;
-    }
-
     .status {
       font-size: 13px;
       opacity: 0.85;
       margin-bottom: 10px;
     }
 
-    .terminal-block {
-      border: 1px solid #333;
-      border-radius: 8px;
-      background: #0b0b0b;
-      padding: 12px;
-      margin-bottom: 14px;
+    .terminal-section {
+      border-top: 1px solid #333;
+      padding-top: 16px;
+      margin-top: 16px;
     }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-      margin-bottom: 0;
+    .terminal-section:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
     }
 
-    .stat-card {
-      background: #181818;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .stat-value {
-      font-size: 18px;
-      font-weight: bold;
-      color: #9bffb1;
-    }
-
-    .top3-list {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 0;
-    }
-
-    .top3-item {
-      background: #181818;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px 12px;
-      display: grid;
-      grid-template-columns: 60px 1fr auto auto;
-      gap: 10px;
-      align-items: center;
+    .section-title {
       font-size: 13px;
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.9;
     }
 
-    .rank {
-      color: #9bffb1;
-      font-weight: bold;
-    }
-
-    .player {
-      font-weight: bold;
-    }
-
-    .score,
-    .time {
-      opacity: 0.95;
-    }
-
-    .runs-log {
+    .terminal-list {
       display: grid;
       gap: 8px;
     }
 
-    .run-log-item {
+    .terminal-row {
       background: #181818;
       border: 1px solid #333;
       border-radius: 8px;
@@ -142,64 +86,15 @@
       line-height: 1.5;
     }
 
-    .run-log-line {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .run-log-line span {
-      white-space: nowrap;
-    }
-
-    .muted {
-      opacity: 0.8;
-    }
-
-    .runs-table-wrap {
-      overflow-x: auto;
-      border: 1px solid #333;
-      border-radius: 8px;
-      background: #0b0b0b;
-      margin-top: 14px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    thead {
-      background: #181818;
-    }
-
-    th, td {
-      padding: 8px 10px;
-      text-align: left;
-      border-bottom: 1px solid #222;
-      white-space: nowrap;
-    }
-
-    th {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      opacity: 0.9;
-    }
-
-    tbody tr:nth-child(even) {
-      background: rgba(255,255,255,0.02);
-    }
-
-    .num {
-      text-align: right;
+    .terminal-row strong {
+      color: #9bffb1;
+      font-weight: bold;
     }
 
     .small-note {
       font-size: 12px;
       opacity: 0.8;
-      margin-top: 12px;
+      margin-top: 16px;
     }
 
     a {
@@ -212,18 +107,8 @@
     }
 
     @media (max-width: 720px) {
-      .top3-item {
-        grid-template-columns: 50px 1fr;
-      }
-
-      .score,
-      .time {
-        grid-column: 2;
-      }
-
-      .run-log-line {
-        flex-direction: column;
-        gap: 4px;
+      .terminal-row {
+        font-size: 12px;
       }
     }
   </style>
@@ -238,36 +123,20 @@
 
       <div id="summaryStatus" class="status">Loading summary…</div>
 
-      <div class="terminal-block">
+      <div class="terminal-section">
         <div class="section-title">overall totals</div>
-        <div id="statsGrid" class="stats-grid"></div>
+        <div id="statsList" class="terminal-list"></div>
       </div>
 
-      <div class="terminal-block">
+      <div class="terminal-section">
         <div class="section-title">top 3 leaderboard holders</div>
-        <div id="top3List" class="top3-list"></div>
+        <div id="top3List" class="terminal-list"></div>
       </div>
 
-      <div class="terminal-block">
+      <div class="terminal-section">
         <div class="section-title">recent runs</div>
         <div id="runsStatus" class="status">Loading recent runs…</div>
-        <div id="runsLog" class="runs-log"></div>
-      </div>
-
-      <div class="runs-table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Player</th>
-              <th class="num">Score</th>
-              <th class="num">Time (s)</th>
-              <th class="num">Frogs Eaten</th>
-              <th class="num">Snakes</th>
-            </tr>
-          </thead>
-          <tbody id="runsBody"></tbody>
-        </table>
+        <div id="runsLog" class="terminal-list"></div>
       </div>
 
       <div class="small-note">
@@ -283,10 +152,9 @@
 
       const summaryStatusEl = document.getElementById("summaryStatus");
       const runsStatusEl = document.getElementById("runsStatus");
-      const statsGridEl = document.getElementById("statsGrid");
+      const statsListEl = document.getElementById("statsList");
       const top3ListEl = document.getElementById("top3List");
       const runsLogEl = document.getElementById("runsLog");
-      const runsBodyEl = document.getElementById("runsBody");
 
       function formatNumber(value) {
         const n = Number(value || 0);
@@ -317,43 +185,28 @@
             return;
           }
 
-          statsGridEl.innerHTML = `
-            <div class="stat-card">
-              <div class="stat-label">Total Users</div>
-              <div class="stat-value">${formatNumber(data.totalUsers)}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Runs</div>
-              <div class="stat-value">${formatNumber(data.totalRuns)}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Playtime</div>
-              <div class="stat-value">${formatTimeSeconds(data.totalPlaytime)}s</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Frogs Eaten</div>
-              <div class="stat-value">${formatNumber(data.totalFrogsEaten)}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Score</div>
-              <div class="stat-value">${formatNumber(data.totalScore)}</div>
-            </div>
+          statsListEl.innerHTML = `
+            <div class="terminal-row"><strong>TOTAL_USERS:</strong> ${formatNumber(data.totalUsers)}</div>
+            <div class="terminal-row"><strong>TOTAL_RUNS:</strong> ${formatNumber(data.totalRuns)}</div>
+            <div class="terminal-row"><strong>TOTAL_PLAYTIME:</strong> ${formatTimeSeconds(data.totalPlaytime)}s</div>
+            <div class="terminal-row"><strong>FROGS_EATEN:</strong> ${formatNumber(data.totalFrogsEaten)}</div>
+            <div class="terminal-row"><strong>TOTAL_SCORE:</strong> ${formatNumber(data.totalScore)}</div>
           `;
 
           const top3 = Array.isArray(data.top3) ? data.top3 : [];
           top3ListEl.innerHTML = "";
 
           if (!top3.length) {
-            top3ListEl.innerHTML = `<div class="status">No leaderboard entries yet.</div>`;
+            top3ListEl.innerHTML = `<div class="terminal-row">No leaderboard entries yet.</div>`;
           } else {
             top3.forEach((entry, index) => {
               const row = document.createElement("div");
-              row.className = "top3-item";
+              row.className = "terminal-row";
               row.innerHTML = `
-                <div class="rank">#${index + 1}</div>
-                <div class="player">${entry.tag || "Anonymous Frog"}</div>
-                <div class="score">Score: ${formatNumber(entry.bestScore)}</div>
-                <div class="time">Time: ${formatTimeSeconds(entry.bestTime)}s</div>
+                <strong>#${index + 1}</strong>
+                PLAYER=${entry.tag || "Anonymous Frog"}
+                &nbsp;&nbsp; BEST_SCORE=${formatNumber(entry.bestScore)}
+                &nbsp;&nbsp; BEST_TIME=${formatTimeSeconds(entry.bestTime)}s
               `;
               top3ListEl.appendChild(row);
             });
@@ -370,7 +223,6 @@
         .then(data => {
           const runs = Array.isArray(data?.runs) ? data.runs : [];
 
-          runsBodyEl.innerHTML = "";
           runsLogEl.innerHTML = "";
 
           if (!runs.length) {
@@ -379,30 +231,15 @@
           }
 
           runs.forEach((run) => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${formatDate(run.createdAt)}</td>
-              <td>${run.tag || "Anonymous Frog"}</td>
-              <td class="num">${formatNumber(run.score)}</td>
-              <td class="num">${formatTimeSeconds(run.time)}</td>
-              <td class="num">${formatNumber(run.frogsEaten)}</td>
-              <td class="num">${formatNumber(run.snakesSeen)}</td>
-            `;
-            runsBodyEl.appendChild(tr);
-          });
-
-          runs.slice(0, 12).forEach((run) => {
             const item = document.createElement("div");
-            item.className = "run-log-item";
+            item.className = "terminal-row";
             item.innerHTML = `
-              <div class="run-log-line">
-                <span>[${formatDate(run.createdAt)}]</span>
-                <span>PLAYER=${run.tag || "Anonymous Frog"}</span>
-                <span>SCORE=${formatNumber(run.score)}</span>
-                <span>TIME=${formatTimeSeconds(run.time)}s</span>
-                <span>FROGS=${formatNumber(run.frogsEaten)}</span>
-                <span>SNAKES=${formatNumber(run.snakesSeen)}</span>
-              </div>
+              <strong>[${formatDate(run.createdAt)}]</strong>
+              PLAYER=${run.tag || "Anonymous Frog"}
+              &nbsp;&nbsp; SCORE=${formatNumber(run.score)}
+              &nbsp;&nbsp; TIME=${formatTimeSeconds(run.time)}s
+              &nbsp;&nbsp; FROGS=${formatNumber(run.frogsEaten)}
+              &nbsp;&nbsp; SNAKES=${formatNumber(run.snakesSeen)}
             `;
             runsLogEl.appendChild(item);
           });
