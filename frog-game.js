@@ -2548,6 +2548,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
 
       if (collectedBy) {
+        totalOrbsCollected++;
         if (orb.type === "permaFrog") {
           grantStarUpgrade(collectedBy);
         } else {
