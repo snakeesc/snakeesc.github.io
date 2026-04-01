@@ -3568,21 +3568,29 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const btnBuffGuide = document.getElementById("btnBuffGuide");
     const btnLeaderboard = document.getElementById("btnLeaderboard");
 
-    btnStartRun.addEventListener("click", () => {
-      startRunFromMenu();
-    });
+    if (btnStartRun) {
+      btnStartRun.addEventListener("click", () => {
+        startRunFromMenu();
+      });
+    }
 
-    btnHowTo.addEventListener("click", () => {
-      showHowToOverlay();
-    });
+    if (btnHowTo) {
+      btnHowTo.addEventListener("click", () => {
+        showHowToOverlay();
+      });
+    }
 
-    btnBuffGuide.addEventListener("click", () => {
-      showBuffGuideOverlay();
-    });
+    if (btnBuffGuide) {
+      btnBuffGuide.addEventListener("click", () => {
+        showBuffGuideOverlay();
+      });
+    }
 
-    btnLeaderboard.addEventListener("click", () => {
-      showLeaderboardOverlay();
-    });
+    if (btnLeaderboard) {
+      btnLeaderboard.addEventListener("click", () => {
+        showLeaderboardOverlay();
+      });
+    }
 
     document.addEventListener("keydown", (e) => {
       if (mainMenuOverlay && mainMenuOverlay.style.display === "flex" && e.key === "Enter") {
