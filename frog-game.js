@@ -4944,7 +4944,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     // Reset upgrade timing / sheds
     initialUpgradeDone       = false;
     nextPermanentChoiceTime  = 60;
-    nextEpicChoiceTime       = 60;
+    nextEpicChoiceTime       = 180;
     legendaryEventTriggered  = false;
     orbSpecialistActive      = false; 
 
