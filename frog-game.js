@@ -5316,20 +5316,12 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         playerTag
       );
       const rawList = posted || (await fetchLeaderboard()) || [];
-  
       const topList = rawList.slice(0, 100);
 
       updateMiniLeaderboard(topList);
-      openScoreboardOverlay(topList, lastRunScore, lastRunTime, finalStats, {
-        onPlayAgain: () => {
-          hideGameOver();
-          startNewRun();
-        },
-        onReturnToMenu: () => {
-          hideGameOver();
-          showMainMenu();
-        },
-      });
+
+      hideGameOver();
+      showDashboardOverlay();
     })();
   
     showGameOver();
