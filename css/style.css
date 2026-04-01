@@ -806,11 +806,13 @@ a {
 
 .frog-sprite {
   position: absolute;
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
   image-rendering: pixelated;
   pointer-events: none;
-  border-radius: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 
