@@ -1382,32 +1382,6 @@ function grantRandomPermaFrogUpgrade(frog) {
   }
 }
 
-function grantStarUpgrade(frog) {
-  if (!frog) return;
-
-  const nextStars = Math.min(3, (frog.starLevel || 0) + 1);
-  frog.starLevel = nextStars;
-
-  // reset star-based stats before reapplying
-  frog.speedMult = 1.0;
-  frog.jumpMult = 1.0;
-
-  if (nextStars >= 1) {
-    frog.speedMult = 0.95; // ~5% faster
-  }
-  if (nextStars >= 2) {
-    frog.speedMult = 0.90; // ~10% faster total
-    frog.jumpMult = 1.10;  // ~10% higher total
-  }
-  if (nextStars >= 3) {
-    frog.speedMult = 0.85; // ~15% faster total
-    frog.jumpMult = 1.15;  // ~15% higher total
-  }
-
-  refreshFrogPermaGlow(frog);
-  updateFrogRoleEmoji(frog);
-}
-
 function clearAllFrogRoles(frog) {
   if (!frog) return;
 
@@ -4970,7 +4944,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     // Reset upgrade timing / sheds
     initialUpgradeDone       = false;
     nextPermanentChoiceTime  = 60;
-    nextEpicChoiceTime       = 180;
+    nextEpicChoiceTime       = 60;
     legendaryEventTriggered  = false;
     orbSpecialistActive      = false; 
 
