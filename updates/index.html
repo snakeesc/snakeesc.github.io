@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -15,14 +17,15 @@
       color: #fff;
       font-family: monospace;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
       padding: 16px;
     }
 
     .overlay-bg {
+      position: relative;
       width: 100%;
-      max-width: 1080px;
+      max-width: 960px;
     }
 
     .panel {
@@ -31,6 +34,7 @@
       border-radius: 10px;
       border: 1px solid #444;
       color: #fff;
+      text-align: left;
       box-shadow: 0 0 18px rgba(0,0,0,0.6);
     }
 
@@ -46,78 +50,10 @@
       opacity: 0.9;
     }
 
-    .section-title {
-      font-size: 13px;
-      margin: 18px 0 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      opacity: 0.9;
-    }
-
     .status {
       font-size: 13px;
       opacity: 0.85;
-      margin-bottom: 10px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .stat-card {
-      background: #181818;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .stat-value {
-      font-size: 18px;
-      font-weight: bold;
-      color: #9bffb1;
-    }
-
-    .top3-list {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .top3-item {
-      background: #181818;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px 12px;
-      display: grid;
-      grid-template-columns: 60px 1fr auto auto;
-      gap: 10px;
-      align-items: center;
-      font-size: 13px;
-    }
-
-    .rank {
-      color: #9bffb1;
-      font-weight: bold;
-    }
-
-    .player {
-      font-weight: bold;
-    }
-
-    .score,
-    .time {
-      opacity: 0.95;
+      margin-bottom: 12px;
     }
 
     .runs-table-wrap {
@@ -173,17 +109,6 @@
     a:hover {
       text-decoration: underline;
     }
-
-    @media (max-width: 720px) {
-      .top3-item {
-        grid-template-columns: 50px 1fr;
-      }
-
-      .score,
-      .time {
-        grid-column: 2;
-      }
-    }
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518470870792689"
       crossorigin="anonymous"></script>
@@ -192,18 +117,9 @@
   <div class="overlay-bg">
     <div class="panel">
       <div class="title">escape the snake 🐍</div>
-      <div class="subtitle">-- Player Runs / Live Run Log --</div>
+      <div class="subtitle">-- Player Run Log --</div>
 
-      <div id="summaryStatus" class="status">Loading summary…</div>
-
-      <div class="section-title">overall totals</div>
-      <div id="statsGrid" class="stats-grid"></div>
-
-      <div class="section-title">top 3 leaderboard holders</div>
-      <div id="top3List" class="top3-list"></div>
-
-      <div class="section-title">recent runs</div>
-      <div id="runsStatus" class="status">Loading recent runs…</div>
+      <div id="status" class="status">Loading runs…</div>
 
       <div class="runs-table-wrap">
         <table>
@@ -213,7 +129,8 @@
               <th>Player</th>
               <th class="num">Score</th>
               <th class="num">Time (s)</th>
-              <th class="num">Frogs Eaten</th>
+              <th class="num">Frogs</th>
+              <th class="num">Snakes</th>
             </tr>
           </thead>
           <tbody id="runsBody"></tbody>
@@ -221,7 +138,7 @@
       </div>
 
       <div class="small-note">
-        showing the most recent 100 completed runs from
+        showing recent completed runs from
         <a href="https://snakeesc.github.io/">snakeesc.github.io</a>
       </div>
     </div>
@@ -230,26 +147,8 @@
   <script>
     (function () {
       const WORKER_BASE = "https://lucky-king-0d37.danielssouthworth.workers.dev";
-
-      const summaryStatusEl = document.getElementById("summaryStatus");
-      const runsStatusEl = document.getElementById("runsStatus");
-      const statsGridEl = document.getElementById("statsGrid");
-      const top3ListEl = document.getElementById("top3List");
+      const statusEl = document.getElementById("status");
       const runsBodyEl = document.getElementById("runsBody");
-
-      function formatNumber(value) {
-        const n = Number(value || 0);
-        return Number.isFinite(n) ? n.toLocaleString() : "0";
-      }
-
-      function formatTimeSeconds(value) {
-        const n = Number(value || 0);
-        if (!Number.isFinite(n)) return "0.0";
-        return n.toLocaleString(undefined, {
-          minimumFractionDigits: 1,
-          maximumFractionDigits: 1
-        });
-      }
 
       function formatDate(value) {
         if (!value) return "—";
@@ -258,90 +157,65 @@
         return d.toLocaleString();
       }
 
-      fetch(WORKER_BASE + "/updates-summary")
-        .then(res => res.ok ? res.json() : null)
-        .then(data => {
-          if (!data) {
-            summaryStatusEl.textContent = "Unable to load summary.";
-            return;
-          }
-
-          statsGridEl.innerHTML = `
-            <div class="stat-card">
-              <div class="stat-label">Total Users</div>
-              <div class="stat-value">${formatNumber(data.totalUsers)}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Runs</div>
-              <div class="stat-value">${formatNumber(data.totalRuns)}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Playtime</div>
-              <div class="stat-value">${formatTimeSeconds(data.totalPlaytime)}s</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Frogs Eaten</div>
-              <div class="stat-value">${formatNumber(data.totalFrogsEaten)}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Score</div>
-              <div class="stat-value">${formatNumber(data.totalScore)}</div>
-            </div>
-          `;
-
-          const top3 = Array.isArray(data.top3) ? data.top3 : [];
-          top3ListEl.innerHTML = "";
-
-          if (!top3.length) {
-            top3ListEl.innerHTML = `<div class="status">No leaderboard entries yet.</div>`;
-          } else {
-            top3.forEach((entry, index) => {
-              const row = document.createElement("div");
-              row.className = "top3-item";
-              row.innerHTML = `
-                <div class="rank">#${index + 1}</div>
-                <div class="player">${entry.tag || "Anonymous Frog"}</div>
-                <div class="score">Score: ${formatNumber(entry.bestScore)}</div>
-                <div class="time">Time: ${formatTimeSeconds(entry.bestTime)}s</div>
-              `;
-              top3ListEl.appendChild(row);
-            });
-          }
-
-          summaryStatusEl.textContent = "Summary loaded.";
-        })
-        .catch(() => {
-          summaryStatusEl.textContent = "Unable to load summary.";
-        });
+      function safeNum(value, fallback = "—") {
+        return Number.isFinite(Number(value)) ? Number(value).toLocaleString() : fallback;
+      }
 
       fetch(WORKER_BASE + "/runs")
         .then(res => res.ok ? res.json() : null)
         .then(data => {
-          const runs = Array.isArray(data?.runs) ? data.runs : [];
+          const runs = Array.isArray(data?.runs) ? data.runs : Array.isArray(data) ? data : null;
 
-          runsBodyEl.innerHTML = "";
-
-          if (!runs.length) {
-            runsStatusEl.textContent = "No runs found.";
+          if (!runs || !runs.length) {
+            statusEl.textContent = "No runs found.";
             return;
           }
 
+          runsBodyEl.innerHTML = "";
+
           runs.forEach((run) => {
             const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${formatDate(run.createdAt)}</td>
-              <td>${run.tag || "Anonymous Frog"}</td>
-              <td class="num">${formatNumber(run.score)}</td>
-              <td class="num">${formatTimeSeconds(run.time)}</td>
-              <td class="num">${formatNumber(run.frogsEaten)}</td>
-            `;
+
+            const dateTd = document.createElement("td");
+            dateTd.textContent = formatDate(run.createdAt || run.timestamp || run.date);
+
+            const playerTd = document.createElement("td");
+            playerTd.textContent = (run.tag && run.tag.trim()) || "Anonymous Frog";
+
+            const scoreTd = document.createElement("td");
+            scoreTd.className = "num";
+            scoreTd.textContent = safeNum(run.score);
+
+            const timeTd = document.createElement("td");
+            timeTd.className = "num";
+            timeTd.textContent = Number.isFinite(Number(run.timeSeconds))
+              ? Number(run.timeSeconds).toFixed(1)
+              : Number.isFinite(Number(run.bestTime))
+              ? Number(run.bestTime).toFixed(1)
+              : "—";
+
+            const frogsTd = document.createElement("td");
+            frogsTd.className = "num";
+            frogsTd.textContent = safeNum(run.totalFrogsSpawned ?? run.frogs);
+
+            const snakesTd = document.createElement("td");
+            snakesTd.className = "num";
+            snakesTd.textContent = safeNum(run.snakesSeen ?? run.snakes);
+
+            tr.appendChild(dateTd);
+            tr.appendChild(playerTd);
+            tr.appendChild(scoreTd);
+            tr.appendChild(timeTd);
+            tr.appendChild(frogsTd);
+            tr.appendChild(snakesTd);
+
             runsBodyEl.appendChild(tr);
           });
 
-          runsStatusEl.textContent = `Showing ${runs.length} most recent runs.`;
+          statusEl.textContent = `Showing ${runs.length} recent runs.`;
         })
         .catch(() => {
-          runsStatusEl.textContent = "Unable to load recent runs.";
+          statusEl.textContent = "Unable to load run log.";
         });
     })();
   </script>
