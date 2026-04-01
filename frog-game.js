@@ -3330,7 +3330,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       upgrades.push({
         id: "ouroborosPact",
         label: `
-          💀 Ouroboros Pact<br>
+          ⚱️ Ouroboros Pact<br>
           <span style="color:${neon};">15%</span> chance dead frogs drop an orb
         `,
         apply: () => {
@@ -4493,7 +4493,7 @@ async function showDashboardOverlay() {
 
   content.innerHTML = `
     ${leaderboardTopHtml}
-    
+
     <div class="frog-panel-section-label">Player Tag</div>
     <ul class="frog-panel-list">
       <li>
