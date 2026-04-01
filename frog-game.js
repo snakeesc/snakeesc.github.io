@@ -1309,64 +1309,6 @@ function grantZombieFrog(frog) {
   playPerFrogUpgradeSound("zombie");
 }
 
-function applyMutationUpgrade() {
-  if (!frogs.length) return;
-
-  // turn half the current frogs into zombies
-  const candidates = frogs.filter(f => f && f.el);
-  const convertCount = Math.max(1, Math.floor(candidates.length / 2));
-  const shuffled = candidates.slice().sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < convertCount; i++) {
-    const frog = shuffled[i];
-    if (!frog) continue;
-    grantZombieFrog(frog);
-  }
-
-  // apply the other two upgrade choices currently shown in the menu
-  const otherChoices = currentUpgradeChoices.filter(choice => choice.id !== "mutation");
-
-  for (const choice of otherChoices) {
-    if (choice && typeof choice.apply === "function") {
-      choice.apply();
-    }
-  }
-}
-
-function grantAlternateMutationBuffs() {
-  for (const frog of frogs) {
-    if (!frog) continue;
-    grantMagnetFrog(frog);
-    grantLuckyFrog(frog);
-  }
-}
-
-function applyMutationUpgrade() {
-  if (!frogs.length) return;
-
-  const candidates = frogs.filter(f => f && f.el);
-  if (!candidates.length) return;
-
-  const convertCount = Math.max(1, Math.floor(candidates.length / 2));
-
-  const shuffled = candidates.slice().sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < convertCount; i++) {
-    const frog = shuffled[i];
-    if (!frog) continue;
-
-    frog.isZombie = true;
-    frog.zombieDirX = 0;
-    frog.zombieDirY = 0;
-    frog.zombieRetargetTime = 0;
-
-    refreshFrogPermaGlow(frog);
-    updateFrogRoleEmoji(frog);
-  }
-
-  grantAlternateMutationBuffs();
-}
-
 function updateFrogRoleEmoji(frog) {
   if (!frog || !frog.el) return;
 
