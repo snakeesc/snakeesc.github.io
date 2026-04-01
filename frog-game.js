@@ -288,6 +288,42 @@
       return { bestRun: 0, bestTime: 0, found: false };
     }
   }
+
+    function validateDashboardTag(rawTag) {
+    const tag = String(rawTag || "").trim();
+
+    if (!tag) {
+      return { ok: false, message: "Enter a tag." };
+    }
+
+    if (tag.length < 2 || tag.length > 12) {
+      return { ok: false, message: "Tag must be 2-12 characters." };
+    }
+
+    if (window.FrogGameLeaderboard && typeof window.FrogGameLeaderboard.isProfaneTag === "function") {
+      if (window.FrogGameLeaderboard.isProfaneTag(tag)) {
+        return { ok: false, message: "That tag is not allowed." };
+      }
+    }
+
+    return { ok: true, tag };
+  }
+
+  async function saveDashboardTag(tag) {
+    const clean = String(tag || "").trim();
+    if (!clean) return false;
+
+    try {
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem(TAG_STORAGE_KEY, clean);
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    return true;
+  }
+
   function getRandomFrogSprite() {
     const files = window.FrogGameConfig.FROG_FILES || [];
     const folder = window.FrogGameConfig.FROG_FOLDER || "./images/build_files/Frog/";
@@ -3846,9 +3882,62 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     });
   }
-
   function showHowToOverlay() {
     if (!howToOverlay) initHowToOverlay();
+    if (!howToOverlay) return;
+
+    const panel = howToOverlay.querySelector(".frog-panel");
+    if (!panel) return;
+
+    panel.innerHTML = `
+      <div class="frog-panel-title">
+        How to Play
+        <span class="emoji">❓</span>
+      </div>
+
+      <div class="frog-panel-sub">
+        Keep your frogs alive as long as possible.
+      </div>
+
+      <div class="frog-panel-section-label">Controls</div>
+      <ul class="frog-panel-list">
+        <li><strong>Mouse:</strong> move your cursor and your frogs will try to follow.</li>
+        <li><strong>Click:</strong> starts following if movement has not started yet.</li>
+      </ul>
+
+      <div class="frog-panel-section-label">Goal</div>
+      <ul class="frog-panel-list">
+        <li>Stay alive as long as possible.</li>
+        <li>Avoid letting the snake eat all your frogs.</li>
+        <li>Collect orbs and choose upgrades to survive longer.</li>
+      </ul>
+
+      <div class="frog-panel-section-label">How Runs Work</div>
+      <ul class="frog-panel-list">
+        <li>The snake chases your frogs and gets more dangerous over time.</li>
+        <li>Each run ends when all frogs are gone.</li>
+        <li>Your best run can appear on the leaderboard if your score is high enough.</li>
+      </ul>
+
+      <div class="frog-panel-section-label">Tips</div>
+      <ul class="frog-panel-list">
+        <li>Do not chase every orb if it puts your frogs in danger.</li>
+        <li>Try to guide the swarm early before the snake cuts off your path.</li>
+        <li>Use upgrades to build a run around movement, survival, or frog spawning.</li>
+      </ul>
+
+      <div class="frog-panel-footer">
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">
+          Close
+        </button>
+      </div>
+    `;
+
+    const closeBtn = document.getElementById("howToCloseBtn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", hideHowToOverlay);
+    }
+
     howToOverlay.style.display = "flex";
   }
 
@@ -4322,6 +4411,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     const localStats = loadDashboardStats();
     const leaderboardBest = await getMyDashboardBestFromLeaderboard();
+    const currentTag =
+      (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
+      (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
+      getSavedDashboardTag() ||
+      "";
 
     const avgRunTime =
       localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
@@ -4338,6 +4432,40 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       : "<li>No runs recorded on this device yet.</li>";
 
     content.innerHTML = `
+      <div class="frog-panel-section-label">Player Tag</div>
+      <ul class="frog-panel-list">
+        <li>
+          <strong>Current Tag:</strong>
+          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
+        </li>
+      </ul>
+
+      <div style="margin-bottom:12px;">
+        <input
+          id="dashboardTagInput"
+          type="text"
+          maxlength="12"
+          value="${String(currentTag).replace(/"/g, "&quot;")}"
+          placeholder="Enter player tag"
+          style="
+            width:100%;
+            box-sizing:border-box;
+            padding:8px 10px;
+            border-radius:8px;
+            border:1px solid #44403c;
+            background:#292524;
+            color:white;
+            font-family:inherit;
+            font-size:13px;
+            margin-bottom:8px;
+          "
+        />
+        <button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary" style="margin-bottom:4px;">
+          Save Tag
+        </button>
+        <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
+      </div>
+
       <div class="frog-panel-section-label">Best Record</div>
       <ul class="frog-panel-list">
         <li><strong>Best Run:</strong> <span class="stat-highlight">${leaderboardBest.found ? leaderboardBest.bestRun : "—"}</span></li>
@@ -4358,6 +4486,53 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         ${recentRunsHtml}
       </ul>
     `;
+
+    const tagInput = document.getElementById("dashboardTagInput");
+    const saveBtn = document.getElementById("dashboardSaveTagBtn");
+    const msgEl = document.getElementById("dashboardTagMessage");
+    const currentTagEl = document.getElementById("dashboardCurrentTag");
+
+    if (saveBtn && tagInput) {
+      saveBtn.addEventListener("click", async () => {
+        const validation = validateDashboardTag(tagInput.value);
+
+        if (!validation.ok) {
+          if (msgEl) {
+            msgEl.textContent = validation.message;
+            msgEl.style.color = "#fca5a5";
+          }
+          return;
+        }
+
+        const newTag = validation.tag;
+        await saveDashboardTag(newTag);
+
+        if (currentTagEl) {
+          currentTagEl.textContent = newTag;
+        }
+
+        if (msgEl) {
+          msgEl.textContent = "Tag saved.";
+          msgEl.style.color = "#bef264";
+        }
+
+        try {
+          const bestScore =
+            leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
+          const bestTime =
+            leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+
+          if (bestScore > 0 || bestTime > 0) {
+            await submitScoreToServer(bestScore, bestTime, null, newTag);
+          }
+
+          const refreshed = await fetchLeaderboard();
+          updateMiniLeaderboard(refreshed);
+        } catch (e) {
+          // ignore refresh failure
+        }
+      });
+    }
   }
 
   function hideDashboardOverlay() {

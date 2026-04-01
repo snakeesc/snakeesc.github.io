@@ -1035,5 +1035,6 @@
     openScoreboardOverlay,
     hideScoreboardOverlay,
     getCurrentUserLabel: getCurrentUserLabelFromLeaderboard,
+    isProfaneTag,
   };
 })();
