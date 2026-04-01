@@ -4577,11 +4577,6 @@ async function showDashboardOverlay() {
     </ul>
 
     ${latestRunHtml}
-
-    <div class="frog-panel-section-label">Recent Runs</div>
-    <ul class="frog-panel-list">
-      ${recentRunsHtml}
-    </ul>
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
