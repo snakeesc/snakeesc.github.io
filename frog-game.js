@@ -176,6 +176,20 @@
     return `${s}s`;
   }
 
+  function getDashboardLevelData(totalOrbsCollected) {
+    const total = Math.max(0, Number(totalOrbsCollected) || 0);
+    const level = Math.floor(total / 100) + 1;
+    const currentLevelOrbProgress = total % 100;
+    const progressPercent = currentLevelOrbProgress;
+
+    return {
+      level,
+      currentLevelOrbProgress,
+      progressPercent,
+      nextLevelAt: 100
+    };
+  }
+
   function getSavedDashboardTag() {
     try {
       if (typeof localStorage === "undefined") return null;
@@ -4419,7 +4433,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     const avgRunTime =
       localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
-
+    const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
     const recentRunsHtml = localStats.recentRuns.length
       ? localStats.recentRuns.map((run, i) => {
           return `
@@ -4438,7 +4452,36 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           <strong>Current Tag:</strong>
           <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
         </li>
+        <li>
+          <strong>Level:</strong>
+          <span class="stat-highlight">${levelData.level}</span>
+        </li>
       </ul>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
+          ${levelData.currentLevelOrbProgress} / ${levelData.nextLevelAt} orbs to next level
+        </div>
+        <div
+          style="
+            width:100%;
+            height:8px;
+            background:#292524;
+            border:1px solid #44403c;
+            border-radius:999px;
+            overflow:hidden;
+          "
+        >
+          <div
+            style="
+              width:${levelData.progressPercent}%;
+              height:100%;
+              background:#65a30d;
+              border-radius:999px;
+            "
+          ></div>
+        </div>
+      </div>
 
       <div style="margin-bottom:12px;">
         <input
