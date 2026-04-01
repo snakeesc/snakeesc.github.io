@@ -4451,20 +4451,6 @@ async function showDashboardOverlay() {
 
   const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
 
-  const recentRunsHtml = localStats.recentRuns.length
-    ? localStats.recentRuns.map((run, i) => {
-        const isLatest = !!run.isLatest;
-
-        return `
-          <li${isLatest ? ' style="color:#bef264;"' : ""}>
-            <strong>${i + 1}.</strong>
-            ${isLatest ? "⭐ " : ""}
-            ${Math.floor(run.score)} score · ${formatDashboardDuration(run.time)} · ${run.orbs} orbs
-          </li>
-        `;
-      }).join("")
-    : "<li>No runs recorded on this device yet.</li>";
-
   const savedLatestRun =
     Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
       ? localStats.recentRuns[0]
