@@ -1365,6 +1365,59 @@ function grantRandomPermaFrogUpgrade(frog) {
   }
 }
 
+function grantRandomPermaFrogUpgrade(frog) {
+  if (!frog) return;
+  const roles = ["champion", "aura", "magnet", "lucky", "zombie"];
+
+  const available = roles.filter((r) => {
+    switch (r) {
+      case "champion": return !frog.isChampion;
+      case "aura":     return !frog.isAura;
+      case "magnet":   return !frog.isMagnet;
+      case "lucky":    return !frog.isLucky;
+      case "zombie":   return !frog.isZombie;
+      default:         return true;
+    }
+  });
+
+  const pool = available.length ? available : roles;
+  const role = pool[Math.floor(Math.random() * pool.length)];
+
+  switch (role) {
+    case "champion": grantChampionFrog(frog);   break;
+    case "aura":     grantAuraFrog(frog);       break;
+    case "magnet":   grantMagnetFrog(frog);     break;
+    case "lucky":    grantLuckyFrog(frog);      break;
+    case "zombie":   grantZombieFrog(frog);     break;
+  }
+}
+
+function grantStarUpgrade(frog) {
+  if (!frog) return;
+
+  const nextStars = Math.min(3, (frog.starLevel || 0) + 1);
+  frog.starLevel = nextStars;
+
+  // reset star-based stats before reapplying
+  frog.speedMult = 1.0;
+  frog.jumpMult = 1.0;
+
+  if (nextStars >= 1) {
+    frog.speedMult = 0.95; // ~5% faster
+  }
+  if (nextStars >= 2) {
+    frog.speedMult = 0.90; // ~10% faster total
+    frog.jumpMult = 1.10;  // ~10% higher total
+  }
+  if (nextStars >= 3) {
+    frog.speedMult = 0.85; // ~15% faster total
+    frog.jumpMult = 1.15;  // ~15% higher total
+  }
+
+  refreshFrogPermaGlow(frog);
+  updateFrogRoleEmoji(frog);
+}
+
 function clearAllFrogRoles(frog) {
   if (!frog) return;
 
