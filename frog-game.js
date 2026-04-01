@@ -434,6 +434,7 @@
   let nextOrbTime   = 0;
   let score         = 0;
   let frogsEatenCount = 0; // grow one segment every 2 frogs
+  let latestCompletedRun = null;
 
   // UI + audio toggles
   let soundEnabled      = true;
@@ -4533,12 +4534,26 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         <li><strong>Average Run Time:</strong> <span class="stat-highlight">${formatDashboardDuration(avgRunTime)}</span></li>
       </ul>
 
+      ${latestRunHtml}
+
       <div class="frog-panel-section-label">Recent Runs</div>
       <ul class="frog-panel-list">
         ${recentRunsHtml}
       </ul>
     `;
-
+    const latestRunHtml = latestCompletedRun
+      ? `
+        <div class="frog-panel-section-label">Last Run</div>
+        <ul class="frog-panel-list">
+          <li style="color:#bef264;">
+            <strong>Score:</strong> <span class="stat-highlight">${Math.floor(latestCompletedRun.score)}</span>
+            · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(latestCompletedRun.time)}</span>
+            · <strong>Orbs:</strong> <span class="stat-highlight">${latestCompletedRun.orbs}</span>
+            · <strong>Frogs Lost:</strong> <span class="stat-highlight">${latestCompletedRun.frogsLost}</span>
+          </li>
+        </ul>
+      `
+      : "";
     const tagInput = document.getElementById("dashboardTagInput");
     const saveBtn = document.getElementById("dashboardSaveTagBtn");
     const msgEl = document.getElementById("dashboardTagMessage");
@@ -5259,6 +5274,13 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     lastRunTime  = elapsedTime;
     lastRunScore = score;
 
+    latestCompletedRun = {
+      score: Math.floor(Number(lastRunScore) || 0),
+      time: Number(lastRunTime) || 0,
+      orbs: Number(totalOrbsCollected) || 0,
+      frogsLost: Math.max(0, Number(totalFrogsSpawned) || 0)
+    };
+
     recordRunToDashboard();
 
     const finalStats = {
@@ -5397,6 +5419,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     frogsEatenCount = 0;
     nextOrbTime     = 0;
     mouse.follow    = false;
+    latestCompletedRun = null;
 
     // Reset upgrade timing
     // Reset upgrade timing / sheds
