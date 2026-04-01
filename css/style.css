@@ -836,7 +836,7 @@ a {
     border: 0px solid #84cc16;
     color: white;
     font-family: monospace;
-    min-width: 320px;
+    min-width: 400px;
     max-width: 960px;
     max-height: 82vh;
     overflow: auto;
