@@ -4404,203 +4404,221 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const closeBtn = document.getElementById("dashboardCloseBtn");
 
     if (closeBtn) {
-      closeBtn.addEventListener("click", hideDashboardOverlay);
+      closeBtn.addEventListener("click", () => {
+        hideDashboardOverlay();
+        hideGameOver();
+        showMainMenu();
+      });
     }
 
     document.addEventListener("keydown", (e) => {
       if (dashboardOverlay && dashboardOverlay.style.display === "flex" && e.key === "Escape") {
         hideDashboardOverlay();
+        hideGameOver();
+        showMainMenu();
       }
     });
   }
 
-  async function showDashboardOverlay() {
-    if (!dashboardOverlay) initDashboardOverlay();
-    if (!dashboardOverlay) return;
+async function showDashboardOverlay() {
+  if (!dashboardOverlay) initDashboardOverlay();
+  if (!dashboardOverlay) return;
 
-    const content = document.getElementById("dashboardContent");
-    if (!content) return;
+  const content = document.getElementById("dashboardContent");
+  if (!content) return;
 
-    dashboardOverlay.style.display = "flex";
-    content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
+  dashboardOverlay.style.display = "flex";
+  content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
 
-    const localStats = loadDashboardStats();
-    const leaderboardBest = await getMyDashboardBestFromLeaderboard();
-    const currentTag =
-      (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
-      (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
-      getSavedDashboardTag() ||
-      "";
+  const localStats = loadDashboardStats();
+  const leaderboardBest = await getMyDashboardBestFromLeaderboard();
+  const currentTag =
+    (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
+    (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
+    getSavedDashboardTag() ||
+    "";
 
-    const avgRunTime =
-      localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
-    const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
-    const recentRunsHtml = localStats.recentRuns.length
-      ? localStats.recentRuns.map((run, i) => {
-          return `
-            <li>
-              <strong>${i + 1}.</strong>
-              ${Math.floor(run.score)} score · ${formatDashboardDuration(run.time)} · ${run.orbs} orbs
-            </li>
-          `;
-        }).join("")
-      : "<li>No runs recorded on this device yet.</li>";
-    const latestRunHtml = latestCompletedRun
-      ? `
-        <div class="frog-panel-section-label">Last Run</div>
-        <ul class="frog-panel-list">
-          <li style="color:#bef264;">
-            <strong>Score:</strong> <span class="stat-highlight">${Math.floor(latestCompletedRun.score)}</span>
-            · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(latestCompletedRun.time)}</span>
-            · <strong>Orbs:</strong> <span class="stat-highlight">${latestCompletedRun.orbs}</span>
-            · <strong>Frogs Lost:</strong> <span class="stat-highlight">${latestCompletedRun.frogsLost}</span>
+  const avgRunTime =
+    localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
+
+  const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
+
+  const recentRunsHtml = localStats.recentRuns.length
+    ? localStats.recentRuns.map((run, i) => {
+        const isLatest =
+          latestCompletedRun &&
+          Math.floor(run.score) === Math.floor(latestCompletedRun.score) &&
+          Math.abs((Number(run.time) || 0) - (Number(latestCompletedRun.time) || 0)) < 0.01 &&
+          Number(run.orbs || 0) === Number(latestCompletedRun.orbs || 0) &&
+          i === 0;
+
+        return `
+          <li${isLatest ? ' style="color:#bef264;"' : ""}>
+            <strong>${i + 1}.</strong>
+            ${isLatest ? "⭐ " : ""}
+            ${Math.floor(run.score)} score · ${formatDashboardDuration(run.time)} · ${run.orbs} orbs
           </li>
-        </ul>
-      `
-      : "";
-    content.innerHTML = `
-      <div class="frog-panel-section-label">Player Tag</div>
+        `;
+      }).join("")
+    : "<li>No runs recorded on this device yet.</li>";
+
+  const latestRunHtml = latestCompletedRun
+    ? `
+      <div class="frog-panel-section-label">Last Run</div>
       <ul class="frog-panel-list">
-        <li>
-          <strong>Current Tag:</strong>
-          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
-        </li>
-        <li>
-          <strong>Level:</strong>
-          <span class="stat-highlight">${levelData.level}</span>
+        <li style="color:#bef264;">
+          <strong>⭐ Score:</strong> <span class="stat-highlight">${Math.floor(latestCompletedRun.score)}</span>
+          · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(latestCompletedRun.time)}</span>
+          · <strong>Orbs:</strong> <span class="stat-highlight">${latestCompletedRun.orbs}</span>
+          · <strong>Frogs Lost:</strong> <span class="stat-highlight">${latestCompletedRun.frogsLost}</span>
         </li>
       </ul>
+    `
+    : "";
 
-      <div style="margin-bottom:12px;">
-        <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
-          ${levelData.currentLevelOrbProgress} / ${levelData.nextLevelAt} orbs to next level
-        </div>
+  content.innerHTML = `
+    <div class="frog-panel-section-label">Player Tag</div>
+    <ul class="frog-panel-list">
+      <li>
+        <strong>Current Tag:</strong>
+        <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
+      </li>
+      <li>
+        <strong>Level:</strong>
+        <span class="stat-highlight">${levelData.level}</span>
+      </li>
+    </ul>
+
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
+        ${levelData.currentLevelOrbProgress} / ${levelData.nextLevelAt} orbs to next level
+      </div>
+      <div
+        style="
+          width:100%;
+          height:8px;
+          background:#292524;
+          border:1px solid #44403c;
+          border-radius:999px;
+          overflow:hidden;
+        "
+      >
         <div
           style="
-            width:100%;
-            height:8px;
-            background:#292524;
-            border:1px solid #44403c;
+            width:${levelData.progressPercent}%;
+            height:100%;
+            background:#65a30d;
             border-radius:999px;
-            overflow:hidden;
           "
-        >
-          <div
-            style="
-              width:${levelData.progressPercent}%;
-              height:100%;
-              background:#65a30d;
-              border-radius:999px;
-            "
-          ></div>
-        </div>
+        ></div>
       </div>
+    </div>
 
-      <div style="margin-bottom:12px;">
-        <input
-          id="dashboardTagInput"
-          type="text"
-          maxlength="12"
-          value="${String(currentTag).replace(/"/g, "&quot;")}"
-          placeholder="Enter player tag"
-          style="
-            width:100%;
-            box-sizing:border-box;
-            padding:5px 8px;
-            border-radius:6px;
-            border:1px solid #44403c;
-            background:#292524;
-            color:white;
-            font-family:inherit;
-            font-size:12px;
-            margin-bottom:6px;
-          "
-        />
-        <button
-          id="dashboardSaveTagBtn"
-          class="frog-btn frog-btn-secondary"
-          style="
-            width:auto;
-            padding:6px 10px;
-            font-size:12px;
-            margin-bottom:4px;
-          "
-        >
-          Save Tag
-        </button>
-        <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
-      </div>
+    <div style="margin-bottom:12px;">
+      <input
+        id="dashboardTagInput"
+        type="text"
+        maxlength="12"
+        value="${String(currentTag).replace(/"/g, "&quot;")}"
+        placeholder="Enter player tag"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:5px 8px;
+          border-radius:6px;
+          border:1px solid #44403c;
+          background:#292524;
+          color:white;
+          font-family:inherit;
+          font-size:12px;
+          margin-bottom:6px;
+        "
+      />
+      <button
+        id="dashboardSaveTagBtn"
+        class="frog-btn frog-btn-secondary"
+        style="
+          width:auto;
+          padding:6px 10px;
+          font-size:12px;
+          margin-bottom:4px;
+        "
+      >
+        Save Tag
+      </button>
+      <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
+    </div>
 
-      <div class="frog-panel-section-label">Best Record</div>
-      <ul class="frog-panel-list">
-        <li><strong>Best Run:</strong> <span class="stat-highlight">${leaderboardBest.found ? leaderboardBest.bestRun : "—"}</span></li>
-        <li><strong>Best Time:</strong> <span class="stat-highlight">${leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime) : "—"}</span></li>
-      </ul>
+    <div class="frog-panel-section-label">Best Record</div>
+    <ul class="frog-panel-list">
+      <li><strong>Best Run:</strong> <span class="stat-highlight">${leaderboardBest.found ? leaderboardBest.bestRun : "—"}</span></li>
+      <li><strong>Best Time:</strong> <span class="stat-highlight">${leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime) : "—"}</span></li>
+    </ul>
 
-      <div class="frog-panel-section-label">Lifetime Stats</div>
-      <ul class="frog-panel-list">
-        <li><strong>Total Runs:</strong> <span class="stat-highlight">${localStats.totalRuns}</span></li>
-        <li><strong>Total Play Time:</strong> <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>
-        <li><strong>Total Orbs Collected:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected}</span></li>
-        <li><strong>Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>
-        <li><strong>Average Run Time:</strong> <span class="stat-highlight">${formatDashboardDuration(avgRunTime)}</span></li>
-      </ul>
+    <div class="frog-panel-section-label">Lifetime Stats</div>
+    <ul class="frog-panel-list">
+      <li><strong>Total Runs:</strong> <span class="stat-highlight">${localStats.totalRuns}</span></li>
+      <li><strong>Total Play Time:</strong> <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>
+      <li><strong>Total Orbs Collected:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected}</span></li>
+      <li><strong>Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>
+      <li><strong>Average Run Time:</strong> <span class="stat-highlight">${formatDashboardDuration(avgRunTime)}</span></li>
+    </ul>
 
-      ${latestRunHtml}
+    ${latestRunHtml}
 
-      <div class="frog-panel-section-label">Recent Runs</div>
-      <ul class="frog-panel-list">
-        ${recentRunsHtml}
-      </ul>
-    `;
+    <div class="frog-panel-section-label">Recent Runs</div>
+    <ul class="frog-panel-list">
+      ${recentRunsHtml}
+    </ul>
+  `;
 
-    const tagInput = document.getElementById("dashboardTagInput");
-    const saveBtn = document.getElementById("dashboardSaveTagBtn");
-    const msgEl = document.getElementById("dashboardTagMessage");
-    const currentTagEl = document.getElementById("dashboardCurrentTag");
+  const tagInput = document.getElementById("dashboardTagInput");
+  const saveBtn = document.getElementById("dashboardSaveTagBtn");
+  const msgEl = document.getElementById("dashboardTagMessage");
+  const currentTagEl = document.getElementById("dashboardCurrentTag");
 
-    if (saveBtn && tagInput) {
-      saveBtn.addEventListener("click", async () => {
-        const validation = validateDashboardTag(tagInput.value);
+  if (saveBtn && tagInput) {
+    saveBtn.addEventListener("click", async () => {
+      const validation = validateDashboardTag(tagInput.value);
 
-        if (!validation.ok) {
-          if (msgEl) {
-            msgEl.textContent = validation.message;
-            msgEl.style.color = "#fca5a5";
-          }
-          return;
-        }
-
-        const newTag = validation.tag;
-        await saveDashboardTag(newTag);
-
-        if (currentTagEl) {
-          currentTagEl.textContent = newTag;
-        }
-
+      if (!validation.ok) {
         if (msgEl) {
-          msgEl.textContent = "Tag saved.";
-          msgEl.style.color = "#bef264";
+          msgEl.textContent = validation.message;
+          msgEl.style.color = "#fca5a5";
+        }
+        return;
+      }
+
+      const newTag = validation.tag;
+      await saveDashboardTag(newTag);
+
+      if (currentTagEl) {
+        currentTagEl.textContent = newTag;
+      }
+
+      if (msgEl) {
+        msgEl.textContent = "Tag saved.";
+        msgEl.style.color = "#bef264";
+      }
+
+      try {
+        const bestScore =
+          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
+        const bestTime =
+          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+
+        if (bestScore > 0 || bestTime > 0) {
+          await submitScoreToServer(bestScore, bestTime, null, newTag);
         }
 
-        try {
-          const bestScore =
-            leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
-          const bestTime =
-            leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
-
-          if (bestScore > 0 || bestTime > 0) {
-            await submitScoreToServer(bestScore, bestTime, null, newTag);
-          }
-
-          const refreshed = await fetchLeaderboard();
-          updateMiniLeaderboard(refreshed);
-        } catch (e) {
-          // ignore refresh failure
-        }
-      });
-    }
+        const refreshed = await fetchLeaderboard();
+        updateMiniLeaderboard(refreshed);
+      } catch (e) {
+        // ignore refresh failure
+      }
+    });
   }
+}
 
   function hideDashboardOverlay() {
     if (dashboardOverlay) {
@@ -5319,7 +5337,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       const topList = rawList.slice(0, 100);
 
       updateMiniLeaderboard(topList);
-
       hideGameOver();
       showDashboardOverlay();
     })();
@@ -5477,7 +5494,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     // Hide overlays
     hideGameOver();
     if (upgradeOverlay) upgradeOverlay.style.display = "none";
-    hideScoreboardOverlay();
 
     // Recreate frogs + snake
     const width  = window.innerWidth;
