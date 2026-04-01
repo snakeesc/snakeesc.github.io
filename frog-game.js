@@ -4475,7 +4475,7 @@ async function showDashboardOverlay() {
       <div class="frog-panel-section-label">Last Run</div>
       <ul class="frog-panel-list">
         <li style="color:#bef264;">
-          <strong>⭐ Score:</strong> <span class="stat-highlight">${Math.floor(savedLatestRun.score)}</span>
+          <strong>Score:</strong> <span class="stat-highlight">${Math.floor(savedLatestRun.score)}</span>
           · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(savedLatestRun.time)}</span>
           · <strong>Orbs:</strong> <span class="stat-highlight">${savedLatestRun.orbs}</span>
           · <strong>Frogs Lost:</strong> <span class="stat-highlight">${savedLatestRun.frogsLost || 0}</span>
