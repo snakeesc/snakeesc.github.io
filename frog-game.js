@@ -1445,15 +1445,12 @@
   }
 
 function getRandomMutationUpgrade() {
-  if (frogs.length < 20) {
-    return null;
-  }
-
   return {
     id: "mutation",
     label: `
       🧬 Mutation<br>
-      Turn <span style="color:${TOTAL_HIGHLIGHT_COLOR};">half your frogs</span> into zombies
+      +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">10%</span> jump speed
+      & +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">10%</span> jump height
     `,
     apply: () => {
       applyMutationUpgrade();
@@ -1462,20 +1459,14 @@ function getRandomMutationUpgrade() {
 }
 
 function applyMutationUpgrade() {
-  const candidates = frogs.filter(f => f && f.el && !f.isMutationZombie);
-  if (!candidates.length) return;
+  frogPermanentSpeedFactor *= 0.90; // 10% faster hops
+  if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
+    frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
+  }
 
-  const convertCount = Math.max(1, Math.floor(candidates.length / 2));
-  const shuffled = candidates.slice().sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < convertCount; i++) {
-    const frog = shuffled[i];
-    if (!frog) continue;
-
-    frog.isMutationZombie = true;
-    frog.mutationZombieDirX = 0;
-    frog.mutationZombieDirY = 0;
-    frog.mutationZombieRetargetTime = 0;
+  frogPermanentJumpFactor *= 1.10; // 10% higher jumps
+  if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
+    frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
 }
 
@@ -3296,40 +3287,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const lastStandPct = Math.round(LAST_STAND_MIN_CHANCE * 100);
 
     const upgrades = [];
-
-    // Frogs hop faster (capped on PERMA factor)
-    if (frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4) {
-      upgrades.push({
-        id: "frogSpeed",
-        label: `
-          💨 Quicker Hops<br>
-          Frogs hop ~<span style="color:${neon};">${speedPerPickPct}%</span> faster (stacks)
-        `,
-        apply: () => {
-          frogPermanentSpeedFactor *= FROG_SPEED_UPGRADE_FACTOR;
-          if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
-            frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
-          }
-        }
-      });
-    }
-
-    // Frogs jump higher (capped on PERMA factor)
-    if (frogPermanentJumpFactor < MAX_FROG_JUMP_FACTOR - 1e-4) {
-      upgrades.push({
-        id: "frogJump",
-        label: `
-          🦘 Higher Hops<br>
-          +<span style="color:${neon};">${jumpPerPickPct}%</span> jump height (stacks)
-        `,
-        apply: () => {
-          frogPermanentJumpFactor *= FROG_JUMP_UPGRADE_FACTOR;
-          if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
-            frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
-          }
-        }
-      });
-    }
 
     // Spawn frogs – ONLY if we’re below cap
     if (frogs.length < maxFrogsCap) {
