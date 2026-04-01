@@ -4492,8 +4492,6 @@ async function showDashboardOverlay() {
     `;
 
   content.innerHTML = `
-    ${leaderboardTopHtml}
-
     <div class="frog-panel-section-label">Player Tag</div>
     <ul class="frog-panel-list">
       <li>
@@ -4565,6 +4563,8 @@ async function showDashboardOverlay() {
       </button>
       <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
     </div>
+
+    ${leaderboardTopHtml}
 
     <div class="frog-panel-section-label">Best Record</div>
     <ul class="frog-panel-list">
