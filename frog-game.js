@@ -4445,7 +4445,19 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           `;
         }).join("")
       : "<li>No runs recorded on this device yet.</li>";
-
+    const latestRunHtml = latestCompletedRun
+      ? `
+        <div class="frog-panel-section-label">Last Run</div>
+        <ul class="frog-panel-list">
+          <li style="color:#bef264;">
+            <strong>Score:</strong> <span class="stat-highlight">${Math.floor(latestCompletedRun.score)}</span>
+            · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(latestCompletedRun.time)}</span>
+            · <strong>Orbs:</strong> <span class="stat-highlight">${latestCompletedRun.orbs}</span>
+            · <strong>Frogs Lost:</strong> <span class="stat-highlight">${latestCompletedRun.frogsLost}</span>
+          </li>
+        </ul>
+      `
+      : "";
     content.innerHTML = `
       <div class="frog-panel-section-label">Player Tag</div>
       <ul class="frog-panel-list">
@@ -4541,19 +4553,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         ${recentRunsHtml}
       </ul>
     `;
-    const latestRunHtml = latestCompletedRun
-      ? `
-        <div class="frog-panel-section-label">Last Run</div>
-        <ul class="frog-panel-list">
-          <li style="color:#bef264;">
-            <strong>Score:</strong> <span class="stat-highlight">${Math.floor(latestCompletedRun.score)}</span>
-            · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(latestCompletedRun.time)}</span>
-            · <strong>Orbs:</strong> <span class="stat-highlight">${latestCompletedRun.orbs}</span>
-            · <strong>Frogs Lost:</strong> <span class="stat-highlight">${latestCompletedRun.frogsLost}</span>
-          </li>
-        </ul>
-      `
-      : "";
+
     const tagInput = document.getElementById("dashboardTagInput");
     const saveBtn = document.getElementById("dashboardSaveTagBtn");
     const msgEl = document.getElementById("dashboardTagMessage");
