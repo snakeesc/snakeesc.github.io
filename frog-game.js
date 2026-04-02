@@ -3883,6 +3883,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       <div class="frog-panel-section-label">Controls</div>
       <ul class="frog-panel-list">
         <li><strong>Mouse:</strong> move your cursor and your frogs will try to follow.</li>
+        <li><strong>Touch:</strong> tap the screen on mobile and frogs will follow.</li>
       </ul>
 
       <div class="frog-panel-section-label">Goal</div>
