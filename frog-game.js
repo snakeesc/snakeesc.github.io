@@ -177,16 +177,29 @@
   }
 
   function getDashboardLevelData(totalOrbsCollected) {
-    const total = Math.max(0, Number(totalOrbsCollected) || 0);
-    const level = Math.floor(total / 100) + 1;
-    const currentLevelOrbProgress = total % 100;
-    const progressPercent = currentLevelOrbProgress;
+    const total = Math.max(0, Math.floor(Number(totalOrbsCollected) || 0));
+
+    let level = 1;
+    let levelStart = 0;
+    let nextLevelRequirement = 100;
+
+    while (total >= nextLevelRequirement) {
+      level += 1;
+      levelStart = nextLevelRequirement;
+      nextLevelRequirement += level * 100;
+    }
+
+    const orbsIntoCurrentLevel = total - levelStart;
+    const orbsNeededForNextLevel = nextLevelRequirement - total;
+    const levelSpan = nextLevelRequirement - levelStart;
+    const progressPercent =
+      levelSpan > 0 ? Math.max(0, Math.min(100, (orbsIntoCurrentLevel / levelSpan) * 100)) : 0;
 
     return {
       level,
-      currentLevelOrbProgress,
       progressPercent,
-      nextLevelAt: 100
+      orbsNeededForNextLevel,
+      nextLevel: level + 1
     };
   }
 
@@ -4558,9 +4571,9 @@ const leaderboardTopHtml = topFiveLeaderboard.length
     </ul>
 
     <div style="margin-bottom:12px;">
-      <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
-        ${levelData.currentLevelOrbProgress} / ${levelData.nextLevelAt} orbs to next level
-      </div>
+    <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
+      ${levelData.orbsNeededForNextLevel} orbs until level ${levelData.nextLevel}
+    </div>
       <div
         style="
           width:100%;
