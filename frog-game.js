@@ -3883,7 +3883,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       <div class="frog-panel-section-label">Controls</div>
       <ul class="frog-panel-list">
         <li><strong>Mouse:</strong> move your cursor and your frogs will try to follow.</li>
-        <li><strong>Click:</strong> starts following if movement has not started yet.</li>
       </ul>
 
       <div class="frog-panel-section-label">Goal</div>
