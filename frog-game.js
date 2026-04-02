@@ -5231,7 +5231,7 @@ const leaderboardTopHtml = topFiveLeaderboard.length
       if (upgradeOverlayContext === "start") {
         upgradeOverlaySubEl.textContent = "Pick your first upgrade before the run begins.";
       } else {
-        upgradeOverlaySubEl.textContent = "Pick one upgrade to apply to your frogs.";
+        upgradeOverlaySubEl.textContent = "";
       }
     }
 
