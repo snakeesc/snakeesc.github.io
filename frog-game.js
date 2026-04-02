@@ -212,8 +212,7 @@ function getDashboardPfp() {
             hatSrc:
               cosmetics.unlockedHat
                 ? (typeof parsed.hatSrc === "string" ? parsed.hatSrc : getRandomFrogHat())
-                : null,
-            bgColor: typeof parsed.bgColor === "string" ? parsed.bgColor : getRandomDashboardPfpBg()
+                : null
           };
 
           localStorage.setItem(DASHBOARD_PFP_STORAGE_KEY, JSON.stringify(updated));
@@ -229,8 +228,7 @@ function getDashboardPfp() {
     spriteSrc: getRandomFrogSprite(),
     skinSrc: getRandomFrogSkin(),
     eyesSrc: cosmetics.unlockedEyes ? getRandomFrogEyes() : null,
-    hatSrc: cosmetics.unlockedHat ? getRandomFrogHat() : null,
-    bgColor: getRandomDashboardPfpBg()
+    hatSrc: cosmetics.unlockedHat ? getRandomFrogHat() : null
   };
 
   try {
@@ -4651,7 +4649,6 @@ async function showDashboardOverlay() {
     localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
 
   const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
-  const profileBg = getDashboardProfileBg(levelData.level);
 
   const savedLatestRun =
     Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
@@ -4736,7 +4733,7 @@ const leaderboardTopHtml = topTenLeaderboard.length
         padding:8px 10px;
         border:1px solid #44403c;
         border-radius:12px;
-        background:${profileBg};
+        background:#1c1917;
       "
     >
       <div
