@@ -816,8 +816,8 @@ a {
 .frog-sprite-skin {
   position: absolute;
   inset: 0;
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
   image-rendering: pixelated;
   pointer-events: none;
 }
