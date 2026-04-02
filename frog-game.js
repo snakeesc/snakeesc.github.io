@@ -4457,8 +4457,8 @@ async function showDashboardOverlay() {
     "";
   const leaderboardBest = await getMyDashboardBestFromLeaderboard();
   const leaderboardEntries = await fetchLeaderboard();
-  const topFiveLeaderboard = Array.isArray(leaderboardEntries)
-    ? leaderboardEntries.slice(0, 5)
+  const topTenLeaderboard = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.slice(0, 10)
     : [];
   const normalizedCurrentTag =
     typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
@@ -4508,11 +4508,11 @@ async function showDashboardOverlay() {
     `
     : "";
 
-const leaderboardTopHtml = topFiveLeaderboard.length
+const leaderboardTopHtml = topTenLeaderboard.length
   ? `
-    <div class="frog-panel-section-label">Top 5 Leaderboard</div>
+    <div class="frog-panel-section-label">Top 10 Leaderboard</div>
     <ul class="frog-panel-list">
-      ${topFiveLeaderboard.map((entry, i) => {
+      ${topTenLeaderboard.map((entry, i) => {
         const name =
           (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
             ? entry.tag
@@ -4555,7 +4555,7 @@ const leaderboardTopHtml = topFiveLeaderboard.length
     </ul>
   `
   : `
-    <div class="frog-panel-section-label">Top 5 Leaderboard</div>
+    <div class="frog-panel-section-label">Top 10 Leaderboard</div>
     <ul class="frog-panel-list">
       <li>No leaderboard entries yet.</li>
     </ul>
