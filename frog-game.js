@@ -4634,9 +4634,9 @@ const leaderboardTopHtml = topTenLeaderboard.length
       <div
         style="
           position:relative;
-          width:44px;
-          height:44px;
-          min-width:44px;
+          width:48px;
+          height:48px;
+          min-width:48px;
           border-radius:999px;
           overflow:hidden;
           border:1px solid #57534e;
