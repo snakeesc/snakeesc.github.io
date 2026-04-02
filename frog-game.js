@@ -126,8 +126,52 @@
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
   const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
+  const DASHBOARD_PFP_STORAGE_KEY = "frogSnake_dashboardPfp_v1";
+  const DASHBOARD_PFP_EYES_CHANCE = 0.12; // 12% chance
   const LEADERBOARD_RESET_NOTE = "Leaderboard last reset: April 1, 2026";
 
+function getDashboardPfp() {
+  try {
+    if (typeof localStorage !== "undefined") {
+      const raw = localStorage.getItem(DASHBOARD_PFP_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          typeof parsed.spriteSrc === "string" &&
+          typeof parsed.skinSrc === "string"
+        ) {
+          return {
+            spriteSrc: parsed.spriteSrc,
+            skinSrc: parsed.skinSrc,
+            eyesSrc: typeof parsed.eyesSrc === "string" ? parsed.eyesSrc : null
+          };
+        }
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  const useEyes = Math.random() < DASHBOARD_PFP_EYES_CHANCE;
+
+  const pfp = {
+    spriteSrc: getRandomFrogSprite(),
+    skinSrc: getRandomFrogSkin(),
+    eyesSrc: useEyes ? getRandomFrogEyes() : null
+  };
+
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(DASHBOARD_PFP_STORAGE_KEY, JSON.stringify(pfp));
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  return pfp;
+}
   function getDefaultDashboardStats() {
     return {
       totalRuns: 0,
@@ -360,22 +404,33 @@
     return true;
   }
 
-  function getRandomFrogSprite() {
-    const files = window.FrogGameConfig.FROG_FILES || [];
-    const folder = window.FrogGameConfig.FROG_FOLDER || "./images/build_files/Frog/";
-    if (!files.length) return "";
-    const file = files[Math.floor(Math.random() * files.length)];
-    return folder + file;
-  }
-  const FROG_SKIN_PATHS = Array.from({ length: 18 }, (_, i) => {
-    const n = String(i).padStart(2, "0");
-    return `./images/build_files/Skins/skin_${n}.png`;
-  });
+function getRandomFrogSprite() {
+  const files = window.FrogGameConfig.FROG_FILES || [];
+  const folder = window.FrogGameConfig.FROG_FOLDER || "./images/build_files/Frog/";
+  if (!files.length) return "";
+  const file = files[Math.floor(Math.random() * files.length)];
+  return folder + file;
+}
 
-  function getRandomFrogSkin() {
-    return FROG_SKIN_PATHS[Math.floor(Math.random() * FROG_SKIN_PATHS.length)];
-  }
-  function getUpgradeColorClass(upgradeId) {
+const FROG_SKIN_PATHS = Array.from({ length: 18 }, (_, i) => {
+  const n = String(i).padStart(2, "0");
+  return `./images/build_files/Skins/skin_${n}.png`;
+});
+
+function getRandomFrogSkin() {
+  return FROG_SKIN_PATHS[Math.floor(Math.random() * FROG_SKIN_PATHS.length)];
+}
+
+const FROG_EYES_PATHS = Array.from({ length: 5 }, (_, i) => {
+  const n = String(i).padStart(2, "0");
+  return `./images/build_files/Eyes/eyes_${n}.png`;
+});
+
+function getRandomFrogEyes() {
+  return FROG_EYES_PATHS[Math.floor(Math.random() * FROG_EYES_PATHS.length)];
+}
+
+function getUpgradeColorClass(upgradeId) {
   // movement / jumping
   const mobilityIds = [
     "frogSpeed",
@@ -4450,6 +4505,7 @@ async function showDashboardOverlay() {
   content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
 
   const localStats = loadDashboardStats();
+  const dashboardPfp = getDashboardPfp();
   const currentTag =
     (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
     (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
@@ -4483,7 +4539,7 @@ async function showDashboardOverlay() {
   leaderboardBest.found && bestRecordRank >= 0
     ? `#${bestRecordRank + 1} `
     : "";
-
+  
   const avgRunTime =
     localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
 
@@ -4562,17 +4618,82 @@ const leaderboardTopHtml = topTenLeaderboard.length
   `;
 
   content.innerHTML = `
-    <div class="frog-panel-section-label">Player Tag</div>
-    <ul class="frog-panel-list">
-      <li>
-        <strong>Current Tag:</strong>
-        <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
-      </li>
-      <li>
-        <strong>Level:</strong>
-        <span class="stat-highlight">${levelData.level}</span>
-      </li>
-    </ul>
+    <div class="frog-panel-section-label">Player Profile</div>
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:10px;
+        padding:8px 10px;
+        border:1px solid #44403c;
+        border-radius:12px;
+        background:#1c1917;
+      "
+    >
+      <div
+        style="
+          position:relative;
+          width:44px;
+          height:44px;
+          min-width:44px;
+          border-radius:999px;
+          overflow:hidden;
+          border:1px solid #57534e;
+          background:#292524;
+        "
+      >
+        <img
+          src="${dashboardPfp.spriteSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:1;
+          "
+        />
+        <img
+          src="${dashboardPfp.skinSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:2;
+          "
+        />
+        ${dashboardPfp.eyesSrc ? `
+          <img
+            src="${dashboardPfp.eyesSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:3;
+            "
+          />
+        ` : ""}
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <div>
+          <strong>Tag:</strong>
+          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
+        </div>
+        <div>
+          <strong>Level:</strong>
+          <span class="stat-highlight">${levelData.level}</span>
+        </div>
+      </div>
+    </div>
 
     <div style="margin-bottom:12px;">
     <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
