@@ -1097,6 +1097,23 @@
 
   async function buildLayersForFrog(frog, meta) {
     frog.el.innerHTML = "";
+
+    const baseImg = document.createElement("img");
+    baseImg.className = "frog-sprite-base";
+    baseImg.src = frog.spriteSrc;
+    baseImg.alt = "";
+
+    const skinImg = document.createElement("img");
+    skinImg.className = "frog-sprite-skin";
+    skinImg.src = frog.skinSrc;
+    skinImg.alt = "";
+
+    frog.el.appendChild(baseImg);
+    frog.el.appendChild(skinImg);
+
+    frog.baseImg = baseImg;
+    frog.skinImg = skinImg;
+
     frog.layers = [];
 
     const attrs = Array.isArray(meta.attributes) ? meta.attributes : [];
@@ -1220,16 +1237,26 @@
       cloneEl: null,
       layers: []
     };
-
     frogs.push(frog);
     refreshFrogPermaGlow(frog);
 
     totalFrogsSpawned++;
 
-    el.style.backgroundImage = `url("${frog.spriteSrc}")`;
-    el.style.backgroundSize = "contain";
-    el.style.backgroundRepeat = "no-repeat";
-    el.style.backgroundPosition = "center";
+    const baseImg = document.createElement("img");
+    baseImg.className = "frog-sprite-base";
+    baseImg.src = frog.spriteSrc;
+    baseImg.alt = "";
+
+    const skinImg = document.createElement("img");
+    skinImg.className = "frog-sprite-skin";
+    skinImg.src = frog.skinSrc;
+    skinImg.alt = "";
+
+    el.appendChild(baseImg);
+    el.appendChild(skinImg);
+
+    frog.baseImg = baseImg;
+    frog.skinImg = skinImg;
 
     return frog;
   }
