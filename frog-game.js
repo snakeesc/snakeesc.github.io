@@ -126,6 +126,7 @@
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
   const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
+  const LEADERBOARD_RESET_NOTE = "Leaderboard last reset: April 1, 2026";
 
   function getDefaultDashboardStats() {
     return {
@@ -4353,6 +4354,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
         content.innerHTML = `
           <div class="frog-panel-section-label">Global Leaderboard</div>
+          <div style="font-size:12px; color:#d6d3d1; margin-bottom:8px;">
+            ${LEADERBOARD_RESET_NOTE}
+          </div>
           <ul class="frog-panel-list">
             ${itemsHtml}
           </ul>
@@ -4629,6 +4633,11 @@ const leaderboardTopHtml = topFiveLeaderboard.length
       </button>
       <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
     </div>
+
+    <div class="frog-panel-section-label">Leaderboard Info</div>
+    <ul class="frog-panel-list">
+      <li>${LEADERBOARD_RESET_NOTE}</li>
+    </ul>
       
     ${leaderboardTopHtml}
 
