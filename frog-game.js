@@ -126,11 +126,71 @@
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
   const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
+  const DASHBOARD_COSMETICS_STORAGE_KEY = "frogSnake_dashboardCosmetics_v1";
   const DASHBOARD_PFP_STORAGE_KEY = "frogSnake_dashboardPfp_v1";
   const DASHBOARD_PFP_EYES_CHANCE = 0.12; // 12% chance
   const LEADERBOARD_RESET_NOTE = "Leaderboard last reset: April 1, 2026";
 
+function getDefaultDashboardCosmetics() {
+  return {
+    lastProcessedLevel: 1,
+    unlockedEyes: false,
+    unlockedHat: false
+  };
+}
+
+function loadDashboardCosmetics() {
+  try {
+    if (typeof localStorage === "undefined") {
+      return getDefaultDashboardCosmetics();
+    }
+    const raw = localStorage.getItem(DASHBOARD_COSMETICS_STORAGE_KEY);
+    if (!raw) return getDefaultDashboardCosmetics();
+
+    const parsed = JSON.parse(raw);
+    return {
+      ...getDefaultDashboardCosmetics(),
+      ...parsed
+    };
+  } catch (e) {
+    return getDefaultDashboardCosmetics();
+  }
+}
+
+function saveDashboardCosmetics(data) {
+  try {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(DASHBOARD_COSMETICS_STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    // ignore
+  }
+}
+function checkDashboardCosmeticUnlocks(currentLevel) {
+  const cosmetics = loadDashboardCosmetics();
+  const level = Math.max(1, Math.floor(Number(currentLevel) || 1));
+
+  if (level <= cosmetics.lastProcessedLevel) {
+    return cosmetics;
+  }
+
+  for (let lvl = cosmetics.lastProcessedLevel + 1; lvl <= level; lvl++) {
+    if (!cosmetics.unlockedEyes && Math.random() < 0.12) {
+      cosmetics.unlockedEyes = true;
+    }
+
+    if (!cosmetics.unlockedHat && Math.random() < 0.08) {
+      cosmetics.unlockedHat = true;
+    }
+  }
+
+  cosmetics.lastProcessedLevel = level;
+  saveDashboardCosmetics(cosmetics);
+  return cosmetics;
+}
 function getDashboardPfp() {
+  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+  const cosmetics = checkDashboardCosmeticUnlocks(levelData.level);
+
   try {
     if (typeof localStorage !== "undefined") {
       const raw = localStorage.getItem(DASHBOARD_PFP_STORAGE_KEY);
@@ -142,12 +202,22 @@ function getDashboardPfp() {
           typeof parsed.spriteSrc === "string" &&
           typeof parsed.skinSrc === "string"
         ) {
-          return {
+          const updated = {
             spriteSrc: parsed.spriteSrc,
             skinSrc: parsed.skinSrc,
-            eyesSrc: typeof parsed.eyesSrc === "string" ? parsed.eyesSrc : null,
-            bgColor: typeof parsed.bgColor === "string" ? parsed.bgColor : "#dbeafe"
+            eyesSrc:
+              cosmetics.unlockedEyes
+                ? (typeof parsed.eyesSrc === "string" ? parsed.eyesSrc : getRandomFrogEyes())
+                : null,
+            hatSrc:
+              cosmetics.unlockedHat
+                ? (typeof parsed.hatSrc === "string" ? parsed.hatSrc : getRandomFrogHat())
+                : null,
+            bgColor: typeof parsed.bgColor === "string" ? parsed.bgColor : getRandomDashboardPfpBg()
           };
+
+          localStorage.setItem(DASHBOARD_PFP_STORAGE_KEY, JSON.stringify(updated));
+          return updated;
         }
       }
     }
@@ -155,12 +225,11 @@ function getDashboardPfp() {
     // ignore
   }
 
-  const useEyes = Math.random() < DASHBOARD_PFP_EYES_CHANCE;
-
   const pfp = {
     spriteSrc: getRandomFrogSprite(),
     skinSrc: getRandomFrogSkin(),
-    eyesSrc: useEyes ? getRandomFrogEyes() : null,
+    eyesSrc: cosmetics.unlockedEyes ? getRandomFrogEyes() : null,
+    hatSrc: cosmetics.unlockedHat ? getRandomFrogHat() : null,
     bgColor: getRandomDashboardPfpBg()
   };
 
@@ -430,6 +499,14 @@ const FROG_EYES_PATHS = Array.from({ length: 5 }, (_, i) => {
 
 function getRandomFrogEyes() {
   return FROG_EYES_PATHS[Math.floor(Math.random() * FROG_EYES_PATHS.length)];
+}
+
+const FROG_HAT_PATHS = Array.from({ length: 8 }, (_, i) => {
+  return `./images/build_files/Hat/hat_${i}.png`;
+});
+
+function getRandomFrogHat() {
+  return FROG_HAT_PATHS[Math.floor(Math.random() * FROG_HAT_PATHS.length)];
 }
 
 function getUpgradeColorClass(upgradeId) {
@@ -4709,6 +4786,20 @@ const leaderboardTopHtml = topTenLeaderboard.length
               height:100%;
               image-rendering:pixelated;
               z-index:3;
+            "
+          />
+        ` : ""}
+        ${dashboardPfp.hatSrc ? `
+          <img
+            src="${dashboardPfp.hatSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:4;
             "
           />
         ` : ""}
