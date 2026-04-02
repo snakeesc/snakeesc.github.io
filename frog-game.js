@@ -353,7 +353,14 @@
     const file = files[Math.floor(Math.random() * files.length)];
     return folder + file;
   }
+  const FROG_SKIN_PATHS = Array.from({ length: 18 }, (_, i) => {
+    const n = String(i).padStart(2, "0");
+    return `./images/build_files/Skins/skin_${n}.png`;
+  });
 
+  function getRandomFrogSkin() {
+    return FROG_SKIN_PATHS[Math.floor(Math.random() * FROG_SKIN_PATHS.length)];
+  }
   function getUpgradeColorClass(upgradeId) {
   // movement / jumping
   const mobilityIds = [
@@ -1188,6 +1195,7 @@
 
       starLevel: 0,
       spriteSrc: getRandomFrogSprite(),
+      skinSrc: getRandomFrogSkin(),
       // per-frog permanent upgrades
       speedMult: 1.0,
       jumpMult: 1.0,
@@ -3543,7 +3551,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       hopHeightMax: heightMax,
       speedMult: 1.0,
       jumpMult: 1.0,
-      spriteSrc: getRandomFrogSprite()
+      spriteSrc: getRandomFrogSprite(),
+      skinSrc: getRandomFrogSkin()
     };
 
     return frog;
