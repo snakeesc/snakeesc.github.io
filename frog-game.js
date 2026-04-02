@@ -4493,7 +4493,17 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     });
   }
+function getDashboardProfileBg(level) {
+  const lvl = Math.max(1, Math.floor(Number(level) || 1));
 
+  if (lvl >= 10) return "linear-gradient(135deg, #7c3aed, #312e81)";
+  if (lvl >= 8)  return "linear-gradient(135deg, #be185d, #7c2d12)";
+  if (lvl >= 6)  return "linear-gradient(135deg, #b45309, #365314)";
+  if (lvl >= 4)  return "linear-gradient(135deg, #166534, #0f766e)";
+  if (lvl >= 3)  return "linear-gradient(135deg, #1d4ed8, #0f766e)";
+  if (lvl >= 2)  return "linear-gradient(135deg, #374151, #1f2937)";
+  return "#1c1917";
+}
 async function showDashboardOverlay() {
   if (!dashboardOverlay) initDashboardOverlay();
   if (!dashboardOverlay) return;
@@ -4544,6 +4554,7 @@ async function showDashboardOverlay() {
     localStats.totalRuns > 0 ? localStats.totalPlayTime / localStats.totalRuns : 0;
 
   const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
+  const profileBg = getDashboardProfileBg(levelData.level);
 
   const savedLatestRun =
     Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
@@ -4628,7 +4639,7 @@ const leaderboardTopHtml = topTenLeaderboard.length
         padding:8px 10px;
         border:1px solid #44403c;
         border-radius:12px;
-        background:#1c1917;
+        background:${profileBg};
       "
     >
       <div
