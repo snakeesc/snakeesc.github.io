@@ -145,7 +145,8 @@ function getDashboardPfp() {
           return {
             spriteSrc: parsed.spriteSrc,
             skinSrc: parsed.skinSrc,
-            eyesSrc: typeof parsed.eyesSrc === "string" ? parsed.eyesSrc : null
+            eyesSrc: typeof parsed.eyesSrc === "string" ? parsed.eyesSrc : null,
+            bgColor: typeof parsed.bgColor === "string" ? parsed.bgColor : "#dbeafe"
           };
         }
       }
@@ -159,7 +160,8 @@ function getDashboardPfp() {
   const pfp = {
     spriteSrc: getRandomFrogSprite(),
     skinSrc: getRandomFrogSkin(),
-    eyesSrc: useEyes ? getRandomFrogEyes() : null
+    eyesSrc: useEyes ? getRandomFrogEyes() : null,
+    bgColor: getRandomDashboardPfpBg()
   };
 
   try {
@@ -4493,6 +4495,24 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     });
   }
+function getRandomDashboardPfpBg() {
+  const colors = [
+    "#dbeafe", // light blue
+    "#e0f2fe", // sky
+    "#dcfce7", // light green
+    "#fef3c7", // light gold
+    "#fde68a", // warm yellow
+    "#fce7f3", // light pink
+    "#ede9fe", // lavender
+    "#fae8ff", // soft purple
+    "#ffe4e6", // rose
+    "#ecfccb", // lime
+    "#ccfbf1", // aqua
+    "#fef9c3"  // pale yellow
+  ];
+
+  return colors[Math.floor(Math.random() * colors.length)];
+}
 function getDashboardProfileBg(level) {
   const lvl = Math.max(1, Math.floor(Number(level) || 1));
 
@@ -4651,7 +4671,7 @@ const leaderboardTopHtml = topTenLeaderboard.length
           border-radius:999px;
           overflow:hidden;
           border:1px solid #57534e;
-          background:#292524;
+          background:${dashboardPfp.bgColor};
         "
       >
         <img
