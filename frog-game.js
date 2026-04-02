@@ -4670,7 +4670,7 @@ const leaderboardTopHtml = topTenLeaderboard.length
           min-width:48px;
           border-radius:999px;
           overflow:hidden;
-          border:1px solid #57534e;
+          border:0px solid #57534e;
           background:${dashboardPfp.bgColor};
         "
       >
