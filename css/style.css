@@ -806,15 +806,29 @@ a {
 
 .frog-sprite {
   position: absolute;
-  width: 48px;
-  height: 48px;
-  image-rendering: pixelated;
+  width: 64px;
+  height: 64px;
   pointer-events: none;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+  image-rendering: pixelated;
 }
 
+.frog-sprite-base,
+.frog-sprite-skin {
+  position: absolute;
+  inset: 0;
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.frog-sprite-base {
+  z-index: 1;
+}
+
+.frog-sprite-skin {
+  z-index: 2;
+}
 
 /* FLAT THEME 6 – Coffee & Moss */
 
