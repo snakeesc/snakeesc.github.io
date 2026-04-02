@@ -4665,9 +4665,9 @@ const leaderboardTopHtml = topTenLeaderboard.length
       <div
         style="
           position:relative;
-          width:48px;
-          height:48px;
-          min-width:48px;
+          width:96px;
+          height:96px;
+          min-width:96px;
           border-radius:999px;
           overflow:hidden;
           border:0px solid #57534e;
@@ -4680,8 +4680,8 @@ const leaderboardTopHtml = topTenLeaderboard.length
           style="
             position:absolute;
             inset:0;
-            width:48px;
-            height:48px;
+            width:100%;
+            height:100%;
             image-rendering:pixelated;
             z-index:1;
           "
@@ -4692,8 +4692,8 @@ const leaderboardTopHtml = topTenLeaderboard.length
           style="
             position:absolute;
             inset:0;
-            width:48px;
-            height:48px;
+            width:100%;
+            height:100%;
             image-rendering:pixelated;
             z-index:2;
           "
