@@ -4649,8 +4649,8 @@ const leaderboardTopHtml = topTenLeaderboard.length
           style="
             position:absolute;
             inset:0;
-            width:100%;
-            height:100%;
+            width:48px;
+            height:48px;
             image-rendering:pixelated;
             z-index:1;
           "
@@ -4661,8 +4661,8 @@ const leaderboardTopHtml = topTenLeaderboard.length
           style="
             position:absolute;
             inset:0;
-            width:100%;
-            height:100%;
+            width:48px;
+            height:48px;
             image-rendering:pixelated;
             z-index:2;
           "
