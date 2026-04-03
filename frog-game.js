@@ -4862,6 +4862,28 @@ async function showDashboardOverlay() {
 
     ${latestRunHtml}
 
+    <div class="dashboard-stat-grid">
+      <div class="dashboard-stat">
+        <span class="dashboard-stat-label">Total Runs</span>
+        <span class="dashboard-stat-value">${stats.totalRuns ?? 0}</span>
+      </div>
+
+      <div class="dashboard-stat">
+        <span class="dashboard-stat-label">Total Play Time</span>
+        <span class="dashboard-stat-value">${formatDuration(stats.totalPlayTime ?? 0)}</span>
+      </div>
+
+      <div class="dashboard-stat">
+        <span class="dashboard-stat-label">Total Frogs</span>
+        <span class="dashboard-stat-value">${stats.totalFrogs ?? 0}</span>
+      </div>
+
+      <div class="dashboard-stat">
+        <span class="dashboard-stat-label">Total Orbs</span>
+        <span class="dashboard-stat-value">${stats.totalOrbs ?? 0}</span>
+      </div>
+    </div>
+
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
@@ -4911,7 +4933,16 @@ async function showDashboardOverlay() {
     });
   }
 }
+function formatDuration(seconds) {
+  const s = Math.max(0, Math.floor(Number(seconds) || 0));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
 
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${sec}s`;
+}
 function hideDashboardOverlay() {
   if (dashboardOverlay) {
     dashboardOverlay.style.display = "none";
