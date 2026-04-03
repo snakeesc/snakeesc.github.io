@@ -1779,3 +1779,50 @@ background: #65a30d;
     font-size: 13px;
   }
 }
+.frog-overlay.is-open {
+  display: flex;
+}
+
+.frog-panel {
+  transform-origin: top center;
+  backface-visibility: hidden;
+}
+
+.frog-overlay.is-animating-in .frog-panel {
+  animation: frogPanelFoldIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.frog-overlay.is-animating-out .frog-panel {
+  animation: frogPanelFoldOut 180ms ease-in forwards;
+}
+
+@keyframes frogPanelFoldIn {
+  0% {
+    opacity: 0;
+    transform: perspective(900px) rotateX(-65deg) scaleY(0.55) scaleX(0.96);
+    filter: brightness(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: perspective(900px) rotateX(8deg) scaleY(1.04) scaleX(1.01);
+    filter: brightness(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(900px) rotateX(0deg) scaleY(1) scaleX(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes frogPanelFoldOut {
+  0% {
+    opacity: 1;
+    transform: perspective(900px) rotateX(0deg) scaleY(1) scaleX(1);
+    filter: brightness(1);
+  }
+  100% {
+    opacity: 0;
+    transform: perspective(900px) rotateX(-55deg) scaleY(0.6) scaleX(0.97);
+    filter: brightness(0.8);
+  }
+}

@@ -3956,7 +3956,52 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     clearMainMenuSnakes();
     clearMainMenuFrogs();
   }
+function openAnimatedOverlay(overlayEl) {
+  if (!overlayEl) return;
 
+  overlayEl.classList.remove("is-animating-out");
+  overlayEl.classList.add("is-open");
+  overlayEl.style.display = "flex";
+
+  const panel = overlayEl.querySelector(".frog-panel");
+  if (!panel) return;
+
+  void panel.offsetWidth;
+
+  overlayEl.classList.add("is-animating-in");
+
+  panel.addEventListener(
+    "animationend",
+    () => {
+      overlayEl.classList.remove("is-animating-in");
+    },
+    { once: true }
+  );
+}
+
+function closeAnimatedOverlay(overlayEl) {
+  if (!overlayEl) return;
+
+  overlayEl.classList.remove("is-animating-in");
+
+  const panel = overlayEl.querySelector(".frog-panel");
+  if (!panel) {
+    overlayEl.classList.remove("is-open");
+    overlayEl.style.display = "none";
+    return;
+  }
+
+  overlayEl.classList.add("is-animating-out");
+
+  panel.addEventListener(
+    "animationend",
+    () => {
+      overlayEl.classList.remove("is-animating-out", "is-open");
+      overlayEl.style.display = "none";
+    },
+    { once: true }
+  );
+}
   function initMainMenuOverlay() {
     if (mainMenuOverlay) return;
 
@@ -4028,7 +4073,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     setInGameUIVisible(false);
     mainMenuActive = true;
     syncAudioMuteState();
-    mainMenuOverlay.style.display = "flex";
+    openAnimatedOverlay(mainMenuOverlay);
     gamePaused = true;
   }
 
@@ -4037,7 +4082,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     stopMainMenuBackground();
     syncAudioMuteState();
     if (mainMenuOverlay) {
-      mainMenuOverlay.style.display = "none";
+      closeAnimatedOverlay(mainMenuOverlay);
     }
   }
 
@@ -4110,12 +4155,12 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       closeBtn.addEventListener("click", hideHowToOverlay);
     }
 
-    howToOverlay.style.display = "flex";
+    openAnimatedOverlay(howToOverlay);
   }
 
   function hideHowToOverlay() {
     if (howToOverlay) {
-      howToOverlay.style.display = "none";
+      closeAnimatedOverlay(howToOverlay);
     }
   }
 
@@ -4355,12 +4400,12 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     // Make sure page 0 is active when it opens
     setBuffGuidePage(0);
 
-    buffGuideOverlay.style.display = "flex";
+    openAnimatedOverlay(buffGuideOverlay);
   }
 
   function hideBuffGuideOverlay() {
     if (buffGuideOverlay) {
-      buffGuideOverlay.style.display = "none";
+      closeAnimatedOverlay(buffGuideOverlay);
     }
   }
 
@@ -4549,12 +4594,12 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       `;
     }
 
-    leaderboardOverlay.style.display = "flex";
+    openAnimatedOverlay(leaderboardOverlay);
   }
 
   function hideLeaderboardOverlay() {
     if (leaderboardOverlay) {
-      leaderboardOverlay.style.display = "none";
+      closeAnimatedOverlay(leaderboardOverlay);
     }
   }
 function initDashboardOverlay() {
@@ -4587,7 +4632,7 @@ async function showDashboardOverlay() {
   const content = document.getElementById("dashboardContent");
   if (!content) return;
 
-  dashboardOverlay.style.display = "flex";
+  openAnimatedOverlay(dashboardOverlay);
   content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
 
   const localStats = loadDashboardStats();
@@ -4932,7 +4977,7 @@ function formatDuration(seconds) {
 }
 function hideDashboardOverlay() {
   if (dashboardOverlay) {
-    dashboardOverlay.style.display = "none";
+    closeAnimatedOverlay(dashboardOverlay);
   }
 }
   function initDashboardOverlay() {
@@ -5637,7 +5682,7 @@ function getDashboardPfp() {
 
     gamePaused = true;
     if (upgradeOverlay) {
-      upgradeOverlay.style.display = "flex";
+      openAnimatedOverlay(upgradeOverlay);
     }
   }
 
@@ -5667,7 +5712,7 @@ function getDashboardPfp() {
 
   function closeUpgradeOverlay() {
     if (upgradeOverlay) {
-      upgradeOverlay.style.display = "none";
+      closeAnimatedOverlay(upgradeOverlay);
     }
     gamePaused = false;
 
