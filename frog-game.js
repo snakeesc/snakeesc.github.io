@@ -1050,12 +1050,13 @@ const survivalIds = [
       });
     }
 
-    // Base this shed's speed on the old snake's personal factor
+    // Base this shed's speed on the old snake's personal factor (defaults to 1)
     const baseSpeedFactor = (oldSnake && typeof oldSnake.speedFactor === "number")
       ? oldSnake.speedFactor
       : 1.0;
 
-    // Normally +shed speed, unless Snake Egg is pending
+    // Permanent speed bonus each shed.
+    // Normally +20%, but if Snake Egg is pending, only +11% (20% - 9%).
     let speedMult = SNAKE_SHED_SPEEDUP;
     if (snakeEggPending) {
       speedMult = SNAKE_EGG_BUFF_PCT;
@@ -1065,9 +1066,10 @@ const survivalIds = [
     const newSpeedFactor = baseSpeedFactor * speedMult;
     snakePermanentSpeedFactor = newSpeedFactor;
 
-    // Tighter turns each shed
+    // Turn radius: slightly tighter turns each shed
     snakeTurnRate = Math.min(SNAKE_TURN_RATE_CAP, snakeTurnRate * 1.2);
 
+    // Decide new color stage
     snakeShedStage = stage;
 
     const width = window.innerWidth;
@@ -1080,7 +1082,7 @@ const survivalIds = [
       ? oldSnake.head.y
       : height * 0.5;
 
-    // Start new shed snake with half of old body, min initial, max 50
+    // Decide how many segments the new snake should start with
     const oldCountRaw = oldSegmentEls.length || SNAKE_INITIAL_SEGMENTS;
     let newSegCount = Math.round(oldCountRaw / 2);
 
@@ -1105,12 +1107,7 @@ const survivalIds = [
     headEl.style.backgroundImage = "url(./images/head.png)";
     container.appendChild(headEl);
 
-    // Lay the new snake out immediately instead of stacking all segments
-    const startAngle = 0;
-    const dirX = Math.cos(startAngle);
-    const dirY = Math.sin(startAngle);
-    const gapPx = computeSegmentGap();
-
+    // Create new segments
     const segments = [];
     for (let i = 0; i < newSegCount; i++) {
       const segEl = document.createElement("div");
@@ -1129,24 +1126,19 @@ const survivalIds = [
         : "url(./images/body.png)";
       container.appendChild(segEl);
 
-      const segX = startX - dirX * gapPx * (i + 1);
-      const segY = startY - dirY * gapPx * (i + 1);
-
-      segments.push({ el: segEl, x: segX, y: segY });
+      segments.push({ el: segEl, x: startX, y: startY });
     }
 
-    // Build a path that already matches the laid-out body
+    // New path for the new snake
     const path = [];
-    path.push({ x: startX, y: startY });
-    for (let i = 1; i <= (segments.length + 2) * gapPx + 2; i++) {
-      path.push({
-        x: startX - dirX * i,
-        y: startY - dirY * i
-      });
+    const segmentGap = computeSegmentGap();
+    const maxPath = (segments.length + 2) * segmentGap + 2;
+    for (let i = 0; i < maxPath; i++) {
+      path.push({ x: startX, y: startY });
     }
 
     snake = {
-      head: { el: headEl, x: startX, y: startY, angle: startAngle },
+      head: { el: headEl, x: startX, y: startY, angle: 0 },
       segments,
       path,
       isFrenzyVisual: false,
