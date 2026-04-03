@@ -1627,3 +1627,155 @@ background: #65a30d;
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 768px) {
+  /* main menu / dashboard / leaderboard / how to play / buff guide / upgrade overlay */
+  .frog-panel {
+    min-width: 0;
+    width: min(94vw, 640px);
+    max-width: 94vw;
+    max-height: 88vh;
+    padding: 24px 20px 20px;
+    border-radius: 16px;
+  }
+
+  .frog-panel-title {
+    font-size: 28px;
+    line-height: 1.15;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .frog-panel-title .emoji {
+    font-size: 30px;
+  }
+
+  .frog-panel-sub {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .frog-panel-section-label {
+    font-size: 13px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+
+  .frog-panel-list li {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .frog-panel-footer {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .frog-btn {
+    padding: 14px 16px;
+    font-size: 17px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+
+  .frog-btn-danger {
+    font-size: 15px;
+  }
+
+  .frog-upgrade-choice {
+    padding: 14px 14px;
+    border-radius: 12px;
+  }
+
+  .frog-upgrade-title,
+  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .frog-upgrade-desc,
+  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .upgrade-column-title {
+    font-size: 16px;
+  }
+
+  .upgrade-summary-list li {
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 8px 10px;
+  }
+
+  .leaderboard-title {
+    font-size: 20px;
+  }
+
+  .leaderboard-subtitle,
+  .leaderboard-page-info,
+  .leaderboard-legend,
+  .leaderboard-loading,
+  .leaderboard-error,
+  .leaderboard-empty {
+    font-size: 14px;
+  }
+
+  .leaderboard-head-cell {
+    font-size: 12px;
+    padding: 10px 8px;
+  }
+
+  .leaderboard-cell {
+    font-size: 14px;
+    padding: 10px 8px;
+  }
+
+  .leaderboard-page-btn {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .scoreboard-card {
+    width: min(96vw, 640px);
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .scoreboard-title {
+    font-size: 22px;
+  }
+
+  .scoreboard-subtitle {
+    font-size: 14px;
+  }
+
+  .summary-heading {
+    font-size: 15px;
+  }
+
+  .pill-label {
+    font-size: 12px;
+  }
+
+  .pill-value {
+    font-size: 22px;
+  }
+
+  .scoreboard-th,
+  .scoreboard-td {
+    font-size: 14px;
+    padding: 8px 6px;
+  }
+
+  .scoreboard-btn {
+    font-size: 15px;
+    padding: 10px 12px;
+  }
+
+  .scoreboard-hint {
+    font-size: 13px;
+  }
+}
