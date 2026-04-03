@@ -6379,7 +6379,6 @@ severedSnakeRemnants = [];
 scissorsRemnantSegments = [];
 snakeEatingOldBody = false;
 snakeOldBodySpeedBonusPending = false;
-pairOfScissorsUsed = false;
     snakeEggPending          = false;
     snakeEggUsed = false;
     secondWindActive = false;
