@@ -2141,42 +2141,40 @@ function applyPairOfScissors() {
 
   const original = snake;
   const originalSegments = original.segments.slice();
-
   const cutIndex = Math.floor(originalSegments.length / 2);
+
   const frontSegments = originalSegments.slice(0, cutIndex);
-  const backSegments = originalSegments.slice(cutIndex);
+  const detachedSegments = originalSegments.slice(cutIndex);
 
-  if (!frontSegments.length || !backSegments.length) return;
+  if (!frontSegments.length || !detachedSegments.length) return;
 
-  const baseSpeed = original.speedFactor || 1.0;
-  const slowedSpeed = Math.max(0.6, baseSpeed * 0.70); // 30% slower
-
-  // Keep the front half as the main snake body
+  // Keep only the front half alive
   original.segments = frontSegments;
-  original.speedFactor = slowedSpeed;
+  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.70);
   original.canGrow = false;
 
-  // Create a new snake from the back half
-  const splitSnake = createSnakeFromExistingSegments(
-    backSegments,
-    (original.head.angle || 0) + Math.PI * 0.08,
-    slowedSpeed
-  );
-
-  if (!splitSnake) return;
-
-  splitSnake.canGrow = false;
-
-  // Add blood marks at the cut ends
+  // Mark the cut point on the living snake
   const frontLast = frontSegments[frontSegments.length - 1];
-  const backFirst = backSegments[0];
+  if (frontLast && frontLast.el) {
+    frontLast.el.style.boxShadow = "inset -3px 0 0 rgba(120,0,0,0.9)";
+  }
 
-  if (frontLast && frontLast.el) markSegmentAsSevered(frontLast.el, "right");
-  if (backFirst && backFirst.el) markSegmentAsSevered(backFirst.el, "left");
+  // Detached body stays where it was until next shed
+  if (detachedSegments.length) {
+    const detachedFirst = detachedSegments[0];
+    if (detachedFirst && detachedFirst.el) {
+      detachedFirst.el.style.boxShadow = "inset 3px 0 0 rgba(120,0,0,0.9)";
+    }
 
-  // Rebuild path size for the shortened main snake
+    severedSnakeRemnants.push({
+      segmentEls: detachedSegments.map(seg => seg.el).filter(Boolean)
+    });
+  }
+
+  // Resize the live snake path to match its shorter body
   const desiredPathLength =
     (original.segments.length + 2) * computeSegmentGap() + 2;
+
   while (original.path.length > desiredPathLength) {
     original.path.pop();
   }
@@ -2188,10 +2186,8 @@ function applyPairOfScissors() {
     original.path.push({ x: last.x, y: last.y });
   }
 
-  extraSnakes.push(splitSnake);
-
-  // Lock growth on both halves until next shed
   scissorsGrowthLocked = true;
+  pairOfScissorsUsed = true;
 }
 
 // --------------------------------------------------
