@@ -637,6 +637,10 @@ const survivalIds = [
   let snakeShedCount   = 0;          // how many times we've shed this run
   let nextShedTime     = SHED_INTERVAL;
 
+
+  let scissorsRemnantSegments = [];
+  let snakeEatingOldBody = false;
+  let snakeOldBodySpeedBonusPending = false;
   let scissorsGrowthLocked = false;
   let severedSnakeRemnants = [];
   let snakeEggPending = false; // EPIC: next shed uses reduced speed bonus
@@ -1152,7 +1156,14 @@ const survivalIds = [
 
     // Apply the appropriate color tint for this shed stage
     applySnakeAppearance();
-    queueSeveredRemnantsForNextShed();
+    if (scissorsRemnantSegments.length > 0) {
+      snakeEatingOldBody = true;
+      snakeOldBodySpeedBonusPending = true;
+    } else {
+      snakeEatingOldBody = false;
+      snakeOldBodySpeedBonusPending = false;
+    }
+
     scissorsGrowthLocked = false;
     snake.canGrow = true;
     for (const s of extraSnakes) {
@@ -2157,11 +2168,13 @@ function applyPairOfScissors() {
 
   // Detached body stays where it was until next shed
   if (detachedSegments.length) {
-    const detachedFirst = detachedSegments[0];
-
-    severedSnakeRemnants.push({
-      segmentEls: detachedSegments.map(seg => seg.el).filter(Boolean)
-    });
+    scissorsRemnantSegments = detachedSegments
+      .map(seg => ({
+        el: seg.el,
+        x: seg.x,
+        y: seg.y
+      }))
+      .filter(seg => seg.el);
   }
 
   // Resize the live snake path to match its shorter body
@@ -3351,7 +3364,25 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     // -----------------------------
     let targetFrog = null;
     let bestDist2 = Infinity;
-  
+
+    let targetRemnant = null;
+    let bestRemnantDist2 = Infinity;
+
+    if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
+      for (const seg of scissorsRemnantSegments) {
+        if (!seg || !seg.el) continue;
+        const sx = seg.x + SNAKE_SEGMENT_SIZE / 2;
+        const sy = seg.y + SNAKE_SEGMENT_SIZE / 2;
+        const dx = sx - head.x;
+        const dy = sy - head.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < bestRemnantDist2) {
+          bestRemnantDist2 = d2;
+          targetRemnant = seg;
+        }
+      }
+    }
+      
     for (const frog of frogList) {
       if (!frog || !frog.el) continue;
       const fx = frog.x + FROG_SIZE / 2;
@@ -3371,6 +3402,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       // confused: random-ish turning
       desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
       targetFrog = null;
+    } else if (targetRemnant) {
+      const sx = targetRemnant.x + SNAKE_SEGMENT_SIZE / 2;
+      const sy = targetRemnant.y + SNAKE_SEGMENT_SIZE / 2;
+      desiredAngle = Math.atan2(sy - head.y, sx - head.x);
     } else if (targetFrog) {
       const fx = targetFrog.x + FROG_SIZE / 2;
       const fy = targetFrog.baseY + FROG_SIZE / 2;
@@ -3538,6 +3573,40 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     if (extraSnakes && extraSnakes.length) {
       for (const s of extraSnakes) {
         updateSingleSnake(s, dt, width, height);
+      }
+    }
+  }
+
+  if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
+    const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
+    const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
+    const eatR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.45, 2);
+
+    for (let i = scissorsRemnantSegments.length - 1; i >= 0; i--) {
+      const seg = scissorsRemnantSegments[i];
+      if (!seg || !seg.el) continue;
+
+      const sx = seg.x + SNAKE_SEGMENT_SIZE / 2;
+      const sy = seg.y + SNAKE_SEGMENT_SIZE / 2;
+      const dx = sx - headCx;
+      const dy = sy - headCy;
+
+      if (dx * dx + dy * dy <= eatR2) {
+        if (seg.el.parentNode === container) {
+          container.removeChild(seg.el);
+        }
+        scissorsRemnantSegments.splice(i, 1);
+        growSnakeForSnake(snakeObj, 1);
+        break;
+      }
+    }
+
+    if (scissorsRemnantSegments.length === 0) {
+      snakeEatingOldBody = false;
+
+      if (snakeOldBodySpeedBonusPending) {
+        snakeObj.speedFactor *= 1.10;
+        snakeOldBodySpeedBonusPending = false;
       }
     }
   }
@@ -6354,6 +6423,9 @@ function getDashboardPfp() {
     dyingSnakes              = [];
 scissorsGrowthLocked = false;
 severedSnakeRemnants = [];
+scissorsRemnantSegments = [];
+snakeEatingOldBody = false;
+snakeOldBodySpeedBonusPending = false;
     snakeEggPending          = false;
     snakeEggUsed = false;
     secondWindActive = false;
