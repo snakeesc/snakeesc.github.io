@@ -130,7 +130,7 @@
   const DASHBOARD_COSMETICS_STORAGE_KEY = "frogSnake_dashboardCosmetics_v1";
   const DASHBOARD_PFP_STORAGE_KEY = "frogSnake_dashboardPfp_v1";
   const DASHBOARD_PFP_EYES_CHANCE = 0.12; // 12% chance
-  const LEADERBOARD_RESET_NOTE = "Leaderboard last reset: April 1, 2026";
+  const LEADERBOARD_RESET_NOTE = "";
 
 function getDefaultDashboardCosmetics() {
   return {
