@@ -3522,8 +3522,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "snakeEgg",
         label: `
           🥚 Snake Egg<br>
-          The <span style="color:${neon};">next shed</span> only gives the new snake
-          <span style="color:${neon};">+15%</span> speed instead of the full bonus
+          The <span style="color:${neon};">next shed</span> reduces the new snake speed by
+          <span style="color:${neon};">50%</span> of its original increase
         `,
         apply: () => {
           snakeEggPending = true;
