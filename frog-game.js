@@ -552,7 +552,8 @@ const survivalIds = [
     "extraFrogCap",
     "frogPromotion",
     "frogPromotionEpic",
-    "cannibalPromotion"
+    "cannibalPromotion",
+    "roleDraft"
   ];
 
   if (mobilityIds.includes(upgradeId)) return "upgrade-type-mobility";
@@ -638,6 +639,9 @@ const survivalIds = [
 
   let snakeEggPending = false; // EPIC: next shed uses reduced speed bonus
   let snakeEggUsed = false;
+  let roleDraftUsed = false;
+  let roleDraftPending = false;
+  let roleDraftChoices = [];
   let graveWaveUsed = false;
   let pairOfScissorsUsed = false;
   let epicChainPending = false;
@@ -1867,7 +1871,118 @@ function spawnRoleFrog(role) {
 
   return frog;
 }
+function getRoleDraftPool() {
+  return [
+    { id: "champion", label: "Champion", emoji: "🏅" },
+    { id: "aura", label: "Aura", emoji: "🌈" },
+    { id: "magnet", label: "Magnet", emoji: "🧲" },
+    { id: "lucky", label: "Lucky", emoji: "🍀" },
+    { id: "zombie", label: "Zombie", emoji: "🧟" }
+  ];
+}
 
+function applySpecificRoleToFrog(frog, roleId) {
+  if (!frog) return;
+
+  clearAllFrogRoles(frog);
+
+  switch (roleId) {
+    case "champion":
+      grantChampionFrog(frog);
+      break;
+    case "aura":
+      grantAuraFrog(frog);
+      break;
+    case "magnet":
+      grantMagnetFrog(frog);
+      break;
+    case "lucky":
+      grantLuckyFrog(frog);
+      break;
+    case "zombie":
+      grantZombieFrog(frog);
+      break;
+  }
+
+  refreshFrogPermaGlow(frog);
+  updateFrogRoleEmoji(frog);
+}
+
+function getTwoRandomRoleDraftChoices() {
+  const pool = getRoleDraftPool().slice();
+  const picks = [];
+
+  while (picks.length < 2 && pool.length > 0) {
+    const idx = Math.floor(Math.random() * pool.length);
+    picks.push(pool.splice(idx, 1)[0]);
+  }
+
+  return picks;
+}
+
+function applyRoleDraft(roleId) {
+  const spawnCount = randInt(1, 3);
+
+  for (let i = 0; i < spawnCount; i++) {
+    spawnRoleFrog(roleId);
+  }
+
+  for (const frog of frogs) {
+    if (!frog || (frog.starLevel || 0) < 1) continue;
+
+    applySpecificRoleToFrog(frog, roleId);
+
+    if ((frog.starLevel || 0) >= 2) {
+      grantRandomPermaFrogUpgrade(frog);
+    }
+
+    refreshFrogPermaGlow(frog);
+    updateFrogRoleEmoji(frog);
+  }
+}
+
+function showRoleDraftOverlayChoices() {
+  initUpgradeOverlay();
+  if (!upgradeOverlayButtonsContainer) return;
+
+  roleDraftChoices = getTwoRandomRoleDraftChoices();
+  roleDraftPending = true;
+
+  if (upgradeOverlaySubEl) {
+    upgradeOverlaySubEl.textContent = "Choose one of two random frog roles.";
+  }
+
+  upgradeOverlayButtonsContainer.innerHTML = "";
+
+  roleDraftChoices.forEach((role, index) => {
+    const btn = document.createElement("button");
+    btn.className = "frog-btn frog-upgrade-choice is-spawning upgrade-type-role";
+    btn.style.animationDelay = `${index * 70}ms`;
+
+    btn.innerHTML = `
+      <div class="frog-upgrade-title">${role.emoji} ${role.label}</div>
+      <div class="frog-upgrade-desc">
+        Spawn <span class="stat-highlight">1–3</span> ${role.label} frogs.
+        Promote all <span class="stat-highlight">star frogs</span> to this role.
+        Frogs with <span class="stat-highlight">2+ stars</span> gain one extra random role.
+      </div>
+    `;
+
+    btn.addEventListener("click", () => {
+      playButtonClick();
+      applyRoleDraft(role.id);
+      roleDraftPending = false;
+      playPermanentChoiceSound();
+      closeUpgradeOverlay();
+    });
+
+    upgradeOverlayButtonsContainer.appendChild(btn);
+
+    setTimeout(() => {
+      btn.classList.remove("is-spawning");
+    }, 320);
+  });
+}
 function getMutationChoices() {
   return [
     {
@@ -3576,6 +3691,19 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         }
       });
     }
+
+      upgrades.push({
+        id: "roleDraft",
+        label: `
+          🎭 Role Draft<br>
+          Choose between <span style="color:${neon};">2</span> random frog roles
+        `,
+        opensRoleDraft: true,
+        apply: () => {
+          roleDraftUsed = true;
+          showRoleDraftOverlayChoices();
+        }
+      });
 
     if (!ouroborosPactUsed) {
       upgrades.push({
@@ -5542,13 +5670,20 @@ function getDashboardPfp() {
   function selectUpgrade(choice) {
     if (!choice) return;
     playButtonClick();
+
     try {
+      if (choice && choice.opensRoleDraft) {
+        choice.apply();
+        return;
+      }
+
       if (typeof choice.apply === "function") {
         choice.apply();
       }
     } catch (e) {
       console.error("Error applying upgrade:", e);
     }
+
     playPermanentChoiceSound();
     closeUpgradeOverlay();
   }
@@ -6048,7 +6183,9 @@ function getDashboardPfp() {
     nextEpicChoiceTime       = 30;
     legendaryEventTriggered  = false;
     orbSpecialistActive      = false; 
-
+    roleDraftUsed = false;
+    roleDraftPending = false;
+    roleDraftChoices = [];
     snakeShedStage           = 0;
     snakeShedCount           = 0;
     nextShedTime             = SHED_INTERVAL;
