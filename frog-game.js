@@ -4373,14 +4373,12 @@ function closeAnimatedOverlay(overlayEl) {
 
       <div class="frog-panel-section-label">Regular Upgrades</div>
 
-      <div class="upgrade-guide-group-label">Mobility</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Mutation</strong> — +12% jump speed and +12% jump height.
         </li>
       </ul>
 
-      <div class="upgrade-guide-group-label">Buff</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
           <strong>Orb Whisperer</strong> — orbs linger 30% longer before vanishing.
@@ -4396,7 +4394,6 @@ function closeAnimatedOverlay(overlayEl) {
         </li>
       </ul>
 
-      <div class="upgrade-guide-group-label">Survival</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>Ouroboros Pact</strong> — 20% chance dead frogs drop an orb.
@@ -4409,14 +4406,12 @@ function closeAnimatedOverlay(overlayEl) {
         </li>
       </ul>
 
-      <div class="upgrade-guide-group-label">Orb</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-orb">
           <strong>Orb Collector</strong> — collected orbs can spawn extra frogs.
         </li>
       </ul>
 
-      <div class="upgrade-guide-group-label">Role</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-role">
           <strong>Spawn Frogs</strong> — spawn frogs instantly.
@@ -4425,7 +4420,6 @@ function closeAnimatedOverlay(overlayEl) {
 
       <div class="frog-panel-section-label">Epic Upgrades</div>
 
-      <div class="upgrade-guide-group-label">Buff</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
           <strong>Buffs Extended</strong> — larger buff duration increase.
@@ -4441,14 +4435,12 @@ function closeAnimatedOverlay(overlayEl) {
         </li>
       </ul>
 
-      <div class="upgrade-guide-group-label">Survival</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>Deathrattle</strong> — big boost to revive chance.
         </li>
       </ul>
 
-      <div class="upgrade-guide-group-label">Mobility</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Frog Scatter</strong> — kill and respawn all current frogs.
