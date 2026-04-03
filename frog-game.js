@@ -4862,27 +4862,13 @@ async function showDashboardOverlay() {
 
     ${latestRunHtml}
 
-    <div class="dashboard-stat-grid">
-      <div class="dashboard-stat">
-        <span class="dashboard-stat-label">Total Runs</span>
-        <span class="dashboard-stat-value">${localStats.totalRuns ?? 0}</span>
-      </div>
-
-      <div class="dashboard-stat">
-        <span class="dashboard-stat-label">Total Play Time</span>
-        <span class="dashboard-stat-value">${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</span>
-      </div>
-
-      <div class="dashboard-stat">
-        <span class="dashboard-stat-label">Total Score</span>
-        <span class="dashboard-stat-value">${Math.floor(localStats.totalScore ?? 0)}</span>
-      </div>
-
-      <div class="dashboard-stat">
-        <span class="dashboard-stat-label">Total Orbs</span>
-        <span class="dashboard-stat-value">${localStats.totalOrbsCollected ?? 0}</span>
-      </div>
-    </div>
+    <div class="frog-panel-section-label">Run Stats</div>
+    <ul class="frog-panel-list">
+      <li><strong>Total Orbs:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected ?? 0}</span></li>
+      <li><strong>Last Run Score:</strong> <span class="stat-highlight">${savedLatestRun ? Math.floor(savedLatestRun.score || 0) : 0}</span></li>
+      <li><strong>Last Run Time:</strong> <span class="stat-highlight">${savedLatestRun ? formatDashboardDuration(savedLatestRun.time || 0) : "0s"}</span></li>
+      <li><strong>Last Run Orbs:</strong> <span class="stat-highlight">${savedLatestRun ? (savedLatestRun.orbs || 0) : 0}</span></li>
+    </ul>
 
   `;
 
