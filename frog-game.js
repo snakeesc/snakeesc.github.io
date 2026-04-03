@@ -1645,12 +1645,12 @@ function getRandomMutationUpgrade() {
 }
 
 function applyMutationUpgrade() {
-  frogPermanentSpeedFactor *= 0.90; // 10% faster hops
+  frogPermanentSpeedFactor *= 0.88; // 12% faster hops
   if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
     frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
   }
 
-  frogPermanentJumpFactor *= 1.10; // 10% higher jumps
+  frogPermanentJumpFactor *= 1.12; // 12% higher jumps
   if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
@@ -3366,21 +3366,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     });
 
-    // SNAKE EGG
-    if (!snakeEggPending) {
-      upgrades.push({
-        id: "snakeEgg",
-        label: `
-          🥚 Snake Egg<br>
-          The <span style="color:${epicTitleColor};">next shed</span> only gives the new snake
-          <span style="color:${epicTitleColor};">+${snakeEggBuffPct}%</span> speed instead of +30%
-        `,
-        apply: () => {
-          snakeEggPending = true;
-        }
-      }); 
-    }
-
     // Grave Wave – only once
     if (!graveWaveActive) {
       upgrades.push({
@@ -3494,10 +3479,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "orbWhisperer",
         label: `
           🌀 Orb Whisperer<br>
-          Orbs linger <span style="color:${neon};">20%</span> longer before vanishing
+          Orbs linger <span style="color:${neon};">30%</span> longer before vanishing
         `,
         apply: () => {
-          const bonus = 1.2;
+          const bonus = 1.3;
           orbLingerBonusUsed = true;
           orbTtlFactor *= bonus;
           for (const orb of orbs) {
@@ -3517,11 +3502,11 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "ouroborosPact",
         label: `
           ⚱️ Ouroboros Pact<br>
-          <span style="color:${neon};">15%</span> chance dead frogs drop an orb
+          <span style="color:${neon};">20%</span> chance dead frogs drop an orb
         `,
         apply: () => {
           ouroborosPactUsed = true;
-          frogDeathOrbChance = 0.15;
+          frogDeathOrbChance = 0.20;
         }
       });
     }
@@ -3529,6 +3514,20 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     const mutationChoice = getRandomMutationUpgrade();
     if (mutationChoice) {
       upgrades.push(mutationChoice);
+    }
+
+    if (!snakeEggPending) {
+      upgrades.push({
+        id: "snakeEgg",
+        label: `
+          🥚 Snake Egg<br>
+          The <span style="color:${neon};">next shed</span> only gives the new snake
+          <span style="color:${neon};">+15%</span> speed instead of the full bonus
+        `,
+        apply: () => {
+          snakeEggPending = true;
+        }
+      });
     }
 
     // Buff duration (capped)
@@ -4365,7 +4364,7 @@ function closeAnimatedOverlay(overlayEl) {
     panel.innerHTML = `
       <div class="frog-panel-title">
         Upgrades
-        <span class="emoji"></span>
+        <span class="emoji">⚡</span>
       </div>
 
       <div class="frog-panel-sub">
@@ -4373,17 +4372,18 @@ function closeAnimatedOverlay(overlayEl) {
       </div>
 
       <div class="frog-panel-section-label">Regular Upgrades</div>
+
       <div class="upgrade-guide-group-label">Mobility</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Mutation</strong> — +10% jump speed and +10% jump height.
+          <strong>Mutation</strong> — +12% jump speed and +12% jump height.
         </li>
       </ul>
 
       <div class="upgrade-guide-group-label">Buff</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Orb Whisperer</strong> — orbs linger longer before fading.
+          <strong>Orb Whisperer</strong> — orbs linger 30% longer before vanishing.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
           <strong>Buffs Last Longer</strong> — increases buff duration.
@@ -4391,12 +4391,15 @@ function closeAnimatedOverlay(overlayEl) {
         <li class="upgrade-guide-item upgrade-type-buff">
           <strong>More Orbs Over Time</strong> — faster orb spawns.
         </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Snake Egg</strong> — weakens the next shed speed gain.
+        </li>
       </ul>
 
       <div class="upgrade-guide-group-label">Survival</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Ouroboros Pact</strong> — dead frogs have a chance to drop an orb.
+          <strong>Ouroboros Pact</strong> — 20% chance dead frogs drop an orb.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>Deathrattle</strong> — dead frogs can respawn.
@@ -4421,6 +4424,7 @@ function closeAnimatedOverlay(overlayEl) {
       </ul>
 
       <div class="frog-panel-section-label">Epic Upgrades</div>
+
       <div class="upgrade-guide-group-label">Buff</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
@@ -4430,7 +4434,10 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>Orb Storm</strong> — drops a burst of random orbs immediately.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Orb Specialist</strong> — orbs always spawn 1 frog, with Orb Collector able to add more.
+          <strong>Orb Specialist</strong> — every orb guarantees 1 frog unless Orb Collector is active.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Grave Wave</strong> — each shed summons ghost frogs.
         </li>
       </ul>
 
@@ -4439,22 +4446,9 @@ function closeAnimatedOverlay(overlayEl) {
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>Deathrattle</strong> — big boost to revive chance.
         </li>
-        <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Snake Egg</strong> — weakens the next shed speed gain.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Grave Wave</strong> — each shed summons ghost frogs.
-        </li>
       </ul>
 
-      <div class="upgrade-guide-group-label">Role</div>
-      <ul class="upgrade-guide-list">
-        <li class="upgrade-guide-item upgrade-type-role">
-          <strong>Spawn Frogs</strong> — spawn a large frog wave instantly.
-        </li>
-      </ul>
-
-      <div class="upgrade-guide-group-label">Other</div>
+      <div class="upgrade-guide-group-label">Mobility</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Frog Scatter</strong> — kill and respawn all current frogs.
