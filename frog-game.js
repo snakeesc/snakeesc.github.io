@@ -4795,7 +4795,7 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>Frog Scatter</strong> — kill and respawn all current frogs.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Pair of Scissors</strong> — cuts the snake in half, slows it by 30%, prevents growth until the next shed, and after the next shed the snake eats its severed body to regrow and gain speed.
+          <strong>Pair of Scissors</strong> — cuts the snake in half, slows it by 30%, prevents growth until the next shed.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Swarm Divide</strong> — splits your frogs into two lanes, making the snake less efficient at chasing the swarm.
