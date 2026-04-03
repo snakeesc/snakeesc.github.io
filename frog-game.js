@@ -5880,7 +5880,7 @@ function getDashboardPfp() {
       if (currentUpgradeOverlayMode === "normal") {
         nextPermanentChoiceTime = elapsedTime + 60;
       } else if (currentUpgradeOverlayMode === "epic") {
-        nextEpicChoiceTime = elapsedTime + 180;
+        nextEpicChoiceTime = elapsedTime + 30;
       }
     }
   }
