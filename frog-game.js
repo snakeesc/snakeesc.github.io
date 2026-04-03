@@ -1740,7 +1740,7 @@ function updateFrogRoleEmoji(frog) {
   // Role emoji takes priority over stars
   const emojis = [];
   if (frog.isChampion)     emojis.push("🏅");
-  if (frog.isAura)         emojis.push("🌈");
+  if (frog.isAura)         emojis.push("💫");
   if (frog.hasPermaShield) emojis.push("🛡️");
   if (frog.isMagnet)       emojis.push("🧲");
   if (frog.isLucky)        emojis.push("🍀");
@@ -1870,7 +1870,7 @@ function spawnRoleFrog(role) {
 function getRoleDraftPool() {
   return [
     { id: "champion", label: "Champion", emoji: "🏅" },
-    { id: "aura", label: "Aura", emoji: "🌈" },
+    { id: "aura", label: "Aura", emoji: "💫" },
     { id: "magnet", label: "Magnet", emoji: "🧲" },
     { id: "lucky", label: "Lucky", emoji: "🍀" },
     { id: "zombie", label: "Zombie", emoji: "🧟" }
@@ -5619,7 +5619,7 @@ function getDashboardPfp() {
       html = `
   <b>🐸 Permanent Frog Roles</b><br><br>
   🏅 <b>Champion</b> – that frog's hop cycle is faster and jumps are higher.<br>
-  🌈 <b>Aura</b> – nearby frogs get bonus speed and jump height in a radius around this frog.<br>
+  💫 <b>Aura</b> – nearby frogs get bonus speed and jump height in a radius around this frog.<br>
   🧲 <b>Magnet</b> – orbs in a radius are strongly pulled toward this frog.<br>
   🍀 <b>Lucky</b> – buffs last longer, more frogs spawn from some effects, and score gain is boosted slightly per Lucky frog.<br>
   🧟 <b>Zombie</b> – when this frog dies, it causes extra chaos (like extra frogs and snake debuffs).<br><br>
