@@ -4362,43 +4362,53 @@ function closeAnimatedOverlay(overlayEl) {
       buffGuideOverlay.appendChild(panel);
     }
 
-    panel.innerHTML = buildBuffGuideHtml();
+    panel.innerHTML = `
+      <div class="frog-panel-title">
+        Upgrades
+        <span class="emoji">⚡</span>
+      </div>
 
-    // Close button
+      <div class="frog-panel-sub">
+        A quick reference for the regular and epic upgrades in the current build.
+      </div>
+
+      <div class="frog-panel-section-label">Regular Upgrades</div>
+      <ul class="frog-panel-list">
+        <li><strong>Spawn Frogs</strong> — spawn frogs instantly.</li>
+        <li><strong>Orb Whisperer</strong> — orbs linger longer before fading.</li>
+        <li><strong>Ouroboros Pact</strong> — dead frogs have a chance to drop an orb.</li>
+        <li><strong>Mutation</strong> — +10% jump speed and +10% jump height.</li>
+        <li><strong>Buffs Last Longer</strong> — increases buff duration.</li>
+        <li><strong>More Orbs Over Time</strong> — faster orb spawns.</li>
+        <li><strong>Deathrattle</strong> — dead frogs can respawn.</li>
+        <li><strong>Orb Collector</strong> — collected orbs can spawn extra frogs.</li>
+        <li><strong>Last Stand</strong> — your last frog gets a strong revive chance.</li>
+      </ul>
+
+      <div class="frog-panel-section-label">Epic Upgrades</div>
+      <ul class="frog-panel-list">
+        <li><strong>Spawn Frogs</strong> — spawn a large frog wave instantly.</li>
+        <li><strong>Deathrattle</strong> — big boost to revive chance.</li>
+        <li><strong>Buffs Extended</strong> — larger buff duration increase.</li>
+        <li><strong>Orb Storm</strong> — drops a burst of random orbs immediately.</li>
+        <li><strong>Snake Egg</strong> — weakens the next shed speed gain.</li>
+        <li><strong>Grave Wave</strong> — each shed summons ghost frogs.</li>
+        <li><strong>Orb Specialist</strong> — orbs always spawn 1 frog, with Orb Collector able to add more.</li>
+        <li><strong>Frog Scatter</strong> — kill and respawn all current frogs.</li>
+        <li><strong>Pair of Scissors</strong> — splits the snake into two slower snakes.</li>
+      </ul>
+
+      <div class="frog-panel-footer">
+        <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
+          Close
+        </button>
+      </div>
+    `;
+
     const closeBtn = document.getElementById("buffGuideCloseBtn");
     if (closeBtn) {
       closeBtn.onclick = hideBuffGuideOverlay;
     }
-
-    // 🔹 Page buttons + pages
-    const pageButtons = panel.querySelectorAll(".buff-page-btn");
-    const pages = panel.querySelectorAll(".buff-guide-page");
-
-    function setBuffGuidePage(idx) {
-      pages.forEach((page, i) => {
-        page.style.display = i === idx ? "block" : "none";
-      });
-
-      pageButtons.forEach((btn, i) => {
-        if (i === idx) {
-          btn.classList.add("is-active");
-        } else {
-          btn.classList.remove("is-active");
-        }
-      });
-    }
-
-    pageButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const idx = parseInt(btn.getAttribute("data-page-index"), 10);
-        if (!Number.isNaN(idx)) {
-          setBuffGuidePage(idx);
-        }
-      });
-    });
-
-    // Make sure page 0 is active when it opens
-    setBuffGuidePage(0);
 
     openAnimatedOverlay(buffGuideOverlay);
   }
@@ -4881,7 +4891,7 @@ async function showDashboardOverlay() {
       ${localStats.totalFrogsLost != null ? `<li>Total Frogs Lost: <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>` : ""}
       ${localStats.totalSnakesShed != null ? `<li>Total Snakes Shed: <span class="stat-highlight">${localStats.totalSnakesShed}</span></li>` : ""}
     </ul>
-    
+
     <div class="frog-panel-section-label">Best Record</div>
     <ul class="frog-panel-list">
       <li>
