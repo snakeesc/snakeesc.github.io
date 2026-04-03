@@ -6013,9 +6013,9 @@ function getDashboardPfp() {
 
       if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
         initialUpgradeDone = true;
-        nextPermanentChoiceTime = elapsedTime + 60;
+        nextPermanentChoiceTime = elapsedTime + 30;
       } else {
-        nextPermanentChoiceTime = elapsedTime + 60;
+        nextPermanentChoiceTime = elapsedTime + 30;
       }
 
       gamePaused = true;
