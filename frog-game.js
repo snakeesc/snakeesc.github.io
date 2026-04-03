@@ -2155,16 +2155,10 @@ function applyPairOfScissors() {
 
   // Mark the cut point on the living snake
   const frontLast = frontSegments[frontSegments.length - 1];
-  if (frontLast && frontLast.el) {
-    frontLast.el.style.boxShadow = "inset -3px 0 0 rgba(120,0,0,0.9)";
-  }
 
   // Detached body stays where it was until next shed
   if (detachedSegments.length) {
     const detachedFirst = detachedSegments[0];
-    if (detachedFirst && detachedFirst.el) {
-      detachedFirst.el.style.boxShadow = "inset 3px 0 0 rgba(120,0,0,0.9)";
-    }
 
     severedSnakeRemnants.push({
       segmentEls: detachedSegments.map(seg => seg.el).filter(Boolean)
