@@ -113,7 +113,8 @@
     LEGENDARY_EVENT_TIME,
     SHED_INTERVAL,
     AURA_RADIUS,
-    AURA_RADIUS2
+    AURA_RADIUS2,
+    MAIN_MENU_BACKGROUND_ENABLED
   } = Config;
 
   const {
@@ -4016,10 +4017,14 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   function showMainMenu() {
     if (!mainMenuOverlay) initMainMenuOverlay();
 
-    // Ensure any lingering upgrade modal is hidden before showing the menu
     hideUpgradeOverlayForMenu();
 
-    startMainMenuBackground();
+    if (MAIN_MENU_BACKGROUND_ENABLED) {
+      startMainMenuBackground();
+    } else {
+      stopMainMenuBackground();
+    }
+
     setInGameUIVisible(false);
     mainMenuActive = true;
     syncAudioMuteState();
