@@ -4369,33 +4369,99 @@ function closeAnimatedOverlay(overlayEl) {
       </div>
 
       <div class="frog-panel-sub">
-        A quick reference for the regular and epic upgrades in the current build.
+        Regular and epic upgrades, grouped by the same color categories used in upgrade selection.
       </div>
 
       <div class="frog-panel-section-label">Regular Upgrades</div>
-      <ul class="frog-panel-list">
-        <li><strong>Spawn Frogs</strong> — spawn frogs instantly.</li>
-        <li><strong>Orb Whisperer</strong> — orbs linger longer before fading.</li>
-        <li><strong>Ouroboros Pact</strong> — dead frogs have a chance to drop an orb.</li>
-        <li><strong>Mutation</strong> — +10% jump speed and +10% jump height.</li>
-        <li><strong>Buffs Last Longer</strong> — increases buff duration.</li>
-        <li><strong>More Orbs Over Time</strong> — faster orb spawns.</li>
-        <li><strong>Deathrattle</strong> — dead frogs can respawn.</li>
-        <li><strong>Orb Collector</strong> — collected orbs can spawn extra frogs.</li>
-        <li><strong>Last Stand</strong> — your last frog gets a strong revive chance.</li>
+      <div class="upgrade-guide-group-label">Mobility</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Mutation</strong> — +10% jump speed and +10% jump height.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Buff</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Orb Whisperer</strong> — orbs linger longer before fading.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Buffs Last Longer</strong> — increases buff duration.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>More Orbs Over Time</strong> — faster orb spawns.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Survival</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Ouroboros Pact</strong> — dead frogs have a chance to drop an orb.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Deathrattle</strong> — dead frogs can respawn.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Last Stand</strong> — your last frog gets a strong revive chance.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Orb</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-orb">
+          <strong>Orb Collector</strong> — collected orbs can spawn extra frogs.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Role</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-role">
+          <strong>Spawn Frogs</strong> — spawn frogs instantly.
+        </li>
       </ul>
 
       <div class="frog-panel-section-label">Epic Upgrades</div>
-      <ul class="frog-panel-list">
-        <li><strong>Spawn Frogs</strong> — spawn a large frog wave instantly.</li>
-        <li><strong>Deathrattle</strong> — big boost to revive chance.</li>
-        <li><strong>Buffs Extended</strong> — larger buff duration increase.</li>
-        <li><strong>Orb Storm</strong> — drops a burst of random orbs immediately.</li>
-        <li><strong>Snake Egg</strong> — weakens the next shed speed gain.</li>
-        <li><strong>Grave Wave</strong> — each shed summons ghost frogs.</li>
-        <li><strong>Orb Specialist</strong> — orbs always spawn 1 frog, with Orb Collector able to add more.</li>
-        <li><strong>Frog Scatter</strong> — kill and respawn all current frogs.</li>
-        <li><strong>Pair of Scissors</strong> — splits the snake into two slower snakes.</li>
+      <div class="upgrade-guide-group-label">Buff</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Buffs Extended</strong> — larger buff duration increase.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Orb Storm</strong> — drops a burst of random orbs immediately.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Orb Specialist</strong> — orbs always spawn 1 frog, with Orb Collector able to add more.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Survival</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Deathrattle</strong> — big boost to revive chance.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Snake Egg</strong> — weakens the next shed speed gain.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Grave Wave</strong> — each shed summons ghost frogs.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Role</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-role">
+          <strong>Spawn Frogs</strong> — spawn a large frog wave instantly.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Other</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Frog Scatter</strong> — kill and respawn all current frogs.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Pair of Scissors</strong> — splits the snake into two slower snakes.
+        </li>
       </ul>
 
       <div class="frog-panel-footer">
