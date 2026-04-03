@@ -3527,6 +3527,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         `,
         apply: () => {
           snakeEggPending = true;
+          snakeEggUsed = true;
         }
       });
     }
