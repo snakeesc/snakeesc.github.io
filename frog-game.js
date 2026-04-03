@@ -637,6 +637,8 @@ const survivalIds = [
   let snakeShedCount   = 0;          // how many times we've shed this run
   let nextShedTime     = SHED_INTERVAL;
 
+  let scissorsGrowthLocked = false;
+  let severedSnakeRemnants = [];
   let snakeEggPending = false; // EPIC: next shed uses reduced speed bonus
   let snakeEggUsed = false;
   let roleDraftUsed = false;
@@ -1150,6 +1152,12 @@ const survivalIds = [
 
     // Apply the appropriate color tint for this shed stage
     applySnakeAppearance();
+    queueSeveredRemnantsForNextShed();
+    scissorsGrowthLocked = false;
+    snake.canGrow = true;
+    for (const s of extraSnakes) {
+      if (s) s.canGrow = true;
+    }
 
     // Grave Wave: every shed, raise a wave of ghost frogs
     if (graveWaveActive) {
@@ -2049,45 +2057,141 @@ function getMutationChoices() {
     }
   ];
 }
+function markSegmentAsSevered(el, side) {
+  if (!el) return;
 
+  el.dataset.severed = "1";
+  el.style.boxShadow =
+    side === "left"
+      ? "inset 8px 0 0 rgba(120,0,0,0.9)"
+      : "inset -8px 0 0 rgba(120,0,0,0.9)";
+}
+
+function clearSeveredMark(el) {
+  if (!el) return;
+  delete el.dataset.severed;
+  el.style.boxShadow = "none";
+}
+
+function createSnakeFromExistingSegments(segmentData, angle, speedFactor) {
+  if (!segmentData || !segmentData.length) return null;
+
+  const headPos = segmentData[0];
+  const headEl = document.createElement("div");
+  headEl.className = "snake-head";
+  headEl.style.position = "absolute";
+  headEl.style.width = SNAKE_SEGMENT_SIZE + "px";
+  headEl.style.height = SNAKE_SEGMENT_SIZE + "px";
+  headEl.style.imageRendering = "pixelated";
+  headEl.style.backgroundSize = "contain";
+  headEl.style.backgroundRepeat = "no-repeat";
+  headEl.style.pointerEvents = "none";
+  headEl.style.zIndex = "30";
+  headEl.style.backgroundImage = "url(./images/head.png)";
+  container.appendChild(headEl);
+
+  const segments = [];
+  for (let i = 0; i < segmentData.length; i++) {
+    const src = segmentData[i];
+    const segEl = src.el;
+    if (!segEl) continue;
+
+    segEl.className = i === segmentData.length - 1 ? "snake-tail" : "snake-body";
+    segEl.style.zIndex = "29";
+
+    segments.push({
+      el: segEl,
+      x: src.x,
+      y: src.y
+    });
+  }
+
+  const path = [];
+  const segmentGap = computeSegmentGap();
+  const maxPath = (segments.length + 2) * segmentGap + 2;
+  for (let i = 0; i < maxPath; i++) {
+    path.push({ x: headPos.x, y: headPos.y });
+  }
+
+  return {
+    head: { el: headEl, x: headPos.x, y: headPos.y, angle: angle || 0 },
+    segments,
+    path,
+    isFrenzyVisual: false,
+    speedFactor: speedFactor || 1.0,
+    canGrow: false
+  };
+}
+
+function queueSeveredRemnantsForNextShed() {
+  for (const remnant of severedSnakeRemnants) {
+    if (!remnant) continue;
+
+    dyingSnakes.push({
+      headEl: null,
+      segmentEls: remnant.segmentEls || [],
+      nextDespawnTime: 0.08
+    });
+  }
+
+  severedSnakeRemnants = [];
+}
 function applyPairOfScissors() {
-  if (!snake) return;
-
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  if (!snake || !Array.isArray(snake.segments) || snake.segments.length < 8) return;
 
   const original = snake;
-  const originalStage = snakeShedStage;
+  const originalSegments = original.segments.slice();
 
-  const startX = original.head.x;
-  const startY = original.head.y;
-  const baseAngle = original.head.angle || 0;
+  const cutIndex = Math.floor(originalSegments.length / 2);
+  const frontSegments = originalSegments.slice(0, cutIndex);
+  const backSegments = originalSegments.slice(cutIndex);
 
-  // slow down original
-  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.65);
+  if (!frontSegments.length || !backSegments.length) return;
 
-  // spawn second split snake
-  const splitSnake = spawnAdditionalSnake(width, height, {
-    startX: Math.min(width - 100, startX + 40),
-    startY: Math.min(height - 100, startY + 40),
-    angle: baseAngle + Math.PI * 0.35,
-    segmentCount: Math.max(SNAKE_INITIAL_SEGMENTS, Math.floor(original.segments.length / 2))
-  });
+  const baseSpeed = original.speedFactor || 1.0;
+  const slowedSpeed = Math.max(0.6, baseSpeed * 0.70); // 30% slower
 
-  if (splitSnake) {
-    splitSnake.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.85);
+  // Keep the front half as the main snake body
+  original.segments = frontSegments;
+  original.speedFactor = slowedSpeed;
+  original.canGrow = false;
 
-    // match current snake color stage
-    const filter = getShedStageFilter(originalStage);
-    if (filter) {
-      if (splitSnake.head && splitSnake.head.el) splitSnake.head.el.style.filter = filter;
-      for (const seg of splitSnake.segments) {
-        if (seg.el) seg.el.style.filter = filter;
-      }
-    }
+  // Create a new snake from the back half
+  const splitSnake = createSnakeFromExistingSegments(
+    backSegments,
+    (original.head.angle || 0) + Math.PI * 0.08,
+    slowedSpeed
+  );
 
-    extraSnakes.push(splitSnake);
+  if (!splitSnake) return;
+
+  splitSnake.canGrow = false;
+
+  // Add blood marks at the cut ends
+  const frontLast = frontSegments[frontSegments.length - 1];
+  const backFirst = backSegments[0];
+
+  if (frontLast && frontLast.el) markSegmentAsSevered(frontLast.el, "right");
+  if (backFirst && backFirst.el) markSegmentAsSevered(backFirst.el, "left");
+
+  // Rebuild path size for the shortened main snake
+  const desiredPathLength =
+    (original.segments.length + 2) * computeSegmentGap() + 2;
+  while (original.path.length > desiredPathLength) {
+    original.path.pop();
   }
+  while (original.path.length < desiredPathLength) {
+    const last = original.path[original.path.length - 1] || {
+      x: original.head.x,
+      y: original.head.y
+    };
+    original.path.push({ x: last.x, y: last.y });
+  }
+
+  extraSnakes.push(splitSnake);
+
+  // Lock growth on both halves until next shed
+  scissorsGrowthLocked = true;
 }
 
 // --------------------------------------------------
@@ -3178,6 +3282,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
   function growSnakeForSnake(snakeObj, extraSegments) {
     if (!snakeObj) return;
+    if (scissorsGrowthLocked && snakeObj && snakeObj.canGrow === false) {
+      return;
+    }
     extraSegments = extraSegments || 1;
 
     const currentLen = snakeObj.segments.length;
@@ -3639,19 +3746,16 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    if (!pairOfScissorsUsed) {
-      upgrades.push({
-        id: "pairOfScissors",
-        label: `
-          ✂️ Pair of Scissors<br>
-          Cut the snake into <span style="color:${epicTitleColor};">two</span> slower snakes
-        `,
-        apply: () => {
-          applyPairOfScissors();
-          pairOfScissorsUsed = true;
-        }
-      });
-    }
+    upgrades.push({
+      id: "pairOfScissors",
+      label: `
+        ✂️ Pair of Scissors<br>
+        Cut the snake in <span style="color:${epicTitleColor};">half</span> and slow it by <span style="color:${epicTitleColor};">30%</span>.
+      `,
+      apply: () => {
+        applyPairOfScissors();
+      }
+    });
 
     return upgrades;
   }
@@ -6026,12 +6130,12 @@ function getDashboardPfp() {
     // schedule next timers
     if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
       initialUpgradeDone = true;
-      nextPermanentChoiceTime = elapsedTime + 60;
+      nextPermanentChoiceTime = elapsedTime + 30;
     } else {
       if (currentUpgradeOverlayMode === "normal") {
-        nextPermanentChoiceTime = elapsedTime + 60;
+        nextPermanentChoiceTime = elapsedTime + 30;
       } else if (currentUpgradeOverlayMode === "epic") {
-        nextEpicChoiceTime = elapsedTime + 180;
+        nextEpicChoiceTime = elapsedTime + 30;
       }
     }
   }
@@ -6196,7 +6300,7 @@ function getDashboardPfp() {
     // Reset upgrade timing / sheds
     initialUpgradeDone       = false;
     nextPermanentChoiceTime  = 60;
-    nextEpicChoiceTime       = 180;
+    nextEpicChoiceTime       = 30;
     legendaryEventTriggered  = false;
     orbSpecialistActive      = false; 
     roleDraftUsed = false;
