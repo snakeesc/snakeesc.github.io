@@ -4874,8 +4874,8 @@ async function showDashboardOverlay() {
       </div>
 
       <div class="dashboard-stat">
-        <span class="dashboard-stat-label">Total Frogs</span>
-        <span class="dashboard-stat-value">${localStats.totalFrogsEaten ?? 0}</span>
+        <span class="dashboard-stat-label">Total Score</span>
+        <span class="dashboard-stat-value">${Math.floor(localStats.totalScore ?? 0)}</span>
       </div>
 
       <div class="dashboard-stat">
