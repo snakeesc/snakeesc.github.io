@@ -1046,37 +1046,31 @@ const survivalIds = [
       dyingSnakes.push({
         headEl: oldHeadEl,
         segmentEls: oldSegmentEls,
-        nextDespawnTime: 0.08   // seconds between chunks disappearing
+        nextDespawnTime: 0.08
       });
     }
 
-    // Base this shed's speed on the old snake's personal factor (defaults to 1)
+    // Base this shed's speed on the old snake's personal factor
     const baseSpeedFactor = (oldSnake && typeof oldSnake.speedFactor === "number")
       ? oldSnake.speedFactor
       : 1.0;
 
-    // Permanent speed bonus each shed.
-    // Normally +20%, but if Snake Egg is pending, only +11% (20% - 9%).
+    // Normally +shed speed, unless Snake Egg is pending
     let speedMult = SNAKE_SHED_SPEEDUP;
     if (snakeEggPending) {
-      speedMult = SNAKE_EGG_BUFF_PCT;   // +11% instead of +20%
-      snakeEggPending = false; // consume the egg buff
+      speedMult = SNAKE_EGG_BUFF_PCT;
+      snakeEggPending = false;
     }
 
     const newSpeedFactor = baseSpeedFactor * speedMult;
-
-    // Keep the old global in sync for stats / HUD if you reference it anywhere
     snakePermanentSpeedFactor = newSpeedFactor;
 
-    // Turn radius: slightly tighter turns each shed (20% per shed, capped)
-    // NOTE: higher snakeTurnRate = sharper turns (tighter radius).
+    // Tighter turns each shed
     snakeTurnRate = Math.min(SNAKE_TURN_RATE_CAP, snakeTurnRate * 1.2);
 
-    // Decide new color stage (1 = yellow, 2 = orange, 3+ = red).
     snakeShedStage = stage;
 
-    // Spawn the new snake roughly where the old head was.
-    const width  = window.innerWidth;
+    const width = window.innerWidth;
     const height = window.innerHeight;
 
     const startX = (oldSnake.head && typeof oldSnake.head.x === "number")
@@ -1086,10 +1080,7 @@ const survivalIds = [
       ? oldSnake.head.y
       : height * 0.5;
 
-    // Decide how many segments the new snake should start with:
-    // - 1/2 of the old snake's length
-    // - minimum SNAKE_INITIAL_SEGMENTS
-    // - maximum 50 segments
+    // Start new shed snake with half of old body, min initial, max 50
     const oldCountRaw = oldSegmentEls.length || SNAKE_INITIAL_SEGMENTS;
     let newSegCount = Math.round(oldCountRaw / 2);
 
@@ -1114,7 +1105,12 @@ const survivalIds = [
     headEl.style.backgroundImage = "url(./images/head.png)";
     container.appendChild(headEl);
 
-    // Create new segments
+    // Lay the new snake out immediately instead of stacking all segments
+    const startAngle = 0;
+    const dirX = Math.cos(startAngle);
+    const dirY = Math.sin(startAngle);
+    const gapPx = computeSegmentGap();
+
     const segments = [];
     for (let i = 0; i < newSegCount; i++) {
       const segEl = document.createElement("div");
@@ -1133,29 +1129,32 @@ const survivalIds = [
         : "url(./images/body.png)";
       container.appendChild(segEl);
 
-      segments.push({ el: segEl, x: startX, y: startY });
+      const segX = startX - dirX * gapPx * (i + 1);
+      const segY = startY - dirY * gapPx * (i + 1);
+
+      segments.push({ el: segEl, x: segX, y: segY });
     }
 
-    // New path for the new snake
+    // Build a path that already matches the laid-out body
     const path = [];
-    const segmentGap = computeSegmentGap();
-    const maxPath = (segments.length + 2) * segmentGap + 2;
-    for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
+    path.push({ x: startX, y: startY });
+    for (let i = 1; i <= (segments.length + 2) * gapPx + 2; i++) {
+      path.push({
+        x: startX - dirX * i,
+        y: startY - dirY * i
+      });
     }
 
-    // Replace global snake reference with the new snake,
-    // carrying forward the new per-snake speed factor
     snake = {
-      head: { el: headEl, x: startX, y: startY, angle: 0 },
+      head: { el: headEl, x: startX, y: startY, angle: startAngle },
       segments,
       path,
       isFrenzyVisual: false,
       speedFactor: newSpeedFactor
     };
 
-    // Apply the appropriate color tint for this shed stage
     applySnakeAppearance();
+
     if (scissorsRemnantSegments.length > 0) {
       snakeEatingOldBody = true;
       snakeOldBodySpeedBonusPending = true;
@@ -1170,7 +1169,6 @@ const survivalIds = [
       if (s) s.canGrow = true;
     }
 
-    // Grave Wave: every shed, raise a wave of ghost frogs
     if (graveWaveActive) {
       spawnExtraFrogs(10);
     }
