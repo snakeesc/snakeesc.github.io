@@ -4449,17 +4449,19 @@ function closeAnimatedOverlay(overlayEl) {
       </div>
 
       <div class="frog-panel-sub">
-        Regular and epic upgrades, grouped by the same color categories used in upgrade selection.
+        Regular and epic upgrades, color-coded to match the upgrade selection.
       </div>
 
       <div class="frog-panel-section-label">Regular Upgrades</div>
 
+      <div class="upgrade-guide-group-label">Mobility</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Mutation</strong> — +12% jump speed and +12% jump height.
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Buff</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
           <strong>Orb Whisperer</strong> — orbs linger 30% longer before vanishing.
@@ -4471,10 +4473,11 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>More Orbs Over Time</strong> — faster orb spawns.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Snake Egg</strong> — weakens the next shed speed gain.
+          <strong>Snake Egg</strong> — the next shed gives the new snake only 50% of its normal speed increase.
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Survival</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>Ouroboros Pact</strong> — 20% chance dead frogs drop an orb.
@@ -4487,12 +4490,14 @@ function closeAnimatedOverlay(overlayEl) {
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Orb</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-orb">
           <strong>Orb Collector</strong> — collected orbs can spawn extra frogs.
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Role</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-role">
           <strong>Spawn Frogs</strong> — spawn frogs instantly.
@@ -4501,6 +4506,7 @@ function closeAnimatedOverlay(overlayEl) {
 
       <div class="frog-panel-section-label">Epic Upgrades</div>
 
+      <div class="upgrade-guide-group-label">Buff</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
           <strong>Buffs Extended</strong> — larger buff duration increase.
@@ -4516,18 +4522,26 @@ function closeAnimatedOverlay(overlayEl) {
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Survival</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>Deathrattle</strong> — big boost to revive chance.
         </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
+        </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Mobility</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Frog Scatter</strong> — kill and respawn all current frogs.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Pair of Scissors</strong> — splits the snake into two slower snakes.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Swarm Divide</strong> — splits your frogs into two lanes, making the snake less efficient at chasing the whole swarm.
         </li>
       </ul>
 
