@@ -5730,7 +5730,7 @@ function getDashboardPfp() {
     if (isEpic) {
       // 🔥 EPIC: pick a random 3 from the full epic pool
       let pool = getEpicUpgradeChoices().slice();
-      while (choices.length < 3 && pool.length) {
+      while (choices.length < 4 && pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
         choices.push(pool.splice(idx, 1)[0]);
       }
@@ -5777,20 +5777,20 @@ function getDashboardPfp() {
           choices.push(spawnChoice);
 
           // Fill remaining slots randomly until we have 3 total
-          while (choices.length < 3 && pool.length) {
+          while (choices.length < 4 && pool.length) {
             const idx = Math.floor(Math.random() * pool.length);
             choices.push(pool.splice(idx, 1)[0]);
           }
         } else {
           // At frog cap: just pick any 3 normal upgrades at random
-          while (choices.length < 3 && pool.length) {
+          while (choices.length < 4 && pool.length) {
             const idx = Math.floor(Math.random() * pool.length);
             choices.push(pool.splice(idx, 1)[0]);
           }
         }
       } else {
         // All other common upgrades: just pick any 3 at random
-        while (choices.length < 3 && pool.length) {
+        while (choices.length < 4 && pool.length) {
           const idx = Math.floor(Math.random() * pool.length);
           choices.push(pool.splice(idx, 1)[0]);
         }
@@ -5807,7 +5807,7 @@ function getDashboardPfp() {
       return;
     }
 
-    choices.slice(0, 3).forEach((choice, index) => {
+    choices.slice(0, 4).forEach((choice, index) => {
       const btn = document.createElement("button");
       const colorClass = getUpgradeColorClass(choice.id);
 
