@@ -1894,7 +1894,7 @@ function applyPairOfScissors() {
   const baseAngle = original.head.angle || 0;
 
   // slow down original
-  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.72);
+  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.65);
 
   // spawn second split snake
   const splitSnake = spawnAdditionalSnake(width, height, {
@@ -1905,7 +1905,7 @@ function applyPairOfScissors() {
   });
 
   if (splitSnake) {
-    splitSnake.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.9);
+    splitSnake.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.85);
 
     // match current snake color stage
     const filter = getShedStageFilter(originalStage);
