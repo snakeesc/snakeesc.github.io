@@ -3779,16 +3779,18 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    upgrades.push({
-      id: "pairOfScissors",
-      label: `
-        ✂️ Pair of Scissors<br>
-        Cut the snake in <span style="color:${epicTitleColor};">half</span> and slow it by <span style="color:${epicTitleColor};">30%</span>.
-      `,
-      apply: () => {
-        applyPairOfScissors();
-      }
-    });
+    if (!pairOfScissorsUsed) {
+      upgrades.push({
+        id: "pairOfScissors",
+        label: `
+          ✂️ Pair of Scissors<br>
+          Cut the snake in <span style="color:${epicTitleColor};">half</span> and slow it by <span style="color:${epicTitleColor};">30%</span>.
+        `,
+        apply: () => {
+          applyPairOfScissors();
+        }
+      });
+    }
 
     return upgrades;
   }
