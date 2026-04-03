@@ -4853,7 +4853,7 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>Spawn Frogs</strong> — spawn frogs instantly.
         </li>
         <li class="upgrade-guide-item upgrade-type-role">
-          <strong>Role Draft</strong> — choose between 2 random frog roles, spawn 2–4 frogs of that role, and promote star frogs into that role. Extra stars grant extra random roles.
+          <strong>Role Draft</strong> — choose between 2 random frog roles, spawn 2–4 frogs of that role, and promote star frogs into that role.
         </li>
       </ul>
 
