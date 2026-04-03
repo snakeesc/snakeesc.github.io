@@ -617,7 +617,7 @@ const survivalIds = [
   let nextPermanentChoiceTime = 60;
 
   // every 180 seconds we pause for an EPIC upgrade
-  let nextEpicChoiceTime = 180;
+  let nextEpicChoiceTime = 30;
 
   let legendaryEventTriggered = false;
 
@@ -6192,12 +6192,12 @@ function getDashboardPfp() {
     // schedule next timers
     if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
       initialUpgradeDone = true;
-      nextPermanentChoiceTime = elapsedTime + 60;
+      nextPermanentChoiceTime = elapsedTime + 30;
     } else {
       if (currentUpgradeOverlayMode === "normal") {
-        nextPermanentChoiceTime = elapsedTime + 60;
+        nextPermanentChoiceTime = elapsedTime + 30;
       } else if (currentUpgradeOverlayMode === "epic") {
-        nextEpicChoiceTime = elapsedTime + 180;
+        nextEpicChoiceTime = elapsedTime + 30;
       }
     }
   }
@@ -6361,8 +6361,8 @@ function getDashboardPfp() {
     // Reset upgrade timing / sheds
     // Reset upgrade timing / sheds
     initialUpgradeDone       = false;
-    nextPermanentChoiceTime  = 60;
-    nextEpicChoiceTime       = 180;
+    nextPermanentChoiceTime  = 30;
+    nextEpicChoiceTime       = 30;
     legendaryEventTriggered  = false;
     orbSpecialistActive      = false; 
     roleDraftUsed = false;
