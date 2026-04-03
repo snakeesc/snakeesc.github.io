@@ -514,13 +514,22 @@ function getRandomFrogHat() {
 
 function getUpgradeColorClass(upgradeId) {
   // movement / jumping
-  const mobilityIds = [
-    "frogSpeed",
-    "frogJump",
-    "frogSpeedJump",
-    "epicSpeedJump",
-    "higherHops"
-  ];
+const mobilityIds = [
+  "frogSpeed",
+  "frogJump",
+  "frogSpeedJump",
+  "epicSpeedJump",
+  "higherHops",
+  "swarmDivide"
+];
+
+const survivalIds = [
+  "deathrattle",
+  "epicDeathrattle",
+  "lastStand",
+  "ouroborosPact",
+  "secondWind"
+];
 
   // buff duration / orbs / magnet style
   const buffIds = [
@@ -532,13 +541,6 @@ function getUpgradeColorClass(upgradeId) {
     "orbSpecialist"
   ];
 
-  // survival / death-related
-  const survivalIds = [
-    "deathrattle",
-    "epicDeathrattle",
-    "lastStand",
-    "ouroborosPact"
-  ];
 
   // orb creation / collector
   const orbIds = [
@@ -639,6 +641,11 @@ function getUpgradeColorClass(upgradeId) {
   let graveWaveUsed = false;
   let pairOfScissorsUsed = false;
   let epicChainPending = false;
+  let secondWindActive = false;
+  let secondWindUsed = false;
+
+  let swarmDivideActive = false;
+  let swarmDivideUsed = false;
 
   // Old snakes that are despawning chunk-by-chunk
   let dyingSnakes = [];
@@ -1310,7 +1317,15 @@ function getUpgradeColorClass(upgradeId) {
     if (frog.isCannibal)      glows.push("0 0 12px rgba(255,69,0,0.95)"); // NEW
     frog.el.style.boxShadow = glows.join(", ");
   }
+function assignSwarmDivideLanes() {
+  if (!Array.isArray(frogs) || !frogs.length) return;
 
+  for (let i = 0; i < frogs.length; i++) {
+    const frog = frogs[i];
+    if (!frog) continue;
+    frog.swarmDivideLane = (i % 2 === 0) ? -1 : 1;
+  }
+}
   function createFrogAt(x, y, tokenId) {
     const el = document.createElement("div");
     el.className = "frog-sprite";
@@ -1350,6 +1365,8 @@ function getUpgradeColorClass(upgradeId) {
       hopStartBaseY: y,
       hopEndX: x,
       hopEndBaseY: y,
+
+      swarmDivideLane: 0,
 
       state: "idle",
       idleTime: randRange(idleMin, idleMax),
@@ -1455,6 +1472,9 @@ function getUpgradeColorClass(upgradeId) {
       const x = margin + Math.random() * (width - margin * 2 - FROG_SIZE);
       const y = margin + Math.random() * (height - margin * 2 - FROG_SIZE);
       createFrogAt(x, y, null);
+    }
+    if (swarmDivideActive) {
+      assignSwarmDivideLanes();
     }
   }
 
@@ -2402,6 +2422,26 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     } else if (mouse.follow && mouse.active && !frog.isGhost) {
       goalX = mouse.x - FROG_SIZE / 2;
       goalY = mouse.y - FROG_SIZE / 2;
+
+      if (swarmDivideActive) {
+        const frogCx = frog.x + FROG_SIZE / 2;
+        const frogCy = frog.baseY + FROG_SIZE / 2;
+        const targetCx = mouse.x;
+        const targetCy = mouse.y;
+
+        const dx = targetCx - frogCx;
+        const dy = targetCy - frogCy;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+        const px = -dy / dist;
+        const py = dx / dist;
+
+        const lane = frog.swarmDivideLane || 1;
+        const offset = 70 * lane;
+
+        goalX += px * offset;
+        goalY += py * offset;
+      }
     }
 
     // Ghost frogs + panic hop ignore mouse and dart randomly
@@ -2441,7 +2481,10 @@ function applyBuff(type, frog, durationMultiplier = 1) {
   function updateFrogs(dt, width, height) {
     const marginY = 24;
     const marginX = 8;
-
+    if (secondWindActive && !secondWindUsed && frogs.length > 0 && frogs.length <= 10) {
+      secondWindUsed = true;
+      spawnExtraFrogs(20);
+    }
     for (const frog of frogs) {
       if (frog.state === "idle") {
         frog.idleTime -= dt;
@@ -3332,6 +3375,37 @@ function applyBuff(type, frog, durationMultiplier = 1) {
             MAX_DEATHRATTLE_CHANCE,
             frogDeathRattleChance + EPIC_DEATHRATTLE_CHANCE
           );
+        }
+      });
+    }
+
+    if (!secondWindUsed && !secondWindActive) {
+      upgrades.push({
+        id: "secondWind",
+        label: `
+          💨 Second Wind<br>
+          Once per run, when your frogs fall below
+          <span style="color:${epicTitleColor};">10</span>,
+          spawn <span style="color:${epicTitleColor};">20</span> frogs instantly
+        `,
+        apply: () => {
+          secondWindActive = true;
+        }
+      });
+    }
+
+    if (!swarmDivideUsed && !swarmDivideActive) {
+      upgrades.push({
+        id: "swarmDivide",
+        label: `
+          🪶 Swarm Divide<br>
+          Split your frogs into <span style="color:${epicTitleColor};">two lanes</span>,
+          making the snake less efficient at chasing the whole swarm
+        `,
+        apply: () => {
+          swarmDivideActive = true;
+          swarmDivideUsed = true;
+          assignSwarmDivideLanes();
         }
       });
     }
@@ -5968,7 +6042,11 @@ function getDashboardPfp() {
 
     snakeEggPending          = false;
     snakeEggUsed = false;
+    secondWindActive = false;
+    secondWindUsed = false;
 
+    swarmDivideActive = false;
+    swarmDivideUsed = false;
     graveWaveActive = false;
     graveWaveUsed = false;
 
