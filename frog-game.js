@@ -3367,6 +3367,21 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     let targetRemnant = null;
     let bestRemnantDist2 = Infinity;
+
+    if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
+      for (const seg of scissorsRemnantSegments) {
+        if (!seg || !seg.el) continue;
+        const sx = seg.x + SNAKE_SEGMENT_SIZE / 2;
+        const sy = seg.y + SNAKE_SEGMENT_SIZE / 2;
+        const dx = sx - head.x;
+        const dy = sy - head.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < bestRemnantDist2) {
+          bestRemnantDist2 = d2;
+          targetRemnant = seg;
+        }
+      }
+    }
       
     for (const frog of frogList) {
       if (!frog || !frog.el) continue;
@@ -3543,20 +3558,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
             // Grow whichever snake actually got the kill
             growSnakeForSnake(snakeObj, 1);
           }
-        }
-      }
-    }
-        if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
-      for (const seg of scissorsRemnantSegments) {
-        if (!seg || !seg.el) continue;
-        const sx = seg.x + SNAKE_SEGMENT_SIZE / 2;
-        const sy = seg.y + SNAKE_SEGMENT_SIZE / 2;
-        const dx = sx - head.x;
-        const dy = sy - head.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < bestRemnantDist2) {
-          bestRemnantDist2 = d2;
-          targetRemnant = seg;
         }
       }
     }
