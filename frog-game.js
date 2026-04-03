@@ -1087,13 +1087,13 @@ const survivalIds = [
     // - minimum SNAKE_INITIAL_SEGMENTS
     // - maximum 50 segments
     const oldCountRaw = oldSegmentEls.length || SNAKE_INITIAL_SEGMENTS;
-    let newSegCount = Math.round(oldCountRaw / 4);
+    let newSegCount = Math.round(oldCountRaw / 2);
 
     if (newSegCount < SNAKE_INITIAL_SEGMENTS) {
       newSegCount = SNAKE_INITIAL_SEGMENTS;
     }
-    if (newSegCount > 20) {
-      newSegCount = 20;
+    if (newSegCount > 50) {
+      newSegCount = 50;
     }
 
     // Create new head
