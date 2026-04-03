@@ -4865,22 +4865,22 @@ async function showDashboardOverlay() {
     <div class="dashboard-stat-grid">
       <div class="dashboard-stat">
         <span class="dashboard-stat-label">Total Runs</span>
-        <span class="dashboard-stat-value">${stats.totalRuns ?? 0}</span>
+        <span class="dashboard-stat-value">${localStats.totalRuns ?? 0}</span>
       </div>
 
       <div class="dashboard-stat">
         <span class="dashboard-stat-label">Total Play Time</span>
-        <span class="dashboard-stat-value">${formatDuration(stats.totalPlayTime ?? 0)}</span>
+        <span class="dashboard-stat-value">${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</span>
       </div>
 
       <div class="dashboard-stat">
-        <span class="dashboard-stat-label">Total Frogs</span>
-        <span class="dashboard-stat-value">${stats.totalFrogs ?? 0}</span>
+        <span class="dashboard-stat-label">Total Frogs Eaten</span>
+        <span class="dashboard-stat-value">${localStats.totalFrogsEaten ?? 0}</span>
       </div>
 
       <div class="dashboard-stat">
         <span class="dashboard-stat-label">Total Orbs</span>
-        <span class="dashboard-stat-value">${stats.totalOrbs ?? 0}</span>
+        <span class="dashboard-stat-value">${localStats.totalOrbsCollected ?? 0}</span>
       </div>
     </div>
 
