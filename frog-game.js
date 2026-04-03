@@ -5751,33 +5751,42 @@ function getDashboardPfp() {
   }
 
   function closeUpgradeOverlay() {
+    const shouldOpenEpicNow =
+      epicChainPending && currentUpgradeOverlayMode === "normal";
+
+    // If we're chaining straight into epic, do NOT animate-close first.
+    // Just clear and reopen immediately so the delayed animationend
+    // cannot hide the epic overlay.
+    if (shouldOpenEpicNow) {
+      epicChainPending = false;
+
+      if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
+        initialUpgradeDone = true;
+        nextPermanentChoiceTime = elapsedTime + 60;
+      } else {
+        nextPermanentChoiceTime = elapsedTime + 60;
+      }
+
+      gamePaused = true;
+      openUpgradeOverlay("epic");
+      return;
+    }
+
     if (upgradeOverlay) {
       closeAnimatedOverlay(upgradeOverlay);
     }
     gamePaused = false;
 
-    // --- schedule next timers based on what we just picked ---
+    // schedule next timers
     if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
-      // First-ever normal upgrade at game start
       initialUpgradeDone = true;
       nextPermanentChoiceTime = elapsedTime + 60;
     } else {
       if (currentUpgradeOverlayMode === "normal") {
-        // Any regular normal upgrade (including the one that happens at epic marks)
         nextPermanentChoiceTime = elapsedTime + 60;
       } else if (currentUpgradeOverlayMode === "epic") {
-        // Epic picked: next epic in 3 minutes
         nextEpicChoiceTime = elapsedTime + 180;
-        // NOTE: we do NOT touch nextPermanentChoiceTime here; it was already
-        // set when the normal half of the chain closed.
       }
-    }
-
-    // --- epic chain: if we hit an epic mark, go normal -> epic back-to-back ---
-    if (epicChainPending && currentUpgradeOverlayMode === "normal") {
-      epicChainPending = false;
-      // Immediately show the EPIC choices now that the player picked a normal one
-      openUpgradeOverlay("epic");
     }
   }
 
