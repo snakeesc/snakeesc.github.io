@@ -4488,7 +4488,7 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>Frog Scatter</strong> — kill and respawn all current frogs.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Pair of Scissors</strong> — cuts the snake in half, slows it, and prevents growth until the next shed.
+          <strong>Pair of Scissors</strong> — cuts the snake in half, slows it by 30%, prevents growth until the next shed, and after the next shed the snake eats its severed body to regrow and gain speed.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Swarm Divide</strong> — splits your frogs into two lanes, making the snake less efficient at chasing the swarm.
@@ -4516,10 +4516,10 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>Orb Storm</strong> — drops a burst of random orbs immediately.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Orb Specialist</strong> — every orb guarantees 1 frog unless Orb Collector is active.
+          <strong>Orb Specialist</strong> — every orb guarantees 1 frog, and Orb Collector can still add more.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Grave Wave</strong> — each shed summons ghost frogs.
+          <strong>Grave Wave</strong> — each shed spawns 10 frogs.
         </li>
       </ul>
 
@@ -4535,7 +4535,7 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>Last Stand</strong> — your last frog gets a strong revive chance.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Deathrattle</strong> — big boost to revive chance.
+          <strong>Epic Deathrattle</strong> — big boost to revive chance.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
@@ -4555,7 +4555,7 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>Spawn Frogs</strong> — spawn frogs instantly.
         </li>
         <li class="upgrade-guide-item upgrade-type-role">
-          <strong>Role Draft</strong> — choose between 2 random frog roles.
+          <strong>Role Draft</strong> — choose between 2 random frog roles, spawn 2–4 frogs of that role, and promote star frogs into that role. Extra stars grant extra random roles.
         </li>
       </ul>
 
