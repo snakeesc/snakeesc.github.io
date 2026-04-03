@@ -1986,7 +1986,6 @@ function showRoleDraftOverlayChoices() {
       <div class="frog-upgrade-desc">
         Spawn <span class="stat-highlight">2–4</span> frogs of this role.
         Promote all <span class="stat-highlight">star frogs</span> to this role.
-        Extra stars grant <span class="stat-highlight">extra random roles</span>.
       </div>
     `;
 
