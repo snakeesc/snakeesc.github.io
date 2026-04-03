@@ -1161,8 +1161,7 @@ const survivalIds = [
 
     // Grave Wave: every shed, raise a wave of ghost frogs
     if (graveWaveActive) {
-      const ghostCount = randInt(GRAVE_WAVE_MIN_GHOSTS, GRAVE_WAVE_MAX_GHOSTS);
-      spawnGhostWave(ghostCount);
+      spawnExtraFrogs(10);
     }
   }
 
@@ -3676,7 +3675,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "graveWave",
         label: `
           👻 Grave Wave<br>
-          Each shed summons <span style="color:${epicTitleColor};">10–20</span> uncontrollable ghost frogs
+          Each shed spawns <span style="color:${epicTitleColor};">10</span> frogs
         `,
         apply: () => {
           graveWaveActive = true;
