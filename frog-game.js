@@ -4862,8 +4862,6 @@ async function showDashboardOverlay() {
 
     ${latestRunHtml}
 
-    ${leaderboardTopHtml}
-
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
