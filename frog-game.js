@@ -616,7 +616,7 @@ const survivalIds = [
   let nextPermanentChoiceTime = 60;
 
   // every 180 seconds we pause for an EPIC upgrade
-  let nextEpicChoiceTime = 180;
+  let nextEpicChoiceTime = 30;
 
   let legendaryEventTriggered = false;
 
@@ -5880,7 +5880,7 @@ function getDashboardPfp() {
       if (currentUpgradeOverlayMode === "normal") {
         nextPermanentChoiceTime = elapsedTime + 60;
       } else if (currentUpgradeOverlayMode === "epic") {
-        nextEpicChoiceTime = elapsedTime + 180;
+        nextEpicChoiceTime = elapsedTime + 30;
       }
     }
   }
