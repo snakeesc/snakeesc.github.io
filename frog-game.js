@@ -614,7 +614,7 @@ const survivalIds = [
   let lastRunTime   = 0;
 
   // every 60 seconds we pause for a global permanent upgrade
-  let nextPermanentChoiceTime = 60;
+  let nextPermanentChoiceTime = 30;
 
   // every 180 seconds we pause for an EPIC upgrade
   let nextEpicChoiceTime = 30;
@@ -6174,9 +6174,9 @@ function getDashboardPfp() {
 
       if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
         initialUpgradeDone = true;
-        nextPermanentChoiceTime = elapsedTime + 60;
+        nextPermanentChoiceTime = elapsedTime + 30;
       } else {
-        nextPermanentChoiceTime = elapsedTime + 60;
+        nextPermanentChoiceTime = elapsedTime + 30;
       }
 
       gamePaused = true;
