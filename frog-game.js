@@ -4602,28 +4602,6 @@ function closeAnimatedOverlay(overlayEl) {
       closeAnimatedOverlay(leaderboardOverlay);
     }
   }
-function initDashboardOverlay() {
-  if (dashboardOverlay) return;
-
-  dashboardOverlay = document.getElementById("dashboardOverlay");
-  const closeBtn = document.getElementById("dashboardCloseBtn");
-
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      hideDashboardOverlay();
-      hideGameOver();
-      showMainMenu();
-    });
-  }
-
-  document.addEventListener("keydown", (e) => {
-    if (dashboardOverlay && dashboardOverlay.style.display === "flex" && e.key === "Escape") {
-      hideDashboardOverlay();
-      hideGameOver();
-      showMainMenu();
-    }
-  });
-}
 
 async function showDashboardOverlay() {
   if (!dashboardOverlay) initDashboardOverlay();
