@@ -1984,8 +1984,19 @@ function showRoleDraftOverlayChoices() {
     btn.innerHTML = `
       <div class="frog-upgrade-title">${role.emoji} ${role.label}</div>
       <div class="frog-upgrade-desc">
-        Spawn <span class="stat-highlight">2–4</span> frogs of this role.
-        Promote all <span class="stat-highlight">star frogs</span> to this role.
+        ${
+          role.id === "champion"
+            ? "Faster, stronger frog with better hops."
+            : role.id === "aura"
+            ? "Boosts nearby frogs with an aura."
+            : role.id === "magnet"
+            ? "Pulls nearby orbs toward itself."
+            : role.id === "lucky"
+            ? "Increases luck-based bonuses and buff value."
+            : role.id === "zombie"
+            ? "On death, causes extra chaos and recovery."
+            : "Special frog role."
+        }
       </div>
     `;
 
