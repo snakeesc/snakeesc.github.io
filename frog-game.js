@@ -1083,7 +1083,7 @@ const survivalIds = [
       : height * 0.5;
 
     // Decide how many segments the new snake should start with:
-    // - 1/4 of the old snake's length
+    // - 1/2 of the old snake's length
     // - minimum SNAKE_INITIAL_SEGMENTS
     // - maximum 50 segments
     const oldCountRaw = oldSegmentEls.length || SNAKE_INITIAL_SEGMENTS;
