@@ -1881,6 +1881,7 @@ function applySpecificRoleToFrog(frog, roleId) {
   if (!frog) return;
 
   clearAllFrogRoles(frog);
+  frog.starLevel = 0;
 
   switch (roleId) {
     case "champion":
