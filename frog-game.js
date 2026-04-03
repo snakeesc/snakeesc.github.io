@@ -3601,40 +3601,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
   }
 
-  if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
-    const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
-    const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
-    const eatR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.45, 2);
-
-    for (let i = scissorsRemnantSegments.length - 1; i >= 0; i--) {
-      const seg = scissorsRemnantSegments[i];
-      if (!seg || !seg.el) continue;
-
-      const sx = seg.x + SNAKE_SEGMENT_SIZE / 2;
-      const sy = seg.y + SNAKE_SEGMENT_SIZE / 2;
-      const dx = sx - headCx;
-      const dy = sy - headCy;
-
-      if (dx * dx + dy * dy <= eatR2) {
-        if (seg.el.parentNode === container) {
-          container.removeChild(seg.el);
-        }
-        scissorsRemnantSegments.splice(i, 1);
-        growSnakeForSnake(snakeObj, 1);
-        break;
-      }
-    }
-
-    if (scissorsRemnantSegments.length === 0) {
-      snakeEatingOldBody = false;
-
-      if (snakeOldBodySpeedBonusPending) {
-        snakeObj.speedFactor *= 1.10;
-        snakeOldBodySpeedBonusPending = false;
-      }
-    }
-  }
-
   // --------------------------------------------------
   // PERMANENT, EPIC & LEGENDARY UPGRADE OVERLAY
   // --------------------------------------------------
