@@ -614,10 +614,10 @@ const survivalIds = [
   let lastRunTime   = 0;
 
   // every 60 seconds we pause for a global permanent upgrade
-  let nextPermanentChoiceTime = 30;
+  let nextPermanentChoiceTime = 60;
 
   // every 180 seconds we pause for an EPIC upgrade
-  let nextEpicChoiceTime = 30;
+  let nextEpicChoiceTime = 180;
 
   let legendaryEventTriggered = false;
 
@@ -6174,9 +6174,9 @@ function getDashboardPfp() {
 
       if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
         initialUpgradeDone = true;
-        nextPermanentChoiceTime = elapsedTime + 30;
+        nextPermanentChoiceTime = elapsedTime + 60;
       } else {
-        nextPermanentChoiceTime = elapsedTime + 30;
+        nextPermanentChoiceTime = elapsedTime + 60;
       }
 
       gamePaused = true;
@@ -6192,12 +6192,12 @@ function getDashboardPfp() {
     // schedule next timers
     if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
       initialUpgradeDone = true;
-      nextPermanentChoiceTime = elapsedTime + 30;
+      nextPermanentChoiceTime = elapsedTime + 60;
     } else {
       if (currentUpgradeOverlayMode === "normal") {
-        nextPermanentChoiceTime = elapsedTime + 30;
+        nextPermanentChoiceTime = elapsedTime + 60;
       } else if (currentUpgradeOverlayMode === "epic") {
-        nextEpicChoiceTime = elapsedTime + 30;
+        nextEpicChoiceTime = elapsedTime + 180;
       }
     }
   }
@@ -6361,8 +6361,8 @@ function getDashboardPfp() {
     // Reset upgrade timing / sheds
     // Reset upgrade timing / sheds
     initialUpgradeDone       = false;
-    nextPermanentChoiceTime  = 30;
-    nextEpicChoiceTime       = 30;
+    nextPermanentChoiceTime  = 60;
+    nextEpicChoiceTime       = 180;
     legendaryEventTriggered  = false;
     orbSpecialistActive      = false; 
     roleDraftUsed = false;
