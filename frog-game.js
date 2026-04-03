@@ -4864,10 +4864,6 @@ async function showDashboardOverlay() {
 
     ${leaderboardTopHtml}
 
-    <div class="frog-panel-section-label">Leaderboard Info</div>
-    <ul class="frog-panel-list">
-      <li>${LEADERBOARD_RESET_NOTE}</li>
-    </ul>
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
