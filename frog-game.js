@@ -635,6 +635,7 @@ function getUpgradeColorClass(upgradeId) {
   let nextShedTime     = SHED_INTERVAL;
 
   let snakeEggPending = false; // EPIC: next shed uses reduced speed bonus
+  let snakeEggUsed = false;
   let epicChainPending = false;
 
   // Old snakes that are despawning chunk-by-chunk
@@ -3516,7 +3517,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       upgrades.push(mutationChoice);
     }
 
-    if (!snakeEggPending) {
+    if (!snakeEggPending && !snakeEggUsed) {
       upgrades.push({
         id: "snakeEgg",
         label: `
