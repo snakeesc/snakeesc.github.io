@@ -4436,43 +4436,96 @@ function closeAnimatedOverlay(overlayEl) {
 
     panel.innerHTML = `
       <div class="frog-panel-title">
-        How to Play
-        <span class="emoji">❓</span>
+        Upgrades
+        <span class="emoji">⚡</span>
       </div>
 
       <div class="frog-panel-sub">
-        Keep your frogs alive as long as possible.
+        Upgrades grouped by type. Epic upgrades are listed last in each category.
       </div>
 
-      <div class="frog-panel-section-label">Controls</div>
-      <ul class="frog-panel-list">
-        <li><strong>Mouse:</strong> move your cursor and your frogs will try to follow.</li>
-        <li><strong>Touch:</strong> tap the screen on mobile and frogs will follow.</li>
+      <div class="upgrade-guide-group-label">Mobility</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Mutation</strong> — +12% jump speed and +12% jump height.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Frog Scatter</strong> — kill and respawn all current frogs.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Pair of Scissors</strong> — cuts the snake in half, slows it, and prevents growth until the next shed.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Swarm Divide</strong> — splits your frogs into two lanes, making the snake less efficient at chasing the swarm.
+        </li>
       </ul>
 
-      <div class="frog-panel-section-label">Goal</div>
-      <ul class="frog-panel-list">
-        <li>Stay alive as long as possible.</li>
-        <li>Avoid letting the snake eat all your frogs.</li>
-        <li>Collect orbs and choose upgrades to survive longer.</li>
+      <div class="upgrade-guide-group-label">Buff</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Orb Whisperer</strong> — orbs linger 30% longer before vanishing.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Buffs Last Longer</strong> — increases buff duration.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>More Orbs Over Time</strong> — faster orb spawns.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Snake Egg</strong> — the next shed gives the new snake only 50% of its normal speed increase.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Buffs Extended</strong> — larger buff duration increase.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Orb Storm</strong> — drops a burst of random orbs immediately.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Orb Specialist</strong> — every orb guarantees 1 frog unless Orb Collector is active.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Grave Wave</strong> — each shed summons ghost frogs.
+        </li>
       </ul>
 
-      <div class="frog-panel-section-label">How Runs Work</div>
-      <ul class="frog-panel-list">
-        <li>The snake chases your frogs and gets more dangerous over time.</li>
-        <li>Each run ends when all frogs are gone.</li>
-        <li>Your best run can appear on the leaderboard if your score is high enough.</li>
+      <div class="upgrade-guide-group-label">Survival</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Ouroboros Pact</strong> — 20% chance dead frogs drop an orb.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Deathrattle</strong> — dead frogs can respawn.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Last Stand</strong> — your last frog gets a strong revive chance.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Deathrattle</strong> — big boost to revive chance.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
+        </li>
       </ul>
 
-      <div class="frog-panel-section-label">Tips</div>
-      <ul class="frog-panel-list">
-        <li>Do not chase every orb if it puts your frogs in danger.</li>
-        <li>Try to guide the swarm early before the snake cuts off your path.</li>
-        <li>Use upgrades to build a run around movement, survival, or frog spawning.</li>
+      <div class="upgrade-guide-group-label">Orb</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-orb">
+          <strong>Orb Collector</strong> — collected orbs can spawn extra frogs.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Role</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item upgrade-type-role">
+          <strong>Spawn Frogs</strong> — spawn frogs instantly.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-role">
+          <strong>Role Draft</strong> — choose between 2 random frog roles.
+        </li>
       </ul>
 
       <div class="frog-panel-footer">
-        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">
+        <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
           Close
         </button>
       </div>
