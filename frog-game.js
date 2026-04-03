@@ -1971,7 +1971,7 @@ function showRoleDraftOverlayChoices() {
   roleDraftPending = true;
 
   if (upgradeOverlaySubEl) {
-    upgradeOverlaySubEl.textContent = "Choose one of two random frog roles.";
+    upgradeOverlaySubEl.textContent = "";
   }
 
   upgradeOverlayButtonsContainer.innerHTML = "";
