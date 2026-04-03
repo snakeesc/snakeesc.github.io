@@ -3359,9 +3359,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     const segmentGap = computeSegmentGap();
 
-    // -----------------------------
-    // Targeting logic
-    // -----------------------------
     let targetFrog = null;
     let bestDist2 = Infinity;
 
@@ -3427,7 +3424,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
 
-    // Keep inside bounds
     if (head.x < marginX) {
       head.x = marginX;
       head.angle = Math.PI - head.angle;
@@ -3443,9 +3439,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       head.angle = -head.angle;
     }
 
-    // -----------------------------
-    // Path + segments follow
-    // -----------------------------
     const PATH_STEP_PX = 1;
 
     if (!snakeObj._pathLast) {
@@ -3506,9 +3499,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
 
-    // -----------------------------
-    // Collisions with frogs
-    // -----------------------------
     const eatRadius = getSnakeEatRadius();
     const eatR2 = eatRadius * eatRadius;
 
@@ -3551,9 +3541,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     }
 
-    // -----------------------------
-    // Eat old severed body after shed
-    // -----------------------------
     if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
       const remnantEatR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.45, 2);
 
