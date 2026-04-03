@@ -3541,22 +3541,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    if (!swarmDivideUsed && !swarmDivideActive) {
-      upgrades.push({
-        id: "swarmDivide",
-        label: `
-          🪶 Swarm Divide<br>
-          Split your frogs into <span style="color:${epicTitleColor};">two lanes</span>,
-          making the snake less efficient at chasing the whole swarm
-        `,
-        apply: () => {
-          swarmDivideActive = true;
-          swarmDivideUsed = true;
-          assignSwarmDivideLanes();
-        }
-      });
-    }
-
     // EPIC: Buff duration – only if below cap
     if (buffDurationFactor < buffDurationCap - 1e-4) {
       upgrades.push({
