@@ -4472,7 +4472,7 @@ function closeAnimatedOverlay(overlayEl) {
     panel.innerHTML = `
       <div class="frog-panel-title">
         Upgrades
-        <span class="emoji">⚡</span>
+        <span class="emoji"></span>
       </div>
 
       <div class="frog-panel-sub">
