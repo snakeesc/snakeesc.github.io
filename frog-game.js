@@ -6045,7 +6045,7 @@ function getDashboardPfp() {
     // Reset upgrade timing / sheds
     initialUpgradeDone       = false;
     nextPermanentChoiceTime  = 60;
-    nextEpicChoiceTime       = 180;
+    nextEpicChoiceTime       = 30;
     legendaryEventTriggered  = false;
     orbSpecialistActive      = false; 
 
