@@ -5935,10 +5935,8 @@ function getDashboardPfp() {
     // Clamp crazy tab-switch jumps so nothing explodes
     if (dt > 0.1) dt = 0.1;
 
-    // Shed skins fade out even while paused
-    updateDyingSnakes(dt);
-
     if (!gameOver && !gamePaused) {
+      updateDyingSnakes(dt);
       // ----- core timers -----
       elapsedTime += dt;
       updateBuffTimers(dt);
