@@ -6310,7 +6310,8 @@ function getDashboardPfp() {
     snakeShedCount           = 0;
     nextShedTime             = SHED_INTERVAL;
     dyingSnakes              = [];
-
+scissorsGrowthLocked = false;
+severedSnakeRemnants = [];
     snakeEggPending          = false;
     snakeEggUsed = false;
     secondWindActive = false;
