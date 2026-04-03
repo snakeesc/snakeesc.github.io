@@ -1310,17 +1310,10 @@ const survivalIds = [
   // --------------------------------------------------
   // FROG CREATION (KEEPING ORIGINAL HOP FEEL)
   // --------------------------------------------------
-  function refreshFrogPermaGlow(frog) {
-    const glows = [];
-    if (frog.isChampion)      glows.push("0 0 12px rgba(255,215,0,0.9)");
-    if (frog.isAura)          glows.push("0 0 12px rgba(0,255,200,0.9)");
-    if (frog.hasPermaShield)  glows.push("0 0 10px rgba(135,206,250,0.9)");
-    if (frog.isMagnet)        glows.push("0 0 10px rgba(173,255,47,0.9)");
-    if (frog.isLucky)         glows.push("0 0 10px rgba(255,105,180,0.9)");
-    if (frog.isZombie)        glows.push("0 0 10px rgba(148,0,211,0.9)");
-    if (frog.isCannibal)      glows.push("0 0 12px rgba(255,69,0,0.95)"); // NEW
-    frog.el.style.boxShadow = glows.join(", ");
-  }
+function refreshFrogPermaGlow(frog) {
+  if (!frog || !frog.el) return;
+  frog.el.style.boxShadow = "none";
+}
 function assignSwarmDivideLanes() {
   if (!Array.isArray(frogs) || !frogs.length) return;
 
@@ -1744,20 +1737,23 @@ function updateFrogRoleEmoji(frog) {
 
   let badgeText = "";
 
-  // Star upgrades take priority
-  const stars = Math.max(0, Math.min(3, frog.starLevel || 0));
-  if (stars > 0) {
-    badgeText = "⭐".repeat(stars);
-  } else {
-    const emojis = [];
-    if (frog.isChampion)     emojis.push("🏅");
-    if (frog.isAura)         emojis.push("🌈");
-    if (frog.hasPermaShield) emojis.push("🛡️");
-    if (frog.isMagnet)       emojis.push("🧲");
-    if (frog.isLucky)        emojis.push("🍀");
-    if (frog.isZombie)       emojis.push("🧟");
-    if (frog.isCannibal)     emojis.push("🦴");
+  // Role emoji takes priority over stars
+  const emojis = [];
+  if (frog.isChampion)     emojis.push("🏅");
+  if (frog.isAura)         emojis.push("🌈");
+  if (frog.hasPermaShield) emojis.push("🛡️");
+  if (frog.isMagnet)       emojis.push("🧲");
+  if (frog.isLucky)        emojis.push("🍀");
+  if (frog.isZombie)       emojis.push("🧟");
+  if (frog.isCannibal)     emojis.push("🦴");
+
+  if (emojis.length > 0) {
     badgeText = emojis.join("");
+  } else {
+    const stars = Math.max(0, Math.min(3, frog.starLevel || 0));
+    if (stars > 0) {
+      badgeText = "⭐".repeat(stars);
+    }
   }
 
   if (!badgeText) return;
