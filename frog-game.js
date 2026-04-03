@@ -6031,10 +6031,10 @@ function getDashboardPfp() {
     // schedule next timers
     if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
       initialUpgradeDone = true;
-      nextPermanentChoiceTime = elapsedTime + 60;
+      nextPermanentChoiceTime = elapsedTime + 30;
     } else {
       if (currentUpgradeOverlayMode === "normal") {
-        nextPermanentChoiceTime = elapsedTime + 60;
+        nextPermanentChoiceTime = elapsedTime + 30;
       } else if (currentUpgradeOverlayMode === "epic") {
         nextEpicChoiceTime = elapsedTime + 30;
       }
