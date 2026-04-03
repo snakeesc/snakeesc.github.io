@@ -6042,12 +6042,12 @@ function getDashboardPfp() {
     // schedule next timers
     if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
       initialUpgradeDone = true;
-      nextPermanentChoiceTime = elapsedTime + 30;
+      nextPermanentChoiceTime = elapsedTime + 60;
     } else {
       if (currentUpgradeOverlayMode === "normal") {
-        nextPermanentChoiceTime = elapsedTime + 30;
+        nextPermanentChoiceTime = elapsedTime + 60;
       } else if (currentUpgradeOverlayMode === "epic") {
-        nextEpicChoiceTime = elapsedTime + 30;
+        nextEpicChoiceTime = elapsedTime + 180;
       }
     }
   }
@@ -6212,7 +6212,7 @@ function getDashboardPfp() {
     // Reset upgrade timing / sheds
     initialUpgradeDone       = false;
     nextPermanentChoiceTime  = 60;
-    nextEpicChoiceTime       = 30;
+    nextEpicChoiceTime       = 180;
     legendaryEventTriggered  = false;
     orbSpecialistActive      = false; 
     roleDraftUsed = false;
