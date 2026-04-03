@@ -4375,46 +4375,46 @@ function closeAnimatedOverlay(overlayEl) {
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
-          Mutation — +12% jump speed and +12% jump height.
+          <strong>Mutation</strong> — +12% jump speed and +12% jump height.
         </li>
       </ul>
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
-          Orb Whisperer — orbs linger 30% longer before vanishing.
+          <strong>Orb Whisperer</strong> — orbs linger 30% longer before vanishing.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          Buffs Last Longer — increases buff duration.
+          <strong>Buffs Last Longer</strong> — increases buff duration.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          More Orbs Over Time — faster orb spawns.
+          <strong>More Orbs Over Time</strong> — faster orb spawns.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          Snake Egg — weakens the next shed speed gain.
+          <strong>Snake Egg</strong> — weakens the next shed speed gain.
         </li>
       </ul>
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-survival">
-          Ouroboros Pact — 20% chance dead frogs drop an orb.
+          <strong>Ouroboros Pact</strong> — 20% chance dead frogs drop an orb.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          Deathrattle — dead frogs can respawn.
+          <strong>Deathrattle</strong> — dead frogs can respawn.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          Last Stand — your last frog gets a strong revive chance.
+          <strong>Last Stand</strong> — your last frog gets a strong revive chance.
         </li>
       </ul>
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-orb">
-          Orb Collector — collected orbs can spawn extra frogs.
+          <strong>Orb Collector</strong> — collected orbs can spawn extra frogs.
         </li>
       </ul>
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-role">
-          Spawn Frogs — spawn frogs instantly.
+          <strong>Spawn Frogs</strong> — spawn frogs instantly.
         </li>
       </ul>
 
@@ -4422,31 +4422,31 @@ function closeAnimatedOverlay(overlayEl) {
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
-          Buffs Extended — larger buff duration increase.
+          <strong>Buffs Extended</strong> — larger buff duration increase.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          Orb Storm — drops a burst of random orbs immediately.
+          <strong>Orb Storm</strong> — drops a burst of random orbs immediately.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          Orb Specialist — every orb guarantees 1 frog unless Orb Collector is active.
+          <strong>Orb Specialist</strong> — every orb guarantees 1 frog unless Orb Collector is active.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          Grave Wave — each shed summons ghost frogs.
+          <strong>Grave Wave</strong> — each shed summons ghost frogs.
         </li>
       </ul>
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-survival">
-          Deathrattle — big boost to revive chance.
+          <strong>Deathrattle</strong> — big boost to revive chance.
         </li>
       </ul>
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
-          Frog Scatter — kill and respawn all current frogs.
+          <strong>Frog Scatter</strong> — kill and respawn all current frogs.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
-          Pair of Scissors — splits the snake into two slower snakes.
+          <strong>Pair of Scissors</strong> — splits the snake into two slower snakes.
         </li>
       </ul>
 

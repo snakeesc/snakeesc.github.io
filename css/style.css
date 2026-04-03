@@ -1844,7 +1844,7 @@ background: #65a30d;
 }
 
 .upgrade-guide-item strong {
-  font-weight: 800;
+  font-weight: normal;
 }
 
 .upgrade-guide-item.upgrade-type-mobility strong {
