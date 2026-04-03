@@ -1918,20 +1918,45 @@ function getTwoRandomRoleDraftChoices() {
 }
 
 function applyRoleDraft(roleId) {
-  const spawnCount = randInt(1, 3);
+  const starredFrogs = frogs.filter(frog => (frog.starLevel || 0) > 0);
+  const spawnCount = randInt(2, 4);
 
   for (let i = 0; i < spawnCount; i++) {
     spawnRoleFrog(roleId);
   }
 
-  for (const frog of frogs) {
-    if (!frog || (frog.starLevel || 0) < 1) continue;
+  for (const frog of starredFrogs) {
+    const starCount = Math.max(0, frog.starLevel || 0);
 
-    applySpecificRoleToFrog(frog, roleId);
+    // First star = chosen role
+    clearAllFrogRoles(frog);
 
-    if ((frog.starLevel || 0) >= 2) {
+    switch (roleId) {
+      case "champion":
+        grantChampionFrog(frog);
+        break;
+      case "aura":
+        grantAuraFrog(frog);
+        break;
+      case "magnet":
+        grantMagnetFrog(frog);
+        break;
+      case "lucky":
+        grantLuckyFrog(frog);
+        break;
+      case "zombie":
+        grantZombieFrog(frog);
+        break;
+    }
+
+    // Extra stars = extra random roles
+    const extraRoleCount = Math.max(0, starCount - 1);
+    for (let i = 0; i < extraRoleCount; i++) {
       grantRandomPermaFrogUpgrade(frog);
     }
+
+    // Remove stars after promotion so emoji becomes role-based
+    frog.starLevel = 0;
 
     refreshFrogPermaGlow(frog);
     updateFrogRoleEmoji(frog);
@@ -1959,9 +1984,9 @@ function showRoleDraftOverlayChoices() {
     btn.innerHTML = `
       <div class="frog-upgrade-title">${role.emoji} ${role.label}</div>
       <div class="frog-upgrade-desc">
-        Spawn <span class="stat-highlight">1–3</span> ${role.label} frogs.
+        Spawn <span class="stat-highlight">2–4</span> frogs of this role.
         Promote all <span class="stat-highlight">star frogs</span> to this role.
-        Frogs with <span class="stat-highlight">2+ stars</span> gain one extra random role.
+        Extra stars grant <span class="stat-highlight">extra random roles</span>.
       </div>
     `;
 
