@@ -2063,8 +2063,8 @@ function markSegmentAsSevered(el, side) {
   el.dataset.severed = "1";
   el.style.boxShadow =
     side === "left"
-      ? "inset 8px 0 0 rgba(120,0,0,0.9)"
-      : "inset -8px 0 0 rgba(120,0,0,0.9)";
+      ? "inset 3px 0 0 rgba(120,0,0,0.9)"
+      : "inset -3px 0 0 rgba(120,0,0,0.9)";
 }
 
 function clearSeveredMark(el) {
