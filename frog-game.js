@@ -1635,8 +1635,8 @@ function getRandomMutationUpgrade() {
     id: "mutation",
     label: `
       🧬 Mutation<br>
-      +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">10%</span> jump speed
-      & +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">10%</span> jump height
+      +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">12%</span> jump speed
+      & +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">12%</span> jump height
     `,
     apply: () => {
       applyMutationUpgrade();
