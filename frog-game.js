@@ -4862,12 +4862,13 @@ async function showDashboardOverlay() {
 
     ${latestRunHtml}
 
-    <div class="frog-panel-section-label">Run Stats</div>
+    <div class="frog-panel-section-label">Lifetime Stats</div>
     <ul class="frog-panel-list">
       <li><strong>Total Orbs:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected ?? 0}</span></li>
-      <li><strong>Last Run Score:</strong> <span class="stat-highlight">${savedLatestRun ? Math.floor(savedLatestRun.score || 0) : 0}</span></li>
-      <li><strong>Last Run Time:</strong> <span class="stat-highlight">${savedLatestRun ? formatDashboardDuration(savedLatestRun.time || 0) : "0s"}</span></li>
-      <li><strong>Last Run Orbs:</strong> <span class="stat-highlight">${savedLatestRun ? (savedLatestRun.orbs || 0) : 0}</span></li>
+      ${localStats.totalRuns != null ? `<li><strong>Total Runs:</strong> <span class="stat-highlight">${localStats.totalRuns}</span></li>` : ""}
+      ${localStats.totalPlayTime != null ? `<li><strong>Total Play Time:</strong> <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>` : ""}
+      ${localStats.totalFrogsLost != null ? `<li><strong>Total Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>` : ""}
+      ${localStats.totalSnakesShed != null ? `<li><strong>Total Snakes Shed:</strong> <span class="stat-highlight">${localStats.totalSnakesShed}</span></li>` : ""}
     </ul>
 
   `;
