@@ -4785,15 +4785,22 @@ function closeAnimatedOverlay(overlayEl) {
       </div>
 
       <div class="frog-panel-sub">
-        Regular and epic upgrades, color-coded to match the upgrade selection.
+        Upgrades grouped by type. Epic upgrades are listed last in each category.
       </div>
-
-      <div class="frog-panel-section-label">Regular Upgrades</div>
 
       <div class="upgrade-guide-group-label">Mobility</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>Mutation</strong> — +12% jump speed and +12% jump height.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Frog Scatter</strong> — kill and respawn all current frogs.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Pair of Scissors</strong> — cuts the snake in half, slows it by 30%, prevents growth until the next shed, and after the next shed the snake eats its severed body to regrow and gain speed.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>Swarm Divide</strong> — splits your frogs into two lanes, making the snake less efficient at chasing the swarm.
         </li>
       </ul>
 
@@ -4811,6 +4818,18 @@ function closeAnimatedOverlay(overlayEl) {
         <li class="upgrade-guide-item upgrade-type-buff">
           <strong>Snake Egg</strong> — the next shed gives the new snake only 50% of its normal speed increase.
         </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Buffs Extended</strong> — larger buff duration increase.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Orb Storm</strong> — drops a burst of random orbs immediately.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Orb Specialist</strong> — every orb guarantees 1 frog, and Orb Collector can still add more.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>Grave Wave</strong> — each shed spawns 10 frogs.
+        </li>
       </ul>
 
       <div class="upgrade-guide-group-label">Survival</div>
@@ -4823,6 +4842,12 @@ function closeAnimatedOverlay(overlayEl) {
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>Last Stand</strong> — your last frog gets a strong revive chance.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Epic Deathrattle</strong> — big boost to revive chance.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
         </li>
       </ul>
 
@@ -4838,46 +4863,8 @@ function closeAnimatedOverlay(overlayEl) {
         <li class="upgrade-guide-item upgrade-type-role">
           <strong>Spawn Frogs</strong> — spawn frogs instantly.
         </li>
-      </ul>
-
-      <div class="frog-panel-section-label">Epic Upgrades</div>
-
-      <div class="upgrade-guide-group-label">Buff</div>
-      <ul class="upgrade-guide-list">
-        <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Buffs Extended</strong> — larger buff duration increase.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Orb Storm</strong> — drops a burst of random orbs immediately.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Orb Specialist</strong> — every orb guarantees 1 frog unless Orb Collector is active.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Grave Wave</strong> — each shed summons ghost frogs.
-        </li>
-      </ul>
-
-      <div class="upgrade-guide-group-label">Survival</div>
-      <ul class="upgrade-guide-list">
-        <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Deathrattle</strong> — big boost to revive chance.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
-        </li>
-      </ul>
-
-      <div class="upgrade-guide-group-label">Mobility</div>
-      <ul class="upgrade-guide-list">
-        <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Frog Scatter</strong> — kill and respawn all current frogs.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Pair of Scissors</strong> — splits the snake into two slower snakes.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Swarm Divide</strong> — splits your frogs into two lanes, making the snake less efficient at chasing the whole swarm.
+        <li class="upgrade-guide-item upgrade-type-role">
+          <strong>Role Draft</strong> — choose between 2 random frog roles, spawn 2–4 frogs of that role, and promote star frogs into that role. Extra stars grant extra random roles.
         </li>
       </ul>
 
