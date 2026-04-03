@@ -636,6 +636,8 @@ function getUpgradeColorClass(upgradeId) {
 
   let snakeEggPending = false; // EPIC: next shed uses reduced speed bonus
   let snakeEggUsed = false;
+  let graveWaveUsed = false;
+  let pairOfScissorsUsed = false;
   let epicChainPending = false;
 
   // Old snakes that are despawning chunk-by-chunk
@@ -3367,8 +3369,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
     });
 
-    // Grave Wave – only once
-    if (!graveWaveActive) {
+    if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
         id: "graveWave",
         label: `
@@ -3377,6 +3378,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         `,
         apply: () => {
           graveWaveActive = true;
+          graveWaveUsed = true;
         }
       });
     }
@@ -3432,16 +3434,19 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    upgrades.push({
-      id: "pairOfScissors",
-      label: `
-        ✂️ Pair of Scissors<br>
-        Cut the snake into <span style="color:${epicTitleColor};">two</span> slower snakes
-      `,
-      apply: () => {
-        applyPairOfScissors();
-      }
-    });
+    if (!pairOfScissorsUsed) {
+      upgrades.push({
+        id: "pairOfScissors",
+        label: `
+          ✂️ Pair of Scissors<br>
+          Cut the snake into <span style="color:${epicTitleColor};">two</span> slower snakes
+        `,
+        apply: () => {
+          applyPairOfScissors();
+          pairOfScissorsUsed = true;
+        }
+      });
+    }
 
     return upgrades;
   }
@@ -3522,8 +3527,8 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "snakeEgg",
         label: `
           🥚 Snake Egg<br>
-          The <span style="color:${neon};">next shed</span> reduces the new snake speed by
-          <span style="color:${neon};">50%</span> of its original increase
+        The <span style="color:${neon};">next shed</span> reduces the new snake’s speed bonus by
+        <span style="color:${neon};">50%</span>
         `,
         apply: () => {
           snakeEggPending = true;
@@ -5962,6 +5967,12 @@ function getDashboardPfp() {
     dyingSnakes              = [];
 
     snakeEggPending          = false;
+    snakeEggUsed = false;
+
+    graveWaveActive = false;
+    graveWaveUsed = false;
+
+    pairOfScissorsUsed = false;
     orbCollectorActive       = false;
     orbCollectorChance       = 0;
     lastStandActive          = false;
