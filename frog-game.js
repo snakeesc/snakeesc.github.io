@@ -3808,7 +3808,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         id: "pairOfScissors",
         label: `
           ✂️ Pair of Scissors<br>
-          Cut the snake in <span style="color:${epicTitleColor};">half</span> and slow it by <span style="color:${epicTitleColor};">30%</span>.
+          Cut the snake in <span style="color:${neon};">half</span> and slow it by <span style="color:${neon};">30%</span>
         `,
         apply: () => {
           applyPairOfScissors();
