@@ -3803,7 +3803,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       });
     }
 
-    if (!pairOfScissorsUsed) {
+    if (!pairOfScissorsUsed && !epicChainPending) {
       upgrades.push({
         id: "pairOfScissors",
         label: `
