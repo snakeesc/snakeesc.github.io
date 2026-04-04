@@ -1877,95 +1877,144 @@ background: #65a30d;
 }
 @media (max-width: 768px) {
   .frog-overlay {
-    padding: 16px;
+    padding: 12px;
     align-items: center;
     justify-content: center;
   }
 
   .frog-panel {
-    width: min(94vw, 560px);
     min-width: 0;
-    max-width: 94vw;
-    max-height: 86vh;
-    padding: 24px 22px 20px 22px;
-    border-radius: 16px;
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+    padding: 28px 22px 22px;
+    border-radius: 18px;
   }
 
   .frog-panel-title {
-    font-size: 28px;
+    font-size: 32px;
     line-height: 1.15;
-    margin-bottom: 10px;
+    gap: 8px;
+    margin-bottom: 12px;
   }
 
   .frog-panel-title .emoji {
-    font-size: 28px;
+    font-size: 32px;
   }
 
   .frog-panel-sub {
-    font-size: 16px;
-    line-height: 1.55;
+    font-size: 18px;
+    line-height: 1.65;
     margin-bottom: 18px;
   }
 
-  .frog-panel-section-label,
-  .upgrade-guide-group-label {
-    font-size: 13px;
-    margin-top: 16px;
+  .frog-panel-section-label {
+    font-size: 14px;
+    margin-top: 18px;
     margin-bottom: 8px;
   }
 
-  .frog-panel-list li,
-  .upgrade-guide-item {
-    font-size: 16px;
-    line-height: 1.55;
-    margin-bottom: 10px;
-  }
-
-  .frog-btn {
-    font-size: 16px;
-    padding: 14px 16px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-  }
-
-  .frog-upgrade-choice {
-    padding: 14px 14px;
-  }
-
-  .frog-upgrade-title {
+  .frog-panel-list li {
     font-size: 17px;
-    margin-bottom: 4px;
-  }
-
-  .frog-upgrade-desc {
-    font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.65;
+    margin-bottom: 10px;
   }
 
   .frog-panel-footer {
-    font-size: 14px;
-    line-height: 1.5;
-    margin-top: 16px;
+    font-size: 15px;
+    line-height: 1.55;
   }
 
-  #leaderboardContent,
-  #dashboardContent {
+  .frog-btn {
+    padding: 16px 18px;
+    font-size: 19px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+  }
+
+  .frog-btn-danger {
+    font-size: 17px;
+  }
+
+  .frog-upgrade-choice,
+  #upgradeOverlay .frog-upgrade-choice {
+    padding: 16px 16px;
+    border-radius: 14px;
+  }
+
+  .frog-upgrade-title,
+  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
+    font-size: 20px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+
+  .frog-upgrade-desc,
+  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
     font-size: 15px;
+    line-height: 1.55;
   }
 
   .leaderboard-title {
-    font-size: 18px;
+    font-size: 22px;
   }
 
   .leaderboard-subtitle,
   .leaderboard-page-info,
-  .leaderboard-legend {
-    font-size: 13px;
+  .leaderboard-legend,
+  .leaderboard-loading,
+  .leaderboard-error,
+  .leaderboard-empty {
+    font-size: 15px;
   }
 
-  .leaderboard-head-cell,
-  .leaderboard-cell {
-    font-size: 14px;
+  .leaderboard-head-cell {
+    font-size: 13px;
     padding: 10px 8px;
+  }
+
+  .leaderboard-cell {
+    font-size: 15px;
+    padding: 10px 8px;
+  }
+
+  .leaderboard-page-btn {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  #upgradeOverlay .frog-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #upgradeOverlay .frog-panel-sub {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  #upgradeOverlay .upgrade-layout,
+  #upgradeOverlay .upgrade-choices {
+    min-height: auto;
+  }
+
+  #upgradeOverlay .upgrade-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #upgradeOverlay .frog-upgrade-choice {
+    position: relative;
+    width: 100%;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    min-height: 0;
+  }
+
+  #upgradeOverlay .frog-upgrade-choice:hover {
+    transform: translateY(-2px) !important;
   }
 }
