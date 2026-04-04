@@ -4775,77 +4775,86 @@ function closeAnimatedOverlay(overlayEl) {
       </div>
 
       <div class="frog-panel-sub">
+        Upgrades grouped by type. Epic upgrades are listed last in each category.
       </div>
 
+      <div class="upgrade-guide-group-label">Mobility</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Mutation</strong> — +12% jump speed and +12% jump height.
+          <strong>🧬 Mutation</strong> — +12% jump speed and +12% jump height.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Frog Scatter</strong> — kill and respawn all current frogs.
+          <strong>🌪️ Frog Scatter</strong> — kill and respawn all current frogs.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>Pair of Scissors</strong> — cuts the snake in half, slows it by 30%, prevents growth until the next shed.
+          <strong>✂️ Pair of Scissors</strong> — cuts the snake in half, slows it by 30%, and cannot be offered during 3-minute epic intervals.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>↔️ Swarm Divide</strong> — splits your frogs into two lanes, making the snake less efficient at chasing the swarm.
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Buff</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Orb Whisperer</strong> — orbs linger 30% longer before vanishing.
+          <strong>🌀 Orb Whisperer</strong> — orbs linger 30% longer before vanishing.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Buffs Last Longer</strong> — increases buff duration.
+          <strong>⏳ Buffs Last Longer</strong> — increases buff duration.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>More Orbs Over Time</strong> — faster orb spawns.
+          <strong>🎯 More Orbs Over Time</strong> — faster orb spawns.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Snake Egg</strong> — the next shed gives the new snake only 50% of its normal speed increase.
+          <strong>🥚 Snake Egg</strong> — the next shed gives the new snake only 50% of its normal speed increase.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Buffs Extended</strong> — larger buff duration increase.
+          <strong>⏳ Buffs Extended</strong> — larger buff duration increase.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Orb Storm</strong> — drops a burst of random orbs immediately.
+          <strong>🌩️ Orb Storm</strong> — drops a burst of random orbs immediately.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Orb Specialist</strong> — every orb guarantees 1 frog, and Orb Collector can still add more.
+          <strong>🧪 Orb Specialist</strong> — every orb guarantees 1 frog, and Orb Collector can still add more.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>Grave Wave</strong> — each shed spawns 10 frogs.
+          <strong>👻 Grave Wave</strong> — each shed spawns 10 frogs.
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Survival</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Ouroboros Pact</strong> — 20% chance dead frogs drop an orb.
+          <strong>⚱️ Ouroboros Pact</strong> — 20% chance dead frogs drop an orb.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Deathrattle</strong> — dead frogs can respawn.
+          <strong>💀 Deathrattle</strong> — dead frogs can respawn.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Last Stand</strong> — your last frog gets a strong revive chance.
+          <strong>🏹 Last Stand</strong> — your last frog gets a strong revive chance.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Epic Deathrattle</strong> — big boost to revive chance.
+          <strong>💀 Epic Deathrattle</strong> — big boost to revive chance.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
+          <strong>💨 Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Orb</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-orb">
-          <strong>Orb Collector</strong> — collected orbs can spawn extra frogs.
+          <strong>🌌 Orb Collector</strong> — collected orbs can spawn extra frogs.
         </li>
       </ul>
 
+      <div class="upgrade-guide-group-label">Role</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-role">
-          <strong>Spawn Frogs</strong> — spawn frogs instantly.
+          <strong>🐸 Spawn Frogs</strong> — spawn frogs instantly.
         </li>
         <li class="upgrade-guide-item upgrade-type-role">
-          <strong>Role Draft</strong> — choose between 2 random frog roles, spawn 2–4 frogs of that role, and promote star frogs into that role.
+          <strong>🎭 Role Draft</strong> — choose between 2 random frog roles, spawn 2–4 frogs of that role, and promote star frogs into that role. Extra stars grant extra random roles.
         </li>
       </ul>
 
