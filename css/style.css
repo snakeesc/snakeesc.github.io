@@ -1884,8 +1884,8 @@ background: #65a30d;
 
   .frog-panel {
     min-width: 0;
-    width: 100%;
-    max-width: 100%;
+    width: min(96vw, 720px);
+    max-width: 96vw;
     max-height: 90vh;
     padding: 28px 22px 22px;
     border-radius: 18px;
@@ -1984,8 +1984,8 @@ background: #65a30d;
   }
 
   #upgradeOverlay .frog-panel {
-    width: 100%;
-    max-width: 100%;
+    width: min(96vw, 720px);
+    max-width: 96vw;
   }
 
   #upgradeOverlay .frog-panel-sub {
