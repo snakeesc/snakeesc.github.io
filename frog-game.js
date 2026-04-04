@@ -4788,9 +4788,6 @@ function closeAnimatedOverlay(overlayEl) {
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>✂️ Pair of Scissors</strong> — cuts the snake in half, slows it by 30%.
         </li>
-        <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>↔️ Swarm Divide</strong> — splits your frogs into two lanes, making the snake less efficient at chasing the swarm.
-        </li>
       </ul>
 
       <ul class="upgrade-guide-list">
