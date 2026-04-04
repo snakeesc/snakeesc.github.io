@@ -4416,6 +4416,7 @@ function closeAnimatedOverlay(overlayEl) {
 
   function showMainMenu() {
     if (!mainMenuOverlay) initMainMenuOverlay();
+    if (!mainMenuOverlay) return;
 
     hideUpgradeOverlayForMenu();
 
@@ -4427,9 +4428,17 @@ function closeAnimatedOverlay(overlayEl) {
 
     setInGameUIVisible(false);
     mainMenuActive = true;
-    syncAudioMuteState();
-    openAnimatedOverlay(mainMenuOverlay);
     gamePaused = true;
+    syncAudioMuteState();
+
+    mainMenuOverlay.style.display = "flex";
+    mainMenuOverlay.classList.add("is-open");
+    mainMenuOverlay.classList.remove("is-animating-out");
+
+    const panel = mainMenuOverlay.querySelector(".frog-panel");
+    if (panel) {
+      panel.style.display = "block";
+    }
   }
 
   function hideMainMenu() {
