@@ -1875,7 +1875,7 @@ background: #65a30d;
   margin-bottom: 6px;
   color: #a3e635;
 }
-@media (max-width: 768px) {
+@media (max-device-width: 768px), (pointer: coarse) and (max-width: 1024px) {
   .frog-overlay {
     padding: 12px;
     align-items: center;
@@ -1936,21 +1936,51 @@ background: #65a30d;
     font-size: 17px;
   }
 
-  .frog-upgrade-choice,
+  #upgradeOverlay .frog-panel {
+    width: min(96vw, 720px);
+    max-width: 96vw;
+    padding: 0;
+  }
+
+  #upgradeOverlay .frog-panel-sub {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  #upgradeOverlay .upgrade-layout,
+  #upgradeOverlay .upgrade-choices {
+    min-height: auto;
+  }
+
+  #upgradeOverlay .upgrade-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
   #upgradeOverlay .frog-upgrade-choice {
+    position: relative;
+    width: 100%;
+    min-height: 0;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
     padding: 16px 16px;
     border-radius: 14px;
   }
 
-  .frog-upgrade-title,
-  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
+  #upgradeOverlay .frog-upgrade-choice:hover {
+    transform: translateY(-2px) !important;
+  }
+
+  #upgradeOverlay .frog-upgrade-title {
     font-size: 20px;
     line-height: 1.3;
     margin-bottom: 6px;
   }
 
-  .frog-upgrade-desc,
-  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
+  #upgradeOverlay .frog-upgrade-desc {
     font-size: 15px;
     line-height: 1.55;
   }
@@ -1981,40 +2011,5 @@ background: #65a30d;
   .leaderboard-page-btn {
     padding: 12px 14px;
     font-size: 15px;
-  }
-
-  #upgradeOverlay .frog-panel {
-    width: min(96vw, 720px);
-    max-width: 96vw;
-  }
-
-  #upgradeOverlay .frog-panel-sub {
-    font-size: 16px;
-    margin-bottom: 14px;
-  }
-
-  #upgradeOverlay .upgrade-layout,
-  #upgradeOverlay .upgrade-choices {
-    min-height: auto;
-  }
-
-  #upgradeOverlay .upgrade-choices {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  #upgradeOverlay .frog-upgrade-choice {
-    position: relative;
-    width: 100%;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    transform: none !important;
-    min-height: 0;
-  }
-
-  #upgradeOverlay .frog-upgrade-choice:hover {
-    transform: translateY(-2px) !important;
   }
 }
