@@ -1541,11 +1541,6 @@ function assignSwarmDivideLanes() {
     }
     factor *= auraFactor;
 
-    // Champion frogs are a bit faster (perma)
-    if (frog.isChampion) {
-      factor *= CHAMPION_SPEED_FACTOR;
-    }
-
     // -----------------------------
     // TEMP SPEED BUFFS (from orbs)
     // -----------------------------
@@ -1588,11 +1583,6 @@ function assignSwarmDivideLanes() {
     // Orb jump buff ("super jump")
     if (jumpBuffTime > 0) {
       factor *= JUMP_BUFF_FACTOR;
-    }
-
-    // Champion jump boost (perma)
-    if (frog.isChampion) {
-      factor *= CHAMPION_JUMP_FACTOR;
     }
 
     // Final hard cap: permanent + orb jump can't exceed this.
@@ -1836,9 +1826,9 @@ function grantStarUpgrade(frog) {
   if (!frog) return;
   frog.starLevel = Math.min(3, (frog.starLevel || 0) + 1);
 
-  // small stat boost per star
-  frog.speedMult *= 0.95; // 5% faster hops
-  frog.jumpMult *= 1.05;  // 5% higher jumps
+  // 10% per star
+  frog.speedMult *= 0.90; // 10% faster hops
+  frog.jumpMult *= 1.10;  // 10% higher jumps
 
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
