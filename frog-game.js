@@ -4589,70 +4589,91 @@ function showHowToOverlay() {
         </ul>
       </div>
 
-      <div class="howto-page" data-howto-page="updates" style="display:none;">
-        <div class="upgrade-guide-group-label">Patch Notes</div>
+<div class="howto-page" data-howto-page="updates" style="display:none;">
+  <div class="upgrade-guide-group-label">Patch Notes</div>
 
-        <div style="display:grid; gap:10px;">
+  <div style="display:grid; gap:10px;">
 
-          <div class="upgrade-column">
-            <div class="upgrade-column-title">v0.9.3</div>
-            <ul class="upgrade-guide-list">
-              <li class="upgrade-guide-item">
-                Added player profiles with level progression and unlockable cosmetics.
-              </li>
-              <li class="upgrade-guide-item">
-                Added unique player tags and improved leaderboard identity.
-              </li>
-              <li class="upgrade-guide-item">
-                Updated dashboard and main menu UI.
-              </li>
-            </ul>
-          </div>
+    <div class="upgrade-column">
+      <div class="upgrade-column-title">Latest Update</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Added unique player tags and improved leaderboard identity.
+        </li>
+        <li class="upgrade-guide-item">
+          Added player profiles that level up over time.
+        </li>
+        <li class="upgrade-guide-item">
+          Profile cosmetics now unlock as you level, including eyes and hats.
+        </li>
+        <li class="upgrade-guide-item">
+          Dashboard now shows profile, level progress, best record, and lifetime stats.
+        </li>
+        <li class="upgrade-guide-item">
+          Leaderboard was reset for the new system and updated run tracking.
+        </li>
+      </ul>
+    </div>
 
-          <div class="upgrade-column">
-            <div class="upgrade-column-title">v0.9.2</div>
-            <ul class="upgrade-guide-list">
-              <li class="upgrade-guide-item">
-                Added frog roles including Champion, Aura, Magnet, Lucky, Zombie, and Cannibal.
-              </li>
-              <li class="upgrade-guide-item">
-                Added Role Draft and expanded permanent upgrade variety.
-              </li>
-              <li class="upgrade-guide-item">
-                Added starred frogs and role-based progression.
-              </li>
-            </ul>
-          </div>
+    <div class="upgrade-column">
+      <div class="upgrade-column-title">Gameplay Update</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Added frog roles including Champion, Aura, Magnet, Lucky, Zombie, and Cannibal.
+        </li>
+        <li class="upgrade-guide-item">
+          Added Role Draft so you can choose between random frog role paths.
+        </li>
+        <li class="upgrade-guide-item">
+          Added starred frogs and stronger per-frog progression.
+        </li>
+        <li class="upgrade-guide-item">
+          Added new upgrades like Pair of Scissors, Snake Egg, Orb Specialist, Grave Wave, Second Wind, and more.
+        </li>
+        <li class="upgrade-guide-item">
+          Expanded orb, buff, and survival build variety for longer runs.
+        </li>
+      </ul>
+    </div>
 
-          <div class="upgrade-column">
-            <div class="upgrade-column-title">v0.9.1</div>
-            <ul class="upgrade-guide-list">
-              <li class="upgrade-guide-item">
-                Added snake shedding phases and stronger late-run scaling.
-              </li>
-              <li class="upgrade-guide-item">
-                Added epic upgrades and more survival/build options.
-              </li>
-              <li class="upgrade-guide-item">
-                Improved orb, frog, and snake pacing during long runs.
-              </li>
-            </ul>
-          </div>
+    <div class="upgrade-column">
+      <div class="upgrade-column-title">Snake & Run Scaling</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Added snake shedding phases to make late-game runs more dangerous.
+        </li>
+        <li class="upgrade-guide-item">
+          Added epic upgrade timings and stronger long-run progression.
+        </li>
+        <li class="upgrade-guide-item">
+          Improved pacing for frogs, orbs, and snake pressure over time.
+        </li>
+        <li class="upgrade-guide-item">
+          Orb spawn scaling was adjusted so runs become more active as they go on.
+        </li>
+      </ul>
+    </div>
 
-          <div class="upgrade-column">
-            <div class="upgrade-column-title">v0.9.0</div>
-            <ul class="upgrade-guide-list">
-              <li class="upgrade-guide-item">
-                Refined overlays, upgrade panels, and general presentation.
-              </li>
-              <li class="upgrade-guide-item">
-                Added more polish to the main menu and in-game interface.
-              </li>
-            </ul>
-          </div>
+    <div class="upgrade-column">
+      <div class="upgrade-column-title">UI & Presentation</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Updated the main menu, overlays, upgrade panels, dashboard, and leaderboard presentation.
+        </li>
+        <li class="upgrade-guide-item">
+          Added improved overlay layouts for How to Play, Buff Guide, and post-run screens.
+        </li>
+        <li class="upgrade-guide-item">
+          Added animated background frogs and snakes to the main menu.
+        </li>
+        <li class="upgrade-guide-item">
+          General polish, readability, and menu flow improvements.
+        </li>
+      </ul>
+    </div>
 
-        </div>
-      </div>
+  </div>
+</div>
     </div>
 
     <div class="frog-panel-footer">
