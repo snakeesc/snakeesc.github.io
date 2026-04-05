@@ -4590,24 +4590,68 @@ function showHowToOverlay() {
       </div>
 
       <div class="howto-page" data-howto-page="updates" style="display:none;">
-        <div class="upgrade-guide-group-label">Recent Updates</div>
-        <ul class="upgrade-guide-list">
-          <li class="upgrade-guide-item">
-            Added player profiles and level-based cosmetics.
-          </li>
-          <li class="upgrade-guide-item">
-            Added unique player tags and leaderboard improvements.
-          </li>
-          <li class="upgrade-guide-item">
-            Added frog roles, role draft, and more upgrade variety.
-          </li>
-          <li class="upgrade-guide-item">
-            Added snake sheds, epic upgrades, and better run scaling.
-          </li>
-          <li class="upgrade-guide-item">
-            Updated UI overlays and main menu presentation.
-          </li>
-        </ul>
+        <div class="upgrade-guide-group-label">Patch Notes</div>
+
+        <div style="display:grid; gap:10px;">
+
+          <div class="upgrade-column">
+            <div class="upgrade-column-title">v0.9.3</div>
+            <ul class="upgrade-guide-list">
+              <li class="upgrade-guide-item">
+                Added player profiles with level progression and unlockable cosmetics.
+              </li>
+              <li class="upgrade-guide-item">
+                Added unique player tags and improved leaderboard identity.
+              </li>
+              <li class="upgrade-guide-item">
+                Updated dashboard and main menu UI.
+              </li>
+            </ul>
+          </div>
+
+          <div class="upgrade-column">
+            <div class="upgrade-column-title">v0.9.2</div>
+            <ul class="upgrade-guide-list">
+              <li class="upgrade-guide-item">
+                Added frog roles including Champion, Aura, Magnet, Lucky, Zombie, and Cannibal.
+              </li>
+              <li class="upgrade-guide-item">
+                Added Role Draft and expanded permanent upgrade variety.
+              </li>
+              <li class="upgrade-guide-item">
+                Added starred frogs and role-based progression.
+              </li>
+            </ul>
+          </div>
+
+          <div class="upgrade-column">
+            <div class="upgrade-column-title">v0.9.1</div>
+            <ul class="upgrade-guide-list">
+              <li class="upgrade-guide-item">
+                Added snake shedding phases and stronger late-run scaling.
+              </li>
+              <li class="upgrade-guide-item">
+                Added epic upgrades and more survival/build options.
+              </li>
+              <li class="upgrade-guide-item">
+                Improved orb, frog, and snake pacing during long runs.
+              </li>
+            </ul>
+          </div>
+
+          <div class="upgrade-column">
+            <div class="upgrade-column-title">v0.9.0</div>
+            <ul class="upgrade-guide-list">
+              <li class="upgrade-guide-item">
+                Refined overlays, upgrade panels, and general presentation.
+              </li>
+              <li class="upgrade-guide-item">
+                Added more polish to the main menu and in-game interface.
+              </li>
+            </ul>
+          </div>
+
+        </div>
       </div>
     </div>
 
