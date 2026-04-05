@@ -4483,232 +4483,115 @@ function closeAnimatedOverlay(overlayEl) {
       }
     });
   }
-function showHowToOverlay() {
-  if (!howToOverlay) initHowToOverlay();
-  if (!howToOverlay) return;
+  function showHowToOverlay() {
+    if (!howToOverlay) initHowToOverlay();
+    if (!howToOverlay) return;
 
-  const panel = howToOverlay.querySelector(".frog-panel");
-  if (!panel) return;
+    const panel = howToOverlay.querySelector(".frog-panel");
+    if (!panel) return;
 
-  panel.innerHTML = `
-    <div class="frog-panel-title">
-      How to Play
-      <span class="emoji">🐸</span>
-    </div>
-
-    <div class="frog-panel-sub">
-      Learn the basics, or check the latest updates.
-    </div>
-
-    <div class="buff-guide-nav">
-      <button class="frog-btn frog-btn-secondary buff-page-btn is-active" data-howto-page="howto">
+    panel.innerHTML = `
+      <div class="frog-panel-title">
         How to Play
-      </button>
-      <button class="frog-btn frog-btn-secondary buff-page-btn" data-howto-page="updates">
-        Updates
-      </button>
-    </div>
-
-    <div class="howto-pages">
-      <div class="howto-page" data-howto-page="howto" style="display:block;">
-        <div class="upgrade-guide-group-label">Objective</div>
-        <ul class="upgrade-guide-list">
-          <li class="upgrade-guide-item">
-            Survive as long as possible and build the highest score you can.
-          </li>
-          <li class="upgrade-guide-item">
-            Frogs are your lives. If all frogs die, the run ends.
-          </li>
-          <li class="upgrade-guide-item">
-            Your score increases as the snake eats frogs, so longer runs usually mean higher scores.
-          </li>
-        </ul>
-
-        <div class="upgrade-guide-group-label">Controls</div>
-        <ul class="upgrade-guide-list">
-          <li class="upgrade-guide-item">
-            Move your mouse or finger and the frogs will follow.
-          </li>
-          <li class="upgrade-guide-item">
-            Try to guide the swarm away from the snake’s path.
-          </li>
-          <li class="upgrade-guide-item">
-            Use movement carefully so the frogs do not bunch up into easy bites.
-          </li>
-        </ul>
-
-        <div class="upgrade-guide-group-label">Orbs</div>
-        <ul class="upgrade-guide-list">
-          <li class="upgrade-guide-item">
-            Collect glowing orbs for temporary buffs and permanent upgrades.
-          </li>
-          <li class="upgrade-guide-item">
-            Some orbs boost movement, spawning, shields, score, or snake debuffs.
-          </li>
-          <li class="upgrade-guide-item">
-            Permanent upgrade orbs can strengthen your swarm for the rest of the run.
-          </li>
-        </ul>
-
-        <div class="upgrade-guide-group-label">Upgrades</div>
-        <ul class="upgrade-guide-list">
-          <li class="upgrade-guide-item">
-            Common upgrades appear regularly during the run.
-          </li>
-          <li class="upgrade-guide-item">
-            Epic upgrades appear every 3 minutes and are much stronger.
-          </li>
-          <li class="upgrade-guide-item">
-            Pick upgrades that match your run: more frogs, better survival, stronger buffs, or role synergy.
-          </li>
-        </ul>
-
-        <div class="upgrade-guide-group-label">Snake Shedding</div>
-        <ul class="upgrade-guide-list">
-          <li class="upgrade-guide-item">
-            The snake sheds over time and becomes more dangerous.
-          </li>
-          <li class="upgrade-guide-item">
-            Each shed changes the pace of the run, so prepare before the next one hits.
-          </li>
-          <li class="upgrade-guide-item">
-            Some upgrades are built specifically around surviving or exploiting sheds.
-          </li>
-        </ul>
-
-        <div class="upgrade-guide-group-label">Tips</div>
-        <ul class="upgrade-guide-list">
-          <li class="upgrade-guide-item">
-            Do not let the whole swarm stack directly on top of itself for too long.
-          </li>
-          <li class="upgrade-guide-item">
-            Extra frogs give you room for mistakes, but survival upgrades help when things go bad.
-          </li>
-          <li class="upgrade-guide-item">
-            Role-based frogs can snowball hard if you keep them alive.
-          </li>
-        </ul>
+        <span class="emoji">🐸</span>
       </div>
 
-<div class="howto-page" data-howto-page="updates" style="display:none;">
-  <div class="upgrade-guide-group-label">Patch Notes</div>
+      <div class="frog-panel-sub">
+        Keep your frog swarm alive as long as possible while the snake hunts you.
+      </div>
 
-  <div style="display:grid; gap:10px;">
-
-    <div class="upgrade-column">
-      <div class="upgrade-column-title">Latest Update</div>
+      <div class="upgrade-guide-group-label">Objective</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item">
-          Added unique player tags and improved leaderboard identity.
+          Survive as long as possible and build the highest score you can.
         </li>
         <li class="upgrade-guide-item">
-          Added player profiles that level up over time.
+          Frogs are your lives. If all frogs die, the run ends.
         </li>
         <li class="upgrade-guide-item">
-          Profile cosmetics now unlock as you level, including eyes and hats.
-        </li>
-        <li class="upgrade-guide-item">
-          Dashboard now shows profile, level progress, best record, and lifetime stats.
-        </li>
-        <li class="upgrade-guide-item">
-          Leaderboard was reset for the new system and updated run tracking.
+          Your score increases as the snake eats frogs, so longer runs usually mean higher scores.
         </li>
       </ul>
-    </div>
 
-    <div class="upgrade-column">
-      <div class="upgrade-column-title">Gameplay Update</div>
+      <div class="upgrade-guide-group-label">Controls</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item">
-          Added frog roles including Champion, Aura, Magnet, Lucky, Zombie, and Cannibal.
+          Move your mouse or finger and the frogs will follow.
         </li>
         <li class="upgrade-guide-item">
-          Added Role Draft so you can choose between random frog role paths.
+          Try to guide the swarm away from the snake’s path.
         </li>
         <li class="upgrade-guide-item">
-          Added starred frogs and stronger per-frog progression.
-        </li>
-        <li class="upgrade-guide-item">
-          Added new upgrades like Pair of Scissors, Snake Egg, Orb Specialist, Grave Wave, Second Wind, and more.
-        </li>
-        <li class="upgrade-guide-item">
-          Expanded orb, buff, and survival build variety for longer runs.
+          Use movement carefully so the frogs do not bunch up into easy bites.
         </li>
       </ul>
-    </div>
 
-    <div class="upgrade-column">
-      <div class="upgrade-column-title">Snake & Run Scaling</div>
+      <div class="upgrade-guide-group-label">Orbs</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item">
-          Added snake shedding phases to make late-game runs more dangerous.
+          Collect glowing orbs for temporary buffs and permanent upgrades.
         </li>
         <li class="upgrade-guide-item">
-          Added epic upgrade timings and stronger long-run progression.
+          Some orbs boost movement, spawning, shields, score, or snake debuffs.
         </li>
         <li class="upgrade-guide-item">
-          Improved pacing for frogs, orbs, and snake pressure over time.
-        </li>
-        <li class="upgrade-guide-item">
-          Orb spawn scaling was adjusted so runs become more active as they go on.
+          Permanent upgrade orbs can strengthen your swarm for the rest of the run.
         </li>
       </ul>
-    </div>
 
-    <div class="upgrade-column">
-      <div class="upgrade-column-title">UI & Presentation</div>
+      <div class="upgrade-guide-group-label">Upgrades</div>
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item">
-          Updated the main menu, overlays, upgrade panels, dashboard, and leaderboard presentation.
+          Common upgrades appear regularly during the run.
         </li>
         <li class="upgrade-guide-item">
-          Added improved overlay layouts for How to Play, Buff Guide, and post-run screens.
+          Epic upgrades appear every 3 minutes and are much stronger.
         </li>
         <li class="upgrade-guide-item">
-          Added animated background frogs and snakes to the main menu.
-        </li>
-        <li class="upgrade-guide-item">
-          General polish, readability, and menu flow improvements.
+          Pick upgrades that match your run: more frogs, better survival, stronger buffs, or role synergy.
         </li>
       </ul>
-    </div>
 
-  </div>
-</div>
-    </div>
+      <div class="upgrade-guide-group-label">Snake Shedding</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          The snake sheds over time and becomes more dangerous.
+        </li>
+        <li class="upgrade-guide-item">
+          Each shed changes the pace of the run, so prepare before the next one hits.
+        </li>
+        <li class="upgrade-guide-item">
+          Some upgrades are built specifically around surviving or exploiting sheds.
+        </li>
+      </ul>
 
-    <div class="frog-panel-footer">
-      <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
-        Close
-      </button>
-    </div>
-  `;
+      <div class="upgrade-guide-group-label">Tips</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Do not let the whole swarm stack directly on top of itself for too long.
+        </li>
+        <li class="upgrade-guide-item">
+          Extra frogs give you room for mistakes, but survival upgrades help when things go bad.
+        </li>
+        <li class="upgrade-guide-item">
+          Role-based frogs can snowball hard if you keep them alive.
+        </li>
+      </ul>
 
-  const closeBtn = document.getElementById("howToCloseBtn");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", hideHowToOverlay);
+      <div class="frog-panel-footer">
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
+          Close
+        </button>
+      </div>
+    `;
+
+    const closeBtn = document.getElementById("howToCloseBtn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", hideHowToOverlay);
+    }
+
+    openAnimatedOverlay(howToOverlay);
   }
-
-  const tabButtons = panel.querySelectorAll("[data-howto-page]");
-  const pages = panel.querySelectorAll(".howto-page");
-
-  tabButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const target = btn.getAttribute("data-howto-page");
-
-      tabButtons.forEach((b) => {
-        b.classList.toggle("is-active", b === btn);
-      });
-
-      pages.forEach((page) => {
-        page.style.display =
-          page.getAttribute("data-howto-page") === target ? "block" : "none";
-      });
-    });
-  });
-
-  openAnimatedOverlay(howToOverlay);
-}
 
   function hideHowToOverlay() {
     if (howToOverlay) {
