@@ -2013,3 +2013,16 @@ background: #65a30d;
     font-size: 15px;
   }
 }
+#howToOverlay .buff-guide-nav {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+#howToOverlay .buff-guide-nav .buff-page-btn {
+  flex: 0 0 auto;
+  width: auto;
+  margin-bottom: 0;
+  min-width: 140px;
+}
