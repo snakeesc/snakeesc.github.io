@@ -2185,7 +2185,36 @@ function applyPairOfScissors() {
   scissorsGrowthLocked = true;
   pairOfScissorsUsed = true;
 }
+function clearScissorsAndOldSnakeState() {
+  // remove detached scissors tail pieces still sitting in the DOM
+  for (const seg of scissorsRemnantSegments) {
+    if (seg && seg.el && seg.el.parentNode === container) {
+      container.removeChild(seg.el);
+    }
+  }
+  scissorsRemnantSegments = [];
 
+  // remove any queued dying snake pieces
+  for (const ds of dyingSnakes) {
+    if (ds.headEl && ds.headEl.parentNode === container) {
+      container.removeChild(ds.headEl);
+    }
+    if (Array.isArray(ds.segmentEls)) {
+      for (const segEl of ds.segmentEls) {
+        if (segEl && segEl.parentNode === container) {
+          container.removeChild(segEl);
+        }
+      }
+    }
+  }
+  dyingSnakes = [];
+
+  // reset scissors state flags
+  snakeEatingOldBody = false;
+  snakeOldBodySpeedBonusPending = false;
+  scissorsGrowthLocked = false;
+  severedSnakeRemnants = [];
+}
 // --------------------------------------------------
 // SPECIAL ROLES: CANNIBAL & HELPERS
 // --------------------------------------------------
@@ -6147,6 +6176,7 @@ function getDashboardPfp() {
   }
 
   function startNewRun() {
+    clearScissorsAndOldSnakeState();
     hideMainMenu();
     stopMainMenuBackground();
     setInGameUIVisible(true);
@@ -6218,6 +6248,7 @@ function getDashboardPfp() {
   }
 
   function endGame() {
+    clearScissorsAndOldSnakeState();
     gameOver = true;
 
     lastRunTime  = elapsedTime;
