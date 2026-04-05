@@ -1677,8 +1677,8 @@ function applyMutationUpgrade() {
 function grantChampionFrog(frog) {
   if (frog.isChampion) return;
   frog.isChampion = true;
-  frog.speedMult *= 0.85;
-  frog.jumpMult  *= 1.25;
+  frog.speedMult *= 0.80; // 20% faster hops
+  frog.jumpMult  *= 1.20; // 20% higher jumps
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
   playPerFrogUpgradeSound("champion");
@@ -1824,11 +1824,12 @@ function clearAllFrogRoles(frog) {
 
 function grantStarUpgrade(frog) {
   if (!frog) return;
+
   frog.starLevel = Math.min(3, (frog.starLevel || 0) + 1);
 
-  // 10% per star
-  frog.speedMult *= 0.90; // 10% faster hops
-  frog.jumpMult *= 1.10;  // 10% higher jumps
+  // exact flat totals by star count
+  frog.speedMult = 1 - (frog.starLevel * 0.10);
+  frog.jumpMult  = 1 + (frog.starLevel * 0.10);
 
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
