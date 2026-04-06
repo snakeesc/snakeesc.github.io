@@ -676,6 +676,11 @@ const survivalIds = [
   let mainMenuAnimId = null;
   let mainMenuLastTime = 0;
 
+  let permanentScoreMultiplier = 1.0;
+  let quantumOrbsActive = false;
+  let moltFortuneActive = false;
+  let toxicBloodActive = false;
+  let survivalInstinctActive = false;
   let speedBuffTime   = 0;
   let jumpBuffTime    = 0;
   let snakeSlowTime   = 0;
@@ -1628,6 +1633,10 @@ function createFrogAt(x, y, tokenId) {
       factor = MAX_TOTAL_FROG_JUMP_FACTOR;
     }
 
+    // 🧠 Survival Instinct
+    if (survivalInstinctActive && frogs.length < 10) {
+      factor *= 0.80; // 20% faster hops
+    }
     return factor;
   }
 
@@ -1851,7 +1860,39 @@ function grantRandomPermaFrogUpgrade(frog) {
     case "zombie":   grantZombieFrog(frog);     break;
   }
 }
+// Add these two NEW functions:
+function grantNecromancerFrog(frog) {
+  if (frog.isNecromancer) return;
+  frog.isNecromancer = true;
+  refreshFrogPermaGlow(frog);
+  updateFrogRoleEmoji(frog);
+}
 
+function grantAlchemistFrog(frog) {
+  if (frog.isAlchemist) return;
+  frog.isAlchemist = true;
+  frog.alchemistTimer = 12.0; // Drops an orb every 12s
+  refreshFrogPermaGlow(frog);
+  updateFrogRoleEmoji(frog);
+}
+
+// Add these two NEW functions:
+function grantNecromancerFrog(frog) {
+  if (frog.isNecromancer) return;
+  frog.isNecromancer = true;
+  refreshFrogPermaGlow(frog);
+  updateFrogRoleEmoji(frog);
+}
+
+function grantAlchemistFrog(frog) {
+  if (frog.isAlchemist) return;
+  frog.isAlchemist = true;
+  frog.alchemistTimer = 12.0; // Drops an orb every 12s
+  refreshFrogPermaGlow(frog);
+  updateFrogRoleEmoji(frog);
+}
+
+// Replace your EXISTING clearAllFrogRoles function with this:
 function clearAllFrogRoles(frog) {
   if (!frog) return;
 
@@ -1866,6 +1907,12 @@ function clearAllFrogRoles(frog) {
   frog.isLucky = false;
   frog.isZombie = false;
   frog.isCannibal = false;
+  
+  // New Epic roles cleared
+  frog.isNecromancer = false;
+  frog.isAlchemist = false;
+  frog.alchemistTimer = 0;
+
   frog.extraDeathRattleChance = 0;
   frog.specialDeathRattleChance = null;
   frog.shieldGrantedAt = null;
@@ -1875,6 +1922,54 @@ function clearAllFrogRoles(frog) {
 
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
+}
+
+// Replace your EXISTING updateFrogRoleEmoji function with this:
+function updateFrogRoleEmoji(frog) {
+  if (!frog || !frog.el) return;
+
+  if (frog.cannibalIcon && frog.cannibalIcon.parentNode === frog.el) {
+    frog.el.removeChild(frog.cannibalIcon);
+  }
+  frog.cannibalIcon = null;
+
+  let badgeText = "";
+
+  // Role emoji takes priority over stars
+  const emojis = [];
+  if (frog.isChampion)     emojis.push("🏅");
+  if (frog.isAura)         emojis.push("💫");
+  if (frog.hasPermaShield) emojis.push("🛡️");
+  if (frog.isMagnet)       emojis.push("🧲");
+  if (frog.isLucky)        emojis.push("🍀");
+  if (frog.isZombie)       emojis.push("🧟");
+  if (frog.isCannibal)     emojis.push("🦴");
+  if (frog.isNecromancer)  emojis.push("🧙‍♂️");
+  if (frog.isAlchemist)    emojis.push("🧪");
+
+  if (emojis.length > 0) {
+    badgeText = emojis.join("");
+  } else {
+    const stars = Math.max(0, Math.min(3, frog.starLevel || 0));
+    if (stars > 0) {
+      badgeText = "⭐".repeat(stars);
+    }
+  }
+
+  if (!badgeText) return;
+
+  const badge = document.createElement("div");
+  badge.className = "frog-role-emoji";
+  badge.textContent = badgeText;
+  badge.style.position = "absolute";
+  badge.style.bottom = "-2px";
+  badge.style.right = "-2px";
+  badge.style.fontSize = "11px";
+  badge.style.pointerEvents = "none";
+  badge.style.textShadow = "0 0 2px #000";
+
+  frog.el.appendChild(badge);
+  frog.cannibalIcon = badge;
 }
 
 function grantStarUpgrade(frog) {
@@ -2887,6 +2982,15 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           container.removeChild(frog.cloneEl);
         }
         frog.cloneEl = null;
+      }
+      
+      // 🧪 Alchemist Orb Drop
+      if (frog.isAlchemist) {
+        frog.alchemistTimer -= dt;
+        if (frog.alchemistTimer <= 0) {
+          spawnOrb(null, frog.x, frog.y); // Drops random orb
+          frog.alchemistTimer = 12.0;     // Reset timer
+        }
       }
     }
     // --- Cannibal Frogs --- //
@@ -6474,6 +6578,12 @@ snakeOldBodySpeedBonusPending = false;
     swarmDivideUsed = false;
     graveWaveActive = false;
     graveWaveUsed = false;
+
+    permanentScoreMultiplier = 1.0;
+    quantumOrbsActive = false;
+    moltFortuneActive = false;
+    toxicBloodActive = false;
+    survivalInstinctActive = false;
 
     pairOfScissorsUsed = false;
     orbCollectorActive       = false;
