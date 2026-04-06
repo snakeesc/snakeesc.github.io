@@ -3916,11 +3916,11 @@ function getUpgradeChoices() {
     const mutationChoice = getRandomMutationUpgrade();
     if (mutationChoice) upgrades.push(mutationChoice);
 
-    // --- 🥚 Snake Egg ---
+    // --- 🔮 Snake Charmer ---
     if (!snakeEggPending && !snakeEggUsed) {
       upgrades.push({
         id: "snakeEgg",
-        label: `🥚 Snake Egg<br>Next shed reduces snake speed bonus by <span style="color:${neon};">50%</span>`,
+        label: `🔮 Snake Charmer<br>Next shed reduces snake speed bonus by <span style="color:${neon};">50%</span>`,
         apply: () => { snakeEggPending = true; snakeEggUsed = true; }
       });
     }
@@ -4899,7 +4899,7 @@ function showBuffGuideOverlay() {
           <strong>🔮 Molt Fortune</strong> — snake drops 5 orbs when shedding.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🥚 Snake Egg</strong> — reduces the snake's speed gain on the next shed.
+          <strong>🔮 Snake Charmer</strong> — reduces the snake's speed gain on the next shed.
         </li>
       </ul>
 
