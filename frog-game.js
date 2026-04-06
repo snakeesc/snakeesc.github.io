@@ -3887,39 +3887,6 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // EPIC: Buff duration – only if below cap
-    if (buffDurationFactor < buffDurationCap - 1e-4) {
-      upgrades.push({
-        id: "epicBuffDuration",
-        label: `
-          ⏳ Buffs extended<br>
-          +<span style="color:${epicTitleColor};">${buffPerPickPct}%</span> buff duration
-        `,
-        apply: () => {
-          buffDurationFactor *= epicBuffFactor;
-          if (buffDurationFactor > buffDurationCap) {
-            buffDurationFactor = buffDurationCap;
-          }
-        }
-      });
-    }
-
-    // ORB STORM
-    upgrades.push({
-      id: "epicOrbStorm",
-      label: `
-        🌩️ Orb Storm<br>
-        Drop <span style="color:${epicTitleColor};">${ORB_STORM_COUNT}</span> random orbs right now
-      `,
-      apply: () => {
-        const width  = window.innerWidth;
-        const height = window.innerHeight;
-        for (let i = 0; i < ORB_STORM_COUNT; i++) {
-          spawnOrbRandom(width, height);
-        }
-      }
-    });
-
     if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
         id: "graveWave",
@@ -4163,6 +4130,22 @@ function getUpgradeChoices() {
       });
     }
 
+    // ORB STORM
+    upgrades.push({
+      id: "epicOrbStorm",
+      label: `
+        🌩️ Orb Storm<br>
+        Drop <span style="color:${neon};">${ORB_STORM_COUNT}</span> random orbs right now
+      `,
+      apply: () => {
+        const width  = window.innerWidth;
+        const height = window.innerHeight;
+        for (let i = 0; i < ORB_STORM_COUNT; i++) {
+          spawnOrbRandom(width, height);
+        }
+      }
+    });
+
     // Global deathrattle (capped)
     if (frogDeathRattleChance < MAX_DEATHRATTLE_CHANCE - 1e-4) {
       upgrades.push({
@@ -4210,48 +4193,6 @@ function getUpgradeChoices() {
     }
 
     return upgrades;
-  }
-
-  // LEGENDARY choices at 10 minutes (placeholders, TODO)
-  function getLegendaryUpgradeChoices() {
-    const neon = "#4defff";
-    const deathPct = Math.round(LEGENDARY_DEATHRATTLE_CHANCE * 100);
-
-    return [
-      {
-        id: "legendaryBuffDuration",
-        label: `
-          ⏳⏳ LEGENDARY buff surge<br>
-          All buff durations ×<span style="color:${neon};">${LEGENDARY_BUFF_DURATION_FACTOR.toFixed(1)}</span>
-        `,
-        apply: () => {
-          buffDurationFactor *= LEGENDARY_BUFF_DURATION_FACTOR;
-          if (buffDurationFactor > buffDurationCap) {
-            buffDurationFactor = buffDurationCap;
-          }
-        }
-      },
-      {
-        id: "legendarySpawn75",
-        label: `
-          🐸🌊🌊 LEGENDARY frog wave<br>
-          Spawn <span style="color:${neon};">${LEGENDARY_SPAWN_AMOUNT}</span> frogs now
-        `,
-        apply: () => {
-          spawnExtraFrogs(LEGENDARY_SPAWN_AMOUNT);
-        }
-      },
-      {
-        id: "legendaryDeathRattle",
-        label: `
-          💀💀 LEGENDARY deathrattle<br>
-          <span style="color:${neon};">${deathPct}%</span> chance a dead frog respawns
-        `,
-        apply: () => {
-          frogDeathRattleChance += LEGENDARY_DEATHRATTLE_CHANCE;
-        }
-      }
-    ];
   }
 
   function clearMainMenuSnakes() {
