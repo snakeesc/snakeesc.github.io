@@ -1047,7 +1047,7 @@ const survivalIds = [
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
-  function snakeShed(stage) {
+function snakeShed(stage) {
     if (!snake) return;
 
     // Capture the old snake so we can despawn it over time.
@@ -1071,7 +1071,6 @@ const survivalIds = [
       : 1.0;
 
     // Permanent speed bonus each shed.
-    // Normally +20%, but if Snake Egg is pending, only +11% (20% - 9%).
     let speedMult = SNAKE_SHED_SPEEDUP;
     if (snakeEggPending) {
       speedMult = SNAKE_EGG_BUFF_PCT;
@@ -1183,8 +1182,14 @@ const survivalIds = [
     if (graveWaveActive) {
       spawnExtraFrogs(10);
     }
-  }
 
+    // 🔮 Molt Fortune (Drops 5 orbs after shedding)
+    if (moltFortuneActive) {
+      for (let i = 0; i < 5; i++) {
+        spawnOrbRandom(width, height);
+      }
+    }
+  }
   function handleFourthShed() {
     const width  = window.innerWidth;
     const height = window.innerHeight;
@@ -2455,6 +2460,11 @@ function computeDeathRattleChanceForFrog(frog) {
           return false;
         }
       }
+
+      // 🩸 Toxic Blood (Epic Upgrade)
+      if (toxicBloodActive) {
+        snakeSlowTime += 0.5; // Stumbles the snake slightly on every bite
+      }
     }
 
     // -----------------------------
@@ -2465,83 +2475,77 @@ function computeDeathRattleChanceForFrog(frog) {
       frog.cloneEl = null;
     }
 
-  // If this frog *is* a cannibal, unmark it so global counters stay correct
-  if (frog.isCannibal) {
-    unmarkCannibalFrog(frog);
-  }
+    // If this frog *is* a cannibal, unmark it so global counters stay correct
+    if (frog.isCannibal) {
+      unmarkCannibalFrog(frog);
+    }
 
-  // -----------------------------
-  // Remove frog DOM + from array
-  // -----------------------------
-  if (frog.el.parentNode === container) {
-    container.removeChild(frog.el);
-  }
-  frogs.splice(index, 1);
+    // -----------------------------
+    // Remove frog DOM + from array
+    // -----------------------------
+    if (frog.el.parentNode === container) {
+      container.removeChild(frog.el);
+    }
+    frogs.splice(index, 1);
 
-  // -----------------------------
-  // On-death effects: zombie, global + per-frog deathrattle, Lifeline, Last Stand
-  // -----------------------------
+    // -----------------------------
+    // On-death effects: zombie, global + per-frog deathrattle, Lifeline, Last Stand
+    // -----------------------------
 
-  // Zombie on-death effect (any zombie frog)
-  if (frog.isZombie) {
-    spawnExtraFrogs(5);
+    // Zombie on-death effect (any zombie frog)
+    if (frog.isZombie) {
+      spawnExtraFrogs(5);
+      if (source === "snake") {
+        snakeSlowTime = Math.max(snakeSlowTime, 3 * buffDurationFactor);
+      }
+    }
+
+    let drChance = computeDeathRattleChanceForFrog(frog);
+
+    // Last Stand: if active and this was the last frog, guarantee at least X%,
+    // but still never exceed the global cap.
+    if (lastStandActive && wasLastFrog) {
+      drChance = Math.max(drChance, LAST_STAND_MIN_CHANCE);
+      if (drChance > MAX_DEATHRATTLE_CHANCE) {
+        drChance = MAX_DEATHRATTLE_CHANCE;
+      }
+    }
+
+    if (drChance > 0 && Math.random() < drChance) {
+      // Spawn a replacement frog
+      const newFrog = createRandomFrog();
+      if (newFrog) {
+        // 🧙‍♂️ Necromancer Check
+        const hasNecromancer = frogs.some(f => f.isNecromancer);
+
+        if (hasNecromancer) {
+          grantZombieFrog(newFrog); // Necromancer overrides standard respawns into Zombies!
+        } else {
+          // Normal respawn behavior
+          if (frog.isZombie) grantZombieFrog(newFrog);
+          if (frog.isCannibal) markCannibalFrog(newFrog);
+          if (source === "cannibal") grantRandomPermaFrogUpgrade(newFrog);
+        }
+      }
+    }
+
+    // -----------------------------
+    // Sounds based on source
+    // -----------------------------
     if (source === "snake") {
-      snakeSlowTime = Math.max(snakeSlowTime, 3 * buffDurationFactor);
+      playSnakeMunch();
+      playFrogDeath();
+    } else if (source === "cannibal") {
+      // Cannibal eats frog: just play death sound (no snake munch)
+      playFrogDeath();
     }
-  }
 
-  let drChance = computeDeathRattleChanceForFrog(frog);
-
-  // Last Stand: if active and this was the last frog, guarantee at least X%,
-  // but still never exceed the global cap.
-  if (lastStandActive && wasLastFrog) {
-    drChance = Math.max(drChance, LAST_STAND_MIN_CHANCE);
-    if (drChance > MAX_DEATHRATTLE_CHANCE) {
-      drChance = MAX_DEATHRATTLE_CHANCE;
+    if (frogDeathOrbChance > 0 && Math.random() < frogDeathOrbChance) {
+      spawnOrb(null, deathX, deathY);
     }
+
+    return true; // a frog actually died
   }
-
-  if (drChance > 0 && Math.random() < drChance) {
-    // Spawn a replacement frog
-    const newFrog = createRandomFrog();
-    if (newFrog) {
-      // Zombies keep being zombies, but we do NOT keep their extra 50% DR forever
-      if (frog.isZombie) {
-        grantZombieFrog(newFrog);
-      }
-
-      // Cannibal respawns stay cannibals
-      if (frog.isCannibal) {
-        markCannibalFrog(newFrog);
-      }
-
-      // If this frog was eaten by a cannibal, its respawn gets a random permanent role
-      if (source === "cannibal") {
-        grantRandomPermaFrogUpgrade(newFrog);
-      }
-
-      // NOTE: we do NOT copy frog.extraDeathRattleChance:
-      // special 50% bonuses (Zombie Horde) only apply to that one life.
-    }
-  }
-
-  // -----------------------------
-  // Sounds based on source
-  // -----------------------------
-  if (source === "snake") {
-    playSnakeMunch();
-    playFrogDeath();
-  } else if (source === "cannibal") {
-    // Cannibal eats frog: just play death sound (no snake munch)
-    playFrogDeath();
-  }
-
-  if (frogDeathOrbChance > 0 && Math.random() < frogDeathOrbChance) {
-    spawnOrb(null, deathX, deathY);
-  }
-
-  return true; // a frog actually died
-}
 
 
   function killRandomFrogs(count, source) {
@@ -2983,7 +2987,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         }
         frog.cloneEl = null;
       }
-      
+
       // 🧪 Alchemist Orb Drop
       if (frog.isAlchemist) {
         frog.alchemistTimer -= dt;
@@ -3118,13 +3122,16 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     spawnOrb(null, x, y);
   }
-
   function updateOrbs(dt) {
     const MAGNET_RANGE2 = ORB_MAGNET_PULL_RANGE * ORB_MAGNET_PULL_RANGE;
 
     for (let i = orbs.length - 1; i >= 0; i--) {
       const orb = orbs[i];
-      orb.ttl -= dt;
+      
+      // 🌌 Quantum Orbs Check
+      if (!quantumOrbsActive) {
+        orb.ttl -= dt;
+      }
 
       if (orb.ttl <= 0 || !orb.el) {
         if (orb.el && orb.el.parentNode === container) {
@@ -3211,26 +3218,16 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           applyBuff(orb.type, collectedBy);
         }
 
-        // 🧪 Orb Specialist + Orb Collector + permanent lifesteal synergy
         let frogsToSpawnFromOrb = 0;
 
-        // Orb Specialist: every orb always spawns 1 frog,
-        // plus a 50% chance for a second frog.
+        // Orb Specialist: guarantees 1 frog.
         if (orbSpecialistActive) {
-          frogsToSpawnFromOrb += 1; // guaranteed
-          //if (Math.random() < 0.5) {
-           // frogsToSpawnFromOrb += 1; // 50% extra
-          //}
+          frogsToSpawnFromOrb += 1; 
         }
 
-        // Permanent lifesteal upgrade: next N orbs also spawn frogs.
+        // Permanent lifesteal upgrade
         if (permaLifeStealOrbsRemaining > 0) {
           permaLifeStealOrbsRemaining -= 1;
-          frogsToSpawnFromOrb += 1;
-        }
-
-        // Orb Collector: now adds an additional frog on top of the above.
-        if (orbCollectorChance > 0 && Math.random() < orbCollectorChance) {
           frogsToSpawnFromOrb += 1;
         }
 
@@ -3727,6 +3724,9 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
         let gain = 1;
         gain *= getLuckyScoreBonusFactor();
         if (scoreMultiTime > 0) gain *= SCORE_MULTI_FACTOR;
+        
+        // ⚖️ Greed's Toll Multiplier applied here
+        gain *= permanentScoreMultiplier; 
         score += gain;
 
         if (frogsEatenCount % 2 === 0) {
@@ -3812,7 +3812,7 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
   let leaderboardOverlay = null;
   let dashboardOverlay = null;
 
-  function getEpicUpgradeChoices() {
+function getEpicUpgradeChoices() {
     const neon = "#4defff";
     const epicTitleColor = "#ffb347"; // soft orange for EPIC titles
     const totalColor = TOTAL_HIGHLIGHT_COLOR;
@@ -3917,7 +3917,7 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
       });
     }
 
-    // ORB STORM – always okay, orbs obey MAX_FROGS via spawn logic later
+    // ORB STORM
     upgrades.push({
       id: "epicOrbStorm",
       label: `
@@ -3947,7 +3947,7 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
       });
     }
 
-    // Orb Specialist – only once
+    // Orb Specialist
     if (!orbSpecialistActive) {
       upgrades.push({
         id: "epicOrbSpecialist",
@@ -3960,28 +3960,6 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
         },
       });
     }
-
-    /*
-    if (frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4 && frogPermanentJumpFactor < MAX_FROG_JUMP_FACTOR - 1e-4) {
-      upgrades.push({
-        id: "frogSpeed",
-        label: `
-          💨🦘 Hop Quicker & Higher<br>
-          Frogs hop ~<span style="color:${epicTitleColor};">10%</span> faster<br>
-          +<span style="color:${epicTitleColor};">20%</span> jump height
-        `,
-        apply: () => {
-          frogPermanentSpeedFactor *= 0.90;
-          if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
-            frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
-          }
-          frogPermanentJumpFactor *= 1.20;
-          if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
-            frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
-          }
-        }
-      });
-    }*/
 
     if (!frogScatterUsed && frogs.length > 0) {
       upgrades.push({
@@ -3998,10 +3976,72 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
       });
     }
 
+    // 🩸 Toxic Blood
+    if (!toxicBloodActive) {
+      upgrades.push({
+        id: "toxicBlood",
+        label: `🩸 Toxic Blood<br>Snake is slowed briefly every time it eats a frog`,
+        apply: () => { toxicBloodActive = true; }
+      });
+    }
+
+    // 🔮 Molt Fortune
+    if (!moltFortuneActive) {
+      upgrades.push({
+        id: "moltFortune",
+        label: `🔮 Molt Fortune<br>Snake drops <span style="color:${epicTitleColor};">5</span> orbs when shedding`,
+        apply: () => { moltFortuneActive = true; }
+      });
+    }
+
+    // ⚖️ Greed's Toll
+    upgrades.push({
+      id: "greedsToll",
+      label: `⚖️ Greed's Toll<br>Permanent <span style="color:${epicTitleColor};">+100%</span> score gain, but max frog cap drops by 30`,
+      apply: () => {
+        permanentScoreMultiplier += 1.0;
+        maxFrogsCap = Math.max(5, maxFrogsCap - 30);
+      }
+    });
+
+    // 🌌 Quantum Orbs
+    if (!quantumOrbsActive) {
+      upgrades.push({
+        id: "quantumOrbs",
+        label: `🌌 Quantum Orbs<br>Orbs never fade, but max frog cap drops by 10`,
+        apply: () => {
+          quantumOrbsActive = true;
+          maxFrogsCap = Math.max(5, maxFrogsCap - 10);
+        }
+      });
+    }
+
+    // 🌀 The Mystic Portal (Epic Role Draft)
+    upgrades.push({
+      id: "mysticPortal",
+      label: `🌀 Mystic Portal<br>Draft between the <span style="color:${epicTitleColor};">Alchemist</span> or <span style="color:${epicTitleColor};">Necromancer</span> frogs`,
+      opensRoleDraft: true,
+      apply: () => {
+        upgradeOverlayButtonsContainer.innerHTML = "";
+        
+        const choices = [
+          { id: "necro", emoji: "🧙‍♂️", label: "Necromancer", desc: "Deathrattle revivals become Zombies.", apply: () => { spawnRoleFrog("necromancer"); closeUpgradeOverlay(); } },
+          { id: "alchemist", emoji: "🧪", label: "Alchemist", desc: "Drops an orb every 12 seconds.", apply: () => { spawnRoleFrog("alchemist"); closeUpgradeOverlay(); } }
+        ];
+
+        choices.forEach((c) => {
+          const btn = document.createElement("button");
+          btn.className = "frog-btn frog-upgrade-choice upgrade-type-role";
+          btn.innerHTML = `<div class="frog-upgrade-title">${c.emoji} ${c.label}</div><div class="frog-upgrade-desc">${c.desc}</div>`;
+          btn.addEventListener("click", () => { playButtonClick(); c.apply(); });
+          upgradeOverlayButtonsContainer.appendChild(btn);
+        });
+      }
+    });
+
     return upgrades;
   }
-
-  function getUpgradeChoices() {
+function getUpgradeChoices() {
     const neon = "#4defff";
 
     // per-pick effects
@@ -4010,7 +4050,6 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     const buffPerPickPct      = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
     const orbFasterPerPickPct = Math.round((1 - ORB_INTERVAL_UPGRADE_FACTOR) * 100);
     const deathPerPickPct     = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
-    const orbPerPickPct       = Math.round(ORB_COLLECTOR_CHANCE * 100);
 
     const lastStandPct = Math.round(LAST_STAND_MIN_CHANCE * 100);
 
@@ -4030,7 +4069,7 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
       });
     }
 
-    if (!pairOfScissorsUsed && !epicChainPending && upgradeOverlayContext  !== "start") {
+    if (!pairOfScissorsUsed && !epicChainPending && upgradeOverlayContext !== "start") {
       upgrades.push({
         id: "pairOfScissors",
         label: `
@@ -4066,18 +4105,18 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
       });
     }
 
-      upgrades.push({
-        id: "roleDraft",
-        label: `
-          🎭 Role Draft<br>
-          Choose between <span style="color:${neon};">2</span> random frog roles
-        `,
-        opensRoleDraft: true,
-        apply: () => {
-          roleDraftUsed = true;
-          showRoleDraftOverlayChoices();
-        }
-      });
+    upgrades.push({
+      id: "roleDraft",
+      label: `
+        🎭 Role Draft<br>
+        Choose between <span style="color:${neon};">2</span> random frog roles
+      `,
+      opensRoleDraft: true,
+      apply: () => {
+        roleDraftUsed = true;
+        showRoleDraftOverlayChoices();
+      }
+    });
 
     if (!ouroborosPactUsed) {
       upgrades.push({
@@ -4143,6 +4182,20 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
             MAX_DEATHRATTLE_CHANCE,
             frogDeathRattleChance + COMMON_DEATHRATTLE_CHANCE
           );
+        }
+      });
+    }
+
+    // 🧠 Survival Instinct
+    if (!survivalInstinctActive) {
+      upgrades.push({
+        id: "survivalInstinct",
+        label: `
+          🧠 Survival Instinct<br>
+          When below <span style="color:${neon};">10</span> frogs, they hop <span style="color:${neon};">20%</span> faster
+        `,
+        apply: () => { 
+          survivalInstinctActive = true; 
         }
       });
     }
