@@ -4857,12 +4857,6 @@ function showBuffGuideOverlay() {
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>💨 Faster Hops</strong> — increases base movement speed.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>🦘 Higher Jumps</strong> — increases base jump height.
-        </li>
-        <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>🧬 Mutation</strong> — +12% jump speed and +12% jump height.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
