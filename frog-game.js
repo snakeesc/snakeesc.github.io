@@ -4053,7 +4053,7 @@ function getUpgradeChoices() {
         label: `
           🎯 Orb Flow<br>
           Faster orb spawns by
-          <span style="color:${epicTitleColor};">10%</span>
+          <span style="color:${neon};">10%</span>
         `,
         apply: () => {
           orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
