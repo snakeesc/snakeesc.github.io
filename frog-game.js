@@ -3861,7 +3861,7 @@ function getUpgradeChoices() {
     if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
       upgrades.push({
         id: "epicMoreOrbs",
-        label: `🎯 Orb Flow<br>Increase orb spawnrate by <span style="color:${neon};">10%</span>`,
+        label: `🎯 Orb Flow<br>Increase orb spawn rate by <span style="color:${neon};">10%</span>`,
         apply: () => {
           orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
           if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) orbSpawnIntervalFactor = minOrbSpawnIntervalFactor;
