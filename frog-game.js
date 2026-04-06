@@ -1675,9 +1675,19 @@ function createFrogAt(x, y, tokenId) {
     if (totalSegments <= 0) return 0;
 
     const extraSegments = Math.max(0, totalSegments - SNAKE_INITIAL_SEGMENTS);
-    const RESIST_PER_SEGMENT = 0.04;
-    const maxResist = 0.8;
-    return Math.max(0, Math.min(maxResist, extraSegments * RESIST_PER_SEGMENT));
+
+    // stronger scaling than before
+    const RESIST_PER_SEGMENT = 0.07;
+
+    // small flat bonus per shed
+    const shedBonus = snakeShedCount * 0.08;
+
+    const maxResist = 1.35;
+
+    return Math.max(
+      0,
+      Math.min(maxResist, extraSegments * RESIST_PER_SEGMENT + shedBonus)
+    );
   }
 
 function getRandomMutationUpgrade() {
