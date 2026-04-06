@@ -4043,24 +4043,6 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
       });
     }
 
-    // Orb Collector (capped)
-    if (orbCollectorChance < MAX_ORB_COLLECTOR_TOTAL - 1e-4) {
-      upgrades.push({
-        id: "orbCollector",
-        label: `
-          🌌 Orb Collector<br>
-          Every orb gains +<span style="color:${neon};">${orbPerPickPct}%</span> chance to spawn a frog
-        `,
-        apply: () => {
-          orbCollectorActive = true;
-          orbCollectorChance = Math.min(
-            MAX_ORB_COLLECTOR_TOTAL,
-            orbCollectorChance + ORB_COLLECTOR_CHANCE
-          );
-        }
-      });
-    }
-
     // Last Stand – only once
     if (!lastStandActive) {
       upgrades.push({
