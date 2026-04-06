@@ -2026,3 +2026,27 @@ background: #65a30d;
   margin-bottom: 0;
   min-width: 140px;
 }
+.frog-sprite img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.frog-sprite-base {
+  z-index: 1;
+}
+
+.frog-sprite-skin {
+  z-index: 2;
+}
+
+.frog-sprite-eyes {
+  z-index: 3;
+}
+
+.frog-sprite-hat {
+  z-index: 4;
+}

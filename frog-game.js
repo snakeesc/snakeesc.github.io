@@ -511,7 +511,15 @@ const FROG_HAT_PATHS = Array.from({ length: 8 }, (_, i) => {
 function getRandomFrogHat() {
   return FROG_HAT_PATHS[Math.floor(Math.random() * FROG_HAT_PATHS.length)];
 }
+const IN_GAME_FROG_EYES_CHANCE = 0.08;
+const IN_GAME_FROG_HAT_CHANCE = 0.05;
 
+function rollFrogCosmetics() {
+  return {
+    eyesSrc: Math.random() < IN_GAME_FROG_EYES_CHANCE ? getRandomFrogEyes() : null,
+    hatSrc: Math.random() < IN_GAME_FROG_HAT_CHANCE ? getRandomFrogHat() : null
+  };
+}
 function getUpgradeColorClass(upgradeId) {
   // movement / jumping
 const mobilityIds = [
@@ -1331,111 +1339,135 @@ function assignSwarmDivideLanes() {
     frog.swarmDivideLane = (i % 2 === 0) ? -1 : 1;
   }
 }
-  function createFrogAt(x, y, tokenId) {
-    const el = document.createElement("div");
-    el.className = "frog-sprite";
-    el.style.position = "absolute";
-    el.style.width = FROG_SIZE + "px";
-    el.style.height = FROG_SIZE + "px";
-    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    el.style.pointerEvents = "none";
-    el.style.zIndex = "10";
-    container.appendChild(el);
+function createFrogAt(x, y, tokenId) {
+  const el = document.createElement("div");
+  el.className = "frog-sprite";
+  el.style.position = "absolute";
+  el.style.width = FROG_SIZE + "px";
+  el.style.height = FROG_SIZE + "px";
+  el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  el.style.pointerEvents = "none";
+  el.style.zIndex = "10";
+  container.appendChild(el);
 
-    const personalityRoll = Math.random();
-    let idleMin, idleMax, hopMin, hopMax, heightMin, heightMax;
+  const personalityRoll = Math.random();
+  let idleMin, idleMax, hopMin, hopMax, heightMin, heightMax;
 
-    if (personalityRoll < 0.25) {
-      idleMin = 0.3; idleMax = 1.0;
-      hopMin = 0.25; hopMax = 0.55;
-      heightMin = 14; heightMax = 32;
-    } else if (personalityRoll < 0.6) {
-      idleMin = 0.8; idleMax = 3.0;
-      hopMin = 0.35; hopMax = 0.7;
-      heightMin = 10; heightMax = 26;
-    } else {
-      idleMin = 2.0; idleMax = 5.0;
-      hopMin = 0.45; hopMax = 0.9;
-      heightMin = 6;  heightMax = 20;
-    }
-
-    const frog = {
-      tokenId,
-      el,
-      x,
-      y,
-      baseY: y,
-
-      hopStartX: x,
-      hopStartBaseY: y,
-      hopEndX: x,
-      hopEndBaseY: y,
-
-      swarmDivideLane: 0,
-
-      state: "idle",
-      idleTime: randRange(idleMin, idleMax),
-      hopTime: 0,
-      hopDuration: randRange(hopMin, hopMax),
-      hopHeight: randRange(heightMin, heightMax),
-
-      idleMin,
-      idleMax,
-      hopDurMin: hopMin,
-      hopDurMax: hopMax,
-      hopHeightMin: heightMin,
-      hopHeightMax: heightMax,
-
-      starLevel: 0,
-      spriteSrc: getRandomFrogSprite(),
-      skinSrc: getRandomFrogSkin(),
-      // per-frog permanent upgrades
-      speedMult: 1.0,
-      jumpMult: 1.0,
-      isChampion: false,
-      isAura: false,
-      hasPermaShield: false,
-      isMagnet: false,
-      isLucky: false,
-      isZombie: false,
-      isMutationZombie: false,
-      mutationZombieDirX: 0,
-      mutationZombieDirY: 0,
-      mutationZombieRetargetTime: 0,
-      shieldGrantedAt: null,
-
-      specialDeathRattleChance: null,
-
-      isCannibal: false,
-      extraDeathRattleChance: 0,
-      cannibalIcon: null,
-
-      cloneEl: null,
-      layers: []
-    };
-    frogs.push(frog);
-    refreshFrogPermaGlow(frog);
-
-    totalFrogsSpawned++;
-
-    const baseImg = document.createElement("img");
-    baseImg.className = "frog-sprite-base";
-    baseImg.src = frog.spriteSrc;
-    baseImg.alt = "";
-
-    const skinImg = document.createElement("img");
-    skinImg.className = "frog-sprite-skin";
-    skinImg.src = frog.skinSrc;
-    skinImg.alt = "";
-
-    el.appendChild(baseImg);
-    el.appendChild(skinImg);
-
-    frog.baseImg = baseImg;
-    frog.skinImg = skinImg;
-
-    return frog;
+  if (personalityRoll < 0.25) {
+    idleMin = 0.3; idleMax = 1.0;
+    hopMin = 0.25; hopMax = 0.55;
+    heightMin = 14; heightMax = 32;
+  } else if (personalityRoll < 0.6) {
+    idleMin = 0.8; idleMax = 3.0;
+    hopMin = 0.35; hopMax = 0.7;
+    heightMin = 10; heightMax = 26;
+  } else {
+    idleMin = 2.0; idleMax = 5.0;
+    hopMin = 0.45; hopMax = 0.9;
+    heightMin = 6;  heightMax = 20;
   }
+
+  const cosmetics = rollFrogCosmetics();
+
+  const frog = {
+    tokenId,
+    el,
+    x,
+    y,
+    baseY: y,
+
+    hopStartX: x,
+    hopStartBaseY: y,
+    hopEndX: x,
+    hopEndBaseY: y,
+
+    swarmDivideLane: 0,
+
+    state: "idle",
+    idleTime: randRange(idleMin, idleMax),
+    hopTime: 0,
+    hopDuration: randRange(hopMin, hopMax),
+    hopHeight: randRange(heightMin, heightMax),
+
+    idleMin,
+    idleMax,
+    hopDurMin: hopMin,
+    hopDurMax: hopMax,
+    hopHeightMin: heightMin,
+    hopHeightMax: heightMax,
+
+    starLevel: 0,
+    spriteSrc: getRandomFrogSprite(),
+    skinSrc: getRandomFrogSkin(),
+    eyesSrc: cosmetics.eyesSrc,
+    hatSrc: cosmetics.hatSrc,
+
+    // per-frog permanent upgrades
+    speedMult: 1.0,
+    jumpMult: 1.0,
+    isChampion: false,
+    isAura: false,
+    hasPermaShield: false,
+    isMagnet: false,
+    isLucky: false,
+    isZombie: false,
+    isMutationZombie: false,
+    mutationZombieDirX: 0,
+    mutationZombieDirY: 0,
+    mutationZombieRetargetTime: 0,
+    shieldGrantedAt: null,
+
+    specialDeathRattleChance: null,
+
+    isCannibal: false,
+    extraDeathRattleChance: 0,
+    cannibalIcon: null,
+
+    cloneEl: null,
+    layers: []
+  };
+
+  frogs.push(frog);
+  refreshFrogPermaGlow(frog);
+
+  totalFrogsSpawned++;
+
+  const baseImg = document.createElement("img");
+  baseImg.className = "frog-sprite-base";
+  baseImg.src = frog.spriteSrc;
+  baseImg.alt = "";
+
+  const skinImg = document.createElement("img");
+  skinImg.className = "frog-sprite-skin";
+  skinImg.src = frog.skinSrc;
+  skinImg.alt = "";
+
+  el.appendChild(baseImg);
+  el.appendChild(skinImg);
+
+  frog.baseImg = baseImg;
+  frog.skinImg = skinImg;
+
+  if (frog.eyesSrc) {
+    const eyesImg = document.createElement("img");
+    eyesImg.className = "frog-sprite-eyes";
+    eyesImg.src = frog.eyesSrc;
+    eyesImg.alt = "";
+    el.appendChild(eyesImg);
+    frog.eyesImg = eyesImg;
+  }
+
+  if (frog.hatSrc) {
+    const hatImg = document.createElement("img");
+    hatImg.className = "frog-sprite-hat";
+    hatImg.src = frog.hatSrc;
+    hatImg.alt = "";
+    el.appendChild(hatImg);
+    frog.hatImg = hatImg;
+  }
+
+  return frog;
+}
 
   async function createInitialFrogs(width, height) {
     frogs = [];
