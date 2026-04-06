@@ -4933,12 +4933,6 @@ function closeAnimatedOverlay(overlayEl) {
       </ul>
 
       <ul class="upgrade-guide-list">
-        <li class="upgrade-guide-item upgrade-type-orb">
-          <strong>🌌 Orb Collector</strong> — collected orbs can spawn extra frogs.
-        </li>
-      </ul>
-
-      <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-role">
           <strong>🐸 Spawn Frogs</strong> — spawn frogs instantly.
         </li>
