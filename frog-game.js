@@ -5019,111 +5019,346 @@ function showBuffGuideOverlay() {
     }
   }
 
-  async function showDashboardOverlay() {
-    if (!dashboardOverlay) initDashboardOverlay();
-    const content = document.getElementById("dashboardContent");
-    if (!content) return;
+async function showDashboardOverlay() {
+  if (!dashboardOverlay) initDashboardOverlay();
+  if (!dashboardOverlay) return;
 
-    openAnimatedOverlay(dashboardOverlay);
-    content.innerHTML = '<div class="leaderboard-loading">Syncing Swarm Data...</div>';
+  const content = document.getElementById("dashboardContent");
+  if (!content) return;
 
-    // 1. DATA MAPPING (Corrected for your specific variable names)
-    const localStats = loadDashboardStats();
-    const dashboardPfp = getDashboardPfp();
-    const currentTag = getSavedPlayerTag() || "Anonymous Frog";
-    
-    // Level Logic: Your getDashboardLevelData returns progressPercent and orbsNeededForNextLevel
-    const levelData = getDashboardLevelData(localStats.totalOrbsCollected || 0);
+  openAnimatedOverlay(dashboardOverlay);
+  content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
 
-    // Fetch Leaderboard
-    const leaderboardEntries = await fetchLeaderboard();
-    const topList = Array.isArray(leaderboardEntries) ? leaderboardEntries.slice(0, 10) : [];
+  const localStats = loadDashboardStats();
+  const dashboardPfp = getDashboardPfp();
+  const currentTag =
+    (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
+    (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
+    getSavedDashboardTag() ||
+    "";
 
-    // Find Best Score from Leaderboard (Fixes the "0" issue)
-    const leaderboardBest = await getMyDashboardBestFromLeaderboard();
-    const displayBestScore = leaderboardBest.found ? leaderboardBest.bestRun : (localStats.bestScore || 0);
+  const leaderboardBest = await getMyDashboardBestFromLeaderboard();
+  const leaderboardEntries = await fetchLeaderboard();
+  const topTenLeaderboard = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.slice(0, 10)
+    : [];
 
-    // 2. BUILD THE UI
-    content.innerHTML = `
-      <div class="cc-container">
-        
-        <div class="cc-left">
-          <div class="frog-panel-section-label">Player Profile</div>
-          
-          <div class="profile-box" style="display: flex; align-items: center; gap: 15px; background: #1c1917; padding: 10px; border-radius: 12px; border: 1px solid #44403c;">
-            <div class="cc-pfp-stack" style="background: ${dashboardPfp.bgColor}; border-radius: 8px; flex-shrink: 0;">
-              <img src="${dashboardPfp.spriteSrc}" class="cc-pfp-layer" style="z-index:1">
-              <img src="${dashboardPfp.skinSrc}" class="cc-pfp-layer" style="z-index:2">
-              ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="cc-pfp-layer" style="z-index:3">` : ""}
-              ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="cc-pfp-layer" style="z-index:4">` : ""}
-            </div>
-            <div class="profile-info">
-              <div class="profile-tag" style="font-weight: 800; color: #bef264;">${currentTag}</div>
-              <div class="profile-level" style="font-size: 12px; color: #e7e5e4;">Level ${levelData.level}</div>
-            </div>
-          </div>
+  const normalizedCurrentTag =
+    typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
 
-          <div style="margin-top: 10px; margin-bottom: 20px;">
-            <div style="width: 100%; height: 8px; background: #292524; border: 1px solid #44403c; border-radius: 999px; overflow: hidden;">
-              <div style="width: ${levelData.progressPercent}%; height: 100%; background: #65a30d;"></div>
-            </div>
-            <div style="font-size: 11px; color: #a8a29e; margin-top: 4px; text-align: center;">
-              ${levelData.orbsNeededForNextLevel} Orbs to Level ${levelData.nextLevel}
-            </div>
-          </div>
+  const bestRecordRank = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.findIndex((entry) => {
+        const entryTag =
+          typeof entry?.tag === "string" ? entry.tag.trim().toLowerCase() : "";
+        const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+        const entryTime = Number(entry?.bestTime ?? entry?.time ?? 0);
 
-          <div class="frog-panel-section-label">Lifetime Mastery</div>
-          <ul class="frog-panel-list">
-            <li>Runs: <span class="stat-highlight">${localStats.totalRuns || 0}</span></li>
-            <li>Best Score: <span class="stat-highlight">${Math.floor(displayBestScore)}</span></li>
-            <li>Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
-          </ul>
+        return (
+          entryTag &&
+          normalizedCurrentTag &&
+          entryTag === normalizedCurrentTag &&
+          entryScore === Math.floor(Number(leaderboardBest.bestRun || 0)) &&
+          Math.abs(entryTime - Number(leaderboardBest.bestTime || 0)) < 0.01
+        );
+      })
+    : -1;
 
-          <div class="frog-panel-section-label" style="margin-top:15px;">Recent Run</div>
-          <div style="padding: 10px; background: #292524; border-radius: 8px; font-size: 12px;">
-             ${localStats.recentRuns && localStats.recentRuns[0] 
-               ? `Score: <span class="stat-highlight">${Math.floor(localStats.recentRuns[0].score)}</span><br>
-                  Time: <span class="stat-highlight">${formatDashboardDuration(localStats.recentRuns[0].time)}</span>`
-               : `<span style="color: #a8a29e;">No recent data.</span>`}
-          </div>
-        </div>
+  const bestRecordPrefix =
+    leaderboardBest.found && bestRecordRank >= 0
+      ? `#${bestRecordRank + 1} `
+      : "";
 
-        <div class="cc-right">
-          <div class="frog-panel-section-label">Global Top 10</div>
-          <table class="cc-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Player</th>
-                <th>Time</th>
-                <th style="text-align:right">Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${topList.length > 0 ? topList.map((entry, i) => {
-                const isMe = (entry.tag && entry.tag.toLowerCase() === currentTag.toLowerCase());
-                const scoreValue = Math.floor(entry.bestScore || entry.score || 0);
-                
-                // Fixed Time mapping: Leaderboard uses 'duration' or 'bestTime' or 'time'
-                const rawTime = entry.bestTime || entry.time || entry.duration || entry.timeSeconds || 0;
-                const timeValue = rawTime > 0 ? formatDashboardDuration(rawTime) : "--";
-                
-                return `
-                  <tr style="${isMe ? 'color: #bef264; background: rgba(190,242,100,0.1);' : ''}">
-                    <td>${i + 1}</td>
-                    <td style="max-width: 80px; overflow: hidden; text-overflow: ellipsis;">${entry.tag || entry.name || "Anon"}</td>
-                    <td>${timeValue}</td>
-                    <td style="text-align:right" class="stat-highlight">${scoreValue}</td>
-                  </tr>
-                `;
-              }).join('') : '<tr><td colspan="4">Loading rankings...</td></tr>'}
-            </tbody>
-          </table>
-        </div>
+  const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
 
-      </div>
+  const savedLatestRun =
+    Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
+      ? localStats.recentRuns[0]
+      : null;
+
+  const latestRunHtml = savedLatestRun
+    ? `
+      <div class="frog-panel-section-label">Last Run</div>
+      <ul class="frog-panel-list">
+        <li style="color:#bef264;">
+          <strong>Score:</strong> <span class="stat-highlight">${Math.floor(savedLatestRun.score)}</span>
+          · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(savedLatestRun.time)}</span>
+          · <strong>Orbs:</strong> <span class="stat-highlight">${savedLatestRun.orbs}</span>
+          · <strong>Frogs Lost:</strong> <span class="stat-highlight">${savedLatestRun.frogsLost || 0}</span>
+        </li>
+      </ul>
+    `
+    : "";
+
+  const leaderboardTopHtml = topTenLeaderboard.length
+    ? `
+      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
+      <ul class="frog-panel-list">
+        ${topTenLeaderboard.map((entry, i) => {
+          const name =
+            (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
+              ? entry.tag
+              : (entry && typeof entry.name === "string" && entry.name.trim() !== "")
+                ? entry.name
+                : `Player ${i + 1}`;
+
+          const score = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+          const time = formatDashboardDuration(Number(entry?.bestTime ?? entry?.time ?? 0));
+
+          const entryTag =
+            typeof entry?.tag === "string"
+              ? entry.tag.trim().toLowerCase()
+              : typeof entry?.name === "string"
+                ? entry.name.trim().toLowerCase()
+                : "";
+
+          const isMe =
+            !!normalizedCurrentTag &&
+            !!entryTag &&
+            entryTag === normalizedCurrentTag;
+
+          return `
+            <li style="${
+              isMe
+                ? "color:#bef264; font-weight:700; background:rgba(190,242,100,0.08); border:1px solid rgba(190,242,100,0.35); padding:6px 8px; border-radius:8px;"
+                : ""
+            }">
+              <strong>#${i + 1}</strong>
+              ${isMe ? "⭐ " : ""}
+              ${name} · ${score} score · ${time}
+            </li>
+          `;
+        }).join("")}
+      </ul>
+    `
+    : `
+      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
+      <ul class="frog-panel-list">
+        <li>No leaderboard entries yet.</li>
+      </ul>
     `;
+
+  content.innerHTML = `
+    <div class="frog-panel-section-label">Player Profile</div>
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:10px;
+        padding:8px 10px;
+        border:1px solid #44403c;
+        border-radius:12px;
+        background:#1c1917;
+      "
+    >
+      <div
+        style="
+          position:relative;
+          width:96px;
+          height:96px;
+          min-width:96px;
+          border-radius:999px;
+          overflow:hidden;
+          border:0px solid #57534e;
+          background:${dashboardPfp.bgColor};
+        "
+      >
+        <img
+          src="${dashboardPfp.spriteSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:1;
+          "
+        />
+        <img
+          src="${dashboardPfp.skinSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:2;
+          "
+        />
+        ${dashboardPfp.eyesSrc ? `
+          <img
+            src="${dashboardPfp.eyesSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:3;
+            "
+          />
+        ` : ""}
+        ${dashboardPfp.hatSrc ? `
+          <img
+            src="${dashboardPfp.hatSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:4;
+            "
+          />
+        ` : ""}
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <div>
+          <strong>Tag:</strong>
+          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
+        </div>
+        <div>
+          <strong>Level:</strong>
+          <span class="stat-highlight">${levelData.level}</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
+        ${levelData.orbsNeededForNextLevel} orbs until level ${levelData.nextLevel}
+      </div>
+      <div
+        style="
+          width:100%;
+          height:8px;
+          background:#292524;
+          border:1px solid #44403c;
+          border-radius:999px;
+          overflow:hidden;
+        "
+      >
+        <div
+          style="
+            width:${levelData.progressPercent}%;
+            height:100%;
+            background:#65a30d;
+            border-radius:999px;
+          "
+        ></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <input
+        id="dashboardTagInput"
+        type="text"
+        maxlength="12"
+        value="${String(currentTag).replace(/"/g, "&quot;")}"
+        placeholder="Enter player tag"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:5px 8px;
+          border-radius:6px;
+          border:1px solid #44403c;
+          background:#292524;
+          color:white;
+          font-family:inherit;
+          font-size:12px;
+          margin-bottom:6px;
+        "
+      />
+      <button
+        id="dashboardSaveTagBtn"
+        class="frog-btn frog-btn-secondary"
+        style="
+          width:auto;
+          padding:6px 10px;
+          font-size:12px;
+          margin-bottom:4px;
+        "
+      >
+        Save Tag
+      </button>
+      <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
+    </div>
+
+    <div class="frog-panel-section-label">Lifetime Stats</div>
+    <ul class="frog-panel-list">
+      <li>Total Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected ?? 0}</span></li>
+      ${localStats.totalRuns != null ? `<li>Total Runs: <span class="stat-highlight">${localStats.totalRuns}</span></li>` : ""}
+      ${localStats.totalPlayTime != null ? `<li>Total Play Time: <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>` : ""}
+      ${localStats.totalFrogsLost != null ? `<li>Total Frogs Lost: <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>` : ""}
+      ${localStats.totalSnakesShed != null ? `<li>Total Snakes Shed: <span class="stat-highlight">${localStats.totalSnakesShed}</span></li>` : ""}
+    </ul>
+
+    <div class="frog-panel-section-label">Best Record</div>
+    <ul class="frog-panel-list">
+      <li>
+        ${leaderboardBest.found
+          ? `${bestRecordPrefix}${currentTag || "You"} · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
+          : "No best record yet."
+        }
+      </li>
+    </ul>
+
+    ${latestRunHtml}
+
+  `;
+
+  const tagInput = document.getElementById("dashboardTagInput");
+  const saveBtn = document.getElementById("dashboardSaveTagBtn");
+  const msgEl = document.getElementById("dashboardTagMessage");
+  const currentTagEl = document.getElementById("dashboardCurrentTag");
+
+  if (saveBtn && tagInput) {
+    saveBtn.addEventListener("click", async () => {
+      const validation = validateDashboardTag(tagInput.value);
+
+      if (!validation.ok) {
+        if (msgEl) {
+          msgEl.textContent = validation.message;
+          msgEl.style.color = "#fca5a5";
+        }
+        return;
+      }
+
+      const newTag = validation.tag;
+      await saveDashboardTag(newTag);
+
+      if (currentTagEl) {
+        currentTagEl.textContent = newTag;
+      }
+
+      if (msgEl) {
+        msgEl.textContent = "Tag saved.";
+        msgEl.style.color = "#bef264";
+      }
+
+      try {
+        const bestScore =
+          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
+        const bestTime =
+          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+
+        if (bestScore > 0 || bestTime > 0) {
+          await submitScoreToServer(bestScore, bestTime, null, newTag);
+        }
+
+        const refreshed = await fetchLeaderboard();
+        updateMiniLeaderboard(refreshed);
+      } catch (e) {
+        // ignore
+      }
+    });
   }
+}
 function formatDuration(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
   const h = Math.floor(s / 3600);
