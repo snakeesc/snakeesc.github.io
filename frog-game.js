@@ -4186,7 +4186,7 @@ function getUpgradeChoices() {
       upgrades.push({
         id: "survivalInstinct",
         label: `
-          🧠 Survival Instinct<br>
+          ⚡ Survival Instinct<br>
           When below <span style="color:${neon};">10</span> frogs, they hop <span style="color:${neon};">20%</span> faster
         `,
         apply: () => { 
@@ -5029,7 +5029,7 @@ function showBuffGuideOverlay() {
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>🧠 Survival Instinct</strong> — when below 10 frogs, they hop 20% faster.
+          <strong>⚡ Survival Instinct</strong> — when below 10 frogs, they hop 20% faster.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>🧬 Mutation</strong> — +12% jump speed and +12% jump height.
