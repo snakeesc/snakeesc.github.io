@@ -3981,12 +3981,14 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // 🩸 Toxic Blood
+    // 🧪 Poisonous Skin (Formerly Toxic Blood)
     if (!toxicBloodActive) {
       upgrades.push({
         id: "toxicBlood",
-        label: `🩸 Toxic Blood<br>Snake is slowed briefly every time it eats a frog`,
-        apply: () => { toxicBloodActive = true; }
+        label: `🧪 Poisonous Skin<br>The snake is poisoned and slowed briefly every time it eats a frog`,
+        apply: () => { 
+          toxicBloodActive = true; 
+        }
       });
     }
 
@@ -4008,18 +4010,6 @@ function getEpicUpgradeChoices() {
         maxFrogsCap = Math.max(5, maxFrogsCap - 30);
       }
     });
-
-    // 🌌 Quantum Orbs
-    if (!quantumOrbsActive) {
-      upgrades.push({
-        id: "quantumOrbs",
-        label: `🌌 Quantum Orbs<br>Orbs never fade, but max frog cap drops by 10`,
-        apply: () => {
-          quantumOrbsActive = true;
-          maxFrogsCap = Math.max(5, maxFrogsCap - 10);
-        }
-      });
-    }
 
     // 🌀 The Mystic Portal (Epic Role Draft)
     upgrades.push({
@@ -5102,7 +5092,7 @@ function showBuffGuideOverlay() {
           <strong>💨 Second Wind (Epic)</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>🩸 Toxic Blood (Epic)</strong> — snake is slowed briefly every time it eats a frog.
+          <strong>🧪 Poisonous Skin (Epic)</strong> — snake is slowed briefly every time it eats a frog.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>⚖️ Greed's Toll (Epic)</strong> — permanent +100% score gain, but max frog cap drops by 30.
