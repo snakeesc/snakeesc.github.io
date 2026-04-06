@@ -4790,9 +4790,6 @@ function showBuffGuideOverlay() {
         <li class="upgrade-guide-item upgrade-type-survival">
           <strong>👻 Grave Wave</strong> — each shed spawns 10 frogs.
         </li>
-        <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>⚖️ Greed's Toll</strong> — +100% score gain, but max frogs -30.
-        </li>
       </ul>
 
       <ul class="upgrade-guide-list">
