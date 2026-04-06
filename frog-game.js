@@ -3107,26 +3107,17 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           applyBuff(orb.type, collectedBy);
         }
 
-        // 🧪 Orb Specialist + Orb Collector + permanent lifesteal synergy
+        // 🧪 Refactored Orb Specialist + Lifesteal synergy
         let frogsToSpawnFromOrb = 0;
 
-        // Orb Specialist: every orb always spawns 1 frog,
-        // plus a 50% chance for a second frog.
+        // Epic Upgrade: Exactly 1 frog per orb. No scaling.
         if (orbSpecialistActive) {
-          frogsToSpawnFromOrb += 1; // guaranteed
-          //if (Math.random() < 0.5) {
-           // frogsToSpawnFromOrb += 1; // 50% extra
-          //}
+          frogsToSpawnFromOrb += 1; 
         }
 
-        // Permanent lifesteal upgrade: next N orbs also spawn frogs.
+        // Permanent lifesteal upgrade (assuming you keep this)
         if (permaLifeStealOrbsRemaining > 0) {
           permaLifeStealOrbsRemaining -= 1;
-          frogsToSpawnFromOrb += 1;
-        }
-
-        // Orb Collector: now adds an additional frog on top of the above.
-        if (orbCollectorChance > 0 && Math.random() < orbCollectorChance) {
           frogsToSpawnFromOrb += 1;
         }
 
@@ -3850,6 +3841,7 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
         label: `
           🧪 Orb specialist<br>
           Orbs always spawn <span style="color:${epicTitleColor};">1</span> frog.
+          Frogs spawned from this effect do not recieve deathrattle benefits.
         `,
         apply: () => {
           orbSpecialistActive = true;
