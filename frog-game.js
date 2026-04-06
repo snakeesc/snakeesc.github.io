@@ -5040,35 +5040,32 @@ function showBuffGuideOverlay() {
     openAnimatedOverlay(dashboardOverlay);
     content.innerHTML = '<div class="leaderboard-loading">Syncing Swarm Data...</div>';
 
-    // 1. Load Data (Variables matched to your frog-game.js state)
+    // 1. DATA MAPPING
     const localStats = loadDashboardStats();
     const dashboardPfp = getDashboardPfp();
     const currentTag = getSavedPlayerTag() || "Anonymous Frog";
     
-    // Level & Progress logic
+    // Progress Logic
     const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
     const progressPercent = Math.min(100, Math.floor((levelData.currentLevelOrbs / levelData.nextLevelOrbs) * 100));
 
-    // Leaderboard Fetch
+    // Leaderboard Data
     const leaderboardEntries = await fetchLeaderboard();
     const topList = Array.isArray(leaderboardEntries) ? leaderboardEntries.slice(0, 10) : [];
 
-    // 2. Build the UI
-    // Using a wrapper to keep your existing CSS from breaking the inner layout
+    // 2. BUILD THE UI
     content.innerHTML = `
-      <div style="display: flex; gap: 40px; text-align: left; align-items: flex-start; min-height: 450px;">
+      <div class="cc-container">
         
-        <div style="flex: 1.2; border-right: 1px solid #44403c; padding-right: 30px;">
+        <div class="cc-left">
           <div class="frog-panel-section-label">Player Profile</div>
           
-          <div class="profile-box" style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 15px !important;">
-            <div class="profile-avatar-container" style="flex-shrink: 0;">
-              <div class="profile-avatar-bg" style="background: ${dashboardPfp.bgColor}; position: relative;">
-                <img src="${dashboardPfp.spriteSrc}" class="profile-avatar-img" style="z-index:1; position: absolute; inset: 0;">
-                <img src="${dashboardPfp.skinSrc}" class="profile-avatar-img" style="z-index:2; position: absolute; inset: 0;">
-                ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="profile-avatar-img" style="z-index:3; position: absolute; inset: 0;">` : ""}
-                ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="profile-avatar-img" style="z-index:4; position: absolute; inset: 0;">` : ""}
-              </div>
+          <div class="profile-box" style="display: flex; align-items: center; gap: 15px;">
+            <div class="cc-pfp-stack" style="background: ${dashboardPfp.bgColor}; border-radius: 8px;">
+              <img src="${dashboardPfp.spriteSrc}" class="cc-pfp-layer" style="z-index:1">
+              <img src="${dashboardPfp.skinSrc}" class="cc-pfp-layer" style="z-index:2">
+              ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="cc-pfp-layer" style="z-index:3">` : ""}
+              ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="cc-pfp-layer" style="z-index:4">` : ""}
             </div>
             <div class="profile-info">
               <div class="profile-tag">${currentTag}</div>
@@ -5078,39 +5075,53 @@ function showBuffGuideOverlay() {
 
           <div class="profile-progress-container" style="margin-top: -10px; margin-bottom: 25px;">
             <div class="profile-progress-bar" style="width: ${progressPercent}%"></div>
-            <div class="profile-progress-text">${levelData.currentLevelOrbs} / ${levelData.nextLevelOrbs} Orbs to Level ${levelData.level + 1}</div>
+            <div class="profile-progress-text">${levelData.currentLevelOrbs} / ${levelData.nextLevelOrbs} Orbs to Lv ${levelData.level + 1}</div>
           </div>
 
-          <div class="frog-panel-section-label">Lifetime Stats</div>
+          <div class="frog-panel-section-label">Lifetime Mastery</div>
           <ul class="frog-panel-list">
-            <li>Total Runs: <span class="stat-highlight">${localStats.totalRuns || 0}</span></li>
+            <li>Runs: <span class="stat-highlight">${localStats.totalRuns || 0}</span></li>
             <li>Best Score: <span class="stat-highlight">${Math.floor(localStats.bestScore || 0)}</span></li>
-            <li>Orbs Eaten: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
-            <li>Frogs Lost: <span class="stat-highlight">${localStats.totalFrogsLost || 0}</span></li>
+            <li>Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
           </ul>
 
           <div class="frog-panel-section-label" style="margin-top:15px;">Recent Run</div>
-          <div style="padding: 10px; background: #292524; border-radius: 8px; font-size: 13px;">
+          <div style="padding: 10px; background: #292524; border-radius: 8px; font-size: 12px;">
              ${localStats.recentRuns && localStats.recentRuns[0] 
-               ? `Score: <span class="stat-highlight">${Math.floor(localStats.recentRuns[0].score)}</span> · 
-                  Duration: <span class="stat-highlight">${formatDashboardDuration(localStats.recentRuns[0].duration)}</span>`
-               : `<span style="color: #a8a29e;">No recent runs recorded.</span>`}
+               ? `Score: <span class="stat-highlight">${Math.floor(localStats.recentRuns[0].score)}</span><br>
+                  Time: <span class="stat-highlight">${formatDashboardDuration(localStats.recentRuns[0].duration)}</span>`
+               : `<span style="color: #a8a29e;">No recent data.</span>`}
           </div>
         </div>
 
-        <div style="flex: 1;">
+        <div class="cc-right">
           <div class="frog-panel-section-label">Global Top 10</div>
-          <ul class="frog-panel-list" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
-            ${topList.length > 0 ? topList.map((entry, i) => {
-              const isMe = (entry.tag === currentTag);
-              return `
-                <li style="display: flex; justify-content: space-between; padding: 6px 0; ${isMe ? 'background: rgba(190,242,100,0.1); border-radius: 4px; padding-left: 8px; padding-right: 8px; color: #bef264;' : ''}">
-                  <span>${i + 1}. ${entry.tag || "Anonymous"}</span>
-                  <span class="stat-highlight">${Math.floor(entry.score || entry.bestScore || 0)}</span>
-                </li>
-              `;
-            }).join('') : '<li style="color: #a8a29e;">No global data found.</li>'}
-          </ul>
+          <table class="cc-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Time</th>
+                <th style="text-align:right">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${topList.length > 0 ? topList.map((entry, i) => {
+                const isMe = (entry.tag === currentTag);
+                const scoreValue = Math.floor(entry.score || entry.bestScore || 0);
+                const timeValue = entry.duration ? formatDashboardDuration(entry.duration) : "--";
+                
+                return `
+                  <tr style="${isMe ? 'color: #bef264; background: rgba(190,242,100,0.1);' : ''}">
+                    <td>${i + 1}</td>
+                    <td style="max-width: 80px; overflow: hidden; text-overflow: ellipsis;">${entry.tag || "Anon"}</td>
+                    <td>${timeValue}</td>
+                    <td style="text-align:right" class="stat-highlight">${scoreValue}</td>
+                  </tr>
+                `;
+              }).join('') : '<tr><td colspan="4">Loading rankings...</td></tr>'}
+            </tbody>
+          </table>
         </div>
 
       </div>
