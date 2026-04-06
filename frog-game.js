@@ -520,58 +520,63 @@ function rollFrogCosmetics() {
     hatSrc: Math.random() < IN_GAME_FROG_HAT_CHANCE ? getRandomFrogHat() : null
   };
 }
-function getUpgradeColorClass(upgradeId) {
-  // movement / jumping
-const mobilityIds = [
-  "frogSpeed",
-  "frogJump",
-  "frogSpeedJump",
-  "epicSpeedJump",
-  "higherHops",
-  "swarmDivide"
-];
+  function getUpgradeColorClass(upgradeId) {
+    // movement / jumping
+    const mobilityIds = [
+      "frogSpeed",
+      "frogJump",
+      "frogSpeedJump",
+      "epicSpeedJump",
+      "higherHops",
+      "swarmDivide",
+      "survivalInstinct",
+      "greedsToll"
+    ];
 
-const survivalIds = [
-  "deathrattle",
-  "epicDeathrattle",
-  "lastStand",
-  "ouroborosPact",
-  "secondWind"
-];
+    const survivalIds = [
+      "deathrattle",
+      "epicDeathrattle",
+      "lastStand",
+      "ouroborosPact",
+      "secondWind",
+      "toxicBlood"
+    ];
 
-  // buff duration / orbs / magnet style
-  const buffIds = [
-    "buffDuration",
-    "epicBuffDuration",
-    "orbMagnet",
-    "orbLinger",
-    "orbSpawn",
-    "orbSpecialist"
-  ];
+    // buff duration / orbs / magnet style
+    const buffIds = [
+      "buffDuration",
+      "epicBuffDuration",
+      "orbMagnet",
+      "orbLinger",
+      "orbSpawn",
+      "orbSpecialist",
+      "moltFortune",
+      "quantumOrbs"
+    ];
 
+    // orb creation / collector
+    const orbIds = [
+      "orbCollector"
+    ];
 
-  // orb creation / collector
-  const orbIds = [
-    "orbCollector"
-  ];
+    // frog role / squad / promotions
+    const roleIds = [
+      "extraFrogCap",
+      "frogPromotion",
+      "frogPromotionEpic",
+      "cannibalPromotion",
+      "roleDraft",
+      "mysticPortal"
+    ];
 
-  // frog role / squad / promotions
-  const roleIds = [
-    "extraFrogCap",
-    "frogPromotion",
-    "frogPromotionEpic",
-    "cannibalPromotion",
-    "roleDraft"
-  ];
+    if (mobilityIds.includes(upgradeId)) return "upgrade-type-mobility";
+    if (buffIds.includes(upgradeId)) return "upgrade-type-buff";
+    if (survivalIds.includes(upgradeId)) return "upgrade-type-survival";
+    if (orbIds.includes(upgradeId)) return "upgrade-type-orb";
+    if (roleIds.includes(upgradeId)) return "upgrade-type-role";
 
-  if (mobilityIds.includes(upgradeId)) return "upgrade-type-mobility";
-  if (buffIds.includes(upgradeId)) return "upgrade-type-buff";
-  if (survivalIds.includes(upgradeId)) return "upgrade-type-survival";
-  if (orbIds.includes(upgradeId)) return "upgrade-type-orb";
-  if (roleIds.includes(upgradeId)) return "upgrade-type-role";
-
-  // default: plain green
-  return "upgrade-type-mobility";
+    // default: plain green
+    return "upgrade-type-mobility";
   }
 
 
@@ -5010,7 +5015,7 @@ function closeAnimatedOverlay(overlayEl) {
     });
   }
 
-  function showBuffGuideOverlay() {
+function showBuffGuideOverlay() {
     if (!buffGuideOverlay) initBuffGuideOverlay();
     if (!buffGuideOverlay) return;
 
@@ -5034,10 +5039,13 @@ function closeAnimatedOverlay(overlayEl) {
 
       <ul class="upgrade-guide-list">
         <li class="upgrade-guide-item upgrade-type-mobility">
+          <strong>🧠 Survival Instinct</strong> — when below 10 frogs, they hop 20% faster.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>🧬 Mutation</strong> — +12% jump speed and +12% jump height.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>🌪️ Frog Scatter</strong> — kill and respawn all current frogs.
+          <strong>🌪️ Frog Scatter (Epic)</strong> — kill and respawn all current frogs.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>✂️ Pair of Scissors</strong> — cuts the snake in half, slows it by 30%.
@@ -5055,19 +5063,25 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>🎯 More Orbs Over Time</strong> — faster orb spawns.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🥚 Snake Egg</strong> — the next shed gives the new snake only 50% of its normal speed increase.
+          <strong>🥚 Snake Egg</strong> — next shed gives the snake only 50% of its normal speed increase.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>⏳ Buffs Extended</strong> — larger buff duration increase.
+          <strong>⏳ Buffs Extended (Epic)</strong> — larger buff duration increase.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🌩️ Orb Storm</strong> — drops a burst of random orbs immediately.
+          <strong>🌩️ Orb Storm (Epic)</strong> — drops a burst of random orbs immediately.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🧪 Orb Specialist</strong> — every orb guarantees 1 frog, and Orb Collector can still add more.
+          <strong>🧪 Orb Specialist (Epic)</strong> — every orb guarantees 1 extra frog.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>👻 Grave Wave</strong> — each shed spawns 10 frogs.
+          <strong>👻 Grave Wave (Epic)</strong> — each shed spawns 10 frogs.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>🔮 Molt Fortune (Epic)</strong> — snake drops 5 orbs when shedding.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-buff">
+          <strong>🌌 Quantum Orbs (Epic)</strong> — orbs never fade, but max frog cap drops by 10.
         </li>
       </ul>
 
@@ -5082,10 +5096,16 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>🏹 Last Stand</strong> — your last frog gets a strong revive chance.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>💀 Epic Deathrattle</strong> — big boost to revive chance.
+          <strong>💀 Epic Deathrattle (Epic)</strong> — big boost to revive chance.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>💨 Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
+          <strong>💨 Second Wind (Epic)</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>🩸 Toxic Blood (Epic)</strong> — snake is slowed briefly every time it eats a frog.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-survival">
+          <strong>⚖️ Greed's Toll (Epic)</strong> — permanent +100% score gain, but max frog cap drops by 30.
         </li>
       </ul>
 
@@ -5094,7 +5114,10 @@ function closeAnimatedOverlay(overlayEl) {
           <strong>🐸 Spawn Frogs</strong> — spawn frogs instantly.
         </li>
         <li class="upgrade-guide-item upgrade-type-role">
-          <strong>🎭 Role Draft</strong> — choose between 2 random frog roles, spawn 2–4 frogs of that role, and promote star frogs into that role.
+          <strong>🎭 Role Draft</strong> — choose between 2 random frog roles.
+        </li>
+        <li class="upgrade-guide-item upgrade-type-role">
+          <strong>🌀 Mystic Portal (Epic)</strong> — draft between the powerful Alchemist or Necromancer frogs.
         </li>
       </ul>
 
