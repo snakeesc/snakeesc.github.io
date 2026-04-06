@@ -3128,13 +3128,13 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     spawnOrb(null, x, y);
   }
-  function updateOrbs(dt) {
+function updateOrbs(dt) {
     const MAGNET_RANGE2 = ORB_MAGNET_PULL_RANGE * ORB_MAGNET_PULL_RANGE;
 
     for (let i = orbs.length - 1; i >= 0; i--) {
       const orb = orbs[i];
       
-      // 🌌 Quantum Orbs Check
+      // 🌌 Quantum Orbs: Bypass decay if active
       if (!quantumOrbsActive) {
         orb.ttl -= dt;
       }
@@ -3147,7 +3147,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         continue;
       }
 
-      // magnet logic
+      // --- Magnet Logic ---
       const magnetFrogs = frogs.filter(f => f.isMagnet);
       if ((orbMagnetTime > 0 || magnetFrogs.length > 0) && frogs.length > 0) {
         let target = null;
@@ -3189,6 +3189,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         }
       }
 
+      // --- Visuals ---
       const denom = orb.maxTtl || ORB_TTL;
       const lifeT = orb.ttl / denom;
       const bob   = Math.sin((1 - lifeT) * Math.PI * 2) * 3;
@@ -3199,7 +3200,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         `translate3d(${orb.x - ORB_RADIUS}px, ${renderY - ORB_RADIUS}px, 0) scale(${scale})`;
       orb.el.style.opacity = String(Math.max(0, Math.min(1, lifeT + 0.2)));
 
-      // collection
+      // --- Collection Logic ---
       const ocx = orb.x;
       const ocy = orb.y;
 
@@ -3226,12 +3227,17 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
         let frogsToSpawnFromOrb = 0;
 
-        // Orb Specialist: guarantees 1 frog.
+        // 🧪 Epic: Orb Specialist (Guaranteed 1)
         if (orbSpecialistActive) {
           frogsToSpawnFromOrb += 1; 
         }
 
-        // Permanent lifesteal upgrade
+        // 🥚 Common: Double Yolker (15% chance for 2 extra)
+        if (doubleYolkerActive && Math.random() < 0.15) {
+          frogsToSpawnFromOrb += 2;
+        }
+
+        // 🩺 Lifeline / Permanent Lifesteal
         if (permaLifeStealOrbsRemaining > 0) {
           permaLifeStealOrbsRemaining -= 1;
           frogsToSpawnFromOrb += 1;
@@ -3246,7 +3252,6 @@ function applyBuff(type, frog, durationMultiplier = 1) {
         }
         orbs.splice(i, 1);
       }
-
     }
   }
 
