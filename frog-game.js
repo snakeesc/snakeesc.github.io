@@ -3934,16 +3934,6 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // --- ⚖️ Greed's Toll ---
-    upgrades.push({
-      id: "greedsToll",
-      label: `⚖️ Greed's Toll<br>Permanent <span style="color:${epicTitleColor};">+100%</span> score gain, but max frogs -30`,
-      apply: () => {
-        permanentScoreMultiplier += 1.0;
-        maxFrogsCap = Math.max(5, maxFrogsCap - 30);
-      }
-    });
-
     // --- 🌀 Mystic Portal ---
     upgrades.push({
       id: "mysticPortal",
