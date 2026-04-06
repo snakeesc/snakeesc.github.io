@@ -3817,31 +3817,21 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
   let leaderboardOverlay = null;
   let dashboardOverlay = null;
 
-  function getUpgradeChoices() {
+function getUpgradeChoices() {
     const neon = "#4defff";
+    const epicTitleColor = "#ffb347";
+
+    const speedPerPickPct     = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
+    const jumpPerPickPct      = Math.round((FROG_JUMP_UPGRADE_FACTOR - 1) * 100);
+    const buffPerPickPct      = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
+    const deathPerPickPct     = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
+
     const upgrades = [];
 
-    // --- 🥚 Double Yolker (New Common Economy) ---
-    if (!doubleYolkerActive) {
-      upgrades.push({
-        id: "doubleYolker",
-        label: `
-          🥚 Double Yolker<br>
-          Orbs have a <span style="color:${neon};">15%</span> chance to spawn <span style="color:${neon};">2</span> frogs
-        `,
-        apply: () => {
-          doubleYolkerActive = true;
-        }
-      });
-    }
-
-    // --- 🎭 Role Draft (Common) ---
+    // --- 🎭 Role Draft ---
     upgrades.push({
       id: "roleDraft",
-      label: `
-        🎭 Role Draft<br>
-        Choose between <span style="color:${neon};">2</span> random frog roles
-      `,
+      label: `🎭 Role Draft<br>Choose between <span style="color:${neon};">2</span> random frog roles`,
       opensRoleDraft: true,
       apply: () => {
         roleDraftUsed = true;
@@ -3849,95 +3839,203 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
       }
     });
 
-    // ... [Rest of your common upgrades like Spawn 20, Orb Flow, etc.]
-    
+    // --- 🥚 Double Yolker ---
+    if (!doubleYolkerActive) {
+      upgrades.push({
+        id: "doubleYolker",
+        label: `🥚 Double Yolker<br>Orbs have a <span style="color:${neon};">15%</span> chance to spawn <span style="color:${neon};">2</span> frogs`,
+        apply: () => { doubleYolkerActive = true; }
+      });
+    }
+
+    // --- 🐸 Spawn Frogs ---
+    if (frogs.length < maxFrogsCap) {
+      upgrades.push({
+        id: "spawn20",
+        label: `🐸 Spawn frogs<br><span style="color:${neon};">${NORMAL_SPAWN_AMOUNT}</span> frogs right now`,
+        apply: () => { spawnExtraFrogs(NORMAL_SPAWN_AMOUNT); }
+      });
+    }
+
+    // --- 🎯 Orb Flow ---
+    if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
+      upgrades.push({
+        id: "epicMoreOrbs",
+        label: `🎯 Orb Flow<br>Increase orb spawnrate by <span style="color:${neon};">10%</span>`,
+        apply: () => {
+          orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
+          if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) orbSpawnIntervalFactor = minOrbSpawnIntervalFactor;
+        }
+      });
+    }
+
+    // --- 🌩️ Orb Storm ---
+    upgrades.push({
+      id: "epicOrbStorm",
+      label: `🌩️ Orb Storm<br>Drop <span style="color:${neon};">${ORB_STORM_COUNT}</span> random orbs right now`,
+      apply: () => {
+        const width  = window.innerWidth;
+        const height = window.innerHeight;
+        for (let i = 0; i < ORB_STORM_COUNT; i++) spawnOrbRandom(width, height);
+      }
+    });
+
+    // --- ✂️ Pair of Scissors ---
+    if (!pairOfScissorsUsed && !epicChainPending && upgradeOverlayContext !== "start") {
+      upgrades.push({
+        id: "pairOfScissors",
+        label: `✂️ Pair of Scissors<br>Cut the snake in <span style="color:${neon};">half</span> and slow it by <span style="color:${neon};">30%</span>`,
+        apply: () => { applyPairOfScissors(); }
+      });
+    }
+
+    // --- 🌀 Orb Whisperer ---
+    if (!orbLingerBonusUsed) {
+      upgrades.push({
+        id: "orbWhisperer",
+        label: `🌀 Orb Whisperer<br>Orbs linger <span style="color:${neon};">30%</span> longer`,
+        apply: () => {
+          orbLingerBonusUsed = true;
+          orbTtlFactor *= 1.3;
+          for (const orb of orbs) {
+            const base = orb.maxTtl || ORB_TTL;
+            orb.maxTtl = base * 1.3;
+            orb.ttl *= 1.3;
+          }
+        }
+      });
+    }
+
+    // --- 🧬 Mutation ---
+    const mutationChoice = getRandomMutationUpgrade();
+    if (mutationChoice) upgrades.push(mutationChoice);
+
+    // --- 🥚 Snake Egg ---
+    if (!snakeEggPending && !snakeEggUsed) {
+      upgrades.push({
+        id: "snakeEgg",
+        label: `🥚 Snake Egg<br>Next shed reduces snake speed bonus by <span style="color:${neon};">50%</span>`,
+        apply: () => { snakeEggPending = true; snakeEggUsed = true; }
+      });
+    }
+
+    // --- ⏳ Buff Duration ---
+    if (buffDurationFactor < buffDurationCap - 1e-4) {
+      upgrades.push({
+        id: "buffDuration",
+        label: `⏳ Buffs last longer<br>+<span style="color:${neon};">${buffPerPickPct}%</span> duration`,
+        apply: () => {
+          buffDurationFactor *= BUFF_DURATION_UPGRADE_FACTOR;
+          if (buffDurationFactor > buffDurationCap) buffDurationFactor = buffDurationCap;
+        }
+      });
+    }
+
+    // --- 💀 Deathrattle ---
+    if (frogDeathRattleChance < MAX_DEATHRATTLE_CHANCE - 1e-4) {
+      upgrades.push({
+        id: "commonDeathRattle",
+        label: `💀 Deathrattle<br>+<span style="color:${neon};">${deathPerPickPct}%</span> revive chance`,
+        apply: () => {
+          frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + COMMON_DEATHRATTLE_CHANCE);
+        }
+      });
+    }
+
+    // --- 🏹 Last Stand ---
+    if (!lastStandActive) {
+      upgrades.push({
+        id: "lastStand",
+        label: `🏹 Last Stand<br>Last frog has <span style="color:${neon};">${Math.round(LAST_STAND_MIN_CHANCE * 100)}%</span> revive odds`,
+        apply: () => { lastStandActive = true; }
+      });
+    }
+
     return upgrades;
   }
 function getEpicUpgradeChoices() {
-    const neon = "#4defff";
     const epicTitleColor = "#ffb347";
+    const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
+    const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.15;
+    const buffPerPickPct  = Math.round((epicBuffFactor - 1) * 100);
+
     const upgrades = [];
 
-    // MOVED FROM COMMON: Survival Instinct (Clutch Speed)
+    // --- ⚡ Survival Instinct ---
     if (!survivalInstinctActive) {
       upgrades.push({
         id: "survivalInstinct",
-        label: `
-          ⚡ Survival Instinct<br>
-          When below <span style="color:${epicTitleColor};">10</span> frogs, they hop <span style="color:${epicTitleColor};">20%</span> faster
-        `,
-        apply: () => { 
-          survivalInstinctActive = true; 
-        }
+        label: `⚡ Survival Instinct<br>When below 10 frogs, they hop <span style="color:${epicTitleColor};">20%</span> faster`,
+        apply: () => { survivalInstinctActive = true; }
       });
     }
 
+    // --- 🐸 Epic Spawn ---
     if (frogs.length < maxFrogsCap) {
       upgrades.push({
-        id: "epicSpawn50",
-        label: `
-          🐸 Spawn Frogs<br>
-          Spawn <span style="color:${epicTitleColor};">${EPIC_SPAWN_AMOUNT}</span> frogs now
-        `,
-        apply: () => {
-          spawnExtraFrogs(EPIC_SPAWN_AMOUNT);
-        }
+        id: "epicSpawn30",
+        label: `🐸 Spawn Frogs<br>Spawn <span style="color:${epicTitleColor};">30</span> frogs now`,
+        apply: () => { spawnExtraFrogs(30); }
       });
     }
 
+    // --- 💀 Epic Deathrattle ---
     if (frogDeathRattleChance < MAX_DEATHRATTLE_CHANCE - 1e-4) {
       upgrades.push({
         id: "epicDeathRattle",
-        label: `
-          💀 Deathrattle<br>
-          +<span style="color:${epicTitleColor};">${Math.round(EPIC_DEATHRATTLE_CHANCE * 100)}%</span> deathrattle chance
-        `,
+        label: `💀 Epic Deathrattle<br>+<span style="color:${epicTitleColor};">${deathPerPickPct}%</span> revive chance`,
         apply: () => {
-          frogDeathRattleChance = Math.min(
-            MAX_DEATHRATTLE_CHANCE,
-            frogDeathRattleChance + EPIC_DEATHRATTLE_CHANCE
-          );
+          frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + EPIC_DEATHRATTLE_CHANCE);
         }
       });
     }
 
+    // --- 🧪 Orb Specialist ---
+    if (!orbSpecialistActive) {
+      upgrades.push({
+        id: "epicOrbSpecialist",
+        label: `🧪 Orb specialist<br>Every collected orb guarantees <span style="color:${epicTitleColor};">1</span> extra frog`,
+        apply: () => { orbSpecialistActive = true; }
+      });
+    }
+
+    // --- 💨 Second Wind ---
     if (!secondWindUsed && !secondWindActive) {
       upgrades.push({
         id: "secondWind",
-        label: `
-          💨 Second Wind<br>
-          Once per run, when your frogs fall below
-          <span style="color:${epicTitleColor};">10</span>,
-          spawn <span style="color:${epicTitleColor};">20</span> frogs instantly
-        `,
-        apply: () => {
-          secondWindActive = true;
-        }
+        label: `💨 Second Wind<br>Below 10 frogs: instantly spawn <span style="color:${epicTitleColor};">20</span> (once)`,
+        apply: () => { secondWindActive = true; }
       });
     }
 
+    // --- 👻 Grave Wave ---
     if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
         id: "graveWave",
-        label: `
-          👻 Grave Wave<br>
-          Each shed spawns <span style="color:${epicTitleColor};">10</span> frogs
-        `,
-        apply: () => {
-          graveWaveActive = true;
-          graveWaveUsed = true;
-        }
+        label: `👻 Grave Wave<br>Each shed spawns <span style="color:${epicTitleColor};">10</span> frogs`,
+        apply: () => { graveWaveActive = true; graveWaveUsed = true; }
       });
     }
 
+    // --- 🧪 Poisonous Skin ---
     if (!toxicBloodActive) {
       upgrades.push({
         id: "toxicBlood",
-        label: `🧪 Poisonous Skin<br>The snake is poisoned and slowed briefly every time it eats a frog`,
+        label: `🧪 Poisonous Skin<br>Snake is slowed briefly every time it eats a frog`,
         apply: () => { toxicBloodActive = true; }
       });
     }
 
+    // --- 🌪️ Frog Scatter ---
+    if (!frogScatterUsed && frogs.length > 0) {
+      upgrades.push({
+        id: "frogScatter",
+        label: `🌪️ Frog Scatter<br>Kill and respawn <span style="color:${epicTitleColor};">all</span> current frogs`,
+        apply: () => { frogScatterUsed = true; scatterFrogSwarm(); }
+      });
+    }
+
+    // --- 🔮 Molt Fortune ---
     if (!moltFortuneActive) {
       upgrades.push({
         id: "moltFortune",
@@ -3946,18 +4044,20 @@ function getEpicUpgradeChoices() {
       });
     }
 
+    // --- ⚖️ Greed's Toll ---
     upgrades.push({
       id: "greedsToll",
-      label: `⚖️ Greed's Toll<br>Permanent <span style="color:${epicTitleColor};">+100%</span> score gain, but max frog cap drops by 30`,
+      label: `⚖️ Greed's Toll<br>Permanent <span style="color:${epicTitleColor};">+100%</span> score gain, but max frogs -30`,
       apply: () => {
         permanentScoreMultiplier += 1.0;
         maxFrogsCap = Math.max(5, maxFrogsCap - 30);
       }
     });
 
+    // --- 🌀 Mystic Portal ---
     upgrades.push({
       id: "mysticPortal",
-      label: `🌀 Mystic Portal<br>Draft between the <span style="color:${epicTitleColor};">Alchemist</span> or <span style="color:${epicTitleColor};">Necromancer</span> frogs`,
+      label: `🌀 Mystic Portal<br>Draft between the <span style="color:${epicTitleColor};">Alchemist</span> or <span style="color:${epicTitleColor};">Necromancer</span>`,
       opensRoleDraft: true,
       apply: () => {
         upgradeOverlayButtonsContainer.innerHTML = "";
@@ -3977,7 +4077,6 @@ function getEpicUpgradeChoices() {
 
     return upgrades;
   }
-
   function clearMainMenuSnakes() {
     if (!Array.isArray(mainMenuSnakes)) return;
     for (const s of mainMenuSnakes) {
