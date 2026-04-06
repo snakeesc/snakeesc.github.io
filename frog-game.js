@@ -3872,24 +3872,6 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // EPIC: Orb spawn interval (capped at 10% total)
-    if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
-      upgrades.push({
-        id: "epicMoreOrbs",
-        label: `
-          🎯 Epic Orb Flow<br>
-          Faster orb spawns up to a total cap of
-          <span style="color:${epicTitleColor};">10%</span>
-        `,
-        apply: () => {
-          orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
-          if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) {
-            orbSpawnIntervalFactor = minOrbSpawnIntervalFactor;
-          }
-        }
-      });
-    }
-
     if (!secondWindUsed && !secondWindActive) {
       upgrades.push({
         id: "secondWind",
@@ -4060,6 +4042,24 @@ function getUpgradeChoices() {
         `,
         apply: () => {
           spawnExtraFrogs(NORMAL_SPAWN_AMOUNT);
+        }
+      });
+    }
+
+    // EPIC: Orb spawn interval (capped at 10% total)
+    if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
+      upgrades.push({
+        id: "epicMoreOrbs",
+        label: `
+          🎯 Orb Flow<br>
+          Faster orb spawns by
+          <span style="color:${epicTitleColor};">10%</span>
+        `,
+        apply: () => {
+          orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
+          if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) {
+            orbSpawnIntervalFactor = minOrbSpawnIntervalFactor;
+          }
         }
       });
     }
