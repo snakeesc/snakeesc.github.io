@@ -649,6 +649,8 @@ const survivalIds = [
   let scissorsRemnantSegments = [];
   let snakeEatingOldBody = false;
   let snakeOldBodySpeedBonusPending = false;
+  let snakeOldBodyChaseTime = 0;
+  let snakeLastRemnantTarget = null;
   let scissorsGrowthLocked = false;
   let severedSnakeRemnants = [];
   let snakeEggPending = false; // EPIC: next shed uses reduced speed bonus
@@ -1158,9 +1160,13 @@ const survivalIds = [
     if (scissorsRemnantSegments.length > 0) {
       snakeEatingOldBody = true;
       snakeOldBodySpeedBonusPending = true;
+      snakeOldBodyChaseTime = 0;
+      snakeLastRemnantTarget = null;
     } else {
       snakeEatingOldBody = false;
       snakeOldBodySpeedBonusPending = false;
+      snakeOldBodyChaseTime = 0;
+      snakeLastRemnantTarget = null;
     }
 
     scissorsGrowthLocked = false;
@@ -2245,6 +2251,8 @@ function clearScissorsAndOldSnakeState() {
   // reset scissors state flags
   snakeEatingOldBody = false;
   snakeOldBodySpeedBonusPending = false;
+  snakeOldBodyChaseTime = 0;
+  snakeLastRemnantTarget = null;
   scissorsGrowthLocked = false;
   severedSnakeRemnants = [];
 }
@@ -3418,17 +3426,31 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     let bestRemnantDist2 = Infinity;
 
     if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
+      snakeOldBodyChaseTime += dt;
+
       for (const seg of scissorsRemnantSegments) {
         if (!seg || !seg.el) continue;
+
         const sx = seg.x + SNAKE_SEGMENT_SIZE / 2;
         const sy = seg.y + SNAKE_SEGMENT_SIZE / 2;
         const dx = sx - head.x;
         const dy = sy - head.y;
         const d2 = dx * dx + dy * dy;
+
         if (d2 < bestRemnantDist2) {
           bestRemnantDist2 = d2;
           targetRemnant = seg;
         }
+      }
+
+      snakeLastRemnantTarget = targetRemnant || null;
+
+      // If the snake has been circling too long, stop hard-targeting the old body.
+      if (snakeOldBodyChaseTime > 4.5) {
+        snakeEatingOldBody = false;
+        snakeOldBodyChaseTime = 0;
+        snakeLastRemnantTarget = null;
+        targetRemnant = null;
       }
     }
 
@@ -3454,12 +3476,23 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     } else if (targetRemnant) {
       const sx = targetRemnant.x + SNAKE_SEGMENT_SIZE / 2;
       const sy = targetRemnant.y + SNAKE_SEGMENT_SIZE / 2;
-      desiredAngle = Math.atan2(sy - head.y, sx - head.x);
-    } else if (targetFrog) {
+      const rdx = sx - head.x;
+      const rdy = sy - head.y;
+      const remnantDist = Math.sqrt(rdx * rdx + rdy * rdy) || 1;
+
+      // If we are already very close, do not keep turning in tight circles around it.
+      if (remnantDist < SNAKE_SEGMENT_SIZE * 0.9) {
+        targetRemnant = null;
+      } else {
+        desiredAngle = Math.atan2(rdy, rdx);
+      }
+    }
+
+    if (!targetRemnant && targetFrog) {
       const fx = targetFrog.x + FROG_SIZE / 2;
       const fy = targetFrog.baseY + FROG_SIZE / 2;
       desiredAngle = Math.atan2(fy - head.y, fx - head.x);
-    } else {
+    } else if (!targetRemnant && !targetFrog && snakeConfuseTime <= 0) {
       desiredAngle += (Math.random() - 0.5) * dt;
     }
 
@@ -3594,7 +3627,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
     }
 
     if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
-      const remnantEatR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.45, 2);
+      const remnantEatR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.75, 2);
 
       for (let i = scissorsRemnantSegments.length - 1; i >= 0; i--) {
         const seg = scissorsRemnantSegments[i];
@@ -3611,12 +3644,16 @@ function applyBuff(type, frog, durationMultiplier = 1) {
           }
           scissorsRemnantSegments.splice(i, 1);
           growSnakeForSnake(snakeObj, 1);
+          snakeOldBodyChaseTime = 0;
+          snakeLastRemnantTarget = null;
           break;
         }
       }
 
       if (scissorsRemnantSegments.length === 0) {
         snakeEatingOldBody = false;
+        snakeOldBodyChaseTime = 0;
+        snakeLastRemnantTarget = null;
 
         if (snakeOldBodySpeedBonusPending) {
           snakeObj.speedFactor *= 1.10;
