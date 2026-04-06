@@ -1697,6 +1697,13 @@ function createFrogAt(x, y, tokenId) {
   }
 
 function getRandomMutationUpgrade() {
+  const speedCanImprove = frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4;
+  const jumpCanImprove = frogPermanentJumpFactor < MAX_FROG_JUMP_FACTOR - 1e-4;
+
+  if (!speedCanImprove && !jumpCanImprove) {
+    return null;
+  }
+
   return {
     id: "mutation",
     label: `
@@ -3756,6 +3763,24 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
       });
     }
 
+    // EPIC: Orb spawn interval (capped at 10% total)
+    if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
+      upgrades.push({
+        id: "epicMoreOrbs",
+        label: `
+          🎯 Epic Orb Flow<br>
+          Faster orb spawns up to a total cap of
+          <span style="color:${epicTitleColor};">10%</span>
+        `,
+        apply: () => {
+          orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
+          if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) {
+            orbSpawnIntervalFactor = minOrbSpawnIntervalFactor;
+          }
+        }
+      });
+    }
+
     if (!secondWindUsed && !secondWindActive) {
       upgrades.push({
         id: "secondWind",
@@ -3996,23 +4021,6 @@ function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
           buffDurationFactor *= BUFF_DURATION_UPGRADE_FACTOR;
           if (buffDurationFactor > buffDurationCap) {
             buffDurationFactor = buffDurationCap;
-          }
-        }
-      });
-    }
-
-    // Orb spawn interval (capped)
-    if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
-      upgrades.push({
-        id: "moreOrbs",
-        label: `
-          🎯 More orbs over time<br>
-          +<span style="color:${neon};">${orbFasterPerPickPct}%</span> faster orb spawns
-        `,
-        apply: () => {
-          orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
-          if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) {
-            orbSpawnIntervalFactor = minOrbSpawnIntervalFactor;
           }
         }
       });
