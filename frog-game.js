@@ -3992,6 +3992,19 @@ function getUpgradeChoices() {
       });
     }
 
+    upgrades.push({
+      id: "roleDraft",
+      label: `
+        🎭 Role Draft<br>
+        Choose between <span style="color:${neon};">2</span> random frog roles and promote your stars
+      `,
+      opensRoleDraft: true,
+      apply: () => {
+        roleDraftUsed = true;
+        showRoleDraftOverlayChoices();
+      }
+    });
+
     if (!lastStandActive) {
       upgrades.push({
         id: "lastStand",
@@ -4012,20 +4025,6 @@ function getEpicUpgradeChoices() {
     const neon = "#4defff";
     const epicTitleColor = "#ffb347";
     const upgrades = [];
-
-    // MOVED FROM COMMON: Role Draft
-    upgrades.push({
-      id: "roleDraft",
-      label: `
-        🎭 Role Draft<br>
-        Choose between <span style="color:${epicTitleColor};">2</span> random frog roles and promote your stars
-      `,
-      opensRoleDraft: true,
-      apply: () => {
-        roleDraftUsed = true;
-        showRoleDraftOverlayChoices();
-      }
-    });
 
     // MOVED FROM COMMON: Survival Instinct (Clutch Speed)
     if (!survivalInstinctActive) {
