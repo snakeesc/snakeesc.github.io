@@ -1053,7 +1053,7 @@ function rollFrogCosmetics() {
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
-  function snakeShed(stage) {
+function snakeShed(stage) {
     if (!snake) return;
 
     const oldSnake = snake;
@@ -1062,6 +1062,7 @@ function rollFrogCosmetics() {
       ? oldSnake.segments.map(seg => seg.el).filter(Boolean)
       : [];
 
+    // Despawn old snake visuals
     if (oldHeadEl || oldSegmentEls.length) {
       dyingSnakes.push({
         headEl: oldHeadEl,
@@ -1070,6 +1071,7 @@ function rollFrogCosmetics() {
       });
     }
 
+    // Speed & Stage Logic
     let speedMult = SNAKE_SHED_SPEEDUP;
     if (snakeEggPending) {
       speedMult = SNAKE_EGG_BUFF_PCT;
@@ -1088,48 +1090,72 @@ function rollFrogCosmetics() {
     const startX = oldSnake.head ? oldSnake.head.x : width * 0.15;
     const startY = oldSnake.head ? oldSnake.head.y : height * 0.5;
 
+    // Segment Count Logic
     let newSegCount = Math.round((oldSegmentEls.length || SNAKE_INITIAL_SEGMENTS) / 2);
     if (newSegCount < SNAKE_INITIAL_SEGMENTS) newSegCount = SNAKE_INITIAL_SEGMENTS;
+    if (newSegCount > 50) newSegCount = 50;
 
+    // Create New Head
     const headEl = document.createElement("div");
     headEl.className = "snake-head";
-    // ... (rest of head style logic)
+    headEl.style.position = "absolute";
+    headEl.style.width = SNAKE_SEGMENT_SIZE + "px";
+    headEl.style.height = SNAKE_SEGMENT_SIZE + "px";
+    headEl.style.imageRendering = "pixelated";
+    headEl.style.backgroundSize = "contain";
+    headEl.style.backgroundRepeat = "no-repeat";
+    headEl.style.zIndex = "30";
+    headEl.style.backgroundImage = "url(./images/head.png)";
     container.appendChild(headEl);
 
+    // Create New Segments
     const segments = [];
     for (let i = 0; i < newSegCount; i++) {
       const segEl = document.createElement("div");
-      // ... (rest of segment style logic)
+      const isTail = (i === newSegCount - 1);
+      segEl.className = isTail ? "snake-tail" : "snake-body";
+      segEl.style.position = "absolute";
+      segEl.style.width = SNAKE_SEGMENT_SIZE + "px";
+      segEl.style.height = SNAKE_SEGMENT_SIZE + "px";
+      segEl.style.imageRendering = "pixelated";
+      segEl.style.backgroundSize = "contain";
+      segEl.style.zIndex = "29";
+      segEl.style.backgroundImage = isTail ? "url(./images/tail.png)" : "url(./images/body.png)";
       container.appendChild(segEl);
       segments.push({ el: segEl, x: startX, y: startY });
     }
 
+    // --- 🚨 THE FIX: PATH PRE-FILLING 🚨 ---
     const path = [];
     const segmentGap = computeSegmentGap();
-    for (let i = 0; i < (segments.length + 2) * segmentGap + 2; i++) path.push({ x: startX, y: startY });
+    // We need enough points in the path for every segment to have a unique index
+    const requiredPathLength = (newSegCount + 5) * segmentGap; 
+    
+    for (let i = 0; i < requiredPathLength; i++) {
+      path.push({ x: startX, y: startY });
+    }
 
     snake = {
-      head: { el: headEl, x: startX, y: startY, angle: 0 },
+      head: { el: headEl, x: startX, y: startY, angle: oldSnake.head ? oldSnake.head.angle : 0 },
       segments,
       path,
-      speedFactor: newSpeedFactor
+      speedFactor: newSpeedFactor,
+      canGrow: true
     };
 
     applySnakeAppearance();
 
-    // --- ✂️ THE FIX IS HERE ---
-    // If there are remnants from a previous Scissors cut, trigger the chase
+    // Re-trigger Scissors Remnant Chase if needed
     if (scissorsRemnantSegments.length > 0) {
       snakeEatingOldBody = true;
-      snakeOldBodySpeedBonusPending = true; // This flags the +10% reward
+      snakeOldBodySpeedBonusPending = true;
       snakeOldBodyChaseTime = 0;
-    } else {
-      snakeEatingOldBody = false;
-      snakeOldBodySpeedBonusPending = false;
     }
 
-    snake.canGrow = true;
     if (graveWaveActive) spawnExtraFrogs(10);
+    if (moltFortuneActive) {
+      for (let i = 0; i < 5; i++) spawnOrbRandom(width, height);
+    }
   }
   function handleFourthShed() {
     const width  = window.innerWidth;
