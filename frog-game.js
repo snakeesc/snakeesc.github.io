@@ -633,6 +633,7 @@ function rollFrogCosmetics() {
   let nextEpicChoiceTime = 180;
 
   let legendaryEventTriggered = false;
+  let doubleYolkerActive = false;
 
   let infoOverlay = null;
   let infoPage = 0;
@@ -6461,7 +6462,7 @@ snakeOldBodySpeedBonusPending = false;
     snakeEggUsed = false;
     secondWindActive = false;
     secondWindUsed = false;
-
+doubleYolkerActive = false;
     swarmDivideActive = false;
     swarmDivideUsed = false;
     graveWaveActive = false;
