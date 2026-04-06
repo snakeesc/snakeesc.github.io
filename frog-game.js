@@ -5027,18 +5027,21 @@ function showBuffGuideOverlay() {
     openAnimatedOverlay(dashboardOverlay);
     content.innerHTML = '<div class="leaderboard-loading">Syncing Swarm Data...</div>';
 
-    // 1. DATA MAPPING
+    // 1. DATA MAPPING (Corrected for your specific variable names)
     const localStats = loadDashboardStats();
     const dashboardPfp = getDashboardPfp();
     const currentTag = getSavedPlayerTag() || "Anonymous Frog";
     
-    // Progress Logic
-    const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
-    const progressPercent = Math.min(100, Math.floor((levelData.currentLevelOrbs / levelData.nextLevelOrbs) * 100));
+    // Level Logic: Your getDashboardLevelData returns progressPercent and orbsNeededForNextLevel
+    const levelData = getDashboardLevelData(localStats.totalOrbsCollected || 0);
 
-    // Leaderboard Data
+    // Fetch Leaderboard
     const leaderboardEntries = await fetchLeaderboard();
     const topList = Array.isArray(leaderboardEntries) ? leaderboardEntries.slice(0, 10) : [];
+
+    // Find Best Score from Leaderboard (Fixes the "0" issue)
+    const leaderboardBest = await getMyDashboardBestFromLeaderboard();
+    const displayBestScore = leaderboardBest.found ? leaderboardBest.bestRun : (localStats.bestScore || 0);
 
     // 2. BUILD THE UI
     content.innerHTML = `
@@ -5047,28 +5050,32 @@ function showBuffGuideOverlay() {
         <div class="cc-left">
           <div class="frog-panel-section-label">Player Profile</div>
           
-          <div class="profile-box" style="display: flex; align-items: center; gap: 15px;">
-            <div class="cc-pfp-stack" style="background: ${dashboardPfp.bgColor}; border-radius: 8px;">
+          <div class="profile-box" style="display: flex; align-items: center; gap: 15px; background: #1c1917; padding: 10px; border-radius: 12px; border: 1px solid #44403c;">
+            <div class="cc-pfp-stack" style="background: ${dashboardPfp.bgColor}; border-radius: 8px; flex-shrink: 0;">
               <img src="${dashboardPfp.spriteSrc}" class="cc-pfp-layer" style="z-index:1">
               <img src="${dashboardPfp.skinSrc}" class="cc-pfp-layer" style="z-index:2">
               ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="cc-pfp-layer" style="z-index:3">` : ""}
               ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="cc-pfp-layer" style="z-index:4">` : ""}
             </div>
             <div class="profile-info">
-              <div class="profile-tag">${currentTag}</div>
-              <div class="profile-level">Level ${levelData.level}</div>
+              <div class="profile-tag" style="font-weight: 800; color: #bef264;">${currentTag}</div>
+              <div class="profile-level" style="font-size: 12px; color: #e7e5e4;">Level ${levelData.level}</div>
             </div>
           </div>
 
-          <div class="profile-progress-container" style="margin-top: -10px; margin-bottom: 25px;">
-            <div class="profile-progress-bar" style="width: ${progressPercent}%"></div>
-            <div class="profile-progress-text">${levelData.currentLevelOrbs} / ${levelData.nextLevelOrbs} Orbs to Lv ${levelData.level + 1}</div>
+          <div style="margin-top: 10px; margin-bottom: 20px;">
+            <div style="width: 100%; height: 8px; background: #292524; border: 1px solid #44403c; border-radius: 999px; overflow: hidden;">
+              <div style="width: ${levelData.progressPercent}%; height: 100%; background: #65a30d;"></div>
+            </div>
+            <div style="font-size: 11px; color: #a8a29e; margin-top: 4px; text-align: center;">
+              ${levelData.orbsNeededForNextLevel} Orbs to Level ${levelData.nextLevel}
+            </div>
           </div>
 
           <div class="frog-panel-section-label">Lifetime Mastery</div>
           <ul class="frog-panel-list">
             <li>Runs: <span class="stat-highlight">${localStats.totalRuns || 0}</span></li>
-            <li>Best Score: <span class="stat-highlight">${Math.floor(localStats.bestScore || 0)}</span></li>
+            <li>Best Score: <span class="stat-highlight">${Math.floor(displayBestScore)}</span></li>
             <li>Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
           </ul>
 
@@ -5076,7 +5083,7 @@ function showBuffGuideOverlay() {
           <div style="padding: 10px; background: #292524; border-radius: 8px; font-size: 12px;">
              ${localStats.recentRuns && localStats.recentRuns[0] 
                ? `Score: <span class="stat-highlight">${Math.floor(localStats.recentRuns[0].score)}</span><br>
-                  Time: <span class="stat-highlight">${formatDashboardDuration(localStats.recentRuns[0].duration)}</span>`
+                  Time: <span class="stat-highlight">${formatDashboardDuration(localStats.recentRuns[0].time)}</span>`
                : `<span style="color: #a8a29e;">No recent data.</span>`}
           </div>
         </div>
@@ -5094,14 +5101,17 @@ function showBuffGuideOverlay() {
             </thead>
             <tbody>
               ${topList.length > 0 ? topList.map((entry, i) => {
-                const isMe = (entry.tag === currentTag);
-                const scoreValue = Math.floor(entry.score || entry.bestScore || 0);
-                const timeValue = entry.duration ? formatDashboardDuration(entry.duration) : "--";
+                const isMe = (entry.tag && entry.tag.toLowerCase() === currentTag.toLowerCase());
+                const scoreValue = Math.floor(entry.bestScore || entry.score || 0);
+                
+                // Fixed Time mapping: Leaderboard uses 'duration' or 'bestTime' or 'time'
+                const rawTime = entry.bestTime || entry.time || entry.duration || entry.timeSeconds || 0;
+                const timeValue = rawTime > 0 ? formatDashboardDuration(rawTime) : "--";
                 
                 return `
                   <tr style="${isMe ? 'color: #bef264; background: rgba(190,242,100,0.1);' : ''}">
                     <td>${i + 1}</td>
-                    <td style="max-width: 80px; overflow: hidden; text-overflow: ellipsis;">${entry.tag || "Anon"}</td>
+                    <td style="max-width: 80px; overflow: hidden; text-overflow: ellipsis;">${entry.tag || entry.name || "Anon"}</td>
                     <td>${timeValue}</td>
                     <td style="text-align:right" class="stat-highlight">${scoreValue}</td>
                   </tr>
