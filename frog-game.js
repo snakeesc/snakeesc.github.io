@@ -4975,7 +4975,7 @@ function showBuffGuideOverlay() {
           <strong>🧬 Mutation</strong> — +12% jump speed and +12% jump height.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
-          <strong>🌪️ Frog Scatter (Epic)</strong> — kill and respawn all current frogs.
+          <strong>🌪️ Frog Scatter</strong> — kill and respawn all current frogs.
         </li>
         <li class="upgrade-guide-item upgrade-type-mobility">
           <strong>✂️ Pair of Scissors</strong> — cuts the snake in half, slows it by 30%.
@@ -4996,22 +4996,22 @@ function showBuffGuideOverlay() {
           <strong>🥚 Snake Egg</strong> — next shed gives the snake only 50% of its normal speed increase.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>⏳ Buffs Extended (Epic)</strong> — larger buff duration increase.
+          <strong>⏳ Buffs Extended</strong> — larger buff duration increase.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🌩️ Orb Storm (Epic)</strong> — drops a burst of random orbs immediately.
+          <strong>🌩️ Orb Storm</strong> — drops a burst of random orbs immediately.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🧪 Orb Specialist (Epic)</strong> — every orb guarantees 1 extra frog.
+          <strong>🧪 Orb Specialist</strong> — every orb guarantees 1 extra frog.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>👻 Grave Wave (Epic)</strong> — each shed spawns 10 frogs.
+          <strong>👻 Grave Wave</strong> — each shed spawns 10 frogs.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🔮 Molt Fortune (Epic)</strong> — snake drops 5 orbs when shedding.
+          <strong>🔮 Molt Fortune</strong> — snake drops 5 orbs when shedding.
         </li>
         <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🌌 Quantum Orbs (Epic)</strong> — orbs never fade, but max frog cap drops by 10.
+          <strong>🌌 Quantum Orbs</strong> — orbs never fade, but max frog cap drops by 10.
         </li>
       </ul>
 
@@ -5026,16 +5026,16 @@ function showBuffGuideOverlay() {
           <strong>🏹 Last Stand</strong> — your last frog gets a strong revive chance.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>💀 Epic Deathrattle (Epic)</strong> — big boost to revive chance.
+          <strong>💀 Epic Deathrattle</strong> — big boost to revive chance.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>💨 Second Wind (Epic)</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
+          <strong>💨 Second Wind</strong> — once per run, when your frogs fall below 10, spawn 20 frogs instantly.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>🧪 Poisonous Skin (Epic)</strong> — snake is slowed briefly every time it eats a frog.
+          <strong>🧪 Poisonous Skin</strong> — snake is slowed briefly every time it eats a frog.
         </li>
         <li class="upgrade-guide-item upgrade-type-survival">
-          <strong>⚖️ Greed's Toll (Epic)</strong> — permanent +100% score gain, but max frog cap drops by 30.
+          <strong>⚖️ Greed's Toll</strong> — permanent +100% score gain, but max frog cap drops by 30.
         </li>
       </ul>
 
@@ -5047,7 +5047,7 @@ function showBuffGuideOverlay() {
           <strong>🎭 Role Draft</strong> — choose between 2 random frog roles.
         </li>
         <li class="upgrade-guide-item upgrade-type-role">
-          <strong>🌀 Mystic Portal (Epic)</strong> — draft between the powerful Alchemist or Necromancer frogs.
+          <strong>🌀 Mystic Portal</strong> — draft between the powerful Alchemist or Necromancer frogs.
         </li>
       </ul>
 
@@ -5994,9 +5994,9 @@ function getDashboardPfp() {
   💀 <b>Deathrattle</b> – dead frogs have a chance to respawn immediately (common and epic versions stack).<br>
   🏹 <b>Last Stand</b> – your final remaining frog has a strong chance to respawn instead of dying.<br>
   🌌 <b>Orb Collector</b> – every collected orb has a flat chance to spawn an extra frog (one-time pick).<br>
-  🐸⭐ <b>Frog Promotion (epic)</b> – summons multiple frogs, each with a random permanent role.<br>
-  🍖 <b>Cannibal Frog (epic)</b> – spawns a cannibal frog that eats nearby frogs and buffs global deathrattle while alive.<br>
-  💫 <b>Orb Storm / Snake Egg (epic)</b> – high-impact utilities that affect orb spawns or the next snake after a shed.<br><br>
+  🐸⭐ <b>Frog Promotion</b> – summons multiple frogs, each with a random permanent role.<br>
+  🍖 <b>Cannibal Frog</b> – spawns a cannibal frog that eats nearby frogs and buffs global deathrattle while alive.<br>
+  💫 <b>Orb Storm / Snake Egg</b> – high-impact utilities that affect orb spawns or the next snake after a shed.<br><br>
   Synergize permanent upgrades, frog roles, and epic choices to keep the swarm alive deep into later sheds.
   `;
     }
