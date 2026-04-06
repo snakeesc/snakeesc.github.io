@@ -5032,41 +5032,42 @@ function showBuffGuideOverlay() {
     }
   }
 
-async function showDashboardOverlay() {
+  async function showDashboardOverlay() {
     if (!dashboardOverlay) initDashboardOverlay();
     const content = document.getElementById("dashboardContent");
     if (!content) return;
 
-    // 1. Show the overlay and the loading state using your existing class
     openAnimatedOverlay(dashboardOverlay);
     content.innerHTML = '<div class="leaderboard-loading">Syncing Swarm Data...</div>';
 
-    // 2. Load your actual data
+    // 1. Load Data (Variables matched to your frog-game.js state)
     const localStats = loadDashboardStats();
     const dashboardPfp = getDashboardPfp();
     const currentTag = getSavedPlayerTag() || "Anonymous Frog";
-    const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
     
-    // Fetch global leaderboard data
+    // Level & Progress logic
+    const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
+    const progressPercent = Math.min(100, Math.floor((levelData.currentLevelOrbs / levelData.nextLevelOrbs) * 100));
+
+    // Leaderboard Fetch
     const leaderboardEntries = await fetchLeaderboard();
     const topList = Array.isArray(leaderboardEntries) ? leaderboardEntries.slice(0, 10) : [];
 
-    // 3. Inject the Unified Layout
-    // Note: We use inline styles for the "flex" container to guarantee it works 
-    // without you needing to touch your CSS file.
+    // 2. Build the UI
+    // Using a wrapper to keep your existing CSS from breaking the inner layout
     content.innerHTML = `
-      <div style="display: flex; gap: 30px; text-align: left; align-items: flex-start;">
+      <div style="display: flex; gap: 40px; text-align: left; align-items: flex-start; min-height: 450px;">
         
-        <div style="flex: 1; border-right: 1px solid #44403c; padding-right: 25px;">
-          <div class="frog-panel-section-label" style="margin-bottom:15px;">Player Profile</div>
+        <div style="flex: 1.2; border-right: 1px solid #44403c; padding-right: 30px;">
+          <div class="frog-panel-section-label">Player Profile</div>
           
-          <div class="profile-box" style="margin-bottom: 20px;">
-            <div class="profile-avatar-container">
-              <div class="profile-avatar-bg" style="background: ${dashboardPfp.bgColor}">
-                <img src="${dashboardPfp.spriteSrc}" class="profile-avatar-img" style="z-index:1">
-                <img src="${dashboardPfp.skinSrc}" class="profile-avatar-img" style="z-index:2">
-                ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="profile-avatar-img" style="z-index:3">` : ""}
-                ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="profile-avatar-img" style="z-index:4">` : ""}
+          <div class="profile-box" style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 15px !important;">
+            <div class="profile-avatar-container" style="flex-shrink: 0;">
+              <div class="profile-avatar-bg" style="background: ${dashboardPfp.bgColor}; position: relative;">
+                <img src="${dashboardPfp.spriteSrc}" class="profile-avatar-img" style="z-index:1; position: absolute; inset: 0;">
+                <img src="${dashboardPfp.skinSrc}" class="profile-avatar-img" style="z-index:2; position: absolute; inset: 0;">
+                ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="profile-avatar-img" style="z-index:3; position: absolute; inset: 0;">` : ""}
+                ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="profile-avatar-img" style="z-index:4; position: absolute; inset: 0;">` : ""}
               </div>
             </div>
             <div class="profile-info">
@@ -5075,33 +5076,41 @@ async function showDashboardOverlay() {
             </div>
           </div>
 
+          <div class="profile-progress-container" style="margin-top: -10px; margin-bottom: 25px;">
+            <div class="profile-progress-bar" style="width: ${progressPercent}%"></div>
+            <div class="profile-progress-text">${levelData.currentLevelOrbs} / ${levelData.nextLevelOrbs} Orbs to Level ${levelData.level + 1}</div>
+          </div>
+
           <div class="frog-panel-section-label">Lifetime Stats</div>
           <ul class="frog-panel-list">
-            <li>Total Runs: <span class="stat-highlight">${localStats.totalRuns}</span></li>
-            <li>Play Time: <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>
-            <li>Orbs Eaten: <span class="stat-highlight">${localStats.totalOrbsCollected}</span></li>
-            <li>Frogs Lost: <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>
+            <li>Total Runs: <span class="stat-highlight">${localStats.totalRuns || 0}</span></li>
+            <li>Best Score: <span class="stat-highlight">${Math.floor(localStats.bestScore || 0)}</span></li>
+            <li>Orbs Eaten: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
+            <li>Frogs Lost: <span class="stat-highlight">${localStats.totalFrogsLost || 0}</span></li>
           </ul>
+
+          <div class="frog-panel-section-label" style="margin-top:15px;">Recent Run</div>
+          <div style="padding: 10px; background: #292524; border-radius: 8px; font-size: 13px;">
+             ${localStats.recentRuns && localStats.recentRuns[0] 
+               ? `Score: <span class="stat-highlight">${Math.floor(localStats.recentRuns[0].score)}</span> · 
+                  Duration: <span class="stat-highlight">${formatDashboardDuration(localStats.recentRuns[0].duration)}</span>`
+               : `<span style="color: #a8a29e;">No recent runs recorded.</span>`}
+          </div>
         </div>
 
         <div style="flex: 1;">
-          <div class="frog-panel-section-label" style="margin-bottom:15px;">Global Top 10</div>
-          
-          <ul class="frog-panel-list" style="max-height: 350px; overflow-y: auto; padding-right: 10px;">
+          <div class="frog-panel-section-label">Global Top 10</div>
+          <ul class="frog-panel-list" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
             ${topList.length > 0 ? topList.map((entry, i) => {
               const isMe = (entry.tag === currentTag);
               return `
-                <li style="display: flex; justify-content: space-between; ${isMe ? 'color: #bef264; font-weight: bold;' : ''}">
+                <li style="display: flex; justify-content: space-between; padding: 6px 0; ${isMe ? 'background: rgba(190,242,100,0.1); border-radius: 4px; padding-left: 8px; padding-right: 8px; color: #bef264;' : ''}">
                   <span>${i + 1}. ${entry.tag || "Anonymous"}</span>
-                  <span class="stat-highlight">${Math.floor(entry.score || entry.bestScore)}</span>
+                  <span class="stat-highlight">${Math.floor(entry.score || entry.bestScore || 0)}</span>
                 </li>
               `;
-            }).join('') : '<li>No scores yet...</li>'}
+            }).join('') : '<li style="color: #a8a29e;">No global data found.</li>'}
           </ul>
-          
-          <div style="margin-top: 20px; font-size: 11px; color: #a8a29e; line-height: 1.4;">
-            Your All-Time Best: <span style="color: #bef264;">${Math.floor(localStats.bestScore)}</span>
-          </div>
         </div>
 
       </div>
