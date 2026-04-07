@@ -1345,11 +1345,11 @@ function snakeShed(stage) {
     }
 
     if (graveWaveActive) {
-      spawnExtraFrogs(randInt(10, 15));
+      spawnExtraFrogs(getLuckBiasedInt(10, 15));
     }
 
     if (moltFortuneActive) {
-      const orbCount = randInt(5, 10);
+      const orbCount = getLuckBiasedInt(5, 10);
       for (let i = 0; i < orbCount; i++) {
         spawnOrbRandom(width, height);
       }
@@ -3376,7 +3376,7 @@ function computeDeathRattleChanceForFrog(frog) {
       }
 
       if (orb.ttl <= 0 || !orb.el) {
-        if (nightBloomActive && frogs.length < maxFrogsCap && Math.random() < 0.25) {
+        if (nightBloomActive && frogs.length < maxFrogsCap && Math.random() < getLuckBoostedChance(0.50, 0.80)) {
           const spawnX = Math.max(8, Math.min(window.innerWidth - FROG_SIZE - 8, orb.x - FROG_SIZE / 2));
           const spawnY = Math.max(24, Math.min(window.innerHeight - FROG_SIZE - 24, orb.y - FROG_SIZE / 2));
           createFrogAt(spawnX, spawnY, null);
@@ -3464,7 +3464,7 @@ function computeDeathRattleChanceForFrog(frog) {
         } else {
           applyBuff(orb.type, collectedBy);
 
-          if (chainReactionActive && Math.random() < 0.25) {
+          if (chainReactionActive && Math.random() < getLuckBoostedChance(0.25, 0.50)) {
             triggerChainReactionBonus(collectedBy);
           }
         }
@@ -3475,7 +3475,7 @@ function computeDeathRattleChanceForFrog(frog) {
           frogsToSpawnFromOrb += 1;
         }
 
-        if (doubleYolkerActive && Math.random() < 0.15) {
+        if (doubleYolkerActive && Math.random() < getLuckBoostedChance(0.15, 0.35)) {
           frogsToSpawnFromOrb += 2;
         }
 
