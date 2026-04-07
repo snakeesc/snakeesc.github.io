@@ -1309,9 +1309,15 @@ function snakeShed(stage) {
       snakeOldBodyChaseTime = 0;
     }
 
-    if (graveWaveActive) spawnExtraFrogs(10);
+    if (graveWaveActive) {
+      spawnExtraFrogs(randInt(10, 15));
+    }
+
     if (moltFortuneActive) {
-      for (let i = 0; i < 5; i++) spawnOrbRandom(width, height);
+      const orbCount = randInt(5, 10);
+      for (let i = 0; i < orbCount; i++) {
+        spawnOrbRandom(width, height);
+      }
     }
   }
   function handleFourthShed() {
@@ -4142,7 +4148,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
         id: "graveWave",
-        label: `👻 Grave Wave<br>Each shed spawns <span style="color:${epicTitleColor};">10</span> frogs`,
+        label: `👻 Grave Wave<br>Each shed spawns <span style="color:${epicTitleColor};">10-15</span> frogs`,
         apply: () => { graveWaveActive = true; graveWaveUsed = true; }
       });
     }
@@ -4174,7 +4180,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!moltFortuneActive) {
       upgrades.push({
         id: "moltFortune",
-        label: `🔮 Molt Fortune<br>Snake drops <span style="color:${epicTitleColor};">5</span> orbs when shedding`,
+        label: `🔮 Molt Fortune<br>Snake drops <span style="color:${epicTitleColor};">5-10</span> orbs when shedding`,
         apply: () => { moltFortuneActive = true; }
       });
     }
@@ -4970,7 +4976,7 @@ function closeAnimatedOverlay(overlayEl) {
               <strong>🧪 Orb Specialist</strong> — every collected orb guarantees 1 extra frog.
             </li>
             <li class="upgrade-guide-item upgrade-type-buff">
-              <strong>🔮 Molt Fortune</strong> — the snake drops 5 orbs whenever it sheds.
+              <strong>🔮 Molt Fortune</strong> — the snake drops 5-10 orbs whenever it sheds.
             </li>
 
             <li class="upgrade-guide-item upgrade-type-survival">
@@ -4980,7 +4986,7 @@ function closeAnimatedOverlay(overlayEl) {
               <strong>🧪 Poisonous Skin</strong> — the snake is slowed briefly every time it eats a frog.
             </li>
             <li class="upgrade-guide-item upgrade-type-survival">
-              <strong>👻 Grave Wave</strong> — each shed spawns 10 frogs.
+              <strong>👻 Grave Wave</strong> — each shed spawns 10-15 frogs.
             </li>
 
             <li class="upgrade-guide-item upgrade-type-role">
