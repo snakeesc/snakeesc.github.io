@@ -4895,7 +4895,7 @@ function closeAnimatedOverlay(overlayEl) {
       </div>
 
       <div class="frog-panel-sub" style="color: white !important;">
-        Current upgrade list for this build.
+        Current common and epic upgrades for this build.
       </div>
 
       <div class="buff-guide-nav" style="margin-bottom:10px;">
@@ -4913,6 +4913,13 @@ function closeAnimatedOverlay(overlayEl) {
             <li class="upgrade-guide-item upgrade-type-mobility">
               <strong>🧬 Mutation</strong> — +15% jump speed and +15% jump height.
             </li>
+            <li class="upgrade-guide-item upgrade-type-mobility">
+              <strong>⚡ Survival Instinct</strong> — below 10 frogs, they hop 20% faster.
+            </li>
+            <li class="upgrade-guide-item upgrade-type-mobility">
+              <strong>✂️ Pair of Scissors</strong> — cuts the snake in half and slows it by 20%.
+            </li>
+
             <li class="upgrade-guide-item upgrade-type-buff">
               <strong>🎲 Lucky Roll</strong> — instantly triggers a random orb buff at 1.5× duration for free.
             </li>
@@ -4929,14 +4936,9 @@ function closeAnimatedOverlay(overlayEl) {
               <strong>🌩️ Orb Storm</strong> — drops a burst of random orbs immediately.
             </li>
             <li class="upgrade-guide-item upgrade-type-buff">
-              <strong>⚡ Chain Reaction</strong> — when a frog collects an orb, 25% chance to trigger a second free orb buff.
+              <strong>🥚 Double Yolker</strong> — 15% chance for collected orbs to spawn 2 extra frogs.
             </li>
-            <li class="upgrade-guide-item upgrade-type-buff">
-              <strong>🌙 Night Bloom</strong> — naturally expiring orbs have a 25% chance to spawn a frog at that spot.
-            </li>
-            <li class="upgrade-guide-item upgrade-type-buff">
-              <strong>🥚 Double Yolker</strong> — 15% chance for orbs to spawn 2 frogs.
-            </li>
+
             <li class="upgrade-guide-item upgrade-type-survival">
               <strong>💀 Deathrattle</strong> — dead frogs have a chance to respawn.
             </li>
@@ -4946,44 +4948,48 @@ function closeAnimatedOverlay(overlayEl) {
             <li class="upgrade-guide-item upgrade-type-survival">
               <strong>⚱️ Ouroboros Pact</strong> — dead frogs have a 20% chance to drop an orb.
             </li>
+
             <li class="upgrade-guide-item upgrade-type-role">
               <strong>🐸 Spawn Frogs</strong> — spawn fresh frogs instantly.
             </li>
             <li class="upgrade-guide-item upgrade-type-role">
               <strong>🎭 Role Draft</strong> — choose between 2 random frog roles.
             </li>
-            <li class="upgrade-guide-item upgrade-type-mobility">
-              <strong>✂️ Pair of Scissors</strong> — cuts the snake in half and slows it by 20%.
-            </li>
           </ul>
         </div>
 
         <div class="buff-guide-page" data-guide-page-content="epic" style="display:none;">
           <ul class="upgrade-guide-list">
-            <li class="upgrade-guide-item upgrade-type-mobility">
-              <strong>⚡ Survival Instinct</strong> — below 10 frogs, they hop 20% faster.
+            <li class="upgrade-guide-item upgrade-type-buff">
+              <strong>⚡ Chain Reaction</strong> — when a frog collects an orb, there is a 25% chance to trigger a second free orb buff.
             </li>
             <li class="upgrade-guide-item upgrade-type-buff">
-              <strong>🧪 Orb Specialist</strong> — every collected orb guarantees 1 frog.
+              <strong>🌙 Night Bloom</strong> — naturally expiring orbs have a 50% chance to spawn a frog at that spot.
             </li>
             <li class="upgrade-guide-item upgrade-type-buff">
-              <strong>🔮 Molt Fortune</strong> — snake drops 5 orbs when shedding.
+              <strong>🧪 Orb Specialist</strong> — every collected orb guarantees 1 extra frog.
+            </li>
+            <li class="upgrade-guide-item upgrade-type-buff">
+              <strong>🔮 Molt Fortune</strong> — the snake drops 5 orbs whenever it sheds.
+            </li>
+
+            <li class="upgrade-guide-item upgrade-type-survival">
+              <strong>💨 Second Wind</strong> — once per run, when you fall below 10 frogs, instantly spawn 20.
             </li>
             <li class="upgrade-guide-item upgrade-type-survival">
-              <strong>💨 Second Wind</strong> — once per run, spawn 20 frogs when below 10.
-            </li>
-            <li class="upgrade-guide-item upgrade-type-survival">
-              <strong>🧪 Poisonous Skin</strong> — snake is slowed every time it eats a frog.
+              <strong>🧪 Poisonous Skin</strong> — the snake is slowed briefly every time it eats a frog.
             </li>
             <li class="upgrade-guide-item upgrade-type-survival">
               <strong>👻 Grave Wave</strong> — each shed spawns 10 frogs.
             </li>
+
             <li class="upgrade-guide-item upgrade-type-role">
-              <strong>🥇 Promotion</strong> — all frogs gain +1 star immediately.
+              <strong>🥇 Promotion</strong> — all current frogs gain +1 star immediately.
             </li>
             <li class="upgrade-guide-item upgrade-type-role">
-              <strong>🌊 Tidal Wave</strong> — immediately spawn frogs equal to the number currently alive.
+              <strong>🌊 Tidal Wave</strong> — instantly spawn frogs equal to the number currently alive.
             </li>
+
             <li class="upgrade-guide-item upgrade-type-mobility">
               <strong>🌪️ Frog Scatter</strong> — kill and respawn all current frogs.
             </li>
