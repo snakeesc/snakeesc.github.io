@@ -4371,25 +4371,30 @@ function closeAnimatedOverlay(overlayEl) {
     });
   }
   function showHowToOverlay() {
+    // 1. Ensure the overlay is initialized
     if (!howToOverlay) initHowToOverlay();
+    
+    // 2. Look for the correct content container 
+    // (In your code, this is usually 'howToContent')
     const content = document.getElementById("howToContent");
     if (!content) return;
 
+    // 3. Open the actual overlay element
     openAnimatedOverlay(howToOverlay);
 
-    // Using a grid layout to make information easier to scan
+    // 4. Set the HTML with the scan-friendly grid
     content.innerHTML = `
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left;">
         
         <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
           <div class="frog-panel-section-label" style="color: #bef264;">Movement</div>
           <p style="font-size: 13px; margin: 5px 0 15px 0; line-height: 1.4;">
-            The lead frog follows your <strong>Mouse</strong> or <strong>Touch</strong>. The rest of the swarm follows the leader.
+            The frogs follow your <strong>Mouse</strong> or <strong>Touch</strong>. Keep them away from the snake!
           </p>
           
           <div class="frog-panel-section-label" style="color: #bef264;">The Goal</div>
           <p style="font-size: 13px; margin: 5px 0; line-height: 1.4;">
-            Keep the swarm alive! If the Snake eats your <strong>last frog</strong>, the run is over.
+            Keep the swarm alive. If the Snake eats your <strong>last frog</strong>, the run is over.
           </p>
         </div>
 
@@ -4403,14 +4408,14 @@ function closeAnimatedOverlay(overlayEl) {
 
           <div class="frog-panel-section-label" style="color: #bef264; margin-top: 10px;">Scoring</div>
           <p style="font-size: 12px; color: #a8a29e;">
-            Points are earned every time the snake <strong>eats a frog</strong>. Multipliers increase your gains.
+            Points are awarded every time the snake <strong>eats a frog</strong>. Multipliers increase your gains.
           </p>
         </div>
 
       </div>
 
       <div style="margin-top: 20px; padding: 10px; border-top: 1px solid #44403c; font-size: 12px; color: #bef264; text-align: center;">
-        Tip: Check the <strong>Buff Guide</strong> in the menu for detailed upgrade info.
+        Check the <strong>Buff Guide</strong> in the menu for detailed upgrade info.
       </div>
     `;
   }
