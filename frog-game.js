@@ -6560,7 +6560,7 @@ doubleYolkerActive = false;
       infoLeaderboardData = [];
     }
 
-    // Wait on the main menu before starting a run
+    seedMatchGrass();
     showMainMenu();
   }
 
