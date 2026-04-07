@@ -6244,12 +6244,14 @@ function getDashboardPfp() {
 
   function populateUpgradeOverlayChoices(mode) {
     initUpgradeOverlay();
+
     const containerEl = upgradeOverlayButtonsContainer;
     if (!containerEl) return;
 
     currentUpgradeOverlayMode = mode || "normal";
     const isEpic      = currentUpgradeOverlayMode === "epic";
     const isLegendary = currentUpgradeOverlayMode === "legendary";
+    const optionCount = extraUpgradeOptionActive ? 4 : 3;
 
     containerEl.innerHTML = "";
     const neon = "#4defff";
@@ -6261,21 +6263,18 @@ function getDashboardPfp() {
     let choices = [];
 
     if (isEpic) {
-      // 🔥 EPIC: pick a random 3 from the full epic pool
       let pool = getEpicUpgradeChoices().slice();
-      while (choices.length < 3 && pool.length) {
+      while (choices.length < optionCount && pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
         choices.push(pool.splice(idx, 1)[0]);
       }
     } else if (isLegendary && typeof getLegendaryUpgradeChoices === "function") {
       choices = getLegendaryUpgradeChoices().slice();
     } else {
-      // 🟢 NORMAL per-minute upgrades
       let pool = getUpgradeChoices().slice();
 
-      // Starting pre-game upgrade: optionally filter stuff out here
       if (!initialUpgradeDone) {
-        pool = pool.filter(c => c.id !== "permaLifeSteal"); // safe even if commented out
+        pool = pool.filter(c => c.id !== "permaLifeSteal");
       }
 
       const isFirstTimedNormal = initialUpgradeDone && !firstTimedNormalChoiceDone;
@@ -6283,17 +6282,13 @@ function getDashboardPfp() {
       if (isFirstTimedNormal) {
         firstTimedNormalChoiceDone = true;
 
-        // Only guarantee Spawn if we actually have room for more frogs
         if (frogs.length < maxFrogsCap) {
-          // ✅ Guarantee spawn20 is in the options
           let spawnChoiceIndex = pool.findIndex(c => c.id === "spawn20");
           let spawnChoice;
 
           if (spawnChoiceIndex !== -1) {
-            // Take the existing spawn20 entry out of the pool
             spawnChoice = pool.splice(spawnChoiceIndex, 1)[0];
           } else {
-            // Fallback: recreate the spawn20 choice if it somehow went missing
             spawnChoice = {
               id: "spawn20",
               label: `
@@ -6306,24 +6301,20 @@ function getDashboardPfp() {
             };
           }
 
-          // Always include spawn frogs as one of the three options
           choices.push(spawnChoice);
 
-          // Fill remaining slots randomly until we have 3 total
-          while (choices.length < 3 && pool.length) {
+          while (choices.length < optionCount && pool.length) {
             const idx = Math.floor(Math.random() * pool.length);
             choices.push(pool.splice(idx, 1)[0]);
           }
         } else {
-          // At frog cap: just pick any 3 normal upgrades at random
-          while (choices.length < 3 && pool.length) {
+          while (choices.length < optionCount && pool.length) {
             const idx = Math.floor(Math.random() * pool.length);
             choices.push(pool.splice(idx, 1)[0]);
           }
         }
       } else {
-        // All other common upgrades: just pick any 3 at random
-        while (choices.length < 3 && pool.length) {
+        while (choices.length < optionCount && pool.length) {
           const idx = Math.floor(Math.random() * pool.length);
           choices.push(pool.splice(idx, 1)[0]);
         }
@@ -6334,36 +6325,49 @@ function getDashboardPfp() {
 
     if (!choices.length) {
       const span = document.createElement("div");
+      span.className = "frog-panel-sub";
       span.textContent = "No upgrades available.";
-      span.style.fontSize = "13px";
       containerEl.appendChild(span);
       return;
     }
 
-    choices.slice(0, 3).forEach((choice, index) => {
+    choices.forEach((choice, index) => {
       const btn = document.createElement("button");
-      const colorClass = getUpgradeColorClass(choice.id);
-
-      btn.className = "frog-btn frog-upgrade-choice is-spawning " + colorClass;
-      btn.dataset.upgradeId = choice.id;
+      btn.className = `frog-btn frog-upgrade-choice ${getUpgradeColorClass(choice.id)}`;
       btn.style.animationDelay = `${index * 70}ms`;
 
-      const rawLabel = String(choice.label || "");
-      const parts = rawLabel.split("<br>");
-      const titleHtml = parts.shift() || "";
-      const descHtml = parts.join("<br>");
-
       btn.innerHTML = `
-        <div class="frog-upgrade-title">${titleHtml}</div>
-        <div class="frog-upgrade-desc">${descHtml}</div>
+        <div class="frog-upgrade-title">${choice.label}</div>
       `;
 
-      btn.addEventListener("click", () => selectUpgrade(choice));
-      containerEl.appendChild(btn);
+      btn.addEventListener("click", () => {
+        playButtonClick();
 
-      setTimeout(() => {
-        btn.classList.remove("is-spawning");
-      }, 320);
+        if (choice.opensRoleDraft) {
+          choice.apply();
+          playPermanentChoiceSound();
+          return;
+        }
+
+        choice.apply();
+
+        if (soundEnabled) {
+          if (isEpic) {
+            playPermanentChoiceSound();
+          } else {
+            playPermanentChoiceSound();
+          }
+        }
+
+        if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
+          initialUpgradeDone = true;
+        }
+
+        closeUpgradeOverlay();
+        updateUpgradeBuffSummary();
+      });
+
+      containerEl.appendChild(btn);
     });
   }
 
