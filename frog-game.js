@@ -3430,7 +3430,8 @@ function updateOrbs(dt) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
+    const PATH_POINT_SPACING = 4;
+    const maxPath = Math.ceil(((SNAKE_INITIAL_SEGMENTS + 3) * segmentGap) / PATH_POINT_SPACING) + 12;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -3493,7 +3494,7 @@ function updateOrbs(dt) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const maxPath = (segmentCount + 2) * segmentGap + 2;
+    const maxPath = Math.ceil(((segmentCount + 3) * segmentGap) / PATH_POINT_SPACING) + 12;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -3646,7 +3647,25 @@ function updateOrbs(dt) {
   function growSnake(extraSegments) {
     growSnakeForSnake(snake, extraSegments);
   }
+  function pushSnakePathPoint(snakeObj, x, y) {
+    if (!snakeObj.path || !snakeObj.path.length) {
+      snakeObj.path = [{ x, y }];
+      return;
+    }
 
+    const first = snakeObj.path[0];
+    const dx = x - first.x;
+    const dy = y - first.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    const PATH_POINT_SPACING = 4;
+
+    if (dist >= PATH_POINT_SPACING) {
+      snakeObj.path.unshift({ x, y });
+    } else {
+      snakeObj.path[0] = { x, y };
+    }
+  }
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
 
@@ -3721,10 +3740,11 @@ function updateOrbs(dt) {
     else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) { head.y = height - marginY - SNAKE_SEGMENT_SIZE; head.angle = -head.angle; }
 
     // 3. PATH & BODY POSITIONING
-    snakeObj.path.unshift({ x: head.x, y: head.y });
+    pushSnakePathPoint(snakeObj, head.x, head.y);
     
     // Limit path history length
-    const maxPath = (snakeObj.segments.length + 2) * segmentGap + 10;
+    const PATH_POINT_SPACING = 4;
+    const maxPath = Math.ceil(((snakeObj.segments.length + 3) * segmentGap) / PATH_POINT_SPACING) + 12;
     if (snakeObj.path.length > maxPath) snakeObj.path.length = maxPath;
 
     head.el.style.transform = `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
