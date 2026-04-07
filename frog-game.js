@@ -617,7 +617,7 @@ function rollFrogCosmetics() {
   let score         = 0;
   let frogsEatenCount = 0; // grow one segment every 2 frogs
   let latestCompletedRun = null;
-
+let extraUpgradeOptionActive = false;
   // UI + audio toggles
   let soundEnabled      = true;
   let statsPanelVisible = false;
@@ -4134,6 +4134,14 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
+    if (!extraUpgradeOptionActive) {
+      upgrades.push({
+        id: "extraUpgradeOption",
+        label: `🔷 Loaded Hand<br>Future upgrade screens show <span style="color:${epicTitleColor};">4</span> choices instead of 3`,
+        apply: () => { extraUpgradeOptionActive = true; }
+      });
+    }
+
     if (!nightBloomActive) {
       upgrades.push({
         id: "nightBloom",
@@ -6751,7 +6759,7 @@ luckStat = 0;
     nextOrbTime     = 0;
     mouse.follow    = false;
     latestCompletedRun = null;
-
+extraUpgradeOptionActive = false;
     // Reset upgrade timing
     // Reset upgrade timing / sheds
     // Reset upgrade timing / sheds
