@@ -5424,7 +5424,7 @@ async function showDashboardOverlay() {
     </div>
 
     ${buildSnakeSkinSelectorHtml()}
-    
+
     <div style="margin-bottom:12px;">
       <input
         id="dashboardTagInput"
@@ -5529,6 +5529,42 @@ async function showDashboardOverlay() {
       }
     });
   }
+  // Wire up snake skin selector
+  function wireSkinSelector() {
+    const skinSelector = document.getElementById("snakeSkinSelector");
+    if (!skinSelector) return;
+    skinSelector.addEventListener("click", (e) => {
+      const option = e.target.closest("[data-skin-id]");
+      if (!option) return;
+
+      const skinId = option.dataset.skinId;
+      const skin = SNAKE_SKINS.find(s => s.id === skinId);
+      if (!skin) return;
+
+      const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+      if (levelData.level < skin.requiredLevel) return;
+
+      saveSelectedSnakeSkinId(skinId);
+
+      // Update visuals without full re-render
+      skinSelector.querySelectorAll("[data-skin-id]").forEach(el => {
+        const id = el.dataset.skinId;
+        const circle = el.querySelector("div");
+        const label = el.querySelector("div + div") || el.lastElementChild;
+        const isNowSelected = id === skinId;
+
+        if (circle) {
+          circle.style.borderColor = isNowSelected ? "#84cc16" : "#44403c";
+          circle.style.boxShadow = isNowSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none";
+        }
+        if (label) {
+          label.style.color = isNowSelected ? "#bef264" : "#a8a29e";
+          label.style.fontWeight = isNowSelected ? "700" : "400";
+        }
+      });
+    });
+  }
+  wireSkinSelector();
 }
 function formatDuration(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
