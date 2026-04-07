@@ -300,12 +300,12 @@ function getDashboardLevelData(totalOrbsCollected) {
 
   let level = 1;
   let levelStart = 0;
-  let nextLevelRequirement = 50;
+  let nextLevelRequirement = 30;
 
   while (total >= nextLevelRequirement) {
     level += 1;
     levelStart = nextLevelRequirement;
-    nextLevelRequirement += level * 50;
+    nextLevelRequirement += level * 30;
   }
 
   const orbsIntoCurrentLevel = total - levelStart;
