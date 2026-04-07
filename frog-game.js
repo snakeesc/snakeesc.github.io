@@ -1115,7 +1115,7 @@ const SNAKE_SKIN_STORAGE_KEY = "frogSnake_selectedSnakeSkin";
       head: "./images/head3.png",
       body: "./images/body3.png",
       tail: "./images/tail3.png",
-      requiredLevel: 10
+      requiredLevel: 15
     }
   ];
 
