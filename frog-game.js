@@ -3947,15 +3947,6 @@ function getUpgradeChoices() {
     const mutationChoice = getRandomMutationUpgrade();
     if (mutationChoice) upgrades.push(mutationChoice);
 
-    // --- 🎶 Snake Charmer ---
-    if (!snakeEggPending && !snakeEggUsed) {
-      upgrades.push({
-        id: "snakeEgg",
-        label: `🎶 Snake Charmer<br>Next shed reduces snake speed bonus by <span style="color:${neon};">50%</span>`,
-        apply: () => { snakeEggPending = true; snakeEggUsed = true; }
-      });
-    }
-
     // --- ⏳ Buff Duration ---
     if (buffDurationFactor < buffDurationCap - 1e-4) {
       upgrades.push({
