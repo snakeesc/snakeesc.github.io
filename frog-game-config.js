@@ -105,7 +105,7 @@
     LAST_STAND_MIN_CHANCE: 0.35,
     LEGENDARY_EVENT_TIME: 600,
     SHED_INTERVAL: 180,
-    MAIN_MENU_BACKGROUND_ENABLED: false,
+    MAIN_MENU_BACKGROUND_ENABLED: true,
     SCATTER_ANIMATED_VALUES: new Set([
       "goldenDartFrog",
       "blueDartFrog",
