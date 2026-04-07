@@ -944,7 +944,7 @@ a {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    color: white;
+    color: darkgreen;
 }
 
 .frog-panel-title .emoji {
@@ -953,7 +953,7 @@ a {
 
 .frog-panel-sub {
   font-size: 13px;
-  color: white;
+  color: darkolivegreen;
   text-align: center;
   margin-bottom: 14px;
   line-height: 1.5;
