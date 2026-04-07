@@ -886,27 +886,11 @@ a {
   position: absolute;
   width: 64px;
   height: 64px;
-  pointer-events: none;
-  image-rendering: pixelated;
-}
-
-.frog-sprite-base,
-.frog-sprite-skin {
-  position: absolute;
-  inset: 0;
-  width: 48px;
-  height: 48px;
   image-rendering: pixelated;
   pointer-events: none;
+  border-radius: 100%;
 }
 
-.frog-sprite-base {
-  z-index: 1;
-}
-
-.frog-sprite-skin {
-  z-index: 2;
-}
 
 /* FLAT THEME 6 – Coffee & Moss */
 
@@ -928,7 +912,7 @@ a {
     border: 0px solid #84cc16;
     color: white;
     font-family: monospace;
-    min-width: 400px;
+    min-width: 320px;
     max-width: 960px;
     max-height: 82vh;
     overflow: auto;
@@ -936,15 +920,15 @@ a {
 }
 
 .frog-panel-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 6px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    color: white;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #bef264;
 }
 
 .frog-panel-title .emoji {
@@ -1215,6 +1199,7 @@ a {
 
 .stat-highlight {
   color: #a3e635;
+  font-weight: 800;
 }
 
 /* Buff guide cards */
@@ -1272,204 +1257,99 @@ a {
   color: #fefce8;
   border-color: #a3e635;
 }
-/* =========================================
-   UPGRADE OVERLAY – FLOATING CARD LAYOUT
-========================================= */
-
-#upgradeOverlay {
-  background: radial-gradient(
-    circle at center,
-    rgba(0, 0, 0, 0.18) 0%,
-    rgba(0, 0, 0, 0.3) 45%,
-    rgba(0, 0, 0, 0.42) 100%
-  );
-}
-
+/* Upgrade overlay: floating pills only, no big box */
 #upgradeOverlay .frog-panel {
   border: none;
   box-shadow: none;
-  padding: 0;
+  padding: 8px 16px;
   background: transparent;
-  width: min(920px, 92vw);
-  max-width: 920px;
-  overflow: visible;
 }
 
+/* Hide the big “Choose an upgrade” title bar */
 #upgradeOverlay .frog-panel-title {
   display: none;
 }
 
-#upgradeOverlay .frog-panel-sub {
-  margin: 0 0 18px;
-  text-align: center;
-  font-size: 13px;
-  color: #f5f5f4;
-  text-shadow: 1px 1px darkslateblue;
-}
-
-#upgradeOverlay .upgrade-layout {
-  position: relative;
-  width: 100%;
-  min-height: 360px;
-}
-
+/* Columns themselves are invisible; just act as layout containers */
 #upgradeOverlay .upgrade-column {
   background: transparent;
   border: none;
   padding: 0;
 }
 
+/* Left column: stack upgrades top-down */
+#upgradeOverlay .upgrade-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 10px;
+}
+
 #upgradeOverlay .upgrade-choices {
-  position: relative;
-  width: 100%;
-  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* floating choice cards */
+/* Base pill style for upgrade choices */
 #upgradeOverlay .frog-upgrade-choice {
-  position: absolute;
-  width: 220px;
-  min-height: 96px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(28, 25, 23, 0.96);
-  color: white;
-  border: 1px solid #44403c;
-  text-align: left;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  margin: 0;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    border-color 140ms ease,
-    filter 140ms ease;
-  backdrop-filter: blur(2px);
+    width: 100%;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: center;
+    margin-bottom: 8px;
+    border: 0px solid transparent;
+    transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    box-shadow: none;
+    color: white;
+    font-weight: 800;
 }
 
-/* desktop 3-card spread */
-#upgradeOverlay .frog-upgrade-choice:nth-child(1) {
-  left: 6%;
-  top: 138px;
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(2) {
-  left: 50%;
-  top: 36px;
-  transform: translateX(-50%);
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(3) {
-  right: 6%;
-  top: 138px;
-}
-
-/* hover */
-#upgradeOverlay .frog-upgrade-choice:hover {
-  filter: brightness(1.06);
-  border-color: #84cc16;
-  box-shadow: 0 0 18px rgba(163, 230, 53, 0.22), 0 14px 30px rgba(0, 0, 0, 0.52);
-}
-
-/* keep middle card centered on hover */
-#upgradeOverlay .frog-upgrade-choice:nth-child(2):hover {
-  transform: translateX(-50%) scale(1.08) translateY(-6px);
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(1):hover,
-#upgradeOverlay .frog-upgrade-choice:nth-child(3):hover {
-  transform: scale(1.08) translateY(-6px);
-}
-
-/* title / desc */
-#upgradeOverlay .frog-upgrade-title {
-  display: block;
+/* Titles / descriptions inside pills */
+#upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
   font-size: 14px;
-  line-height: 1.2;
   font-weight: 800;
   color: #d9f99d;
-  margin-bottom: 6px;
 }
 
-#upgradeOverlay .frog-upgrade-desc {
-  display: block;
+#upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
   font-size: 12px;
-  line-height: 1.35;
-  color: #f5f5f4;
-  font-weight: 600;
 }
 
-/* colored left accent by upgrade type */
+/* Color variants by “type” – use a subtle accent strip */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
-  border-color: #65a30d;
-  box-shadow: inset 5px 0 0 #65a30d, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border: 1px solid #65a30d;
+  box-shadow: inset 4px 0 #65a30d;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
-  border-color: #eab308;
-  box-shadow: inset 5px 0 0 #eab308, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border: 1px solid #eab308;
+  box-shadow: inset 4px 0 #eab308;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival {
-  border-color: #ef4444;
-  box-shadow: inset 5px 0 0 #ef4444, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border: 1px solid #ef4444;
+  box-shadow: inset 4px 0 #ef4444;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
-  border-color: #fb923c;
-  box-shadow: inset 5px 0 0 #fb923c, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border: 1px solid #fb923c;
+  box-shadow: inset 4px 0 #fb923c;
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
-  border-color: #a855f7;
-  box-shadow: inset 5px 0 0 #a855f7, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border: 1px solid #a855f7;
+  box-shadow: inset 4px 0 #a855f7;
 }
 
-/* spawn animation */
-#upgradeOverlay .frog-upgrade-choice.is-spawning {
-  animation: upgradeCardSpawn 260ms ease-out both;
-}
-
-@keyframes upgradeCardSpawn {
-  0% {
-    opacity: 0;
-    transform: scale(0.72);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* mobile / narrow screens */
+/* Mobile: stack columns */
 @media (max-width: 900px) {
-  #upgradeOverlay .upgrade-layout,
-  #upgradeOverlay .upgrade-choices {
-    min-height: auto;
-  }
-
-  #upgradeOverlay .upgrade-choices {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  #upgradeOverlay .upgrade-layout {
     align-items: stretch;
-  }
-
-  #upgradeOverlay .frog-upgrade-choice {
-    position: relative;
-    width: 100%;
-    min-height: 0;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    transform: none !important;
-  }
-
-  #upgradeOverlay .frog-upgrade-choice:hover {
-    transform: translateY(-3px) !important;
   }
 }
 
@@ -1667,516 +1547,4 @@ background: #65a30d;
   opacity: 0.85;
   text-align: center;
   color: #cbd5e1;
-}
-.dashboard-stat-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 10px 0 4px;
-}
-
-.dashboard-stat {
-  background: #1c1917;
-  border: 1px solid #44403c;
-  border-radius: 12px;
-  padding: 10px 12px;
-}
-
-.dashboard-stat-label {
-  display: block;
-  font-size: 11px;
-  line-height: 1;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #a3e635;
-  margin-bottom: 8px;
-}
-
-.dashboard-stat-value {
-  display: block;
-  font-size: 18px;
-  font-weight: 800;
-  color: #f5f5f4;
-  line-height: 1.1;
-}
-
-@media (max-width: 640px) {
-  .dashboard-stat-grid {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 768px) {
-  /* main menu / dashboard / leaderboard / how to play / buff guide / upgrade overlay */
-  .frog-panel {
-    min-width: 0;
-    width: min(94vw, 640px);
-    max-width: 94vw;
-    max-height: 88vh;
-    padding: 24px 20px 20px;
-    border-radius: 16px;
-  }
-
-  .frog-panel-title {
-    font-size: 28px;
-    line-height: 1.15;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .frog-panel-title .emoji {
-    font-size: 30px;
-  }
-
-  .frog-panel-sub {
-    font-size: 16px;
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-
-  .frog-panel-section-label {
-    font-size: 13px;
-    margin-top: 16px;
-    margin-bottom: 8px;
-  }
-
-  .frog-panel-list li {
-    font-size: 16px;
-    line-height: 1.6;
-    margin-bottom: 8px;
-  }
-
-  .frog-panel-footer {
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .frog-btn {
-    padding: 14px 16px;
-    font-size: 17px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-  }
-
-  .frog-btn-danger {
-    font-size: 15px;
-  }
-
-  .frog-upgrade-choice {
-    padding: 14px 14px;
-    border-radius: 12px;
-  }
-
-  .frog-upgrade-title,
-  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
-    font-size: 18px;
-    margin-bottom: 4px;
-  }
-
-  .frog-upgrade-desc,
-  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .upgrade-column-title {
-    font-size: 16px;
-  }
-
-  .upgrade-summary-list li {
-    font-size: 14px;
-    line-height: 1.5;
-    padding: 8px 10px;
-  }
-
-  .leaderboard-title {
-    font-size: 20px;
-  }
-
-  .leaderboard-subtitle,
-  .leaderboard-page-info,
-  .leaderboard-legend,
-  .leaderboard-loading,
-  .leaderboard-error,
-  .leaderboard-empty {
-    font-size: 14px;
-  }
-
-  .leaderboard-head-cell {
-    font-size: 12px;
-    padding: 10px 8px;
-  }
-
-  .leaderboard-cell {
-    font-size: 14px;
-    padding: 10px 8px;
-  }
-
-  .leaderboard-page-btn {
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-
-  .scoreboard-card {
-    width: min(96vw, 640px);
-    padding: 22px 18px;
-    border-radius: 16px;
-  }
-
-  .scoreboard-title {
-    font-size: 22px;
-  }
-
-  .scoreboard-subtitle {
-    font-size: 14px;
-  }
-
-  .summary-heading {
-    font-size: 15px;
-  }
-
-  .pill-label {
-    font-size: 12px;
-  }
-
-  .pill-value {
-    font-size: 22px;
-  }
-
-  .scoreboard-th,
-  .scoreboard-td {
-    font-size: 14px;
-    padding: 8px 6px;
-  }
-
-  .scoreboard-btn {
-    font-size: 15px;
-    padding: 10px 12px;
-  }
-
-  .scoreboard-hint {
-    font-size: 13px;
-  }
-}
-.frog-overlay.is-open {
-  display: flex;
-}
-
-.frog-panel {
-  transform-origin: top center;
-  backface-visibility: hidden;
-}
-
-.frog-overlay.is-animating-in .frog-panel {
-  animation: frogPanelFoldIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.frog-overlay.is-animating-out .frog-panel {
-  animation: frogPanelFoldOut 180ms ease-in forwards;
-}
-
-@keyframes frogPanelFoldIn {
-  0% {
-    opacity: 0;
-    transform: perspective(900px) rotateX(-65deg) scaleY(0.55) scaleX(0.96);
-    filter: brightness(0.8);
-  }
-  60% {
-    opacity: 1;
-    transform: perspective(900px) rotateX(8deg) scaleY(1.04) scaleX(1.01);
-    filter: brightness(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: perspective(900px) rotateX(0deg) scaleY(1) scaleX(1);
-    filter: brightness(1);
-  }
-}
-
-@keyframes frogPanelFoldOut {
-  0% {
-    opacity: 1;
-    transform: perspective(900px) rotateX(0deg) scaleY(1) scaleX(1);
-    filter: brightness(1);
-  }
-  100% {
-    opacity: 0;
-    transform: perspective(900px) rotateX(-55deg) scaleY(0.6) scaleX(0.97);
-    filter: brightness(0.8);
-  }
-}
-.upgrade-guide-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 6px 0;
-}
-
-.upgrade-guide-item {
-  font-size: 13px;
-  margin-bottom: 6px;
-  line-height: 1.5;
-  color: #f5f5f4;
-  padding: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-.upgrade-guide-item strong {
-  font-weight: normal;
-}
-
-.upgrade-guide-item.upgrade-type-mobility strong {
-  color: #65a30d;
-}
-
-.upgrade-guide-item.upgrade-type-buff strong {
-  color: #eab308;
-}
-
-.upgrade-guide-item.upgrade-type-survival strong {
-  color: #ef4444;
-}
-
-.upgrade-guide-item.upgrade-type-orb strong {
-  color: #fb923c;
-}
-
-.upgrade-guide-item.upgrade-type-role strong {
-  color: #a855f7;
-}
-
-.upgrade-guide-group-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-top: 12px;
-  margin-bottom: 6px;
-  color: #a3e635;
-}
-@media (max-device-width: 768px), (pointer: coarse) and (max-width: 1024px) {
-  .frog-overlay {
-    padding: 12px;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .frog-panel {
-    min-width: 0;
-    width: min(96vw, 720px);
-    max-width: 96vw;
-    max-height: 90vh;
-    padding: 28px 22px 22px;
-    border-radius: 18px;
-  }
-
-  .frog-panel-title {
-    font-size: 32px;
-    line-height: 1.15;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .frog-panel-title .emoji {
-    font-size: 32px;
-  }
-
-  .frog-panel-sub {
-    font-size: 18px;
-    line-height: 1.65;
-    margin-bottom: 18px;
-  }
-
-  .frog-panel-section-label {
-    font-size: 14px;
-    margin-top: 18px;
-    margin-bottom: 8px;
-  }
-
-  .frog-panel-list li {
-    font-size: 17px;
-    line-height: 1.65;
-    margin-bottom: 10px;
-  }
-
-  .frog-panel-footer {
-    font-size: 15px;
-    line-height: 1.55;
-  }
-
-  .frog-btn {
-    padding: 16px 18px;
-    font-size: 19px;
-    border-radius: 14px;
-    margin-bottom: 12px;
-  }
-
-  .frog-btn-danger {
-    font-size: 17px;
-  }
-
-  #upgradeOverlay .frog-panel {
-    width: min(96vw, 720px);
-    max-width: 96vw;
-    padding: 0;
-  }
-
-  #upgradeOverlay .frog-panel-sub {
-    font-size: 16px;
-    margin-bottom: 14px;
-  }
-
-  #upgradeOverlay .upgrade-layout,
-  #upgradeOverlay .upgrade-choices {
-    min-height: auto;
-  }
-
-  #upgradeOverlay .upgrade-choices {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  #upgradeOverlay .frog-upgrade-choice {
-    position: relative;
-    width: 100%;
-    min-height: 0;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    transform: none !important;
-    padding: 16px 16px;
-    border-radius: 14px;
-  }
-
-  #upgradeOverlay .frog-upgrade-choice:hover {
-    transform: translateY(-2px) !important;
-  }
-
-  #upgradeOverlay .frog-upgrade-title {
-    font-size: 20px;
-    line-height: 1.3;
-    margin-bottom: 6px;
-  }
-
-  #upgradeOverlay .frog-upgrade-desc {
-    font-size: 15px;
-    line-height: 1.55;
-  }
-
-  .leaderboard-title {
-    font-size: 22px;
-  }
-
-  .leaderboard-subtitle,
-  .leaderboard-page-info,
-  .leaderboard-legend,
-  .leaderboard-loading,
-  .leaderboard-error,
-  .leaderboard-empty {
-    font-size: 15px;
-  }
-
-  .leaderboard-head-cell {
-    font-size: 13px;
-    padding: 10px 8px;
-  }
-
-  .leaderboard-cell {
-    font-size: 15px;
-    padding: 10px 8px;
-  }
-
-  .leaderboard-page-btn {
-    padding: 12px 14px;
-    font-size: 15px;
-  }
-}
-#howToOverlay .buff-guide-nav {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: 8px;
-}
-
-#howToOverlay .buff-guide-nav .buff-page-btn {
-  flex: 0 0 auto;
-  width: auto;
-  margin-bottom: 0;
-  min-width: 140px;
-}
-.frog-sprite img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
-.frog-sprite-base {
-  z-index: 1;
-}
-
-.frog-sprite-skin {
-  z-index: 2;
-}
-
-.frog-sprite-eyes {
-  z-index: 3;
-}
-
-.frog-sprite-hat {
-  z-index: 4;
-}
-/* Command Center Layout Fixes */
-.cc-container { display: flex; gap: 30px; text-align: left; align-items: flex-start; }
-.cc-left { flex: 1.2; border-right: 1px solid #44403c; padding-right: 25px; }
-.cc-right { flex: 1.5; }
-
-/* Fix the PFP Spreading out */
-.cc-pfp-stack { position: relative; width: 64px; height: 64px; }
-.cc-pfp-layer { position: absolute; inset: 0; width: 100%; image-rendering: pixelated; }
-
-/* Leaderboard Table Styles */
-.cc-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-.cc-table th { text-align: left; color: #a8a29e; border-bottom: 1px solid #44403c; padding: 4px; }
-.cc-table td { padding: 6px 4px; border-bottom: 1px solid #292524; }
-/* Command Center Navigation */
-.cc-nav {
-  display: flex;
-  border-bottom: 1px solid #44403c;
-  margin-bottom: 20px;
-  gap: 10px;
-  justify-content: center;
-}
-
-.cc-tab-btn {
-  background: none;
-  border: none;
-  padding: 10px 15px;
-  color: #a8a29e;
-  font-family: monospace;
-  font-weight: bold;
-  cursor: pointer;
-  text-transform: uppercase;
-  font-size: 13px;
-  transition: 0.2s;
-  border-bottom: 2px solid transparent;
-}
-
-.cc-tab-btn:hover {
-  color: #e7e5e4;
-  background: rgba(255,255,255,0.05);
-}
-
-.cc-tab-btn.active {
-  color: #bef264;
-  border-bottom: 2px solid #bef264;
-}
-
-.cc-grid-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  text-align: left;
 }
