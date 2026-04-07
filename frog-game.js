@@ -2403,7 +2403,7 @@ function applyPairOfScissors() {
 
   // Keep only the front half alive
   original.segments = frontSegments;
-  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.70);
+  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.80);
   original.canGrow = false;
 
   // Mark the cut point on the living snake
@@ -3921,7 +3921,7 @@ function getUpgradeChoices() {
     if (!pairOfScissorsUsed && !epicChainPending && upgradeOverlayContext !== "start") {
       upgrades.push({
         id: "pairOfScissors",
-        label: `✂️ Pair of Scissors<br>Cut the snake in <span style="color:${neon};">half</span> and slow it by <span style="color:${neon};">30%</span>`,
+        label: `✂️ Pair of Scissors<br>Cut the snake in <span style="color:${neon};">half</span> and slow it by <span style="color:${neon};">20%</span>`,
         apply: () => { applyPairOfScissors(); }
       });
     }
