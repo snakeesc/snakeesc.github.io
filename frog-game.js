@@ -4826,9 +4826,6 @@ function showBuffGuideOverlay() {
         <li class="upgrade-guide-item upgrade-type-buff">
           <strong>🔮 Molt Fortune</strong> — snake drops 5 orbs when shedding.
         </li>
-        <li class="upgrade-guide-item upgrade-type-buff">
-          <strong>🎶 Snake Charmer</strong> — reduces the snake's speed gain on the next shed.
-        </li>
       </ul>
 
       <ul class="upgrade-guide-list">
