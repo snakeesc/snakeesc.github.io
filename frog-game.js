@@ -4455,12 +4455,12 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-title">
+      <div class="frog-panel-title" style="color: white !important;">
         How to Play
         <span class="emoji">🐸</span>
       </div>
 
-      <div class="frog-panel-sub">
+      <div class="frog-panel-sub" style="color: white !important;">
         Keep your frog swarm alive as long as possible while the snake hunts you.
       </div>
 
