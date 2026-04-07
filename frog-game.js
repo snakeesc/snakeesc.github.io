@@ -4356,124 +4356,7 @@ function closeAnimatedOverlay(overlayEl) {
       closeAnimatedOverlay(mainMenuOverlay);
     }
   }
-async function showCommandCenter(initialPage = 'dash') {
-    if (!dashboardOverlay) initDashboardOverlay();
-    const content = document.getElementById("dashboardContent");
-    if (!content) return;
 
-    openAnimatedOverlay(dashboardOverlay);
-
-    // 1. Data Prep
-    const localStats = loadDashboardStats();
-    const dashboardPfp = getDashboardPfp();
-    const currentTag = getSavedPlayerTag() || "";
-    const levelData = getDashboardLevelData(localStats.totalOrbsCollected || 0);
-    const leaderboardEntries = await fetchLeaderboard();
-    const topList = Array.isArray(leaderboardEntries) ? leaderboardEntries.slice(0, 10) : [];
-
-    // 2. Render Shell & Nav
-    content.innerHTML = `
-      <div class="cc-nav">
-        <button class="cc-tab-btn" id="tab-dash" onclick="renderCCPage('dash')">Dashboard</button>
-        <button class="cc-tab-btn" id="tab-leader" onclick="renderCCPage('leader')">Leaderboard</button>
-        <button class="cc-tab-btn" id="tab-buffs" onclick="renderCCPage('buffs')">Buff Guide</button>
-        <button class="cc-tab-btn" id="tab-howto" onclick="renderCCPage('howto')">How to Play</button>
-      </div>
-      <div id="cc-body"></div>
-    `;
-
-    // 3. Page Switcher Logic
-    window.renderCCPage = async (pageId) => {
-      // Update UI active states
-      document.querySelectorAll('.cc-tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('tab-' + pageId).classList.add('active');
-      const body = document.getElementById('cc-body');
-
-      if (pageId === 'dash') {
-        body.innerHTML = `
-          <div class="cc-grid-layout">
-            <div>
-              <div class="frog-panel-section-label">Profile</div>
-              <div class="profile-box" style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
-                <div class="profile-avatar-container">
-                  <div class="profile-avatar-bg" style="background: ${dashboardPfp.bgColor}; position:relative;">
-                    <img src="${dashboardPfp.spriteSrc}" class="profile-avatar-img" style="z-index:1; position:absolute; inset:0;">
-                    <img src="${dashboardPfp.skinSrc}" class="profile-avatar-img" style="z-index:2; position:absolute; inset:0;">
-                    ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="profile-avatar-img" style="z-index:3; position:absolute; inset:0;">` : ""}
-                    ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="profile-avatar-img" style="z-index:4; position:absolute; inset:0;">` : ""}
-                  </div>
-                </div>
-                <div style="flex:1">
-                  <input type="text" id="ccTagInput" class="frog-input" value="${currentTag}" placeholder="Enter Tag..." style="width:100%;">
-                </div>
-              </div>
-              <button id="ccSaveBtn" class="frog-btn frog-btn-primary" style="width:100%">Save Tag</button>
-            </div>
-            <div>
-              <div class="frog-panel-section-label">Stats</div>
-              <ul class="frog-panel-list">
-                <li>Level: <span class="stat-highlight">${levelData.level}</span></li>
-                <li>Best Score: <span class="stat-highlight">${Math.floor(localStats.bestScore || 0)}</span></li>
-                <li>Total Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
-              </ul>
-            </div>
-          </div>
-        `;
-        setupDashEvents();
-      } 
-      else if (pageId === 'leader') {
-        body.innerHTML = `
-          <table style="width:100%; font-size:13px; border-collapse:collapse;">
-            <tr style="border-bottom:1px solid #44403c; color:#a8a29e; text-align:left;">
-              <th style="padding:8px">#</th><th>Player</th><th>Time</th><th style="text-align:right">Score</th>
-            </tr>
-            ${topList.map((e, i) => `
-              <tr style="border-bottom:1px solid #292524; ${e.tag === currentTag ? 'color:#bef264' : ''}">
-                <td style="padding:8px">${i+1}</td>
-                <td>${e.tag || 'Anon'}</td>
-                <td>${formatDashboardDuration(e.duration || e.timeSeconds || 0)}</td>
-                <td style="text-align:right" class="stat-highlight">${Math.floor(e.score || 0)}</td>
-              </tr>
-            `).join('')}
-          </table>
-        `;
-      }
-      else if (pageId === 'howto') {
-        body.innerHTML = `
-          <div class="cc-grid-layout">
-            <div style="background:#292524; padding:15px; border-radius:12px; border:1px solid #44403c;">
-              <div class="frog-panel-section-label">Controls</div>
-              <p style="font-size:13px;">Move Mouse or Touch to lead the swarm. Avoid the snake!</p>
-            </div>
-            <div style="background:#292524; padding:15px; border-radius:12px; border:1px solid #44403c;">
-              <div class="frog-panel-section-label">Survival</div>
-              <p style="font-size:13px;">Eat Orbs to grow. Earn points for every frog the snake eats.</p>
-            </div>
-          </div>
-        `;
-      }
-      else if (pageId === 'buffs') {
-        // You can link your existing renderBuffGuide logic here
-        body.innerHTML = `<div class="leaderboard-loading">Buff Guide coming soon...</div>`;
-      }
-    };
-
-    function setupDashEvents() {
-      const btn = document.getElementById('ccSaveBtn');
-      const input = document.getElementById('ccTagInput');
-      if (btn && input) {
-        btn.onclick = async () => {
-          const val = input.value.trim();
-          if(!val) return;
-          localStorage.setItem("frogSnake_username", val);
-          btn.innerText = "Saved!";
-          setTimeout(() => btn.innerText = "Save Tag", 2000);
-        };
-      }
-    }
-
-    renderCCPage(initialPage);
-  }
   function initHowToOverlay() {
     if (howToOverlay) return;
     howToOverlay = document.getElementById("howToOverlay");
@@ -4488,53 +4371,113 @@ async function showCommandCenter(initialPage = 'dash') {
     });
   }
   function showHowToOverlay() {
-    // 1. Ensure the overlay is initialized
     if (!howToOverlay) initHowToOverlay();
-    
-    // 2. Look for the correct content container 
-    // (In your code, this is usually 'howToContent')
-    const content = document.getElementById("howToContent");
-    if (!content) return;
+    if (!howToOverlay) return;
 
-    // 3. Open the actual overlay element
-    openAnimatedOverlay(howToOverlay);
+    const panel = howToOverlay.querySelector(".frog-panel");
+    if (!panel) return;
 
-    // 4. Set the HTML with the scan-friendly grid
-    content.innerHTML = `
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left;">
-        
-        <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
-          <div class="frog-panel-section-label" style="color: #bef264;">Movement</div>
-          <p style="font-size: 13px; margin: 5px 0 15px 0; line-height: 1.4;">
-            The frogs follow your <strong>Mouse</strong> or <strong>Touch</strong>. Keep them away from the snake!
-          </p>
-          
-          <div class="frog-panel-section-label" style="color: #bef264;">The Goal</div>
-          <p style="font-size: 13px; margin: 5px 0; line-height: 1.4;">
-            Keep the swarm alive. If the Snake eats your <strong>last frog</strong>, the run is over.
-          </p>
-        </div>
-
-        <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
-          <div class="frog-panel-section-label" style="color: #bef264;">Progression</div>
-          <ul style="list-style: none; padding: 0; font-size: 13px; line-height: 1.8;">
-            <li>✨ <strong>Orbs:</strong> Collect these to grow your swarm.</li>
-            <li>🎁 <strong>Buffs:</strong> Permanent upgrades appear over time.</li>
-            <li>🐍 <strong>Shed:</strong> The snake grows every 3 minutes.</li>
-          </ul>
-
-          <div class="frog-panel-section-label" style="color: #bef264; margin-top: 10px;">Scoring</div>
-          <p style="font-size: 12px; color: #a8a29e;">
-            Points are awarded every time the snake <strong>eats a frog</strong>. Multipliers increase your gains.
-          </p>
-        </div>
-
+    panel.innerHTML = `
+      <div class="frog-panel-title">
+        How to Play
+        <span class="emoji">🐸</span>
       </div>
 
-      <div style="margin-top: 20px; padding: 10px; border-top: 1px solid #44403c; font-size: 12px; color: #bef264; text-align: center;">
-        Check the <strong>Buff Guide</strong> in the menu for detailed upgrade info.
+      <div class="frog-panel-sub">
+        Keep your frog swarm alive as long as possible while the snake hunts you.
+      </div>
+
+      <div class="upgrade-guide-group-label">Objective</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Survive as long as possible and build the highest score you can.
+        </li>
+        <li class="upgrade-guide-item">
+          Frogs are your lives. If all frogs die, the run ends.
+        </li>
+        <li class="upgrade-guide-item">
+          Your score increases as the snake eats frogs, so longer runs usually mean higher scores.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Controls</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Move your mouse or finger and the frogs will follow.
+        </li>
+        <li class="upgrade-guide-item">
+          Try to guide the swarm away from the snake’s path.
+        </li>
+        <li class="upgrade-guide-item">
+          Use movement carefully so the frogs do not bunch up into easy bites.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Orbs</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Collect glowing orbs for temporary buffs and permanent upgrades.
+        </li>
+        <li class="upgrade-guide-item">
+          Some orbs boost movement, spawning, shields, score, or snake debuffs.
+        </li>
+        <li class="upgrade-guide-item">
+          Permanent upgrade orbs can strengthen your swarm for the rest of the run.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Upgrades</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Common upgrades appear regularly during the run.
+        </li>
+        <li class="upgrade-guide-item">
+          Epic upgrades appear every 3 minutes and are much stronger.
+        </li>
+        <li class="upgrade-guide-item">
+          Pick upgrades that match your run: more frogs, better survival, stronger buffs, or role synergy.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Snake Shedding</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          The snake sheds over time and becomes more dangerous.
+        </li>
+        <li class="upgrade-guide-item">
+          Each shed changes the pace of the run, so prepare before the next one hits.
+        </li>
+        <li class="upgrade-guide-item">
+          Some upgrades are built specifically around surviving or exploiting sheds.
+        </li>
+      </ul>
+
+      <div class="upgrade-guide-group-label">Tips</div>
+      <ul class="upgrade-guide-list">
+        <li class="upgrade-guide-item">
+          Do not let the whole swarm stack directly on top of itself for too long.
+        </li>
+        <li class="upgrade-guide-item">
+          Extra frogs give you room for mistakes, but survival upgrades help when things go bad.
+        </li>
+        <li class="upgrade-guide-item">
+          Role-based frogs can snowball hard if you keep them alive.
+        </li>
+      </ul>
+
+      <div class="frog-panel-footer">
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
+          Close
+        </button>
       </div>
     `;
+
+    const closeBtn = document.getElementById("howToCloseBtn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", hideHowToOverlay);
+    }
+
+    openAnimatedOverlay(howToOverlay);
   }
 
   function hideHowToOverlay() {
@@ -5041,126 +4984,346 @@ function showBuffGuideOverlay() {
     }
   }
 
-async function showDashboardOverlay(page = 'dash') {
-    if (!dashboardOverlay) initDashboardOverlay();
-    const content = document.getElementById("dashboardContent");
-    if (!content) return;
+async function showDashboardOverlay() {
+  if (!dashboardOverlay) initDashboardOverlay();
+  if (!dashboardOverlay) return;
 
-    openAnimatedOverlay(dashboardOverlay);
+  const content = document.getElementById("dashboardContent");
+  if (!content) return;
 
-    // 1. DATA PREP (All async calls happen here at the top level)
-    const localStats = loadDashboardStats();
-    const dashboardPfp = getDashboardPfp();
-    const currentTag = getSavedPlayerTag() || "";
-    const levelData = getDashboardLevelData(localStats.totalOrbsCollected || 0);
-    
-    // Fetch leaderboard data once at the start
-    const leaderboardEntries = await fetchLeaderboard() || [];
-    
-    const lastRunScore = localStats.lastRunScore || 0;
-    const lastRunTime = localStats.lastRunDuration || 0;
-    const bestTime = localStats.bestDuration || 0;
-    const orbsToNext = levelData.nextLevelOrbs - (localStats.totalOrbsCollected % levelData.nextLevelOrbs);
+  openAnimatedOverlay(dashboardOverlay);
+  content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
 
-    // 2. MAIN SHELL
-    content.innerHTML = `
-      <div class="cc-nav" style="display: flex; border-bottom: 1px solid #44403c; margin-bottom: 20px; justify-content: center; gap: 5px;">
-        <button class="cc-tab-btn ${page === 'dash' ? 'active' : ''}" onclick="showDashboardOverlay('dash')">Dashboard</button>
-        <button class="cc-tab-btn ${page === 'leader' ? 'active' : ''}" onclick="showDashboardOverlay('leader')">Leaderboard</button>
-        <button class="cc-tab-btn ${page === 'howto' ? 'active' : ''}" onclick="showDashboardOverlay('howto')">How to Play</button>
-      </div>
-      <div id="cc-body"></div>
+  const localStats = loadDashboardStats();
+  const dashboardPfp = getDashboardPfp();
+  const currentTag =
+    (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
+    (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
+    getSavedDashboardTag() ||
+    "";
+
+  const leaderboardBest = await getMyDashboardBestFromLeaderboard();
+  const leaderboardEntries = await fetchLeaderboard();
+  const topTenLeaderboard = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.slice(0, 10)
+    : [];
+
+  const normalizedCurrentTag =
+    typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
+
+  const bestRecordRank = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.findIndex((entry) => {
+        const entryTag =
+          typeof entry?.tag === "string" ? entry.tag.trim().toLowerCase() : "";
+        const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+        const entryTime = Number(entry?.bestTime ?? entry?.time ?? 0);
+
+        return (
+          entryTag &&
+          normalizedCurrentTag &&
+          entryTag === normalizedCurrentTag &&
+          entryScore === Math.floor(Number(leaderboardBest.bestRun || 0)) &&
+          Math.abs(entryTime - Number(leaderboardBest.bestTime || 0)) < 0.01
+        );
+      })
+    : -1;
+
+  const bestRecordPrefix =
+    leaderboardBest.found && bestRecordRank >= 0
+      ? `#${bestRecordRank + 1} `
+      : "";
+
+  const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
+
+  const savedLatestRun =
+    Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
+      ? localStats.recentRuns[0]
+      : null;
+
+  const latestRunHtml = savedLatestRun
+    ? `
+      <div class="frog-panel-section-label">Last Run</div>
+      <ul class="frog-panel-list">
+        <li style="color:#bef264;">
+          <strong>Score:</strong> <span class="stat-highlight">${Math.floor(savedLatestRun.score)}</span>
+          · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(savedLatestRun.time)}</span>
+          · <strong>Orbs:</strong> <span class="stat-highlight">${savedLatestRun.orbs}</span>
+          · <strong>Frogs Lost:</strong> <span class="stat-highlight">${savedLatestRun.frogsLost || 0}</span>
+        </li>
+      </ul>
+    `
+    : "";
+
+  const leaderboardTopHtml = topTenLeaderboard.length
+    ? `
+      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
+      <ul class="frog-panel-list">
+        ${topTenLeaderboard.map((entry, i) => {
+          const name =
+            (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
+              ? entry.tag
+              : (entry && typeof entry.name === "string" && entry.name.trim() !== "")
+                ? entry.name
+                : `Player ${i + 1}`;
+
+          const score = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+          const time = formatDashboardDuration(Number(entry?.bestTime ?? entry?.time ?? 0));
+
+          const entryTag =
+            typeof entry?.tag === "string"
+              ? entry.tag.trim().toLowerCase()
+              : typeof entry?.name === "string"
+                ? entry.name.trim().toLowerCase()
+                : "";
+
+          const isMe =
+            !!normalizedCurrentTag &&
+            !!entryTag &&
+            entryTag === normalizedCurrentTag;
+
+          return `
+            <li style="${
+              isMe
+                ? "color:#bef264; font-weight:700; background:rgba(190,242,100,0.08); border:1px solid rgba(190,242,100,0.35); padding:6px 8px; border-radius:8px;"
+                : ""
+            }">
+              <strong>#${i + 1}</strong>
+              ${isMe ? "⭐ " : ""}
+              ${name} · ${score} score · ${time}
+            </li>
+          `;
+        }).join("")}
+      </ul>
+    `
+    : `
+      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
+      <ul class="frog-panel-list">
+        <li>No leaderboard entries yet.</li>
+      </ul>
     `;
 
-    // 3. RENDER LOGIC (No 'await' inside these blocks)
-    const body = document.getElementById('cc-body');
-    if (page === 'dash') {
-      body.innerHTML = `
-        <div style="display: grid; grid-template-columns: 160px 1fr; gap: 25px; text-align: left; align-items: start;">
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
-            <div style="width: 90px; height: 90px; background: ${dashboardPfp.bgColor}; border: 2px solid #44403c; border-radius: 12px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-              <img src="${dashboardPfp.spriteSrc}" style="position: absolute; width: 80%; height: 80%; z-index: 1;">
-              <img src="${dashboardPfp.skinSrc}" style="position: absolute; width: 80%; height: 80%; z-index: 2;">
-              ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" style="position: absolute; width: 80%; height: 80%; z-index: 3;">` : ""}
-              ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" style="position: absolute; width: 80%; height: 80%; z-index: 4;">` : ""}
-            </div>
-            <div style="width: 100%;">
-              <input type="text" id="ccTagInput" class="frog-input" value="${currentTag}" placeholder="Tag..." style="width: 100%; margin-bottom: 6px; text-align: center; font-size: 13px;">
-              <button id="ccSaveBtn" class="frog-btn frog-btn-primary" style="width: 100%; font-size: 11px; padding: 6px;">Save Tag</button>
-            </div>
-          </div>
+  content.innerHTML = `
+    <div class="frog-panel-section-label">Player Profile</div>
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:10px;
+        padding:8px 10px;
+        border:1px solid #44403c;
+        border-radius:12px;
+        background:#1c1917;
+      "
+    >
+      <div
+        style="
+          position:relative;
+          width:96px;
+          height:96px;
+          min-width:96px;
+          border-radius:999px;
+          overflow:hidden;
+          border:0px solid #57534e;
+          background:${dashboardPfp.bgColor};
+        "
+      >
+        <img
+          src="${dashboardPfp.spriteSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:1;
+          "
+        />
+        <img
+          src="${dashboardPfp.skinSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:2;
+          "
+        />
+        ${dashboardPfp.eyesSrc ? `
+          <img
+            src="${dashboardPfp.eyesSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:3;
+            "
+          />
+        ` : ""}
+        ${dashboardPfp.hatSrc ? `
+          <img
+            src="${dashboardPfp.hatSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:4;
+            "
+          />
+        ` : ""}
+      </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div style="background: #292524; padding: 12px; border-radius: 8px; border: 1px solid #44403c;">
-              <div class="frog-panel-section-label">Mastery</div>
-              <div style="font-size: 14px; font-weight: bold;">Level ${levelData.level}</div>
-              <div style="font-size: 11px; color: #a8a29e; margin-top: 4px;">Next in: ${orbsToNext} orbs</div>
-            </div>
-            <div style="background: #292524; padding: 12px; border-radius: 8px; border: 1px solid #44403c;">
-              <div class="frog-panel-section-label">Best Run</div>
-              <div style="font-size: 13px;">Pts: <span class="stat-highlight">${Math.floor(localStats.bestScore || 0)}</span></div>
-              <div style="font-size: 13px;">Time: <span class="stat-highlight">${formatDashboardDuration(bestTime)}</span></div>
-            </div>
-            <div style="background: #292524; padding: 12px; border-radius: 8px; border: 1px solid #44403c; grid-column: span 2;">
-              <div class="frog-panel-section-label">Last Run</div>
-              <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                <span>Score: <span class="stat-highlight">${Math.floor(lastRunScore)}</span></span>
-                <span>Time: <span class="stat-highlight">${formatDashboardDuration(lastRunTime)}</span></span>
-              </div>
-            </div>
-          </div>
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <div>
+          <strong>Tag:</strong>
+          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
         </div>
-      `;
-    } else if (page === 'leader') {
-      body.innerHTML = `
-        <div style="max-height: 280px; overflow-y: auto;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <thead style="position: sticky; top: 0; background: #1c1917; z-index: 5;">
-              <tr style="border-bottom: 1px solid #44403c; color: #a8a29e; text-align: left;">
-                <th style="padding: 10px;">#</th><th>Player</th><th>Time</th><th style="text-align:right">Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${leaderboardEntries.slice(0, 10).map((e, i) => `
-                <tr style="border-bottom: 1px solid #292524; ${e.tag === currentTag ? 'background: rgba(190, 242, 100, 0.05); color: #bef264;' : ''}">
-                  <td style="padding: 10px;">${i+1}</td>
-                  <td>${e.tag || 'Anon'}</td>
-                  <td>${formatDashboardDuration(e.duration || 0)}</td>
-                  <td style="text-align:right; padding: 10px;" class="stat-highlight">${Math.floor(e.score || 0)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+        <div>
+          <strong>Level:</strong>
+          <span class="stat-highlight">${levelData.level}</span>
         </div>
-      `;
-    } else if (page === 'howto') {
-      body.innerHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left;">
-          <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
-            <div class="frog-panel-section-label">Controls</div>
-            <p style="font-size: 12px; line-height: 1.5;">Frogs follow your cursor or touch. Swerve to avoid the snake head.</p>
-          </div>
-          <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
-            <div class="frog-panel-section-label">Growth</div>
-            <p style="font-size: 12px; line-height: 1.5;">Collect Orbs to spawn more frogs. More frogs = longer life!</p>
-          </div>
-        </div>
-      `;
-    }
+      </div>
+    </div>
 
-    // 4. LOGIC ATTACHMENT
-    const sBtn = document.getElementById('ccSaveBtn');
-    if (sBtn) {
-      sBtn.onclick = () => {
-        const val = document.getElementById('ccTagInput').value.trim();
-        if (val) {
-          localStorage.setItem("frogSnake_username", val);
-          sBtn.innerText = "Saved!";
-          setTimeout(() => sBtn.innerText = "Save Tag", 2000);
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
+        ${levelData.orbsNeededForNextLevel} orbs until level ${levelData.nextLevel}
+      </div>
+      <div
+        style="
+          width:100%;
+          height:8px;
+          background:#292524;
+          border:1px solid #44403c;
+          border-radius:999px;
+          overflow:hidden;
+        "
+      >
+        <div
+          style="
+            width:${levelData.progressPercent}%;
+            height:100%;
+            background:#65a30d;
+            border-radius:999px;
+          "
+        ></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <input
+        id="dashboardTagInput"
+        type="text"
+        maxlength="12"
+        value="${String(currentTag).replace(/"/g, "&quot;")}"
+        placeholder="Enter player tag"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:5px 8px;
+          border-radius:6px;
+          border:1px solid #44403c;
+          background:#292524;
+          color:white;
+          font-family:inherit;
+          font-size:12px;
+          margin-bottom:6px;
+        "
+      />
+      <button
+        id="dashboardSaveTagBtn"
+        class="frog-btn frog-btn-secondary"
+        style="
+          width:auto;
+          padding:6px 10px;
+          font-size:12px;
+          margin-bottom:4px;
+        "
+      >
+        Save Tag
+      </button>
+      <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
+    </div>
+
+    <div class="frog-panel-section-label">Lifetime Stats</div>
+    <ul class="frog-panel-list">
+      <li>Total Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected ?? 0}</span></li>
+      ${localStats.totalRuns != null ? `<li>Total Runs: <span class="stat-highlight">${localStats.totalRuns}</span></li>` : ""}
+      ${localStats.totalPlayTime != null ? `<li>Total Play Time: <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>` : ""}
+      ${localStats.totalFrogsLost != null ? `<li>Total Frogs Lost: <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>` : ""}
+      ${localStats.totalSnakesShed != null ? `<li>Total Snakes Shed: <span class="stat-highlight">${localStats.totalSnakesShed}</span></li>` : ""}
+    </ul>
+
+    <div class="frog-panel-section-label">Best Record</div>
+    <ul class="frog-panel-list">
+      <li>
+        ${leaderboardBest.found
+          ? `${bestRecordPrefix}${currentTag || "You"} · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
+          : "No best record yet."
         }
-      };
-    }
+      </li>
+    </ul>
+
+    ${latestRunHtml}
+
+  `;
+
+  const tagInput = document.getElementById("dashboardTagInput");
+  const saveBtn = document.getElementById("dashboardSaveTagBtn");
+  const msgEl = document.getElementById("dashboardTagMessage");
+  const currentTagEl = document.getElementById("dashboardCurrentTag");
+
+  if (saveBtn && tagInput) {
+    saveBtn.addEventListener("click", async () => {
+      const validation = validateDashboardTag(tagInput.value);
+
+      if (!validation.ok) {
+        if (msgEl) {
+          msgEl.textContent = validation.message;
+          msgEl.style.color = "#fca5a5";
+        }
+        return;
+      }
+
+      const newTag = validation.tag;
+      await saveDashboardTag(newTag);
+
+      if (currentTagEl) {
+        currentTagEl.textContent = newTag;
+      }
+
+      if (msgEl) {
+        msgEl.textContent = "Tag saved.";
+        msgEl.style.color = "#bef264";
+      }
+
+      try {
+        const bestScore =
+          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
+        const bestTime =
+          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+
+        if (bestScore > 0 || bestTime > 0) {
+          await submitScoreToServer(bestScore, bestTime, null, newTag);
+        }
+
+        const refreshed = await fetchLeaderboard();
+        updateMiniLeaderboard(refreshed);
+      } catch (e) {
+        // ignore
+      }
+    });
   }
+}
 function formatDuration(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
   const h = Math.floor(s / 3600);
