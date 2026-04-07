@@ -295,32 +295,32 @@ function getDashboardPfp() {
     return `${s}s`;
   }
 
-  function getDashboardLevelData(totalOrbsCollected) {
-    const total = Math.max(0, Math.floor(Number(totalOrbsCollected) || 0));
+function getDashboardLevelData(totalOrbsCollected) {
+  const total = Math.max(0, Math.floor(Number(totalOrbsCollected) || 0));
 
-    let level = 1;
-    let levelStart = 0;
-    let nextLevelRequirement = 100;
+  let level = 1;
+  let levelStart = 0;
+  let nextLevelRequirement = 50;
 
-    while (total >= nextLevelRequirement) {
-      level += 1;
-      levelStart = nextLevelRequirement;
-      nextLevelRequirement += level * 100;
-    }
-
-    const orbsIntoCurrentLevel = total - levelStart;
-    const orbsNeededForNextLevel = nextLevelRequirement - total;
-    const levelSpan = nextLevelRequirement - levelStart;
-    const progressPercent =
-      levelSpan > 0 ? Math.max(0, Math.min(100, (orbsIntoCurrentLevel / levelSpan) * 100)) : 0;
-
-    return {
-      level,
-      progressPercent,
-      orbsNeededForNextLevel,
-      nextLevel: level + 1
-    };
+  while (total >= nextLevelRequirement) {
+    level += 1;
+    levelStart = nextLevelRequirement;
+    nextLevelRequirement += level * 50;
   }
+
+  const orbsIntoCurrentLevel = total - levelStart;
+  const orbsNeededForNextLevel = nextLevelRequirement - total;
+  const levelSpan = nextLevelRequirement - levelStart;
+  const progressPercent =
+    levelSpan > 0 ? Math.max(0, Math.min(100, (orbsIntoCurrentLevel / levelSpan) * 100)) : 0;
+
+  return {
+    level,
+    progressPercent,
+    orbsNeededForNextLevel,
+    nextLevel: level + 1
+  };
+}
 
   function getSavedDashboardTag() {
     try {
