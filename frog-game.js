@@ -4841,9 +4841,6 @@ function showBuffGuideOverlay() {
         <li class="upgrade-guide-item upgrade-type-role">
           <strong>🎭 Role Draft</strong> — choose between 2 random frog roles.
         </li>
-        <li class="upgrade-guide-item upgrade-type-role">
-          <strong>🌀 Mystic Portal</strong> — choose between the Alchemist or Necromancer.
-        </li>
       </ul>
 
       <div class="frog-panel-footer">
