@@ -1090,6 +1090,27 @@ function applySnakeSpriteSet(targetSnake) {
     }
   }
 }
+  function getRandomMenuSnakeSpriteSet() {
+    const variants = [
+      {
+        head: "./images/head.png",
+        body: "./images/body.png",
+        tail: "./images/tail.png"
+      },
+      {
+        head: "./images/head2.png",
+        body: "./images/body2.png",
+        tail: "./images/tail2.png"
+      },
+      {
+        head: "./images/head3.png",
+        body: "./images/body3.png",
+        tail: "./images/tail3.png"
+      }
+    ];
+
+    return variants[Math.floor(Math.random() * variants.length)];
+  }
   function ensureFrogBg() {
     let bg = document.getElementById("frog-bg");
     if (bg) return bg;
@@ -3456,7 +3477,7 @@ function updateOrbs(dt) {
       ? opts.segmentCount
       : SNAKE_INITIAL_SEGMENTS;
     const colorFilter = typeof opts.colorFilter === "string" ? opts.colorFilter : "";
-    const snakeSprites = getPlayerSnakeSpriteSet();
+    const snakeSprites = opts.spriteSet || getPlayerSnakeSpriteSet();
 
     const headEl = document.createElement("div");
     headEl.className = "snake-head";
@@ -4319,8 +4340,6 @@ function getEpicUpgradeChoices() {
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
-    ensureMainMenuFrogCount(8, width, height);
-    updateMainMenuFrogs(dt, width, height);
     updateMainMenuSnakes(dt, width, height);
 
     mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
@@ -4338,12 +4357,15 @@ function getEpicUpgradeChoices() {
 
     for (let i = 0; i < 2; i++) {
       const stage = shuffledStages[i % shuffledStages.length];
+      const spriteSet = getRandomMenuSnakeSpriteSet();
+
       const snakeObj = spawnAdditionalSnake(width, height, {
         startX: randRange(width * 0.2, width * 0.8),
         startY: randRange(height * 0.25, height * 0.75),
         angle: randRange(-Math.PI, Math.PI),
         segmentCount: randInt(20, 30),
-        colorFilter: getShedStageFilter(stage)
+        colorFilter: getShedStageFilter(stage),
+        spriteSet
       });
 
       if (snakeObj) {
