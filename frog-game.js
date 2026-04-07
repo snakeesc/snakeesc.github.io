@@ -2448,7 +2448,7 @@ function applyPairOfScissors() {
 
   // Resize the live snake path to match its shorter body
   const desiredPathLength =
-    (original.segments.length + 2) * computeSegmentGap() + 2;
+    Math.ceil(((original.segments.length + 3) * computeSegmentGap()) / PATH_POINT_SPACING) + 12;
 
   while (original.path.length > desiredPathLength) {
     original.path.pop();
