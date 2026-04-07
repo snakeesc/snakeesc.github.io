@@ -1836,9 +1836,8 @@ function createFrogAt(x, y, tokenId) {
 
 function getRandomMutationUpgrade() {
   const speedCanImprove = frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4;
-  const jumpCanImprove = frogPermanentJumpFactor < MAX_FROG_JUMP_FACTOR - 1e-4;
 
-  if (!speedCanImprove && !jumpCanImprove) {
+  if (!speedCanImprove) {
     return null;
   }
 
@@ -1854,7 +1853,6 @@ function getRandomMutationUpgrade() {
     }
   };
 }
-
 function applyMutationUpgrade() {
   frogPermanentSpeedFactor *= 0.85; // 15% faster hops
   if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
@@ -1866,7 +1864,6 @@ function applyMutationUpgrade() {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
 }
-
 function grantChampionFrog(frog) {
   if (frog.isChampion) return;
   frog.isChampion = true;
@@ -4361,52 +4358,54 @@ function getEpicUpgradeChoices() {
     mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
   }
 
-  function startMainMenuBackground() {
-    const width  = window.innerWidth;
-    const height = window.innerHeight;
+function startMainMenuBackground() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
 
-    clearMainMenuSnakes();
-    clearMainMenuFrogs();
+  clearMainMenuSnakes();
+  clearMainMenuFrogs();
 
-    const stages = [1, 2, 3];
-    const shuffledStages = stages.slice().sort(() => Math.random() - 0.5);
+  const count = Math.min(STARTING_FROGS, maxFrogsCap);
+  const positions = computeInitialPositions(width, height, count);
 
-    for (let i = 0; i < 2; i++) {
-      const stage = shuffledStages[i % shuffledStages.length];
-      const snakeObj = spawnAdditionalSnake(width, height, {
-        startX: randRange(width * 0.2, width * 0.8),
-        startY: randRange(height * 0.25, height * 0.75),
-        angle: randRange(-Math.PI, Math.PI),
-        segmentCount: randInt(20, 30),
-        colorFilter: getShedStageFilter(stage)
-      });
+  for (const pos of positions) {
+    const frog = createFrogAt(pos.x, pos.y, null);
 
-      if (snakeObj) {
-        snakeObj.isMainMenu = true;
-        snakeObj.speedFactor = 0.7 + Math.random() * 0.4;
-        mainMenuSnakes.push(snakeObj);
-      }
-    }
+    // remove from live run list; keep as menu background frogs
+    frogs.pop();
+    mainMenuFrogs.push(frog);
 
-    ensureMainMenuFrogCount(8, width, height);
-
-    mainMenuActive = true;
-    mainMenuLastTime = 0;
-    if (!mainMenuAnimId) {
-      mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
-    }
+    frog.state = "idle";
+    frog.idleTime = 999999;
+    frog.hopTime = 0;
+    frog.y = frog.baseY;
+    frog.el.style.transform = `translate3d(${frog.x}px, ${frog.y}px, 0)`;
   }
 
-  function stopMainMenuBackground() {
-    mainMenuActive = false;
-    if (mainMenuAnimId) {
-      cancelAnimationFrame(mainMenuAnimId);
-      mainMenuAnimId = null;
-    }
-    mainMenuLastTime = 0;
-    clearMainMenuSnakes();
+  mainMenuActive = true;
+  mainMenuLastTime = 0;
+
+  if (mainMenuAnimId) {
+    cancelAnimationFrame(mainMenuAnimId);
+    mainMenuAnimId = null;
+  }
+}
+
+function stopMainMenuBackground(preserveFrogs = false) {
+  mainMenuActive = false;
+
+  if (mainMenuAnimId) {
+    cancelAnimationFrame(mainMenuAnimId);
+    mainMenuAnimId = null;
+  }
+
+  mainMenuLastTime = 0;
+  clearMainMenuSnakes();
+
+  if (!preserveFrogs) {
     clearMainMenuFrogs();
   }
+}
 function openAnimatedOverlay(overlayEl) {
   if (!overlayEl) return;
 
@@ -6298,20 +6297,48 @@ function getDashboardPfp() {
     openUpgradeOverlay("normal", { context: "start" });
   }
 
-  function startNewRun() {
-    clearScissorsAndOldSnakeState();
-    hideMainMenu();
-    stopMainMenuBackground();
-    seedMatchGrass();
-    setInGameUIVisible(true);
-    restartGame();
-    syncAudioMuteState();
-    openFirstUpgradeSelection();
+function startNewRun() {
+  clearScissorsAndOldSnakeState();
+  hideMainMenu();
+
+  const preservedMenuFrogs = mainMenuFrogs.slice();
+  stopMainMenuBackground(true);
+
+  seedMatchGrass();
+  setInGameUIVisible(true);
+  restartGame();
+
+  if (preservedMenuFrogs.length) {
+    // remove the fresh frogs that restartGame spawned
+    for (const frog of frogs) {
+      if (frog.cloneEl && frog.cloneEl.parentNode === container) {
+        container.removeChild(frog.cloneEl);
+      }
+      if (frog.el && frog.el.parentNode === container) {
+        container.removeChild(frog.el);
+      }
+    }
+
+    frogs = preservedMenuFrogs;
+    mainMenuFrogs = [];
+
+    for (const frog of frogs) {
+      frog.state = "idle";
+      frog.idleTime = randRange(frog.idleMin, frog.idleMax);
+      frog.hopTime = 0;
+      frog.y = frog.baseY;
+      frog.cloneEl = null;
+      frog.el.style.transform = `translate3d(${frog.x}px, ${frog.y}px, 0)`;
+    }
   }
 
-  function startRunFromMenu() {
-    startNewRun();
-  }
+  syncAudioMuteState();
+  openFirstUpgradeSelection();
+}
+
+function startRunFromMenu() {
+  startNewRun();
+}
 
   function triggerLegendaryFrenzy() {
     // 13-second Frenzy: snake faster + frogs panic hop randomly
