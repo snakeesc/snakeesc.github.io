@@ -3333,7 +3333,9 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
       if (orb.ttl <= 0 || !orb.el) {
         if (nightBloomActive && frogs.length < maxFrogsCap && Math.random() < 0.25) {
-          createRandomFrog();
+          const spawnX = Math.max(8, Math.min(window.innerWidth - FROG_SIZE - 8, orb.x - FROG_SIZE / 2));
+          const spawnY = Math.max(24, Math.min(window.innerHeight - FROG_SIZE - 24, orb.y - FROG_SIZE / 2));
+          createFrogAt(spawnX, spawnY, null);
         }
 
         if (orb.el && orb.el.parentNode === container) {
