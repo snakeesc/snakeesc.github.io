@@ -4952,10 +4952,10 @@ function showBuffGuideOverlay() {
       html: `
         <ul class="upgrade-guide-list">
           <li class="upgrade-guide-item upgrade-type-buff">
-            <strong>⚡ Chain Reaction</strong> — when a frog collects an orb, there is a 25% chance to trigger a second free orb buff.
+            <strong>⚡ Chain Reaction</strong> — when a frog collects an orb, there is a 25% chance to trigger a second buff.
           </li>
           <li class="upgrade-guide-item upgrade-type-buff">
-            <strong>🌙 Night Bloom</strong> — naturally expiring orbs have a 50% chance to spawn a frog at that spot.
+            <strong>🌙 Night Bloom</strong> — naturally expiring orbs have a 25% chance to spawn a frog at that spot.
           </li>
           <li class="upgrade-guide-item upgrade-type-buff">
             <strong>🧪 Orb Specialist</strong> — every collected orb guarantees 1 extra frog.
