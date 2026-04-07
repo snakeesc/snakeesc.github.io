@@ -4950,7 +4950,7 @@ function showBuffGuideOverlay() {
             <strong>🌀 Orb Whisperer</strong> — orbs linger 30% longer.
           </li>
           <li class="upgrade-guide-item upgrade-type-buff">
-            <strong>🍀 Luck</strong> — increases buff duration bonus, improves frog/orb spawn rolls, and raises the odds of bonus effects.
+            <strong>🍀 Luck</strong> — increases buff duration bonus, improves frog/orb spawn rolls, and more.
           </li>
           <li class="upgrade-guide-item upgrade-type-buff">
             <strong>🎯 Orb Flow</strong> — increases orb spawn frequency.
