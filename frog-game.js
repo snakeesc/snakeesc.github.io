@@ -1168,6 +1168,7 @@ function seedMatchGrass() {
     makeBackgroundGrass(x, y, scale);
   }
 }
+const PATH_POINT_SPACING = 4;
 function snakeShed(stage) {
     if (!snake) return;
 
@@ -1243,12 +1244,11 @@ function snakeShed(stage) {
       segments.push({ el: segEl, x: startX, y: startY });
     }
 
-    // --- 🚨 THE FIX: PATH PRE-FILLING 🚨 ---
     const path = [];
     const segmentGap = computeSegmentGap();
-    // We need enough points in the path for every segment to have a unique index
-    const requiredPathLength = (newSegCount + 5) * segmentGap; 
-    
+    const requiredPathLength =
+      Math.ceil(((newSegCount + 5) * segmentGap) / PATH_POINT_SPACING) + 12;
+
     for (let i = 0; i < requiredPathLength; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -2366,7 +2366,7 @@ function createSnakeFromExistingSegments(segmentData, angle, speedFactor) {
 
   const path = [];
   const segmentGap = computeSegmentGap();
-  const maxPath = (segments.length + 2) * segmentGap + 2;
+  const maxPath = Math.ceil(((segments.length + 3) * segmentGap) / PATH_POINT_SPACING) + 12;
   for (let i = 0; i < maxPath; i++) {
     path.push({ x: headPos.x, y: headPos.y });
   }
