@@ -1500,9 +1500,9 @@ function createFrogAt(x, y, tokenId) {
     hopMin = 0.35; hopMax = 0.7;
     heightMin = 10; heightMax = 26;
   } else {
-    idleMin = 2.0; idleMax = 5.0;
-    hopMin = 0.45; hopMax = 0.9;
-    heightMin = 6;  heightMax = 20;
+    idleMin = 1.4; idleMax = 3.2;
+    hopMin = 0.35; hopMax = 0.7;
+    heightMin = 10; heightMax = 24;
   }
 
   const cosmetics = rollFrogCosmetics();
