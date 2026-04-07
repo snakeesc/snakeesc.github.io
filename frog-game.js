@@ -4399,8 +4399,6 @@ function getEpicUpgradeChoices() {
       }
     }
 
-    ensureMainMenuFrogCount(8, width, height);
-
     mainMenuActive = true;
     mainMenuLastTime = 0;
     if (!mainMenuAnimId) {
