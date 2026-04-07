@@ -1637,9 +1637,19 @@ function createFrogAt(x, y, tokenId) {
     : SNAKE_SEGMENT_GAP;
 
   function computeSegmentGap() {
-    // 10 for mobile is usually the "sweet spot" for pixel art snakes
-    const IS_MOBILE = window.matchMedia("(max-device-width: 768px)").matches;
-    return IS_MOBILE ? 12 : 18; 
+    // Detect mobile based on screen width
+    const isMobile = window.innerWidth < 768;
+    
+    // Use 12 for mobile to keep segments tight, 30 for desktop
+    let gap = isMobile ? 12 : 30;
+
+    // If the "Shrink" buff is active, reduce the gap further 
+    // so the segments don't overlap too much while small.
+    if (snakeShrinkTime > 0) {
+      gap = Math.max(6, Math.round(gap * 0.8));
+    }
+
+    return gap;
   }
 
   function getSnakeEatRadius() {
