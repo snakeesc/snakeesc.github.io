@@ -6129,9 +6129,9 @@ function getDashboardPfp() {
     clearScissorsAndOldSnakeState();
     hideMainMenu();
     stopMainMenuBackground();
+    seedMatchGrass();
     setInGameUIVisible(true);
     restartGame();
-    seedMatchGrass();
     syncAudioMuteState();
     openFirstUpgradeSelection();
   }
