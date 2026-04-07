@@ -1053,6 +1053,38 @@ function rollFrogCosmetics() {
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
+  function getPlayerSnakeSpriteSet() {
+  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+  const useAlt = levelData.level > 5;
+
+  return {
+    head: useAlt ? "./images/head2.png" : "./images/head.png",
+    body: useAlt ? "./images/body2.png" : "./images/body.png",
+    tail: useAlt ? "./images/tail2.png" : "./images/tail.png"
+  };
+}
+
+function applySnakeSpriteSet(targetSnake) {
+  if (!targetSnake) return;
+
+  const sprites = getPlayerSnakeSpriteSet();
+
+  if (targetSnake.head?.el) {
+    targetSnake.head.el.style.backgroundImage = `url(${sprites.head})`;
+  }
+
+  if (Array.isArray(targetSnake.segments)) {
+    for (let i = 0; i < targetSnake.segments.length; i++) {
+      const seg = targetSnake.segments[i];
+      if (!seg?.el) continue;
+
+      const isTail = i === targetSnake.segments.length - 1;
+      seg.el.style.backgroundImage = isTail
+        ? `url(${sprites.tail})`
+        : `url(${sprites.body})`;
+    }
+  }
+}
   function ensureFrogBg() {
     let bg = document.getElementById("frog-bg");
     if (bg) return bg;
@@ -1183,7 +1215,8 @@ function snakeShed(stage) {
     headEl.style.backgroundSize = "contain";
     headEl.style.backgroundRepeat = "no-repeat";
     headEl.style.zIndex = "30";
-    headEl.style.backgroundImage = "url(./images/head.png)";
+    const snakeSprites = getPlayerSnakeSpriteSet();
+    headEl.style.backgroundImage = `url(${snakeSprites.head})`;
     container.appendChild(headEl);
 
     // Create New Segments
@@ -1198,7 +1231,9 @@ function snakeShed(stage) {
       segEl.style.imageRendering = "pixelated";
       segEl.style.backgroundSize = "contain";
       segEl.style.zIndex = "29";
-      segEl.style.backgroundImage = isTail ? "url(./images/tail.png)" : "url(./images/body.png)";
+      segEl.style.backgroundImage = isTail
+        ? `url(${snakeSprites.tail})`
+        : `url(${snakeSprites.body})`;
       container.appendChild(segEl);
       segments.push({ el: segEl, x: startX, y: startY });
     }
@@ -3340,6 +3375,7 @@ function updateOrbs(dt) {
 
     const startX = width * 0.15;
     const startY = height * 0.5;
+    const snakeSprites = getPlayerSnakeSpriteSet();
 
     const headEl = document.createElement("div");
     headEl.className = "snake-head";
@@ -3351,7 +3387,7 @@ function updateOrbs(dt) {
     headEl.style.backgroundRepeat = "no-repeat";
     headEl.style.pointerEvents = "none";
     headEl.style.zIndex = "30";
-    headEl.style.backgroundImage = "url(./images/head.png)";
+    headEl.style.backgroundImage = `url(${snakeSprites.head})`;
     container.appendChild(headEl);
 
     const segments = [];
@@ -3368,8 +3404,8 @@ function updateOrbs(dt) {
       segEl.style.pointerEvents = "none";
       segEl.style.zIndex = "29";
       segEl.style.backgroundImage = isTail
-        ? "url(./images/tail.png)"
-        : "url(./images/body.png)";
+        ? `url(${snakeSprites.tail})`
+        : `url(${snakeSprites.body})`;
       container.appendChild(segEl);
 
       segments.push({ el: segEl, x: startX, y: startY });
@@ -3402,6 +3438,7 @@ function updateOrbs(dt) {
       ? opts.segmentCount
       : SNAKE_INITIAL_SEGMENTS;
     const colorFilter = typeof opts.colorFilter === "string" ? opts.colorFilter : "";
+    const snakeSprites = getPlayerSnakeSpriteSet();
 
     const headEl = document.createElement("div");
     headEl.className = "snake-head";
@@ -3413,7 +3450,7 @@ function updateOrbs(dt) {
     headEl.style.backgroundRepeat = "no-repeat";
     headEl.style.pointerEvents = "none";
     headEl.style.zIndex = "30";
-    headEl.style.backgroundImage = "url(./images/head.png)";
+    headEl.style.backgroundImage = `url(${snakeSprites.head})`;
     container.appendChild(headEl);
 
     const segments = [];
@@ -3430,8 +3467,8 @@ function updateOrbs(dt) {
       segEl.style.pointerEvents = "none";
       segEl.style.zIndex = "29";
       segEl.style.backgroundImage = isTail
-        ? "url(./images/tail.png)"
-        : "url(./images/body.png)";
+        ? `url(${snakeSprites.tail})`
+        : `url(${snakeSprites.body})`;
       container.appendChild(segEl);
 
       segments.push({ el: segEl, x: startX, y: startY });
@@ -3556,7 +3593,8 @@ function updateOrbs(dt) {
       segEl.style.backgroundRepeat = "no-repeat";
       segEl.style.pointerEvents = "none";
       segEl.style.zIndex = "29";
-      segEl.style.backgroundImage = "url(./images/body.png)";
+      const snakeSprites = getPlayerSnakeSpriteSet();
+      segEl.style.backgroundImage = `url(${snakeSprites.body})`;
 
       // 🔴 KEY FIX: inherit the tail's color/filter so new segments match
       if (tailSeg && tailSeg.el && tailSeg.el.style.filter) {
@@ -3564,6 +3602,8 @@ function updateOrbs(dt) {
       }
 
       container.appendChild(segEl);
+
+      applySnakeSpriteSet(snakeObj);
 
       snakeObj.segments.splice(tailIndex, 0, {
         el: segEl,
