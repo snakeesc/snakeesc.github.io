@@ -4023,22 +4023,6 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
-    if (!chainReactionActive) {
-      upgrades.push({
-        id: "chainReaction",
-        label: `⚡ Chain Reaction<br>Orb collection has a <span style="color:${neon};">25%</span> chance to trigger a second free orb buff`,
-        apply: () => { chainReactionActive = true; }
-      });
-    }
-
-    if (!nightBloomActive) {
-      upgrades.push({
-        id: "nightBloom",
-        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${neon};">25%</span> chance to spawn a frog at that spot`,
-        apply: () => { nightBloomActive = true; }
-      });
-    }
-
     if (!ouroborosPactUsed) {
       upgrades.push({
         id: "ouroborosPact",
@@ -4086,6 +4070,14 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
+    if (!survivalInstinctActive) {
+      upgrades.push({
+        id: "survivalInstinct",
+        label: `⚡ Survival Instinct<br>When below 10 frogs, they hop <span style="color:${neon};">20%</span> faster`,
+        apply: () => { survivalInstinctActive = true; }
+      });
+    }
+
     return upgrades;
   }
   function getEpicUpgradeChoices() {
@@ -4094,11 +4086,19 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     const upgrades = [];
 
-    if (!survivalInstinctActive) {
+    if (!chainReactionActive) {
       upgrades.push({
-        id: "survivalInstinct",
-        label: `⚡ Survival Instinct<br>When below 10 frogs, they hop <span style="color:${epicTitleColor};">20%</span> faster`,
-        apply: () => { survivalInstinctActive = true; }
+        id: "chainReaction",
+        label: `⚡ Chain Reaction<br>Orb collection has a <span style="color:${epicTitleColor};">25%</span> chance to trigger a second free orb buff`,
+        apply: () => { chainReactionActive = true; }
+      });
+    }
+
+    if (!nightBloomActive) {
+      upgrades.push({
+        id: "nightBloom",
+        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${epicTitleColor};">25%</span> chance to spawn a frog at that spot`,
+        apply: () => { nightBloomActive = true; }
       });
     }
 
