@@ -712,6 +712,8 @@ function rollFrogCosmetics() {
   let ouroborosPactUsed    = false;
 let chainReactionActive = false;
 let nightBloomActive = false;
+let luckStat = 0;
+const MAX_LUCK = 30;
   let fragileRealityActive = false;
   let frogScatterUsed      = false;
   let eyeForEyeUsed        = false;
@@ -1055,6 +1057,39 @@ let nightBloomActive = false;
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
+function clampLuck(value) {
+  return Math.max(0, Math.min(MAX_LUCK, Math.floor(value || 0)));
+}
+
+function addLuck(amount) {
+  luckStat = clampLuck(luckStat + amount);
+}
+
+function getLuckBuffDurationMultiplier() {
+  // +1% buff duration per luck, capped by MAX_LUCK
+  return 1 + (luckStat * 0.01);
+}
+
+function getLuckChanceBonus(multiplier = 1) {
+  // each 1 luck = +0.5% absolute chance
+  return luckStat * 0.005 * multiplier;
+}
+
+function getLuckBoostedChance(baseChance, maxChance = 0.95, multiplier = 1) {
+  return Math.max(0, Math.min(maxChance, baseChance + getLuckChanceBonus(multiplier)));
+}
+
+function getLuckBiasedInt(min, max) {
+  if (max <= min) return min;
+
+  const span = max - min;
+  const luckWeight = Math.min(0.75, luckStat / MAX_LUCK * 0.75);
+
+  const roll = Math.random();
+  const biased = roll * (1 - luckWeight) + (1 - Math.random()) * luckWeight;
+
+  return min + Math.round(biased * span);
+}
 const SNAKE_SKIN_STORAGE_KEY = "frogSnake_selectedSnakeSkin";
 
   const SNAKE_SKINS = [
@@ -2142,7 +2177,7 @@ function getRandomTriggeredOrbBuffType() {
 
 function triggerLuckyRoll() {
   const buffType = getRandomTriggeredOrbBuffType();
-  applyBuff(buffType, null, 1.5);
+  applyBuff(buffType, null, 1.5 * getLuckBuffDurationMultiplier());
 }
 
 function promoteAllFrogs() {
@@ -2153,7 +2188,7 @@ function promoteAllFrogs() {
 
 function triggerChainReactionBonus(frog) {
   const buffType = getRandomTriggeredOrbBuffType();
-  applyBuff(buffType, frog, 1);
+  applyBuff(buffType, frog, getLuckBuffDurationMultiplier());
 }
 
 function spawnTidalWave() {
@@ -2733,7 +2768,7 @@ function computeDeathRattleChanceForFrog(frog) {
       playFrogDeath();
     }
 
-    if (frogDeathOrbChance > 0 && Math.random() < frogDeathOrbChance) {
+    if (frogDeathOrbChance > 0 && Math.random() < getLuckBoostedChance(frogDeathOrbChance, 0.60)) {
       spawnOrb(null, deathX, deathY);
     }
 
@@ -2804,86 +2839,89 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
 
-function applyBuff(type, frog, durationMultiplier = 1) {
-  // Lucky frogs extend buff durations
-  const isLuckyCollector = frog && frog.isLucky;
-  const durBoost = isLuckyCollector
-    ? LUCKY_BUFF_DURATION_BOOST   // from config, e.g. 1.4
-    : 1.0;
-  const durationScale = buffDurationFactor * durationMultiplier * durBoost;
+  function applyBuff(type, frog, durationMultiplier = 1) {
+    const isLuckyCollector = frog && frog.isLucky;
+    const durBoost = isLuckyCollector
+      ? LUCKY_BUFF_DURATION_BOOST
+      : 1.0;
 
-  switch (type) {
-    case "speed":
-      speedBuffTime = SPEED_BUFF_DURATION * durationScale;
-      break;
+    const durationScale =
+      buffDurationFactor *
+      durationMultiplier *
+      durBoost *
+      getLuckBuffDurationMultiplier();
 
-    case "jump":
-      jumpBuffTime = JUMP_BUFF_DURATION * durationScale;
-      break;
+    switch (type) {
+      case "speed":
+        speedBuffTime = SPEED_BUFF_DURATION * durationScale;
+        break;
 
-    case "spawn": {
-      const base  = randInt(1, 10);
-      const bonus = isLuckyCollector ? randInt(1, 4) : 0;
-      spawnExtraFrogs(base + bonus);
-      break;
+      case "jump":
+        jumpBuffTime = JUMP_BUFF_DURATION * durationScale;
+        break;
+
+      case "spawn": {
+        const base = getLuckBiasedInt(1, 10);
+        const bonus = isLuckyCollector ? getLuckBiasedInt(1, 4) : 0;
+        spawnExtraFrogs(base + bonus);
+        break;
+      }
+
+      case "snakeSlow":
+        snakeSlowTime = SNAKE_SLOW_DURATION * durationScale;
+        break;
+
+      case "snakeConfuse":
+        snakeConfuseTime = SNAKE_CONFUSE_DURATION * durationScale;
+        break;
+
+      case "snakeShrink":
+        snakeShrinkTime = SNAKE_SHRINK_DURATION * durationScale;
+        break;
+
+      case "frogShield":
+        frogShieldTime = FROG_SHIELD_DURATION * durationScale;
+        break;
+
+      case "timeSlow":
+        timeSlowTime = TIME_SLOW_DURATION * durationScale;
+        break;
+
+      case "orbMagnet":
+        orbMagnetTime = ORB_MAGNET_DURATION * durationScale;
+        break;
+
+      case "megaSpawn": {
+        const base = getLuckBiasedInt(10, 20);
+        const bonus = isLuckyCollector ? getLuckBiasedInt(3, 8) : 0;
+        spawnExtraFrogs(base + bonus);
+        break;
+      }
+
+      case "scoreMulti":
+        scoreMultiTime = SCORE_MULTI_DURATION * durationScale;
+        break;
+
+      case "panicHop":
+        panicHopTime = PANIC_HOP_DURATION * durationScale;
+        break;
+
+      case "cloneSwarm":
+        cloneSwarmTime = CLONE_SWARM_DURATION * durationScale;
+        break;
+
+      case "lifeSteal":
+        lifeStealTime = LIFE_STEAL_DURATION * durationScale;
+        break;
+
+      default:
+        break;
     }
 
-    case "snakeSlow":
-      snakeSlowTime = SNAKE_SLOW_DURATION * durationScale;
-      break;
-
-    case "snakeConfuse":
-      snakeConfuseTime = SNAKE_CONFUSE_DURATION * durationScale;
-      break;
-
-    case "snakeShrink":
-      snakeShrinkTime = SNAKE_SHRINK_DURATION * durationScale;
-      break;
-
-    case "frogShield":
-      frogShieldTime = FROG_SHIELD_DURATION * durationScale;
-      break;
-
-    case "timeSlow":
-      timeSlowTime = TIME_SLOW_DURATION * durationScale;
-      break;
-
-    case "orbMagnet":
-      orbMagnetTime = ORB_MAGNET_DURATION * durationScale;
-      break;
-
-    case "megaSpawn": {
-      const base  = randInt(10, 20);
-      const bonus = isLuckyCollector ? randInt(3, 8) : 0;
-      spawnExtraFrogs(base + bonus);
-      break;
+    if (type !== "permaFrog") {
+      playBuffSound(type);
     }
-
-    case "scoreMulti":
-      scoreMultiTime = SCORE_MULTI_DURATION * durationScale;
-      break;
-
-    case "panicHop":
-      panicHopTime = PANIC_HOP_DURATION * durationScale;
-      break;
-
-    case "cloneSwarm":
-      cloneSwarmTime = CLONE_SWARM_DURATION * durationScale;
-      break;
-
-    case "lifeSteal":
-      lifeStealTime = LIFE_STEAL_DURATION * durationScale;
-      break;
-
-    default:
-      break;
   }
-
-  if (type !== "permaFrog") {
-    playBuffSound(type);
-  }
-}
-
 
   function getShedStageFilter(stage) {
     const usingAlt = isUsingAltSnakeSprites();
