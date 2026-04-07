@@ -4762,13 +4762,13 @@ function showBuffGuideOverlay() {
     }
 
     panel.innerHTML = `
-      <div class="frog-panel-title">
+      <div class="frog-panel-title" style="color: white !important;">
         Upgrades
         <span class="emoji">⚡</span>
       </div>
 
-      <div class="frog-panel-sub">
-        Master your swarm with permanent global enhancements.
+      <div class="frog-panel-sub" style="color: white !important;">
+        All common and epic upgrades. Offered every one and three minute(s).
       </div>
 
       <ul class="upgrade-guide-list">
