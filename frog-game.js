@@ -1846,8 +1846,8 @@ function getRandomMutationUpgrade() {
     id: "mutation",
     label: `
       🧬 Mutation<br>
-      +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">12%</span> jump speed
-      & +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">12%</span> jump height
+      +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">15%</span> jump speed
+      & +<span style="color:${TOTAL_HIGHLIGHT_COLOR};">15%</span> jump height
     `,
     apply: () => {
       applyMutationUpgrade();
@@ -1856,12 +1856,12 @@ function getRandomMutationUpgrade() {
 }
 
 function applyMutationUpgrade() {
-  frogPermanentSpeedFactor *= 0.88; // 12% faster hops
+  frogPermanentSpeedFactor *= 0.85; // 15% faster hops
   if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
     frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
   }
 
-  frogPermanentJumpFactor *= 1.12; // 12% higher jumps
+  frogPermanentJumpFactor *= 1.15; // 15% higher jumps
   if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
