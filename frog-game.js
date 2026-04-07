@@ -3332,7 +3332,7 @@ function applyBuff(type, frog, durationMultiplier = 1) {
       }
 
       if (orb.ttl <= 0 || !orb.el) {
-        if (nightBloomActive && frogs.length < maxFrogsCap && Math.random() < 0.20) {
+        if (nightBloomActive && frogs.length < maxFrogsCap && Math.random() < 0.25) {
           createRandomFrog();
         }
 
@@ -4026,6 +4026,14 @@ function samplePathAtDistance(path, startIdx, dist) {
         id: "chainReaction",
         label: `⚡ Chain Reaction<br>Orb collection has a <span style="color:${neon};">25%</span> chance to trigger a second free orb buff`,
         apply: () => { chainReactionActive = true; }
+      });
+    }
+
+    if (!nightBloomActive) {
+      upgrades.push({
+        id: "nightBloom",
+        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${neon};">25%</span> chance to spawn a frog at that spot`,
+        apply: () => { nightBloomActive = true; }
       });
     }
 
