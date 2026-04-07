@@ -1754,16 +1754,11 @@ function createFrogAt(x, y, tokenId) {
     ? Math.max(12, Math.round(SNAKE_SEGMENT_GAP * 0.85))
     : SNAKE_SEGMENT_GAP;
 
-  function computeSegmentGap() {
-    const isMobile = window.innerWidth < 768;
-    
-    // Original desktop gap was ~30-32. Mobile needs ~14 to stay tight.
-    let gap = isMobile ? 14 : 32;
+  const SEGMENT_VISUAL_SPACING = 22; // px between segment centres — tune this to taste
 
-    if (snakeShrinkTime > 0) {
-      gap = Math.max(8, Math.round(gap * 0.75));
-    }
-    return gap;
+  function computeSegmentGap() {
+    // Still used for path pre-fill length calculations; no longer drives visual spacing.
+    return 4;
   }
 
   function getSnakeEatRadius() {
@@ -3646,7 +3641,28 @@ function updateOrbs(dt) {
   function growSnake(extraSegments) {
     growSnakeForSnake(snake, extraSegments);
   }
+function samplePathAtDistance(path, startIdx, dist) {
+    let remaining = dist;
+    let i = startIdx;
 
+    while (i + 1 < path.length) {
+      const ax = path[i].x,     ay = path[i].y;
+      const bx = path[i + 1].x, by = path[i + 1].y;
+      const dx = bx - ax,       dy = by - ay;
+      const segLen = Math.sqrt(dx * dx + dy * dy);
+
+      if (segLen >= remaining) {
+        const t = remaining / segLen;
+        return { x: ax + dx * t, y: ay + dy * t, nextStart: i };
+      }
+
+      remaining -= segLen;
+      i++;
+    }
+
+    const last = path[path.length - 1];
+    return { x: last.x, y: last.y, nextStart: path.length - 1 };
+  }
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
 
@@ -3658,7 +3674,6 @@ function updateOrbs(dt) {
     const head = snakeObj.head;
     if (!head) return;
 
-    const segmentGap = computeSegmentGap();
     const shrinkScale = snakeShrinkTime > 0 ? 0.75 : 1.0;
 
     // 1. TARGETING
@@ -3679,7 +3694,7 @@ function updateOrbs(dt) {
           targetRemnant = seg;
         }
       }
-      if (snakeOldBodyChaseTime > 12.0) { 
+      if (snakeOldBodyChaseTime > 12.0) {
         snakeEatingOldBody = false;
         snakeLastRemnantTarget = null;
       }
@@ -3720,26 +3735,38 @@ function updateOrbs(dt) {
     if (head.y < marginY) { head.y = marginY; head.angle = -head.angle; }
     else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) { head.y = height - marginY - SNAKE_SEGMENT_SIZE; head.angle = -head.angle; }
 
-    // 3. PATH & BODY POSITIONING
+    // 3. PATH & BODY POSITIONING (distance-based — fixes stretching at high speed)
     snakeObj.path.unshift({ x: head.x, y: head.y });
-    
-    // Limit path history length
-    const maxPath = (snakeObj.segments.length + 2) * segmentGap + 10;
-    if (snakeObj.path.length > maxPath) snakeObj.path.length = maxPath;
+
+    // Keep enough path history for all segments at the visual spacing
+    const minPathPoints = snakeObj.segments.length * SEGMENT_VISUAL_SPACING * 2 + 64;
+    if (snakeObj.path.length > minPathPoints) {
+      snakeObj.path.length = minPathPoints;
+    }
 
     head.el.style.transform = `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
+    // Place each segment exactly SEGMENT_VISUAL_SPACING px further along the path
+    // than the previous one, regardless of snake speed.
+    let searchIdx = 0;
     for (let i = 0; i < snakeObj.segments.length; i++) {
-      const seg = snakeObj.segments[i];
-      const idx = (i + 1) * segmentGap;
-      const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
-      
-      const nextIdx = Math.max(0, idx - 2);
-      const q = snakeObj.path[nextIdx] || p;
-      const angle = Math.atan2(p.y - q.y, p.x - q.x);
+      const result = samplePathAtDistance(snakeObj.path, searchIdx, SEGMENT_VISUAL_SPACING);
 
-      seg.x = p.x;
-      seg.y = p.y;
+      const seg = snakeObj.segments[i];
+      seg.x = result.x;
+      seg.y = result.y;
+      searchIdx = result.nextStart;
+
+      // Angle: direction along the path at this point
+      let angle = 0;
+      if (result.nextStart + 1 < snakeObj.path.length) {
+        const px = snakeObj.path[result.nextStart].x;
+        const py = snakeObj.path[result.nextStart].y;
+        const nx = snakeObj.path[result.nextStart + 1].x;
+        const ny = snakeObj.path[result.nextStart + 1].y;
+        angle = Math.atan2(py - ny, px - nx);
+      }
+
       seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
 
