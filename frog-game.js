@@ -4081,15 +4081,11 @@ function samplePathAtDistance(path, startIdx, dist) {
     const mutationChoice = getRandomMutationUpgrade();
     if (mutationChoice) upgrades.push(mutationChoice);
 
-    if (buffDurationFactor < buffDurationCap - 1e-4) {
-      const buffPerPickPct = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
+    if (luckStat < MAX_LUCK) {
       upgrades.push({
-        id: "buffDuration",
-        label: `⏳ Buffs last longer<br>+<span style="color:${neon};">${buffPerPickPct}%</span> duration`,
-        apply: () => {
-          buffDurationFactor *= BUFF_DURATION_UPGRADE_FACTOR;
-          if (buffDurationFactor > buffDurationCap) buffDurationFactor = buffDurationCap;
-        }
+        id: "luck",
+        label: `🍀 Luck<br>Gain <span style="color:${neon};">+5</span> luck`,
+        apply: () => { addLuck(5); }
       });
     }
 
@@ -4954,7 +4950,7 @@ function showBuffGuideOverlay() {
             <strong>🌀 Orb Whisperer</strong> — orbs linger 30% longer.
           </li>
           <li class="upgrade-guide-item upgrade-type-buff">
-            <strong>⏳ Buffs Last Longer</strong> — increases all buff durations.
+            <strong>🍀 Luck</strong> — increases buff duration bonus, improves frog/orb spawn rolls, and raises the odds of bonus effects.
           </li>
           <li class="upgrade-guide-item upgrade-type-buff">
             <strong>🎯 Orb Flow</strong> — increases orb spawn frequency.
@@ -6744,7 +6740,7 @@ function startRunFromMenu() {
     }
     dyingSnakes = [];
 
-
+luckStat = 0;
     // Reset game state
     elapsedTime     = 0;
     lastTime        = 0;
