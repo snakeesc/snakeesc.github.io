@@ -1059,8 +1059,8 @@ function rollFrogCosmetics() {
 
     return {
       head: useAlt ? "./images/head2.png" : "./images/head.png",
-      body: useAlt ? "./images/body2.png" : "./images/body.png",
-      tail: useAlt ? "./images/tail2.png" : "./images/tail.png"
+      body: "./images/body.png",
+      tail: "./images/tail.png"
     };
   }
 
