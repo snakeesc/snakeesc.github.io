@@ -1637,16 +1637,19 @@ function createFrogAt(x, y, tokenId) {
     : SNAKE_SEGMENT_GAP;
 
   function computeSegmentGap() {
-    // Detect mobile based on screen width
-    const isMobile = window.innerWidth < 768;
+    const width = window.innerWidth;
     
-    // Use 12 for mobile to keep segments tight, 30 for desktop
-    let gap = isMobile ? 12 : 30;
+    // Base math: smaller screens need smaller gaps.
+    // This scales from ~12 on mobile to ~22 on desktop.
+    let gap = Math.floor(width / 80); 
+    
+    // Clamp the values so it never gets too extreme
+    if (gap < 12) gap = 12;
+    if (gap > 24) gap = 24;
 
-    // If the "Shrink" buff is active, reduce the gap further 
-    // so the segments don't overlap too much while small.
+    // Apply the shrink buff multiplier if active
     if (snakeShrinkTime > 0) {
-      gap = Math.max(6, Math.round(gap * 0.8));
+      gap = Math.max(8, Math.round(gap * 0.75));
     }
 
     return gap;
@@ -3507,18 +3510,11 @@ function updateOrbs(dt) {
     const head = snakeObj.head;
     if (!head) return;
 
-    // --- MOBILE GAP CALCULATION ---
-    // Detect mobile to force a tighter gap so segments don't look "strung out"
-    const isMobile = window.innerWidth < 768;
-    let segmentGap = isMobile ? 12 : 18; 
-    
-    // Apply shrinking effect if active
+    // --- GAP CALCULATION ---
+    const segmentGap = computeSegmentGap();
     const shrinkScale = snakeShrinkTime > 0 ? 0.75 : 1.0;
-    if (snakeShrinkTime > 0) {
-      segmentGap = Math.max(6, Math.round(segmentGap * 0.75));
-    }
 
-    // 1. TARGETING LOGIC
+    // 1. TARGETING
     let targetFrog = null;
     let bestDist2 = Infinity;
     let targetRemnant = null;
@@ -3538,13 +3534,12 @@ function updateOrbs(dt) {
           targetRemnant = seg;
         }
       }
-      if (snakeOldBodyChaseTime > 8.0) { // Safety timeout
+      if (snakeOldBodyChaseTime > 10.0) { 
         snakeEatingOldBody = false;
         snakeLastRemnantTarget = null;
       }
     }
 
-    // Standard Frog Targeting
     for (const frog of frogList) {
       const fx = frog.x + FROG_SIZE / 2;
       const fy = frog.baseY + FROG_SIZE / 2;
@@ -3557,7 +3552,7 @@ function updateOrbs(dt) {
       }
     }
 
-    // 2. MOVEMENT & STEERING
+    // 2. MOVEMENT
     let desiredAngle = head.angle;
     if (snakeConfuseTime > 0) {
       desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
@@ -3576,32 +3571,28 @@ function updateOrbs(dt) {
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
 
-    // Bounds
+    // Bounds check
     if (head.x < marginX) { head.x = marginX; head.angle = Math.PI - head.angle; }
     else if (head.x > width - marginX - SNAKE_SEGMENT_SIZE) { head.x = width - marginX - SNAKE_SEGMENT_SIZE; head.angle = Math.PI - head.angle; }
     if (head.y < marginY) { head.y = marginY; head.angle = -head.angle; }
     else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) { head.y = height - marginY - SNAKE_SEGMENT_SIZE; head.angle = -head.angle; }
 
-    // 3. PATH UPDATE (The fix for segment spacing)
-    // Add current position to the front of the path
+    // 3. PATH & SEGMENTS
     snakeObj.path.unshift({ x: head.x, y: head.y });
-
-    // Keep path only as long as needed for the current number of segments
-    const maxPathNeeded = (snakeObj.segments.length + 1) * segmentGap + 1;
+    
+    // Dynamic path length based on current gap
+    const maxPathNeeded = (snakeObj.segments.length + 2) * segmentGap + 5;
     if (snakeObj.path.length > maxPathNeeded) {
-      snakeObj.path.length = maxPathNeeded; 
+      snakeObj.path.length = maxPathNeeded;
     }
 
-    // 4. UPDATE VISUALS
     head.el.style.transform = `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const seg = snakeObj.segments[i];
-      // Grab the coordinate from the path based on the gap
       const pathIdx = (i + 1) * segmentGap;
       const p = snakeObj.path[pathIdx] || snakeObj.path[snakeObj.path.length - 1];
       
-      // Look slightly ahead in the path to determine rotation
       const nextIdx = Math.max(0, pathIdx - 2);
       const q = snakeObj.path[nextIdx] || p;
       const angle = Math.atan2(p.y - q.y, p.x - q.x);
@@ -3611,12 +3602,11 @@ function updateOrbs(dt) {
       seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
 
-    // 5. COLLISION (Eating)
+    // 4. COLLISIONS
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
     const eatR2 = Math.pow(getSnakeEatRadius(), 2);
 
-    // Eating Frogs
     for (let i = frogList.length - 1; i >= 0; i--) {
       const f = frogList[i];
       const dx = (f.x + FROG_SIZE/2) - headCx;
@@ -3633,7 +3623,7 @@ function updateOrbs(dt) {
       }
     }
 
-    // Eating Remnants (Scissors)
+    // Scissors logic
     if (snakeEatingOldBody && snakeObj === snake && scissorsRemnantSegments.length > 0) {
       const remR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.8, 2);
       for (let i = scissorsRemnantSegments.length - 1; i >= 0; i--) {
