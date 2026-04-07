@@ -2069,6 +2069,12 @@ function spawnRoleFrog(role) {
       refreshFrogPermaGlow(frog);
       updateFrogRoleEmoji(frog);
       break;
+    case "necromancer":
+      grantNecromancerFrog(frog);
+      break;
+    case "alchemist":
+      grantAlchemistFrog(frog);
+      break;
   }
 
   return frog;
