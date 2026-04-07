@@ -3603,13 +3603,13 @@ function updateOrbs(dt) {
 
       container.appendChild(segEl);
 
-      applySnakeSpriteSet(snakeObj);
-
       snakeObj.segments.splice(tailIndex, 0, {
         el: segEl,
         x: tailSeg ? tailSeg.x : snakeObj.head.x,
         y: tailSeg ? tailSeg.y : snakeObj.head.y
       });
+
+      applySnakeSpriteSet(snakeObj);
     }
 
     const desiredPathLength =
