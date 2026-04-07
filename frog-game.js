@@ -5041,51 +5041,47 @@ function showBuffGuideOverlay() {
     }
   }
 
-async function showDashboardOverlay() {
+  async function showDashboardOverlay(page = 'dash') {
     if (!dashboardOverlay) initDashboardOverlay();
     const content = document.getElementById("dashboardContent");
     if (!content) return;
 
     openAnimatedOverlay(dashboardOverlay);
 
-    // 1. Data Prep
+    // 1. Load Data
     const localStats = loadDashboardStats();
     const dashboardPfp = getDashboardPfp();
     const currentTag = getSavedPlayerTag() || "";
     const levelData = getDashboardLevelData(localStats.totalOrbsCollected || 0);
-    const leaderboardEntries = await fetchLeaderboard();
-    const topList = Array.isArray(leaderboardEntries) ? leaderboardEntries.slice(0, 10) : [];
+    const leaderboardEntries = await fetchLeaderboard() || [];
 
-    // 2. Render Shell & Nav
+    // 2. Render Navigation & Page Content
     content.innerHTML = `
-      <div class="cc-nav">
-        <button class="cc-tab-btn" id="tab-dash" onclick="renderCCPage('dash')">Dashboard</button>
-        <button class="cc-tab-btn" id="tab-leader" onclick="renderCCPage('leader')">Leaderboard</button>
-        <button class="cc-tab-btn" id="tab-buffs" onclick="renderCCPage('buffs')">Buff Guide</button>
-        <button class="cc-tab-btn" id="tab-howto" onclick="renderCCPage('howto')">How to Play</button>
+      <div class="cc-nav" style="display: flex; border-bottom: 1px solid #44403c; margin-bottom: 20px; justify-content: center; gap: 10px;">
+        <button class="cc-tab-btn ${page === 'dash' ? 'active' : ''}" onclick="showDashboardOverlay('dash')">Dashboard</button>
+        <button class="cc-tab-btn ${page === 'leader' ? 'active' : ''}" onclick="showDashboardOverlay('leader')">Leaderboard</button>
+        <button class="cc-tab-btn ${page === 'howto' ? 'active' : ''}" onclick="showDashboardOverlay('howto')">How to Play</button>
       </div>
-      <div id="cc-body"></div>
+      
+      <div id="cc-body">
+        ${renderContent(page)}
+      </div>
     `;
 
-    // 3. Page Switcher Logic
-    window.renderCCPage = async (pageId) => {
-      // Update UI active states
-      document.querySelectorAll('.cc-tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('tab-' + pageId).classList.add('active');
-      const body = document.getElementById('cc-body');
-
+    // Internal helper to keep the main function clean
+    function renderContent(pageId) {
       if (pageId === 'dash') {
-        body.innerHTML = `
-          <div class="cc-grid-layout">
+        return `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;">
             <div>
               <div class="frog-panel-section-label">Profile</div>
-              <div class="profile-box" style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
+              <div class="profile-box" style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
                 <div class="profile-avatar-container">
-                  <div class="profile-avatar-bg" style="background: ${dashboardPfp.bgColor}; position:relative;">
-                    <img src="${dashboardPfp.spriteSrc}" class="profile-avatar-img" style="z-index:1; position:absolute; inset:0;">
-                    <img src="${dashboardPfp.skinSrc}" class="profile-avatar-img" style="z-index:2; position:absolute; inset:0;">
-                    ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="profile-avatar-img" style="z-index:3; position:absolute; inset:0;">` : ""}
-                    ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="profile-avatar-img" style="z-index:4; position:absolute; inset:0;">` : ""}
+                  <div class="profile-avatar-bg" style="background: ${dashboardPfp.bgColor}; position: relative; width: 64px; height: 64px;">
+                    <img src="${dashboardPfp.spriteSrc}" class="frog-sprite-base" style="position: absolute; inset:0;">
+                    <img src="${dashboardPfp.skinSrc}" class="frog-sprite-skin" style="position: absolute; inset:0;">
+                    ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="frog-sprite-eyes" style="position: absolute; inset:0;">` : ""}
+                    ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="frog-sprite-hat" style="position: absolute; inset:0;">` : ""}
                   </div>
                 </div>
                 <div style="flex:1">
@@ -5095,69 +5091,56 @@ async function showDashboardOverlay() {
               <button id="ccSaveBtn" class="frog-btn frog-btn-primary" style="width:100%">Save Tag</button>
             </div>
             <div>
-              <div class="frog-panel-section-label">Stats</div>
+              <div class="frog-panel-section-label">Mastery</div>
               <ul class="frog-panel-list">
                 <li>Level: <span class="stat-highlight">${levelData.level}</span></li>
                 <li>Best Score: <span class="stat-highlight">${Math.floor(localStats.bestScore || 0)}</span></li>
-                <li>Total Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
+                <li>Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
               </ul>
             </div>
-          </div>
-        `;
-        setupDashEvents();
-      } 
-      else if (pageId === 'leader') {
-        body.innerHTML = `
-          <table style="width:100%; font-size:13px; border-collapse:collapse;">
-            <tr style="border-bottom:1px solid #44403c; color:#a8a29e; text-align:left;">
-              <th style="padding:8px">#</th><th>Player</th><th>Time</th><th style="text-align:right">Score</th>
+          </div>`;
+      } else if (pageId === 'leader') {
+        return `
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr style="border-bottom: 1px solid #44403c; color: #a8a29e; text-align: left;">
+              <th style="padding: 8px;">#</th><th>Player</th><th>Time</th><th style="text-align:right">Score</th>
             </tr>
-            ${topList.map((e, i) => `
-              <tr style="border-bottom:1px solid #292524; ${e.tag === currentTag ? 'color:#bef264' : ''}">
-                <td style="padding:8px">${i+1}</td>
+            ${leaderboardEntries.slice(0, 10).map((e, i) => `
+              <tr style="border-bottom: 1px solid #292524; ${e.tag === currentTag ? 'color:#bef264' : ''}">
+                <td style="padding: 8px;">${i+1}</td>
                 <td>${e.tag || 'Anon'}</td>
-                <td>${formatDashboardDuration(e.duration || e.timeSeconds || 0)}</td>
+                <td>${formatDashboardDuration(e.duration || 0)}</td>
                 <td style="text-align:right" class="stat-highlight">${Math.floor(e.score || 0)}</td>
               </tr>
             `).join('')}
-          </table>
-        `;
-      }
-      else if (pageId === 'howto') {
-        body.innerHTML = `
-          <div class="cc-grid-layout">
-            <div style="background:#292524; padding:15px; border-radius:12px; border:1px solid #44403c;">
+          </table>`;
+      } else {
+        return `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left;">
+            <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
               <div class="frog-panel-section-label">Controls</div>
-              <p style="font-size:13px;">Move Mouse or Touch to lead the swarm. Avoid the snake!</p>
+              <p style="font-size: 13px;">Lead the swarm with Mouse/Touch. Avoid the snake!</p>
             </div>
-            <div style="background:#292524; padding:15px; border-radius:12px; border:1px solid #44403c;">
-              <div class="frog-panel-section-label">Survival</div>
-              <p style="font-size:13px;">Eat Orbs to grow. Earn points for every frog the snake eats.</p>
+            <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
+              <div class="frog-panel-section-label">Scoring</div>
+              <p style="font-size: 13px;">Survival is key. Score points for every frog the snake eats.</p>
             </div>
-          </div>
-        `;
-      }
-      else if (pageId === 'buffs') {
-        // You can link your existing renderBuffGuide logic here
-        body.innerHTML = `<div class="leaderboard-loading">Buff Guide coming soon...</div>`;
-      }
-    };
-
-    function setupDashEvents() {
-      const btn = document.getElementById('ccSaveBtn');
-      const input = document.getElementById('ccTagInput');
-      if (btn && input) {
-        btn.onclick = async () => {
-          const val = input.value.trim();
-          if(!val) return;
-          localStorage.setItem("frogSnake_username", val);
-          btn.innerText = "Saved!";
-          setTimeout(() => btn.innerText = "Save Tag", 2000);
-        };
+          </div>`;
       }
     }
 
-    renderCCPage(initialPage);
+    // Attach Save Button Logic
+    const sBtn = document.getElementById('ccSaveBtn');
+    if (sBtn) {
+      sBtn.onclick = () => {
+        const val = document.getElementById('ccTagInput').value.trim();
+        if (val) {
+          localStorage.setItem("frogSnake_username", val);
+          sBtn.innerText = "Saved!";
+          setTimeout(() => sBtn.innerText = "Save Tag", 2000);
+        }
+      };
+    }
   }
 function formatDuration(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
