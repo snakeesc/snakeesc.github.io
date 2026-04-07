@@ -710,6 +710,8 @@ function rollFrogCosmetics() {
   let orbTtlFactor         = 1.0;  // multiplier for new orb lifetime
   let orbLingerBonusUsed   = false;
   let ouroborosPactUsed    = false;
+let chainReactionActive = false;
+let nightBloomActive = false;
   let fragileRealityActive = false;
   let frogScatterUsed      = false;
   let eyeForEyeUsed        = false;
@@ -2111,6 +2113,50 @@ function grantStarUpgrade(frog) {
   updateFrogRoleEmoji(frog);
 }
 
+function getRandomTriggeredOrbBuffType() {
+  const pool = [
+    "speed",
+    "jump",
+    "spawn",
+    "snakeSlow",
+    "snakeConfuse",
+    "snakeShrink",
+    "frogShield",
+    "timeSlow",
+    "orbMagnet",
+    "megaSpawn",
+    "scoreMulti",
+    "panicHop",
+    "cloneSwarm",
+    "lifeSteal"
+  ];
+
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function triggerLuckyRoll() {
+  const buffType = getRandomTriggeredOrbBuffType();
+  applyBuff(buffType, null, 1.5);
+}
+
+function promoteAllFrogs() {
+  for (const frog of frogs) {
+    grantStarUpgrade(frog);
+  }
+}
+
+function triggerChainReactionBonus(frog) {
+  const buffType = getRandomTriggeredOrbBuffType();
+  applyBuff(buffType, frog, 1);
+}
+
+function spawnTidalWave() {
+  const alive = frogs.length;
+  const room = Math.max(0, maxFrogsCap - frogs.length);
+  if (room <= 0 || alive <= 0) return;
+  spawnExtraFrogs(Math.min(alive, room));
+}
+
 function spawnRoleFrog(role) {
   const frog = createRandomFrog();
   if (!frog) return null;
@@ -3275,18 +3321,21 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
     spawnOrb(null, x, y);
   }
-function updateOrbs(dt) {
+  function updateOrbs(dt) {
     const MAGNET_RANGE2 = ORB_MAGNET_PULL_RANGE * ORB_MAGNET_PULL_RANGE;
 
     for (let i = orbs.length - 1; i >= 0; i--) {
       const orb = orbs[i];
-      
-      // 🌌 Quantum Orbs: Bypass decay if active
+
       if (!quantumOrbsActive) {
         orb.ttl -= dt;
       }
 
       if (orb.ttl <= 0 || !orb.el) {
+        if (nightBloomActive && frogs.length < maxFrogsCap && Math.random() < 0.20) {
+          createRandomFrog();
+        }
+
         if (orb.el && orb.el.parentNode === container) {
           container.removeChild(orb.el);
         }
@@ -3294,7 +3343,6 @@ function updateOrbs(dt) {
         continue;
       }
 
-      // --- Magnet Logic ---
       const magnetFrogs = frogs.filter(f => f.isMagnet);
       if ((orbMagnetTime > 0 || magnetFrogs.length > 0) && frogs.length > 0) {
         let target = null;
@@ -3336,7 +3384,6 @@ function updateOrbs(dt) {
         }
       }
 
-      // --- Visuals ---
       const denom = orb.maxTtl || ORB_TTL;
       const lifeT = orb.ttl / denom;
       const bob   = Math.sin((1 - lifeT) * Math.PI * 2) * 3;
@@ -3347,7 +3394,6 @@ function updateOrbs(dt) {
         `translate3d(${orb.x - ORB_RADIUS}px, ${renderY - ORB_RADIUS}px, 0) scale(${scale})`;
       orb.el.style.opacity = String(Math.max(0, Math.min(1, lifeT + 0.2)));
 
-      // --- Collection Logic ---
       const ocx = orb.x;
       const ocy = orb.y;
 
@@ -3366,25 +3412,27 @@ function updateOrbs(dt) {
 
       if (collectedBy) {
         totalOrbsCollected++;
+
         if (orb.type === "permaFrog") {
           grantStarUpgrade(collectedBy);
         } else {
           applyBuff(orb.type, collectedBy);
+
+          if (chainReactionActive && Math.random() < 0.25) {
+            triggerChainReactionBonus(collectedBy);
+          }
         }
 
         let frogsToSpawnFromOrb = 0;
 
-        // 🧪 Epic: Orb Specialist (Guaranteed 1)
         if (orbSpecialistActive) {
-          frogsToSpawnFromOrb += 1; 
+          frogsToSpawnFromOrb += 1;
         }
 
-        // 🥚 Common: Double Yolker (15% chance for 2 extra)
         if (doubleYolkerActive && Math.random() < 0.15) {
           frogsToSpawnFromOrb += 2;
         }
 
-        // 🩺 Lifeline / Permanent Lifesteal
         if (permaLifeStealOrbsRemaining > 0) {
           permaLifeStealOrbsRemaining -= 1;
           frogsToSpawnFromOrb += 1;
@@ -3888,18 +3936,12 @@ function samplePathAtDistance(path, startIdx, dist) {
   let leaderboardOverlay = null;
   let dashboardOverlay = null;
 
-function getUpgradeChoices() {
+  function getUpgradeChoices() {
     const neon = "#4defff";
-    const epicTitleColor = "#ffb347";
-
-    const speedPerPickPct     = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
-    const jumpPerPickPct      = Math.round((FROG_JUMP_UPGRADE_FACTOR - 1) * 100);
-    const buffPerPickPct      = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
-    const deathPerPickPct     = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
+    const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
 
-    // --- 🎭 Role Draft ---
     upgrades.push({
       id: "roleDraft",
       label: `🎭 Role Draft<br>Choose between <span style="color:${neon};">2</span> random frog roles`,
@@ -3910,7 +3952,6 @@ function getUpgradeChoices() {
       }
     });
 
-    // --- 🥚 Double Yolker ---
     if (!doubleYolkerActive) {
       upgrades.push({
         id: "doubleYolker",
@@ -3919,7 +3960,6 @@ function getUpgradeChoices() {
       });
     }
 
-    // --- 🐸 Spawn Frogs ---
     if (frogs.length < maxFrogsCap) {
       upgrades.push({
         id: "spawn20",
@@ -3928,19 +3968,25 @@ function getUpgradeChoices() {
       });
     }
 
-    // --- 🎯 Orb Flow ---
     if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
       upgrades.push({
         id: "epicMoreOrbs",
         label: `🎯 Orb Flow<br>Increase orb spawn rate by <span style="color:${neon};">10%</span>`,
         apply: () => {
           orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
-          if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) orbSpawnIntervalFactor = minOrbSpawnIntervalFactor;
+          if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) {
+            orbSpawnIntervalFactor = minOrbSpawnIntervalFactor;
+          }
         }
       });
     }
 
-    // --- 🌩️ Orb Storm ---
+    upgrades.push({
+      id: "luckyRoll",
+      label: `🎲 Lucky Roll<br>Trigger a random orb buff at <span style="color:${neon};">1.5x</span> duration for free`,
+      apply: () => { triggerLuckyRoll(); }
+    });
+
     upgrades.push({
       id: "epicOrbStorm",
       label: `🌩️ Orb Storm<br>Drop <span style="color:${neon};">${ORB_STORM_COUNT}</span> random orbs right now`,
@@ -3951,7 +3997,6 @@ function getUpgradeChoices() {
       }
     });
 
-    // --- ✂️ Pair of Scissors ---
     if (!pairOfScissorsUsed && !epicChainPending && upgradeOverlayContext !== "start") {
       upgrades.push({
         id: "pairOfScissors",
@@ -3960,7 +4005,6 @@ function getUpgradeChoices() {
       });
     }
 
-    // --- 🌀 Orb Whisperer ---
     if (!orbLingerBonusUsed) {
       upgrades.push({
         id: "orbWhisperer",
@@ -3977,12 +4021,30 @@ function getUpgradeChoices() {
       });
     }
 
-    // --- 🧬 Mutation ---
+    if (!chainReactionActive) {
+      upgrades.push({
+        id: "chainReaction",
+        label: `⚡ Chain Reaction<br>Orb collection has a <span style="color:${neon};">25%</span> chance to trigger a second free orb buff`,
+        apply: () => { chainReactionActive = true; }
+      });
+    }
+
+    if (!ouroborosPactUsed) {
+      upgrades.push({
+        id: "ouroborosPact",
+        label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span style="color:${neon};">20%</span> chance to drop an orb`,
+        apply: () => {
+          ouroborosPactUsed = true;
+          frogDeathOrbChance = Math.max(frogDeathOrbChance, 0.20);
+        }
+      });
+    }
+
     const mutationChoice = getRandomMutationUpgrade();
     if (mutationChoice) upgrades.push(mutationChoice);
 
-    // --- ⏳ Buff Duration ---
     if (buffDurationFactor < buffDurationCap - 1e-4) {
+      const buffPerPickPct = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
       upgrades.push({
         id: "buffDuration",
         label: `⏳ Buffs last longer<br>+<span style="color:${neon};">${buffPerPickPct}%</span> duration`,
@@ -3993,18 +4055,19 @@ function getUpgradeChoices() {
       });
     }
 
-    // --- 💀 Deathrattle ---
     if (frogDeathRattleChance < MAX_DEATHRATTLE_CHANCE - 1e-4) {
       upgrades.push({
         id: "commonDeathRattle",
         label: `💀 Deathrattle<br>+<span style="color:${neon};">${deathPerPickPct}%</span> revive chance`,
         apply: () => {
-          frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + COMMON_DEATHRATTLE_CHANCE);
+          frogDeathRattleChance = Math.min(
+            MAX_DEATHRATTLE_CHANCE,
+            frogDeathRattleChance + COMMON_DEATHRATTLE_CHANCE
+          );
         }
       });
     }
 
-    // --- 🏹 Last Stand ---
     if (!lastStandActive) {
       upgrades.push({
         id: "lastStand",
@@ -4015,15 +4078,12 @@ function getUpgradeChoices() {
 
     return upgrades;
   }
-function getEpicUpgradeChoices() {
+  function getEpicUpgradeChoices() {
     const epicTitleColor = "#ffb347";
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
-    const epicBuffFactor  = BUFF_DURATION_UPGRADE_FACTOR + 0.15;
-    const buffPerPickPct  = Math.round((epicBuffFactor - 1) * 100);
 
     const upgrades = [];
 
-    // --- ⚡ Survival Instinct ---
     if (!survivalInstinctActive) {
       upgrades.push({
         id: "survivalInstinct",
@@ -4032,36 +4092,35 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // --- 🐸 Epic Spawn ---
     if (frogs.length < maxFrogsCap) {
       upgrades.push({
-        id: "epicSpawn30",
-        label: `🐸 Spawn Frogs<br>Spawn <span style="color:${epicTitleColor};">30</span> frogs now`,
-        apply: () => { spawnExtraFrogs(30); }
+        id: "tidalWave",
+        label: `🌊 Tidal Wave<br>Spawn frogs equal to the number currently alive`,
+        apply: () => { spawnTidalWave(); }
       });
     }
 
-    // --- 💀 Epic Deathrattle ---
     if (frogDeathRattleChance < MAX_DEATHRATTLE_CHANCE - 1e-4) {
       upgrades.push({
         id: "epicDeathRattle",
         label: `💀 Epic Deathrattle<br>+<span style="color:${epicTitleColor};">${deathPerPickPct}%</span> revive chance`,
         apply: () => {
-          frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + EPIC_DEATHRATTLE_CHANCE);
+          frogDeathRattleChance = Math.min(
+            MAX_DEATHRATTLE_CHANCE,
+            frogDeathRattleChance + EPIC_DEATHRATTLE_CHANCE
+          );
         }
       });
     }
 
-    // --- 🧪 Orb Specialist ---
     if (!orbSpecialistActive) {
       upgrades.push({
         id: "epicOrbSpecialist",
-        label: `🧪 Orb specialist<br>Every collected orb guarantees <span style="color:${epicTitleColor};">1</span> extra frog`,
+        label: `🧪 Orb Specialist<br>Every collected orb guarantees <span style="color:${epicTitleColor};">1</span> extra frog`,
         apply: () => { orbSpecialistActive = true; }
       });
     }
 
-    // --- 💨 Second Wind ---
     if (!secondWindUsed && !secondWindActive) {
       upgrades.push({
         id: "secondWind",
@@ -4070,7 +4129,6 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // --- 👻 Grave Wave ---
     if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
         id: "graveWave",
@@ -4079,7 +4137,6 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // --- 🧪 Poisonous Skin ---
     if (!toxicBloodActive) {
       upgrades.push({
         id: "toxicBlood",
@@ -4088,7 +4145,14 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // --- 🌪️ Frog Scatter ---
+    if (frogs.length > 0) {
+      upgrades.push({
+        id: "promotionEpic",
+        label: `🥇 Promotion<br>All frogs gain <span style="color:${epicTitleColor};">+1 star</span> immediately`,
+        apply: () => { promoteAllFrogs(); }
+      });
+    }
+
     if (!frogScatterUsed && frogs.length > 0) {
       upgrades.push({
         id: "frogScatter",
@@ -4097,7 +4161,6 @@ function getEpicUpgradeChoices() {
       });
     }
 
-    // --- 🔮 Molt Fortune ---
     if (!moltFortuneActive) {
       upgrades.push({
         id: "moltFortune",
@@ -6568,6 +6631,8 @@ snakeOldBodySpeedBonusPending = false;
     secondWindActive = false;
     secondWindUsed = false;
 doubleYolkerActive = false;
+    chainReactionActive = false;
+    nightBloomActive = false;
     swarmDivideActive = false;
     swarmDivideUsed = false;
     graveWaveActive = false;
