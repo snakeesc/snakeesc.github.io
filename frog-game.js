@@ -3652,7 +3652,7 @@ function updateOrbs(dt) {
     }
 
     const desiredPathLength =
-      (snakeObj.segments.length + 2) * computeSegmentGap() + 2;
+      Math.ceil(((snakeObj.segments.length + 3) * computeSegmentGap()) / PATH_POINT_SPACING) + 12;
     while (snakeObj.path.length < desiredPathLength) {
       const last = snakeObj.path[snakeObj.path.length - 1];
       snakeObj.path.push({ x: last.x, y: last.y });
