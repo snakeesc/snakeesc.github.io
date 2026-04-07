@@ -1053,20 +1053,57 @@ function rollFrogCosmetics() {
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
-  function getPlayerSnakeSpriteSet() {
-    const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-    const useAlt = levelData.level > 5;
+const SNAKE_SKIN_STORAGE_KEY = "frogSnake_selectedSnakeSkin";
 
-    return {
-      head: useAlt ? "./images/head2.png" : "./images/head.png",
-      body: useAlt ? "./images/body2.png" : "./images/body.png",
-      tail: useAlt ? "./images/tail2.png" : "./images/tail.png"
-    };
+  const SNAKE_SKINS = [
+    {
+      id: "default",
+      label: "Classic",
+      head: "./images/head.png",
+      body: "./images/body.png",
+      tail: "./images/tail.png",
+      requiredLevel: 1
+    },
+    {
+      id: "alt",
+      label: "Serpent",
+      head: "./images/head2.png",
+      body: "./images/body2.png",
+      tail: "./images/tail2.png",
+      requiredLevel: 5
+    },
+    {
+      id: "alt2",
+      label: "Shadow",
+      head: "./images/head3.png",
+      body: "./images/body3.png",
+      tail: "./images/tail3.png",
+      requiredLevel: 10
+    }
+  ];
+
+  function getSelectedSnakeSkinId() {
+    try {
+      const saved = localStorage.getItem(SNAKE_SKIN_STORAGE_KEY);
+      if (saved && SNAKE_SKINS.find(s => s.id === saved)) return saved;
+    } catch (e) {}
+    return "default";
+  }
+
+  function saveSelectedSnakeSkinId(id) {
+    try {
+      localStorage.setItem(SNAKE_SKIN_STORAGE_KEY, id);
+    } catch (e) {}
+  }
+
+  function getPlayerSnakeSpriteSet() {
+    const skinId = getSelectedSnakeSkinId();
+    const skin = SNAKE_SKINS.find(s => s.id === skinId) || SNAKE_SKINS[0];
+    return { head: skin.head, body: skin.body, tail: skin.tail };
   }
 
   function isUsingAltSnakeSprites() {
-    const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-    return levelData.level > 5;
+    return getSelectedSnakeSkinId() !== "default";
   }
 
 function applySnakeSpriteSet(targetSnake) {
@@ -5072,7 +5109,85 @@ function showBuffGuideOverlay() {
       closeAnimatedOverlay(leaderboardOverlay);
     }
   }
+function buildSnakeSkinSelectorHtml() {
+  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+  const currentLevel = levelData.level;
+  const selectedId = getSelectedSnakeSkinId();
 
+  const items = SNAKE_SKINS.map(skin => {
+    const unlocked = currentLevel >= skin.requiredLevel;
+    const isSelected = skin.id === selectedId;
+
+    return `
+      <div
+        class="snake-skin-option${isSelected ? " is-selected" : ""}${!unlocked ? " is-locked" : ""}"
+        data-skin-id="${skin.id}"
+        style="
+          display: inline-flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          cursor: ${unlocked ? "pointer" : "default"};
+          opacity: ${unlocked ? "1" : "0.4"};
+        "
+      >
+        <div style="
+          width: 56px;
+          height: 56px;
+          border-radius: 999px;
+          border: 2px solid ${isSelected ? "#84cc16" : "#44403c"};
+          background: #0f172a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          box-shadow: ${isSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none"};
+          transition: border-color 0.15s, box-shadow 0.15s;
+          position: relative;
+        ">
+          <img
+            src="${skin.head}"
+            alt="${skin.label}"
+            style="
+              width: 44px;
+              height: 44px;
+              image-rendering: pixelated;
+              ${!unlocked ? "filter: grayscale(1);" : ""}
+            "
+          />
+          ${!unlocked ? `
+            <div style="
+              position: absolute;
+              inset: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 18px;
+            ">🔒</div>
+          ` : ""}
+        </div>
+        <div style="font-size: 11px; color: ${isSelected ? "#bef264" : "#a8a29e"}; font-weight: ${isSelected ? "700" : "400"};">
+          ${unlocked ? skin.label : `Lv ${skin.requiredLevel}`}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="frog-panel-section-label">Snake Skin</div>
+    <div
+      id="snakeSkinSelector"
+      style="
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      "
+    >
+      ${items}
+    </div>
+  `;
+}
 async function showDashboardOverlay() {
   if (!dashboardOverlay) initDashboardOverlay();
   if (!dashboardOverlay) return;
@@ -5308,6 +5423,8 @@ async function showDashboardOverlay() {
       </div>
     </div>
 
+    ${buildSnakeSkinSelectorHtml()}
+    
     <div style="margin-bottom:12px;">
       <input
         id="dashboardTagInput"
