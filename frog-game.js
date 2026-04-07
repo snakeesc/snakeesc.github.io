@@ -5041,95 +5041,114 @@ function showBuffGuideOverlay() {
     }
   }
 
-  async function showDashboardOverlay(page = 'dash') {
+async function showDashboardOverlay(page = 'dash') {
     if (!dashboardOverlay) initDashboardOverlay();
     const content = document.getElementById("dashboardContent");
     if (!content) return;
 
     openAnimatedOverlay(dashboardOverlay);
 
-    // 1. Load Data
+    // 1. DATA PREP (All async calls happen here at the top level)
     const localStats = loadDashboardStats();
     const dashboardPfp = getDashboardPfp();
     const currentTag = getSavedPlayerTag() || "";
     const levelData = getDashboardLevelData(localStats.totalOrbsCollected || 0);
+    
+    // Fetch leaderboard data once at the start
     const leaderboardEntries = await fetchLeaderboard() || [];
+    
+    const lastRunScore = localStats.lastRunScore || 0;
+    const lastRunTime = localStats.lastRunDuration || 0;
+    const bestTime = localStats.bestDuration || 0;
+    const orbsToNext = levelData.nextLevelOrbs - (localStats.totalOrbsCollected % levelData.nextLevelOrbs);
 
-    // 2. Render Navigation & Page Content
+    // 2. MAIN SHELL
     content.innerHTML = `
-      <div class="cc-nav" style="display: flex; border-bottom: 1px solid #44403c; margin-bottom: 20px; justify-content: center; gap: 10px;">
+      <div class="cc-nav" style="display: flex; border-bottom: 1px solid #44403c; margin-bottom: 20px; justify-content: center; gap: 5px;">
         <button class="cc-tab-btn ${page === 'dash' ? 'active' : ''}" onclick="showDashboardOverlay('dash')">Dashboard</button>
         <button class="cc-tab-btn ${page === 'leader' ? 'active' : ''}" onclick="showDashboardOverlay('leader')">Leaderboard</button>
         <button class="cc-tab-btn ${page === 'howto' ? 'active' : ''}" onclick="showDashboardOverlay('howto')">How to Play</button>
       </div>
-      
-      <div id="cc-body">
-        ${renderContent(page)}
-      </div>
+      <div id="cc-body"></div>
     `;
 
-    // Internal helper to keep the main function clean
-    function renderContent(pageId) {
-      if (pageId === 'dash') {
-        return `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;">
-            <div>
-              <div class="frog-panel-section-label">Profile</div>
-              <div class="profile-box" style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                <div class="profile-avatar-container">
-                  <div class="profile-avatar-bg" style="background: ${dashboardPfp.bgColor}; position: relative; width: 64px; height: 64px;">
-                    <img src="${dashboardPfp.spriteSrc}" class="frog-sprite-base" style="position: absolute; inset:0;">
-                    <img src="${dashboardPfp.skinSrc}" class="frog-sprite-skin" style="position: absolute; inset:0;">
-                    ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" class="frog-sprite-eyes" style="position: absolute; inset:0;">` : ""}
-                    ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" class="frog-sprite-hat" style="position: absolute; inset:0;">` : ""}
-                  </div>
-                </div>
-                <div style="flex:1">
-                  <input type="text" id="ccTagInput" class="frog-input" value="${currentTag}" placeholder="Enter Tag..." style="width:100%;">
-                </div>
-              </div>
-              <button id="ccSaveBtn" class="frog-btn frog-btn-primary" style="width:100%">Save Tag</button>
+    // 3. RENDER LOGIC (No 'await' inside these blocks)
+    const body = document.getElementById('cc-body');
+    if (page === 'dash') {
+      body.innerHTML = `
+        <div style="display: grid; grid-template-columns: 160px 1fr; gap: 25px; text-align: left; align-items: start;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+            <div style="width: 90px; height: 90px; background: ${dashboardPfp.bgColor}; border: 2px solid #44403c; border-radius: 12px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+              <img src="${dashboardPfp.spriteSrc}" style="position: absolute; width: 80%; height: 80%; z-index: 1;">
+              <img src="${dashboardPfp.skinSrc}" style="position: absolute; width: 80%; height: 80%; z-index: 2;">
+              ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" style="position: absolute; width: 80%; height: 80%; z-index: 3;">` : ""}
+              ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" style="position: absolute; width: 80%; height: 80%; z-index: 4;">` : ""}
             </div>
-            <div>
+            <div style="width: 100%;">
+              <input type="text" id="ccTagInput" class="frog-input" value="${currentTag}" placeholder="Tag..." style="width: 100%; margin-bottom: 6px; text-align: center; font-size: 13px;">
+              <button id="ccSaveBtn" class="frog-btn frog-btn-primary" style="width: 100%; font-size: 11px; padding: 6px;">Save Tag</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="background: #292524; padding: 12px; border-radius: 8px; border: 1px solid #44403c;">
               <div class="frog-panel-section-label">Mastery</div>
-              <ul class="frog-panel-list">
-                <li>Level: <span class="stat-highlight">${levelData.level}</span></li>
-                <li>Best Score: <span class="stat-highlight">${Math.floor(localStats.bestScore || 0)}</span></li>
-                <li>Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected || 0}</span></li>
-              </ul>
+              <div style="font-size: 14px; font-weight: bold;">Level ${levelData.level}</div>
+              <div style="font-size: 11px; color: #a8a29e; margin-top: 4px;">Next in: ${orbsToNext} orbs</div>
             </div>
-          </div>`;
-      } else if (pageId === 'leader') {
-        return `
+            <div style="background: #292524; padding: 12px; border-radius: 8px; border: 1px solid #44403c;">
+              <div class="frog-panel-section-label">Best Run</div>
+              <div style="font-size: 13px;">Pts: <span class="stat-highlight">${Math.floor(localStats.bestScore || 0)}</span></div>
+              <div style="font-size: 13px;">Time: <span class="stat-highlight">${formatDashboardDuration(bestTime)}</span></div>
+            </div>
+            <div style="background: #292524; padding: 12px; border-radius: 8px; border: 1px solid #44403c; grid-column: span 2;">
+              <div class="frog-panel-section-label">Last Run</div>
+              <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                <span>Score: <span class="stat-highlight">${Math.floor(lastRunScore)}</span></span>
+                <span>Time: <span class="stat-highlight">${formatDashboardDuration(lastRunTime)}</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (page === 'leader') {
+      body.innerHTML = `
+        <div style="max-height: 280px; overflow-y: auto;">
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <tr style="border-bottom: 1px solid #44403c; color: #a8a29e; text-align: left;">
-              <th style="padding: 8px;">#</th><th>Player</th><th>Time</th><th style="text-align:right">Score</th>
-            </tr>
-            ${leaderboardEntries.slice(0, 10).map((e, i) => `
-              <tr style="border-bottom: 1px solid #292524; ${e.tag === currentTag ? 'color:#bef264' : ''}">
-                <td style="padding: 8px;">${i+1}</td>
-                <td>${e.tag || 'Anon'}</td>
-                <td>${formatDashboardDuration(e.duration || 0)}</td>
-                <td style="text-align:right" class="stat-highlight">${Math.floor(e.score || 0)}</td>
+            <thead style="position: sticky; top: 0; background: #1c1917; z-index: 5;">
+              <tr style="border-bottom: 1px solid #44403c; color: #a8a29e; text-align: left;">
+                <th style="padding: 10px;">#</th><th>Player</th><th>Time</th><th style="text-align:right">Score</th>
               </tr>
-            `).join('')}
-          </table>`;
-      } else {
-        return `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left;">
-            <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
-              <div class="frog-panel-section-label">Controls</div>
-              <p style="font-size: 13px;">Lead the swarm with Mouse/Touch. Avoid the snake!</p>
-            </div>
-            <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
-              <div class="frog-panel-section-label">Scoring</div>
-              <p style="font-size: 13px;">Survival is key. Score points for every frog the snake eats.</p>
-            </div>
-          </div>`;
-      }
+            </thead>
+            <tbody>
+              ${leaderboardEntries.slice(0, 10).map((e, i) => `
+                <tr style="border-bottom: 1px solid #292524; ${e.tag === currentTag ? 'background: rgba(190, 242, 100, 0.05); color: #bef264;' : ''}">
+                  <td style="padding: 10px;">${i+1}</td>
+                  <td>${e.tag || 'Anon'}</td>
+                  <td>${formatDashboardDuration(e.duration || 0)}</td>
+                  <td style="text-align:right; padding: 10px;" class="stat-highlight">${Math.floor(e.score || 0)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    } else if (page === 'howto') {
+      body.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left;">
+          <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
+            <div class="frog-panel-section-label">Controls</div>
+            <p style="font-size: 12px; line-height: 1.5;">Frogs follow your cursor or touch. Swerve to avoid the snake head.</p>
+          </div>
+          <div style="background: #292524; padding: 15px; border-radius: 12px; border: 1px solid #44403c;">
+            <div class="frog-panel-section-label">Growth</div>
+            <p style="font-size: 12px; line-height: 1.5;">Collect Orbs to spawn more frogs. More frogs = longer life!</p>
+          </div>
+        </div>
+      `;
     }
 
-    // Attach Save Button Logic
+    // 4. LOGIC ATTACHMENT
     const sBtn = document.getElementById('ccSaveBtn');
     if (sBtn) {
       sBtn.onclick = () => {
