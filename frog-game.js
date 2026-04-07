@@ -1059,8 +1059,8 @@ function rollFrogCosmetics() {
 
     return {
       head: useAlt ? "./images/head2.png" : "./images/head.png",
-      body: "./images/body.png",
-      tail: "./images/tail.png"
+      body: useAlt ? "./images/body2.png" : "./images/body.png",
+      tail: useAlt ? "./images/tail2.png" : "./images/tail.png"
     };
   }
 
@@ -1090,27 +1090,6 @@ function applySnakeSpriteSet(targetSnake) {
     }
   }
 }
-  function getRandomMenuSnakeSpriteSet() {
-    const variants = [
-      {
-        head: "./images/head.png",
-        body: "./images/body.png",
-        tail: "./images/tail.png"
-      },
-      {
-        head: "./images/head2.png",
-        body: "./images/body2.png",
-        tail: "./images/tail2.png"
-      },
-      {
-        head: "./images/head3.png",
-        body: "./images/body3.png",
-        tail: "./images/tail3.png"
-      }
-    ];
-
-    return variants[Math.floor(Math.random() * variants.length)];
-  }
   function ensureFrogBg() {
     let bg = document.getElementById("frog-bg");
     if (bg) return bg;
@@ -1189,7 +1168,6 @@ function seedMatchGrass() {
     makeBackgroundGrass(x, y, scale);
   }
 }
-const PATH_POINT_SPACING = 4;
 function snakeShed(stage) {
     if (!snake) return;
 
@@ -1265,11 +1243,12 @@ function snakeShed(stage) {
       segments.push({ el: segEl, x: startX, y: startY });
     }
 
+    // --- 🚨 THE FIX: PATH PRE-FILLING 🚨 ---
     const path = [];
     const segmentGap = computeSegmentGap();
-    const requiredPathLength =
-      Math.ceil(((newSegCount + 5) * segmentGap) / PATH_POINT_SPACING) + 12;
-
+    // We need enough points in the path for every segment to have a unique index
+    const requiredPathLength = (newSegCount + 5) * segmentGap; 
+    
     for (let i = 0; i < requiredPathLength; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -2387,7 +2366,7 @@ function createSnakeFromExistingSegments(segmentData, angle, speedFactor) {
 
   const path = [];
   const segmentGap = computeSegmentGap();
-  const maxPath = Math.ceil(((segments.length + 3) * segmentGap) / PATH_POINT_SPACING) + 12;
+  const maxPath = (segments.length + 2) * segmentGap + 2;
   for (let i = 0; i < maxPath; i++) {
     path.push({ x: headPos.x, y: headPos.y });
   }
@@ -2448,7 +2427,7 @@ function applyPairOfScissors() {
 
   // Resize the live snake path to match its shorter body
   const desiredPathLength =
-    Math.ceil(((original.segments.length + 3) * computeSegmentGap()) / PATH_POINT_SPACING) + 12;
+    (original.segments.length + 2) * computeSegmentGap() + 2;
 
   while (original.path.length > desiredPathLength) {
     original.path.pop();
@@ -3451,8 +3430,7 @@ function updateOrbs(dt) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const PATH_POINT_SPACING = 4;
-    const maxPath = Math.ceil(((SNAKE_INITIAL_SEGMENTS + 3) * segmentGap) / PATH_POINT_SPACING) + 12;
+    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -3477,7 +3455,7 @@ function updateOrbs(dt) {
       ? opts.segmentCount
       : SNAKE_INITIAL_SEGMENTS;
     const colorFilter = typeof opts.colorFilter === "string" ? opts.colorFilter : "";
-    const snakeSprites = opts.spriteSet || getPlayerSnakeSpriteSet();
+    const snakeSprites = getPlayerSnakeSpriteSet();
 
     const headEl = document.createElement("div");
     headEl.className = "snake-head";
@@ -3515,7 +3493,7 @@ function updateOrbs(dt) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const maxPath = Math.ceil(((segmentCount + 3) * segmentGap) / PATH_POINT_SPACING) + 12;
+    const maxPath = (segmentCount + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -3652,7 +3630,7 @@ function updateOrbs(dt) {
     }
 
     const desiredPathLength =
-      Math.ceil(((snakeObj.segments.length + 3) * computeSegmentGap()) / PATH_POINT_SPACING) + 12;
+      (snakeObj.segments.length + 2) * computeSegmentGap() + 2;
     while (snakeObj.path.length < desiredPathLength) {
       const last = snakeObj.path[snakeObj.path.length - 1];
       snakeObj.path.push({ x: last.x, y: last.y });
@@ -3668,25 +3646,7 @@ function updateOrbs(dt) {
   function growSnake(extraSegments) {
     growSnakeForSnake(snake, extraSegments);
   }
-  function pushSnakePathPoint(snakeObj, x, y) {
-    if (!snakeObj.path || !snakeObj.path.length) {
-      snakeObj.path = [{ x, y }];
-      return;
-    }
 
-    const first = snakeObj.path[0];
-    const dx = x - first.x;
-    const dy = y - first.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    const PATH_POINT_SPACING = 4;
-
-    if (dist >= PATH_POINT_SPACING) {
-      snakeObj.path.unshift({ x, y });
-    } else {
-      snakeObj.path[0] = { x, y };
-    }
-  }
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
 
@@ -3707,47 +3667,42 @@ function updateOrbs(dt) {
     let targetRemnant = null;
     let bestRemnantDist2 = Infinity;
 
+    // Scissors logic
     if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
       snakeOldBodyChaseTime += dt;
       for (const seg of scissorsRemnantSegments) {
-        const dx = (seg.x + SNAKE_SEGMENT_SIZE / 2) - head.x;
-        const dy = (seg.y + SNAKE_SEGMENT_SIZE / 2) - head.y;
-        const d2 = dx * dx + dy * dy;
+        const dx = (seg.x + SNAKE_SEGMENT_SIZE/2) - head.x;
+        const dy = (seg.y + SNAKE_SEGMENT_SIZE/2) - head.y;
+        const d2 = dx*dx + dy*dy;
         if (d2 < bestRemnantDist2) {
           bestRemnantDist2 = d2;
           targetRemnant = seg;
         }
       }
-      if (snakeOldBodyChaseTime > 12.0) {
+      if (snakeOldBodyChaseTime > 12.0) { 
         snakeEatingOldBody = false;
         snakeLastRemnantTarget = null;
       }
     }
 
     for (const frog of frogList) {
-      const dx = (frog.x + FROG_SIZE / 2) - head.x;
-      const dy = (frog.baseY + FROG_SIZE / 2) - head.y;
-      const d2 = dx * dx + dy * dy;
+      const dx = (frog.x + FROG_SIZE/2) - head.x;
+      const dy = (frog.baseY + FROG_SIZE/2) - head.y;
+      const d2 = dx*dx + dy*dy;
       if (d2 < bestDist2) {
         bestDist2 = d2;
         targetFrog = frog;
       }
     }
 
-    // 2. MOVE HEAD
+    // 2. MOVEMENT
     let desiredAngle = head.angle;
     if (snakeConfuseTime > 0) {
       desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
     } else if (targetRemnant) {
-      desiredAngle = Math.atan2(
-        (targetRemnant.y + SNAKE_SEGMENT_SIZE / 2) - head.y,
-        (targetRemnant.x + SNAKE_SEGMENT_SIZE / 2) - head.x
-      );
+      desiredAngle = Math.atan2((targetRemnant.y + SNAKE_SEGMENT_SIZE/2) - head.y, (targetRemnant.x + SNAKE_SEGMENT_SIZE/2) - head.x);
     } else if (targetFrog) {
-      desiredAngle = Math.atan2(
-        (targetFrog.baseY + FROG_SIZE / 2) - head.y,
-        (targetFrog.x + FROG_SIZE / 2) - head.x
-      );
+      desiredAngle = Math.atan2((targetFrog.baseY + FROG_SIZE/2) - head.y, (targetFrog.x + FROG_SIZE/2) - head.x);
     }
 
     let angleDiff = ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
@@ -3759,52 +3714,33 @@ function updateOrbs(dt) {
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
 
-    // Boundary bounce
-    if (head.x < marginX) {
-      head.x = marginX;
-      head.angle = Math.PI - head.angle;
-    } else if (head.x > width - marginX - SNAKE_SEGMENT_SIZE) {
-      head.x = width - marginX - SNAKE_SEGMENT_SIZE;
-      head.angle = Math.PI - head.angle;
-    }
+    // Boundary Bounce
+    if (head.x < marginX) { head.x = marginX; head.angle = Math.PI - head.angle; }
+    else if (head.x > width - marginX - SNAKE_SEGMENT_SIZE) { head.x = width - marginX - SNAKE_SEGMENT_SIZE; head.angle = Math.PI - head.angle; }
+    if (head.y < marginY) { head.y = marginY; head.angle = -head.angle; }
+    else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) { head.y = height - marginY - SNAKE_SEGMENT_SIZE; head.angle = -head.angle; }
 
-    if (head.y < marginY) {
-      head.y = marginY;
-      head.angle = -head.angle;
-    } else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) {
-      head.y = height - marginY - SNAKE_SEGMENT_SIZE;
-      head.angle = -head.angle;
-    }
+    // 3. PATH & BODY POSITIONING
+    snakeObj.path.unshift({ x: head.x, y: head.y });
+    
+    // Limit path history length
+    const maxPath = (snakeObj.segments.length + 2) * segmentGap + 10;
+    if (snakeObj.path.length > maxPath) snakeObj.path.length = maxPath;
 
-    head.el.style.transform =
-      `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
-
-    // 3. MOVE BODY SEGMENTS BY FOLLOWING THE PREVIOUS PIECE
-    let prevX = head.x;
-    let prevY = head.y;
-    let prevAngle = head.angle;
+    head.el.style.transform = `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const seg = snakeObj.segments[i];
+      const idx = (i + 1) * segmentGap;
+      const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
+      
+      const nextIdx = Math.max(0, idx - 2);
+      const q = snakeObj.path[nextIdx] || p;
+      const angle = Math.atan2(p.y - q.y, p.x - q.x);
 
-      const dx = prevX - seg.x;
-      const dy = prevY - seg.y;
-      const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
-
-      if (dist > segmentGap) {
-        const move = dist - segmentGap;
-        seg.x += (dx / dist) * move;
-        seg.y += (dy / dist) * move;
-      }
-
-      const angle = Math.atan2(prevY - seg.y, prevX - seg.x) || prevAngle;
-
-      seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
-
-      prevX = seg.x;
-      prevY = seg.y;
-      prevAngle = angle;
+      seg.x = p.x;
+      seg.y = p.y;
+      seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
 
     // 4. COLLISIONS
@@ -3812,40 +3748,36 @@ function updateOrbs(dt) {
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
     const eatR2 = Math.pow(getSnakeEatRadius(), 2);
 
+    // Eating Frogs
     for (let i = frogList.length - 1; i >= 0; i--) {
       const f = frogList[i];
-      const dx = (f.x + FROG_SIZE / 2) - headCx;
-      const dy = (f.baseY + FROG_SIZE / 2) - headCy;
-      if (dx * dx + dy * dy <= eatR2) {
+      const dx = (f.x + FROG_SIZE/2) - headCx;
+      const dy = (f.baseY + FROG_SIZE/2) - headCy;
+      if (dx*dx + dy*dy <= eatR2) {
         if (isMainMenu) {
           frogList.splice(i, 1);
           if (f.el.parentNode) f.el.parentNode.removeChild(f.el);
         } else if (tryKillFrogAtIndex(i, "snake")) {
           frogsEatenCount++;
           score += (1 * permanentScoreMultiplier * (scoreMultiTime > 0 ? SCORE_MULTI_FACTOR : 1));
-          if (frogsEatenCount % 2 === 0) {
-            growSnakeForSnake(snakeObj, 1);
-          }
+          if (frogsEatenCount % 2 === 0) growSnakeForSnake(snakeObj, 1);
         }
       }
     }
 
-    // 5. EATING OLD BODY (SCISSORS REMNANTS)
+    // Eating Old Body (Scissors Remnants)
     if (snakeEatingOldBody && snakeObj === snake && scissorsRemnantSegments.length > 0) {
       const remR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.8, 2);
-
       for (let i = scissorsRemnantSegments.length - 1; i >= 0; i--) {
         const s = scissorsRemnantSegments[i];
-        const dx = (s.x + SNAKE_SEGMENT_SIZE / 2) - headCx;
-        const dy = (s.y + SNAKE_SEGMENT_SIZE / 2) - headCy;
-
-        if (dx * dx + dy * dy <= remR2) {
+        const dx = (s.x + SNAKE_SEGMENT_SIZE/2) - headCx;
+        const dy = (s.y + SNAKE_SEGMENT_SIZE/2) - headCy;
+        if (dx*dx + dy*dy <= remR2) {
           if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
           scissorsRemnantSegments.splice(i, 1);
           growSnakeForSnake(snakeObj, 1);
         }
       }
-
       if (scissorsRemnantSegments.length === 0) {
         snakeEatingOldBody = false;
         if (snakeOldBodySpeedBonusPending) {
@@ -4367,6 +4299,8 @@ function getEpicUpgradeChoices() {
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
+    ensureMainMenuFrogCount(8, width, height);
+    updateMainMenuFrogs(dt, width, height);
     updateMainMenuSnakes(dt, width, height);
 
     mainMenuAnimId = requestAnimationFrame(runMainMenuFrame);
@@ -4384,15 +4318,12 @@ function getEpicUpgradeChoices() {
 
     for (let i = 0; i < 2; i++) {
       const stage = shuffledStages[i % shuffledStages.length];
-      const spriteSet = getRandomMenuSnakeSpriteSet();
-
       const snakeObj = spawnAdditionalSnake(width, height, {
         startX: randRange(width * 0.2, width * 0.8),
         startY: randRange(height * 0.25, height * 0.75),
         angle: randRange(-Math.PI, Math.PI),
         segmentCount: randInt(20, 30),
-        colorFilter: getShedStageFilter(stage),
-        spriteSet
+        colorFilter: getShedStageFilter(stage)
       });
 
       if (snakeObj) {
@@ -4401,6 +4332,8 @@ function getEpicUpgradeChoices() {
         mainMenuSnakes.push(snakeObj);
       }
     }
+
+    ensureMainMenuFrogCount(8, width, height);
 
     mainMenuActive = true;
     mainMenuLastTime = 0;
