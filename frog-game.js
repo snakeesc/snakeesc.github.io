@@ -2081,11 +2081,13 @@ function spawnRoleFrog(role) {
 }
 function getRoleDraftPool() {
   return [
-    { id: "champion", label: "Champion", emoji: "🏅" },
-    { id: "aura", label: "Aura", emoji: "💫" },
-    { id: "magnet", label: "Magnet", emoji: "🧲" },
-    { id: "lucky", label: "Lucky", emoji: "🍀" },
-    { id: "zombie", label: "Zombie", emoji: "🧟" }
+    { id: "champion", label: "Champion", emoji: "🏅", tier: "normal" },
+    { id: "aura", label: "Aura", emoji: "💫", tier: "normal" },
+    { id: "magnet", label: "Magnet", emoji: "🧲", tier: "normal" },
+    { id: "lucky", label: "Lucky", emoji: "🍀", tier: "normal" },
+    { id: "zombie", label: "Zombie", emoji: "🧟", tier: "normal" },
+    { id: "alchemist", label: "Alchemist", emoji: "🧪", tier: "epic" },
+    { id: "necromancer", label: "Necromancer", emoji: "🧙‍♂️", tier: "epic" }
   ];
 }
 
@@ -2131,7 +2133,12 @@ function getTwoRandomRoleDraftChoices() {
 
 function applyRoleDraft(roleId) {
   const starredFrogs = frogs.filter(frog => (frog.starLevel || 0) > 0);
-  const spawnCount = randInt(2, 4);
+
+  const rolePool = getRoleDraftPool();
+  const chosenRole = rolePool.find(role => role.id === roleId);
+  const isEpicRole = chosenRole && chosenRole.tier === "epic";
+
+  const spawnCount = isEpicRole ? randInt(1, 2) : randInt(2, 4);
 
   for (let i = 0; i < spawnCount; i++) {
     spawnRoleFrog(roleId);
@@ -2140,7 +2147,6 @@ function applyRoleDraft(roleId) {
   for (const frog of starredFrogs) {
     const starCount = Math.max(0, frog.starLevel || 0);
 
-    // First star = chosen role
     clearAllFrogRoles(frog);
 
     switch (roleId) {
@@ -2159,15 +2165,19 @@ function applyRoleDraft(roleId) {
       case "zombie":
         grantZombieFrog(frog);
         break;
+      case "alchemist":
+        grantAlchemistFrog(frog);
+        break;
+      case "necromancer":
+        grantNecromancerFrog(frog);
+        break;
     }
 
-    // Extra stars = extra random roles
     const extraRoleCount = Math.max(0, starCount - 1);
     for (let i = 0; i < extraRoleCount; i++) {
       grantRandomPermaFrogUpgrade(frog);
     }
 
-    // Remove stars after promotion so emoji becomes role-based
     frog.starLevel = 0;
 
     refreshFrogPermaGlow(frog);
@@ -2207,6 +2217,10 @@ function showRoleDraftOverlayChoices() {
             ? "Increases luck-based bonuses and buff value."
             : role.id === "zombie"
             ? "On death, causes extra chaos and recovery."
+            : role.id === "alchemist"
+            ? "Drops an orb every 12 seconds."
+            : role.id === "necromancer"
+            ? "Deathrattle revivals become Zombies."
             : "Special frog role."
         }
       </div>
@@ -3982,27 +3996,6 @@ function getEpicUpgradeChoices() {
         apply: () => { moltFortuneActive = true; }
       });
     }
-
-    // --- 🌀 Mystic Portal ---
-    upgrades.push({
-      id: "mysticPortal",
-      label: `🌀 Mystic Portal<br>Draft between the <span style="color:${epicTitleColor};">Alchemist</span> or <span style="color:${epicTitleColor};">Necromancer</span>`,
-      opensRoleDraft: true,
-      apply: () => {
-        upgradeOverlayButtonsContainer.innerHTML = "";
-        const choices = [
-          { id: "necro", emoji: "🧙‍♂️", label: "Necromancer", desc: "Deathrattle revivals become Zombies.", apply: () => { spawnRoleFrog("necromancer"); closeUpgradeOverlay(); } },
-          { id: "alchemist", emoji: "🧪", label: "Alchemist", desc: "Drops an orb every 12 seconds.", apply: () => { spawnRoleFrog("alchemist"); closeUpgradeOverlay(); } }
-        ];
-        choices.forEach((c) => {
-          const btn = document.createElement("button");
-          btn.className = "frog-btn frog-upgrade-choice upgrade-type-role";
-          btn.innerHTML = `<div class="frog-upgrade-title">${c.emoji} ${c.label}</div><div class="frog-upgrade-desc">${c.desc}</div>`;
-          btn.addEventListener("click", () => { playButtonClick(); c.apply(); });
-          upgradeOverlayButtonsContainer.appendChild(btn);
-        });
-      }
-    });
 
     return upgrades;
   }
