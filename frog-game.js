@@ -1054,15 +1054,20 @@ function rollFrogCosmetics() {
   // HELPERS
   // --------------------------------------------------
   function getPlayerSnakeSpriteSet() {
-  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-  const useAlt = levelData.level > 5;
+    const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+    const useAlt = levelData.level > 5;
 
-  return {
-    head: useAlt ? "./images/head2.png" : "./images/head.png",
-    body: useAlt ? "./images/body2.png" : "./images/body.png",
-    tail: useAlt ? "./images/tail2.png" : "./images/tail.png"
-  };
-}
+    return {
+      head: useAlt ? "./images/head2.png" : "./images/head.png",
+      body: useAlt ? "./images/body2.png" : "./images/body.png",
+      tail: useAlt ? "./images/tail2.png" : "./images/tail.png"
+    };
+  }
+
+  function isUsingAltSnakeSprites() {
+    const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+    return levelData.level > 5;
+  }
 
 function applySnakeSpriteSet(targetSnake) {
   if (!targetSnake) return;
@@ -2800,15 +2805,27 @@ function applyBuff(type, frog, durationMultiplier = 1) {
 
 
   function getShedStageFilter(stage) {
+    const usingAlt = isUsingAltSnakeSprites();
+
+    if (!usingAlt) {
+      // keep the original normal-snake shedding exactly the same
+      if (stage === 1) {
+        return "hue-rotate(-40deg) saturate(1.6) brightness(1.1)";
+      } else if (stage === 2) {
+        return "hue-rotate(-20deg) saturate(1.7) brightness(1.05)";
+      } else if (stage >= 3) {
+        return "hue-rotate(-60deg) saturate(1.8)";
+      }
+      return "";
+    }
+
+    // toned-down shed look for head2/body2/tail2
     if (stage === 1) {
-      // yellow-ish
-      return "hue-rotate(-40deg) saturate(1.6) brightness(1.1)";
+      return "hue-rotate(-18deg) saturate(1.15) brightness(1.02)";
     } else if (stage === 2) {
-      // orange-ish
-      return "hue-rotate(-20deg) saturate(1.7) brightness(1.05)";
+      return "hue-rotate(-8deg) saturate(1.2) brightness(0.98)";
     } else if (stage >= 3) {
-      // red-ish
-      return "hue-rotate(-60deg) saturate(1.8)";
+      return "hue-rotate(-20deg) saturate(1.28) brightness(0.9)";
     }
 
     return "";
