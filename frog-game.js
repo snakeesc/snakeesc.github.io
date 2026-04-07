@@ -3764,7 +3764,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         const py = snakeObj.path[result.nextStart].y;
         const nx = snakeObj.path[result.nextStart + 1].x;
         const ny = snakeObj.path[result.nextStart + 1].y;
-        angle = Math.atan2(py - ny, px - nx);
+        angle = Math.atan2(ny - py, nx - px);
       }
 
       seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
