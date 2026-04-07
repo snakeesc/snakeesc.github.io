@@ -1053,19 +1053,28 @@ function rollFrogCosmetics() {
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
-  function ensureGrassField() {
-  let bg = document.getElementById("frog-bg");
-  if (!bg) return null;
+  function ensureFrogBg() {
+    let bg = document.getElementById("frog-bg");
+    if (bg) return bg;
 
-  let grassField = bg.querySelector(".grass-field");
-  if (!grassField) {
-    grassField = document.createElement("div");
-    grassField.className = "grass-field";
-    bg.appendChild(grassField);
+    bg = document.createElement("div");
+    bg.id = "frog-bg";
+    container.prepend(bg);
+    return bg;
   }
 
-  return grassField;
-}
+  function ensureGrassField() {
+    const bg = ensureFrogBg();
+
+    let grassField = bg.querySelector(".grass-field");
+    if (!grassField) {
+      grassField = document.createElement("div");
+      grassField.className = "grass-field";
+      bg.appendChild(grassField);
+    }
+
+    return grassField;
+  }
 
 function makeBackgroundGrass(x, y, scale = 1) {
   const grassField = ensureGrassField();
