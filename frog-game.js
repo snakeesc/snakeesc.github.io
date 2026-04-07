@@ -3734,7 +3734,7 @@ function updateOrbs(dt) {
       }
     }
 
-    // 2. MOVEMENT
+    // 2. MOVE HEAD
     let desiredAngle = head.angle;
     if (snakeConfuseTime > 0) {
       desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
@@ -3759,7 +3759,7 @@ function updateOrbs(dt) {
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
 
-    // Boundary Bounce
+    // Boundary bounce
     if (head.x < marginX) {
       head.x = marginX;
       head.angle = Math.PI - head.angle;
@@ -3776,34 +3776,35 @@ function updateOrbs(dt) {
       head.angle = -head.angle;
     }
 
-    // 3. PATH & BODY POSITIONING
-    pushSnakePathPoint(snakeObj, head.x, head.y);
-
-    const maxPath = Math.ceil(((snakeObj.segments.length + 3) * segmentGap) / PATH_POINT_SPACING) + 12;
-    if (snakeObj.path.length > maxPath) {
-      snakeObj.path.length = maxPath;
-    }
-
     head.el.style.transform =
       `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
+
+    // 3. MOVE BODY SEGMENTS BY FOLLOWING THE PREVIOUS PIECE
+    let prevX = head.x;
+    let prevY = head.y;
+    let prevAngle = head.angle;
 
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const seg = snakeObj.segments[i];
 
-      const idx = Math.max(
-        1,
-        Math.round(((i + 1) * segmentGap) / PATH_POINT_SPACING)
-      );
+      const dx = prevX - seg.x;
+      const dy = prevY - seg.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
 
-      const p = snakeObj.path[idx] || snakeObj.path[snakeObj.path.length - 1];
-      const nextIdx = Math.max(0, idx - 1);
-      const q = snakeObj.path[nextIdx] || p;
-      const angle = Math.atan2(p.y - q.y, p.x - q.x);
+      if (dist > segmentGap) {
+        const move = dist - segmentGap;
+        seg.x += (dx / dist) * move;
+        seg.y += (dy / dist) * move;
+      }
 
-      seg.x = p.x;
-      seg.y = p.y;
+      const angle = Math.atan2(prevY - seg.y, prevX - seg.x) || prevAngle;
+
       seg.el.style.transform =
         `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
+
+      prevX = seg.x;
+      prevY = seg.y;
+      prevAngle = angle;
     }
 
     // 4. COLLISIONS
@@ -3829,13 +3830,15 @@ function updateOrbs(dt) {
       }
     }
 
-    // Eating Old Body (Scissors Remnants)
+    // 5. EATING OLD BODY (SCISSORS REMNANTS)
     if (snakeEatingOldBody && snakeObj === snake && scissorsRemnantSegments.length > 0) {
       const remR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.8, 2);
+
       for (let i = scissorsRemnantSegments.length - 1; i >= 0; i--) {
         const s = scissorsRemnantSegments[i];
         const dx = (s.x + SNAKE_SEGMENT_SIZE / 2) - headCx;
         const dy = (s.y + SNAKE_SEGMENT_SIZE / 2) - headCy;
+
         if (dx * dx + dy * dy <= remR2) {
           if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
           scissorsRemnantSegments.splice(i, 1);
