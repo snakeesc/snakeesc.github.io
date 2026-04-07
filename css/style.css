@@ -798,10 +798,88 @@ a {
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: #7cc1ff; /* sky */
+  background: #bfe8ab;
   overflow: hidden;
   image-rendering: pixelated;
   pointer-events: none;
+}
+
+#frog-bg .grass-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#frog-bg .grass {
+  position: absolute;
+  width: 12px;
+  height: 10px;
+  transform-origin: bottom center;
+  animation: bgGrassSway linear infinite;
+  opacity: 0.95;
+}
+
+#frog-bg .grass.variant-1 .blade.b1 { left: 1px; height: 4px; background: #5e9d45; }
+#frog-bg .grass.variant-1 .blade.b2 { left: 4px; height: 8px; background: #4f8c39; }
+#frog-bg .grass.variant-1 .blade.b3 { left: 7px; height: 6px; background: #6cae4d; }
+#frog-bg .grass.variant-1 .blade.b4 { left: 9px; height: 3px; background: #4b7f35; }
+
+#frog-bg .grass.variant-2 .blade.b1 { left: 1px; height: 6px; background: #6cae4d; }
+#frog-bg .grass.variant-2 .blade.b2 { left: 3px; height: 5px; background: #4f8c39; }
+#frog-bg .grass.variant-2 .blade.b3 { left: 6px; height: 8px; background: #5e9d45; }
+#frog-bg .grass.variant-2 .blade.b4 { left: 9px; height: 4px; background: #4b7f35; }
+
+#frog-bg .grass.variant-3 .blade.b1 { left: 1px; height: 3px; background: #4b7f35; }
+#frog-bg .grass.variant-3 .blade.b2 { left: 4px; height: 7px; background: #5e9d45; }
+#frog-bg .grass.variant-3 .blade.b3 { left: 7px; height: 5px; background: #6cae4d; }
+#frog-bg .grass.variant-3 .blade.b4 { left: 9px; height: 6px; background: #4f8c39; }
+
+#frog-bg .grass.variant-4 .blade.b1 { left: 0px; height: 5px; background: #6cae4d; }
+#frog-bg .grass.variant-4 .blade.b2 { left: 3px; height: 9px; background: #4f8c39; }
+#frog-bg .grass.variant-4 .blade.b3 { left: 7px; height: 4px; background: #5e9d45; }
+#frog-bg .grass.variant-4 .blade.b4 { left: 10px; height: 5px; background: #4b7f35; }
+
+#frog-bg .blade {
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  border-radius: 0;
+}
+
+#frog-bg .blade.b1 { left: 1px; height: 5px; background: #5e9d45; }
+#frog-bg .blade.b2 { left: 4px; height: 8px; background: #4f8c39; }
+#frog-bg .blade.b3 { left: 7px; height: 6px; background: #6cae4d; }
+#frog-bg .blade.b4 { left: 9px; height: 4px; background: #4b7f35; }
+
+#frog-bg .flower {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff5b8;
+  box-shadow:
+    2px 0 0 #fff5b8,
+    0 2px 0 #fff5b8,
+    2px 2px 0 #fff5b8;
+  top: 0;
+  left: 4px;
+  opacity: 0.9;
+}
+
+#frog-bg .rock {
+  position: absolute;
+  width: 6px;
+  height: 4px;
+  background: #96ad84;
+  bottom: 0;
+  left: 3px;
+  box-shadow: 2px 0 0 #829672;
+  opacity: 0.8;
+}
+
+@keyframes bgGrassSway {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(-1px) rotate(2deg) scale(1.02); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
 }
 
 .frog-sprite {

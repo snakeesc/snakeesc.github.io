@@ -1053,6 +1053,75 @@ function rollFrogCosmetics() {
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
+  function ensureGrassField() {
+  let bg = document.getElementById("frog-bg");
+  if (!bg) return null;
+
+  let grassField = bg.querySelector(".grass-field");
+  if (!grassField) {
+    grassField = document.createElement("div");
+    grassField.className = "grass-field";
+    bg.appendChild(grassField);
+  }
+
+  return grassField;
+}
+
+function makeBackgroundGrass(x, y, scale = 1) {
+  const grassField = ensureGrassField();
+  if (!grassField) return;
+
+  const tuft = document.createElement("div");
+  const variant = 1 + Math.floor(Math.random() * 4);
+  tuft.className = `grass variant-${variant}`;
+  tuft.style.left = `${x}px`;
+  tuft.style.top = `${y}px`;
+  tuft.style.transform = `scale(${scale})`;
+  tuft.style.animationDuration = `${2.5 + Math.random() * 2.5}s`;
+
+  const b1 = document.createElement("div");
+  b1.className = "blade b1";
+
+  const b2 = document.createElement("div");
+  b2.className = "blade b2";
+
+  const b3 = document.createElement("div");
+  b3.className = "blade b3";
+
+  const b4 = document.createElement("div");
+  b4.className = "blade b4";
+
+  tuft.append(b1, b2, b3, b4);
+
+  const extra = Math.random();
+  if (extra < 0.10) {
+    const flower = document.createElement("div");
+    flower.className = "flower";
+    tuft.appendChild(flower);
+  } else if (extra < 0.16) {
+    const rock = document.createElement("div");
+    rock.className = "rock";
+    tuft.appendChild(rock);
+  }
+
+  grassField.appendChild(tuft);
+}
+
+function seedMatchGrass() {
+  const grassField = ensureGrassField();
+  if (!grassField) return;
+
+  grassField.innerHTML = "";
+
+  const count = Math.floor((window.innerWidth * window.innerHeight) / 24000);
+
+  for (let i = 0; i < count; i++) {
+    const x = Math.random() * window.innerWidth;
+    const y = Math.random() * window.innerHeight;
+    const scale = 0.8 + Math.random() * 0.55;
+    makeBackgroundGrass(x, y, scale);
+  }
+}
 function snakeShed(stage) {
     if (!snake) return;
 
@@ -6062,6 +6131,7 @@ function getDashboardPfp() {
     stopMainMenuBackground();
     setInGameUIVisible(true);
     restartGame();
+    seedMatchGrass();
     syncAudioMuteState();
     openFirstUpgradeSelection();
   }
