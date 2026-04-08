@@ -6618,7 +6618,7 @@ function startRunFromMenu() {
     const playerTag = getSavedPlayerTag();
   
     (async () => {
-      const posted  = await submitScoreToServer(
+        const posted  = await submitScoreToServer(
         lastRunScore,
         lastRunTime,
         finalStats,
