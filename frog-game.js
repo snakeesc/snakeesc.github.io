@@ -5012,7 +5012,7 @@ function closeAnimatedOverlay(overlayEl) {
         </div>
 
         <div class="frog-panel-sub" style="color: white !important;">
-          All upgrades in one list, sorted by type color.
+          All upgrades from this build.
         </div>
 
         <ul class="upgrade-guide-list">
