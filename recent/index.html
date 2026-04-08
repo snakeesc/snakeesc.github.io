@@ -10,33 +10,23 @@
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      overflow: hidden;
+      min-height: 100%;
+      background: #0e1a0e;
+      font-family: monospace;
+      color: white;
     }
-
-    #frog-bg { position: fixed; inset: 0; }
 
     .rr-page {
-      position: fixed;
-      inset: 0;
-      overflow-y: auto;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 32px 16px 48px;
-      z-index: 10;
-    }
-
-    .rr-inner {
-      width: 100%;
       max-width: 700px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
     }
 
     .rr-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       flex-wrap: wrap;
       gap: 12px;
     }
@@ -69,7 +59,7 @@
     .rr-meta {
       font-size: 11px;
       color: #78716c;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .rr-pager {
@@ -90,64 +80,42 @@
 </head>
 <body>
 
-  <div id="frog-bg"><div class="grass-field" id="grassField"></div></div>
-
   <div class="rr-page">
-    <div class="rr-inner">
 
-      <div class="rr-header">
-        <h1 class="rr-title">🐍 Recent Runs</h1>
-        <div class="rr-nav">
-          <button id="refreshBtn" class="frog-btn frog-btn-secondary" style="width:auto; padding:6px 14px; font-size:12px; margin-bottom:0;">↺ Refresh</button>
-          <a class="rr-back" href="/">← Back to game</a>
-        </div>
+    <div class="rr-header">
+      <h1 class="rr-title">🐍 Recent Runs</h1>
+      <div class="rr-nav">
+        <button id="refreshBtn" class="frog-btn frog-btn-secondary" style="width:auto; padding:6px 14px; font-size:12px; margin-bottom:0;">↺ Refresh</button>
+        <a class="rr-back" href="/">← Back to game</a>
       </div>
-
-      <div class="rr-meta" id="metaLine">Global · newest first · loading…</div>
-
-      <div class="frog-panel" style="margin-bottom:12px;">
-        <div class="frog-panel-section-label" style="margin-top:0;">Global Stats</div>
-        <div id="statsContent">
-          <div class="leaderboard-loading">Loading…</div>
-        </div>
-      </div>
-
-      <div class="frog-panel">
-        <div class="frog-panel-section-label" style="margin-top:0;">Recent Runs</div>
-        <div id="runsContent">
-          <div class="leaderboard-loading">Loading…</div>
-        </div>
-
-        <div class="rr-pager" id="pager" style="display:none;">
-          <span style="font-size:11px; color:#a8a29e;" id="pageInfo"></span>
-          <div style="display:flex; gap:8px;">
-            <button class="frog-btn frog-btn-secondary" id="prevBtn" style="width:auto; padding:6px 16px; font-size:12px; margin-bottom:0;" disabled>Prev</button>
-            <button class="frog-btn frog-btn-secondary" id="nextBtn" style="width:auto; padding:6px 16px; font-size:12px; margin-bottom:0;">Next</button>
-          </div>
-        </div>
-      </div>
-
     </div>
+
+    <div class="rr-meta" id="metaLine">Global · newest first · loading…</div>
+
+    <div class="frog-panel" style="margin-bottom:12px;">
+      <div class="frog-panel-section-label" style="margin-top:0;">Global Stats</div>
+      <div id="statsContent">
+        <div class="leaderboard-loading">Loading…</div>
+      </div>
+    </div>
+
+    <div class="frog-panel">
+      <div class="frog-panel-section-label" style="margin-top:0;">Recent Runs</div>
+      <div id="runsContent">
+        <div class="leaderboard-loading">Loading…</div>
+      </div>
+      <div class="rr-pager" id="pager" style="display:none;">
+        <span style="font-size:11px; color:#a8a29e;" id="pageInfo"></span>
+        <div style="display:flex; gap:8px;">
+          <button class="frog-btn frog-btn-secondary" id="prevBtn" style="width:auto; padding:6px 16px; font-size:12px; margin-bottom:0;" disabled>Prev</button>
+          <button class="frog-btn frog-btn-secondary" id="nextBtn" style="width:auto; padding:6px 16px; font-size:12px; margin-bottom:0;">Next</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    (function () {
-      const field = document.getElementById("grassField");
-      if (!field) return;
-      const count = Math.floor((window.innerWidth * window.innerHeight) / 24000);
-      for (let i = 0; i < count; i++) {
-        const tuft = document.createElement("div");
-        tuft.className = `grass variant-${1 + Math.floor(Math.random() * 4)}`;
-        tuft.style.cssText = `left:${Math.random() * window.innerWidth}px; top:${Math.random() * window.innerHeight}px; transform:scale(${0.8 + Math.random() * 0.55}); animation-duration:${2.5 + Math.random() * 2.5}s`;
-        ["b1", "b2", "b3", "b4"].forEach(c => {
-          const b = document.createElement("div");
-          b.className = "blade " + c;
-          tuft.appendChild(b);
-        });
-        field.appendChild(tuft);
-      }
-    })();
-
     const RECENT_RUNS_URL = "https://lucky-king-0d37.danielssouthworth.workers.dev/recent-runs";
     const SUMMARY_URL     = "https://lucky-king-0d37.danielssouthworth.workers.dev/updates-summary";
     const PAGE_SIZE = 25;
