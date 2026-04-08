@@ -145,7 +145,7 @@ const STARTING_BUFFS = [
   {
     id: "quickReflexes",
     levelRequired: 3,
-    emoji: "⚡",
+    emoji: "🐇",
     name: "Quick Reflexes",
     desc: "Frogs start 10% faster"
   },
@@ -154,42 +154,49 @@ const STARTING_BUFFS = [
     levelRequired: 5,
     emoji: "💀",
     name: "Insurance",
-    desc: "Start with 10% deathrattle chance"
-  },
-  {
-    id: "orbSense",
-    levelRequired: 7,
-    emoji: "🧲",
-    name: "Orb Sense",
-    desc: "First 3 orbs spawn immediately at run start"
+    desc: "Start with 5% deathrattle chance"
   },
   {
     id: "stormFront",
-    levelRequired: 10,
+    levelRequired: 7,
     emoji: "🌩️",
     name: "Storm Front",
     desc: "Start with Orb Storm already triggered"
   },
   {
-    id: "shieldedStart",
-    levelRequired: 13,
-    emoji: "🛡️",
-    name: "Shielded Start",
-    desc: "First 20 seconds frogs have a shield buff active"
-  },
-  {
     id: "evolved",
-    levelRequired: 16,
+    levelRequired: 10,
     emoji: "⚗️",
     name: "Evolved",
-    desc: "Start with one random frog already at a role"
+    desc: "Start with 1–5 frogs of one random role"
   },
   {
-    id: "dynasty",
+    id: "luckyStart",
+    levelRequired: 13,
+    emoji: "🍀",
+    name: "Lucky Start",
+    desc: "Start with +5 luck"
+  },
+  {
+    id: "orbSpecialistStart",
+    levelRequired: 16,
+    emoji: "🧪",
+    name: "Orb Specialist",
+    desc: "First 15 collected orbs each spawn 1 extra frog"
+  },
+  {
+    id: "lastStandStart",
     levelRequired: 20,
-    emoji: "👑",
-    name: "Dynasty",
-    desc: "Start with 30 extra frogs AND 10% deathrattle"
+    emoji: "🏹",
+    name: "Last Stand",
+    desc: "Start with Last Stand already active"
+  },
+  {
+    id: "doubleYolkerStart",
+    levelRequired: 25,
+    emoji: "🥚",
+    name: "Double Yolker",
+    desc: "Start the run with Double Yolker active"
   }
 ];
 
@@ -255,14 +262,8 @@ function applySelectedStartingBuff() {
     case "insurance":
       frogDeathRattleChance = Math.min(
         MAX_DEATHRATTLE_CHANCE,
-        frogDeathRattleChance + 0.10
+        frogDeathRattleChance + 0.05
       );
-      break;
-
-    case "orbSense":
-      for (let i = 0; i < 3; i++) {
-        spawnOrbRandom(width, height);
-      }
       break;
 
     case "stormFront":
@@ -271,29 +272,34 @@ function applySelectedStartingBuff() {
       }
       break;
 
-    case "shieldedStart":
-      frogShieldTime = Math.max(frogShieldTime, 20);
-      break;
-
     case "evolved": {
-      if (!frogs.length) break;
-      const frog = frogs[Math.floor(Math.random() * frogs.length)];
-      const roles = ["champion", "aura", "magnet"];
-      const role = roles[Math.floor(Math.random() * roles.length)];
-      applySpecificRoleToFrog(frog, role);
+      const roleIds = ["champion", "aura", "magnet", "lucky", "zombie"];
+      const chosenRole = roleIds[Math.floor(Math.random() * roleIds.length)];
+      const count = randInt(1, 5);
+
+      for (let i = 0; i < count; i++) {
+        spawnRoleFrog(chosenRole);
+      }
       break;
     }
 
-    case "dynasty":
-      spawnExtraFrogs(30);
-      frogDeathRattleChance = Math.min(
-        MAX_DEATHRATTLE_CHANCE,
-        frogDeathRattleChance + 0.10
-      );
+    case "luckyStart":
+      addLuck(5);
+      break;
+
+    case "orbSpecialistStart":
+      startingOrbSpecialistCharges = 15;
+      break;
+
+    case "lastStandStart":
+      lastStandActive = true;
+      break;
+
+    case "doubleYolkerStart":
+      doubleYolkerActive = true;
       break;
   }
 }
-
 function buildStartingBuffSelectorHtml() {
   const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
   const selected = getSelectedStartingBuff(levelData.level);
@@ -864,6 +870,7 @@ let extraUpgradeOptionActive = false;
 
   let legendaryEventTriggered = false;
   let doubleYolkerActive = false;
+  let startingOrbSpecialistCharges = 0;
 
   let infoOverlay = null;
   let infoPage = 0;
@@ -3703,6 +3710,11 @@ function computeDeathRattleChanceForFrog(frog) {
 
         if (orbSpecialistActive) {
           frogsToSpawnFromOrb += 1;
+        }
+
+        if (startingOrbSpecialistCharges > 0) {
+          frogsToSpawnFromOrb += 1;
+          startingOrbSpecialistCharges -= 1;
         }
 
         if (doubleYolkerActive && Math.random() < getLuckBoostedChance(0.15, 0.35)) {
@@ -7109,7 +7121,6 @@ doubleYolkerActive = false;
     const height = window.innerHeight;
 
     createInitialFrogs(width, height).then(() => {
-      applySelectedStartingBuff();
       updateStatsPanel();
       updateHUD();
     });
