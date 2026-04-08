@@ -7046,7 +7046,7 @@ function startRunFromMenu() {
       updateMiniLeaderboard(topList);
       hideGameOver();
 
-      showEndGameSummaryOverlay();
+      showDashboardOverlay(topList);
     })();
 
     showGameOver();
