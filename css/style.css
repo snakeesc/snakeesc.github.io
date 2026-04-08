@@ -2191,3 +2191,16 @@ background: #65a30d;
   flex: 1 1 0;
   margin-bottom: 0;
 }
+#startingBuffOverlay {
+  align-items: center;
+  justify-content: center;
+}
+
+#startingBuffOverlay .frog-panel {
+  animation-duration: 120ms;
+}
+
+#startingBuffOverlay .starting-buff-option:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
