@@ -7016,24 +7016,41 @@ function startRunFromMenu() {
 
     const finalStats = { frogsEaten: totalFrogsSpawned };
 
-    // Grab whatever tag the user has already saved (if any)
     const playerTag = getSavedPlayerTag();
-  
+
     (async () => {
-        const posted  = await submitScoreToServer(
+      const posted = await submitScoreToServer(
         lastRunScore,
         lastRunTime,
         finalStats,
         playerTag
       );
+
       const rawList = posted || (await fetchLeaderboard()) || [];
       const topList = rawList.slice(0, 100);
 
       updateMiniLeaderboard(topList);
       hideGameOver();
-      showDashboardOverlay(topList);
+
+      openScoreboardOverlay(
+        topList,
+        lastRunScore,
+        lastRunTime,
+        finalStats,
+        {
+          onPlayAgain: () => {
+            startNewRun();
+          },
+          onReturnToMenu: () => {
+            showMainMenu();
+          },
+          onEditTag: () => {
+            showDashboardOverlay(topList);
+          }
+        }
+      );
     })();
-  
+
     showGameOver();
   }
 
