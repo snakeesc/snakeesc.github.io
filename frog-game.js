@@ -5837,8 +5837,8 @@ async function showDashboardOverlay(cachedLeaderboard) {
         </strong>
       </div>
     </div>
-    ${buildSnakeSkinSelectorHtml()}
-  `;
+    
+  `; //${buildSnakeSkinSelectorHtml()}
 
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
