@@ -5717,6 +5717,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
     </div>
 
     ${buildSnakeSkinSelectorHtml()}
+    ${buildStartingUpgradeSelectorHtml()}
 
     <div style="margin-bottom:12px;">
       <input
