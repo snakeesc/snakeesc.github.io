@@ -132,201 +132,6 @@
   const DASHBOARD_PFP_EYES_CHANCE = 0.12; // 12% chance
   const LEADERBOARD_RESET_NOTE = "";
 
-const DASHBOARD_STARTING_BUFF_KEY = "frogSnake_dashboardStartingBuff_v1";
-
-const STARTING_BUFFS = [
-  {
-    id: "headStart",
-    levelRequired: 1,
-    emoji: "🐸",
-    name: "Head Start",
-    desc: "Spawn 10 extra frogs immediately"
-  },
-  {
-    id: "quickReflexes",
-    levelRequired: 3,
-    emoji: "⚡",
-    name: "Quick Reflexes",
-    desc: "Frogs start 10% faster"
-  },
-  {
-    id: "insurance",
-    levelRequired: 5,
-    emoji: "💀",
-    name: "Insurance",
-    desc: "Start with 10% deathrattle chance"
-  },
-  {
-    id: "orbSense",
-    levelRequired: 7,
-    emoji: "🧲",
-    name: "Orb Sense",
-    desc: "First 3 orbs spawn immediately at run start"
-  },
-  {
-    id: "stormFront",
-    levelRequired: 10,
-    emoji: "🌩️",
-    name: "Storm Front",
-    desc: "Start with Orb Storm already triggered"
-  },
-  {
-    id: "shieldedStart",
-    levelRequired: 13,
-    emoji: "🛡️",
-    name: "Shielded Start",
-    desc: "First 20 seconds frogs have a shield buff active"
-  },
-  {
-    id: "evolved",
-    levelRequired: 16,
-    emoji: "⚗️",
-    name: "Evolved",
-    desc: "Start with one random frog already at a role"
-  },
-  {
-    id: "dynasty",
-    levelRequired: 20,
-    emoji: "👑",
-    name: "Dynasty",
-    desc: "Start with 30 extra frogs AND 10% deathrattle"
-  }
-];
-
-function getUnlockedStartingBuffs(level) {
-  const lvl = Math.max(1, Math.floor(Number(level) || 1));
-  return STARTING_BUFFS.filter(buff => lvl >= buff.levelRequired);
-}
-
-function getDefaultStartingBuffId() {
-  return "headStart";
-}
-
-function getStartingBuffById(id) {
-  return STARTING_BUFFS.find(buff => buff.id === id) || STARTING_BUFFS[0];
-}
-
-function getSelectedStartingBuffId() {
-  try {
-    if (typeof localStorage === "undefined") return getDefaultStartingBuffId();
-    const saved = localStorage.getItem(DASHBOARD_STARTING_BUFF_KEY);
-    return saved || getDefaultStartingBuffId();
-  } catch (e) {
-    return getDefaultStartingBuffId();
-  }
-}
-
-function getSelectedStartingBuff(level) {
-  const unlocked = getUnlockedStartingBuffs(level);
-  const selectedId = getSelectedStartingBuffId();
-  const selected = unlocked.find(buff => buff.id === selectedId);
-  return selected || unlocked[0] || STARTING_BUFFS[0];
-}
-
-function saveSelectedStartingBuffId(id) {
-  try {
-    if (typeof localStorage === "undefined") return;
-    localStorage.setItem(DASHBOARD_STARTING_BUFF_KEY, id);
-  } catch (e) {
-    // ignore
-  }
-}
-
-function applySelectedStartingBuff() {
-  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-  const selected = getSelectedStartingBuff(levelData.level);
-  if (!selected) return;
-
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  switch (selected.id) {
-    case "headStart":
-      spawnExtraFrogs(10);
-      break;
-
-    case "quickReflexes":
-      frogPermanentSpeedFactor *= 0.90;
-      if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
-        frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
-      }
-      break;
-
-    case "insurance":
-      frogDeathRattleChance = Math.min(
-        MAX_DEATHRATTLE_CHANCE,
-        frogDeathRattleChance + 0.10
-      );
-      break;
-
-    case "orbSense":
-      for (let i = 0; i < 3; i++) {
-        spawnOrbRandom(width, height);
-      }
-      break;
-
-    case "stormFront":
-      for (let i = 0; i < ORB_STORM_COUNT; i++) {
-        spawnOrbRandom(width, height);
-      }
-      break;
-
-    case "shieldedStart":
-      frogShieldTime = Math.max(frogShieldTime, 20);
-      break;
-
-    case "evolved": {
-      if (!frogs.length) break;
-      const frog = frogs[Math.floor(Math.random() * frogs.length)];
-      const roles = ["champion", "aura", "magnet"];
-      const role = roles[Math.floor(Math.random() * roles.length)];
-      applySpecificRoleToFrog(frog, role);
-      break;
-    }
-
-    case "dynasty":
-      spawnExtraFrogs(30);
-      frogDeathRattleChance = Math.min(
-        MAX_DEATHRATTLE_CHANCE,
-        frogDeathRattleChance + 0.10
-      );
-      break;
-  }
-}
-
-function buildStartingBuffSelectorHtml() {
-  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-  const selected = getSelectedStartingBuff(levelData.level);
-
-  return `
-    <div class="frog-panel-section-label">Starting Buff</div>
-    <button
-      id="dashboardStartingBuffBtn"
-      class="frog-btn frog-btn-secondary"
-      style="
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        text-align:left;
-        margin-bottom:10px;
-        background:#1f2937;
-        border:1px solid #44403c;
-        padding:10px 12px;
-      "
-    >
-      <span style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:20px; line-height:1;">${selected.emoji}</span>
-        <span style="display:flex; flex-direction:column; gap:2px;">
-          <span style="font-weight:700; color:#f5f5f4;">${selected.name}</span>
-          <span style="font-size:12px; color:#a8a29e;">${selected.desc}</span>
-        </span>
-      </span>
-      <span style="font-size:12px; color:#bef264;">Change</span>
-    </button>
-  `;
-}
-
 function getDefaultDashboardCosmetics() {
   return {
     lastProcessedLevel: 1,
@@ -5605,6 +5410,9 @@ async function showDashboardOverlay(cachedLeaderboard) {
       found: true
     };
   })();
+  const topTenLeaderboard = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.slice(0, 10)
+    : [];
 
   const bestRecordRank = Array.isArray(leaderboardEntries)
     ? leaderboardEntries.findIndex((entry) => {
@@ -5648,6 +5456,54 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </ul>
     `
     : "";
+
+  const leaderboardTopHtml = topTenLeaderboard.length
+    ? `
+      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
+      <ul class="frog-panel-list">
+        ${topTenLeaderboard.map((entry, i) => {
+          const name =
+            (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
+              ? entry.tag
+              : (entry && typeof entry.name === "string" && entry.name.trim() !== "")
+                ? entry.name
+                : `Player ${i + 1}`;
+
+          const score = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+          const time = formatDashboardDuration(Number(entry?.bestTime ?? entry?.time ?? 0));
+
+          const entryTag =
+            typeof entry?.tag === "string"
+              ? entry.tag.trim().toLowerCase()
+              : typeof entry?.name === "string"
+                ? entry.name.trim().toLowerCase()
+                : "";
+
+          const isMe =
+            !!normalizedCurrentTag &&
+            !!entryTag &&
+            entryTag === normalizedCurrentTag;
+
+          return `
+            <li style="${
+              isMe
+                ? "color:#bef264; font-weight:700; background:rgba(190,242,100,0.08); border:1px solid rgba(190,242,100,0.35); padding:6px 8px; border-radius:8px;"
+                : ""
+            }">
+              <strong>#${i + 1}</strong>
+              ${isMe ? "⭐ " : ""}
+              ${name} · ${score} score · ${time}
+            </li>
+          `;
+        }).join("")}
+      </ul>
+    `
+    : `
+      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
+      <ul class="frog-panel-list">
+        <li>No leaderboard entries yet.</li>
+      </ul>
+    `;
 
   content.innerHTML = `
     <div class="frog-panel-section-label">Player Profile</div>
@@ -5767,7 +5623,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
     </div>
 
     ${buildSnakeSkinSelectorHtml()}
-    ${buildStartingBuffSelectorHtml()}
 
     <div style="margin-bottom:12px;">
       <input
@@ -5824,6 +5679,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
     </ul>
 
     ${latestRunHtml}
+
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
@@ -5872,11 +5728,10 @@ async function showDashboardOverlay(cachedLeaderboard) {
       }
     });
   }
-
+  // Wire up snake skin selector
   function wireSkinSelector() {
     const skinSelector = document.getElementById("snakeSkinSelector");
     if (!skinSelector) return;
-
     skinSelector.addEventListener("click", (e) => {
       const option = e.target.closest("[data-skin-id]");
       if (!option) return;
@@ -5890,6 +5745,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
 
       saveSelectedSnakeSkinId(skinId);
 
+      // Update visuals without full re-render
       skinSelector.querySelectorAll("[data-skin-id]").forEach(el => {
         const id = el.dataset.skinId;
         const circle = el.querySelector("div");
@@ -5907,94 +5763,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
       });
     });
   }
-
-  function showStartingBuffSelector() {
-    let overlay = document.getElementById("startingBuffOverlay");
-
-    if (!overlay) {
-      overlay = document.createElement("div");
-      overlay.id = "startingBuffOverlay";
-      overlay.className = "frog-overlay";
-      overlay.innerHTML = `
-        <div class="frog-panel">
-          <div class="frog-panel-title">Starting Buff <span class="emoji">⚡</span></div>
-          <div class="frog-panel-sub">Choose which unlocked buff your runs begin with.</div>
-          <div id="startingBuffOptions"></div>
-          <div class="frog-panel-footer">
-            <button id="startingBuffCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">Close</button>
-          </div>
-        </div>
-      `;
-      container.appendChild(overlay);
-
-      overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) {
-          closeAnimatedOverlay(overlay);
-        }
-      });
-    }
-
-    const optionsEl = overlay.querySelector("#startingBuffOptions");
-    const selected = getSelectedStartingBuff(levelData.level);
-
-    optionsEl.innerHTML = STARTING_BUFFS.map(buff => {
-      const unlocked = levelData.level >= buff.levelRequired;
-      const isSelected = selected.id === buff.id;
-
-      return `
-        <button
-          class="frog-btn frog-btn-secondary starting-buff-option"
-          data-buff-id="${buff.id}"
-          ${unlocked ? "" : "disabled"}
-          style="
-            text-align:left;
-            margin-bottom:8px;
-            opacity:${unlocked ? "1" : "0.45"};
-            border:${isSelected ? "1px solid #84cc16" : "1px solid #44403c"};
-            background:${isSelected ? "rgba(132,204,22,0.12)" : "#1f2937"};
-          "
-        >
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="font-size:22px; line-height:1;">${buff.emoji}</div>
-            <div style="display:flex; flex-direction:column; gap:2px;">
-              <div style="font-weight:700; color:${isSelected ? "#bef264" : "#f5f5f4"};">
-                ${buff.name} ${unlocked ? "" : `(Lv ${buff.levelRequired})`}
-              </div>
-              <div style="font-size:12px; color:#a8a29e;">${buff.desc}</div>
-            </div>
-          </div>
-        </button>
-      `;
-    }).join("");
-
-    const closeBtn = overlay.querySelector("#startingBuffCloseBtn");
-    if (closeBtn) {
-      closeBtn.onclick = () => closeAnimatedOverlay(overlay);
-    }
-
-    optionsEl.querySelectorAll(".starting-buff-option").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const buffId = btn.dataset.buffId;
-        const buff = STARTING_BUFFS.find(x => x.id === buffId);
-        if (!buff) return;
-        if (levelData.level < buff.levelRequired) return;
-
-        saveSelectedStartingBuffId(buffId);
-        closeAnimatedOverlay(overlay);
-        showDashboardOverlay(leaderboardEntries);
-      });
-    });
-
-    openAnimatedOverlay(overlay);
-  }
-
-  const startingBuffBtn = document.getElementById("dashboardStartingBuffBtn");
-  if (startingBuffBtn) {
-    startingBuffBtn.addEventListener("click", () => {
-      showStartingBuffSelector();
-    });
-  }
-
   wireSkinSelector();
 }
 function formatDuration(seconds) {
@@ -6770,10 +6538,6 @@ function startNewRun() {
     }
   }
 
-  applySelectedStartingBuff();
-  updateStatsPanel();
-  updateHUD();
-
   syncAudioMuteState();
   openFirstUpgradeSelection();
 }
@@ -7058,12 +6822,7 @@ doubleYolkerActive = false;
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
-    createInitialFrogs(width, height).then(() => {
-      applySelectedStartingBuff();
-      updateStatsPanel();
-      updateHUD();
-    });
-
+    createInitialFrogs(width, height).then(() => {});
     initSnake(width, height);
 
     setNextOrbTime();
