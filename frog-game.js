@@ -6649,7 +6649,7 @@ function startRunFromMenu() {
 
       updateMiniLeaderboard(topList);
       hideGameOver();
-      showDashboardOverlay();
+      showDashboardOverlay(topList);
     })();
   
     showGameOver();
