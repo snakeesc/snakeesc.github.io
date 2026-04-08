@@ -5811,6 +5811,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
         Save Tag
       </button>
     </div>
+    ${buildStartingBuffSelectorHtml()}
     <div class="frog-panel-section-label">Stats</div>
 
     <div class="dashboard-stats-featured">
@@ -5836,7 +5837,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
         </strong>
       </div>
     </div>
-    ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
   `;
 
