@@ -4954,7 +4954,7 @@ function closeAnimatedOverlay(overlayEl) {
 
     const upgrades = [
       { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +15% jump height." },
-      { type: "buff",     label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog/orb spawn rolls, and raises the odds of bonus effects." },
+      { type: "buff",     label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog/orb spawn rolls, and more." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they hop 20% faster." },
       { type: "mobility", label: "✂️ Pair of Scissors", desc: "Cuts the snake in half and slows it by 20%." },
 
@@ -4963,7 +4963,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "buff",     label: "🎯 Orb Flow", desc: "Increases orb spawn frequency." },
       { type: "buff",     label: "🌩️ Orb Storm", desc: "Drops a burst of random orbs immediately." },
       { type: "buff",     label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
-      { type: "buff",     label: "⚡ Chain Reaction", desc: "When a frog collects an orb, there is a 25% chance to trigger a second free orb buff." },
+      { type: "buff",     label: "⚡ Chain Reaction", desc: "When a frog collects an orb, there's a 25% chance to trigger another buff." },
       { type: "buff",     label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 50% chance to spawn a frog at that spot." },
       { type: "buff",     label: "🧪 Orb Specialist", desc: "Every collected orb guarantees 1 extra frog." },
       { type: "buff",     label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
