@@ -1411,6 +1411,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
 
   const playerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
   const localStats = loadDashboardStats();
+  const currentTag = getSavedDashboardTag() || "";
 
   // Find rank and best run from cached leaderboard
   let rankIdx = -1;
@@ -1449,6 +1450,35 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   const totalFrogs = localStats.totalFrogsLost || 0;
 
   content.innerHTML = `
+    <div class="frog-panel-section-label">Player Tag</div>
+    <div style="margin-bottom:10px;">
+      <input
+        id="endSummaryTagInput"
+        type="text"
+        maxlength="12"
+        value="${String(currentTag).replace(/"/g, "&quot;")}"
+        placeholder="Enter player tag"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:5px 8px;
+          border-radius:6px;
+          border:1px solid #44403c;
+          background:#292524;
+          color:white;
+          font-family:inherit;
+          font-size:12px;
+          margin-bottom:6px;
+        "
+      />
+      <button
+        id="endSummaryTagSaveBtn"
+        class="frog-btn frog-btn-secondary"
+        style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:4px;"
+      >Save Tag</button>
+      <span id="endSummaryTagMsg" style="font-size:11px; margin-left:8px;"></span>
+    </div>
+
     <div class="frog-panel-section-label">This Run</div>
     <ul class="frog-panel-list">
       <li style="color:#bef264;">
@@ -1475,6 +1505,31 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   `;
 
   openAnimatedOverlay(endGameSummaryOverlay);
+
+  // Wire up tag input
+  const tagInput = document.getElementById("endSummaryTagInput");
+  const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
+  const tagMsg = document.getElementById("endSummaryTagMsg");
+
+  if (tagSaveBtn && tagInput) {
+    tagSaveBtn.addEventListener("click", async () => {
+      const validation = validateDashboardTag(tagInput.value);
+      if (!validation.ok) {
+        if (tagMsg) { tagMsg.textContent = validation.message; tagMsg.style.color = "#fca5a5"; }
+        return;
+      }
+      const newTag = validation.tag;
+      await saveDashboardTag(newTag);
+      if (tagMsg) { tagMsg.textContent = "Tag saved."; tagMsg.style.color = "#bef264"; }
+      try {
+        if (leaderboardBest.found && (leaderboardBest.bestRun > 0 || leaderboardBest.bestTime > 0)) {
+          await submitScoreToServer(leaderboardBest.bestRun, leaderboardBest.bestTime, null, newTag);
+        }
+        const refreshed = await fetchLeaderboard();
+        updateMiniLeaderboard(refreshed);
+      } catch (e) {}
+    });
+  }
 
   // Render leaderboard using already-fetched list, jump to user's page
   const lbEl = document.getElementById("endGameLeaderboardContent");
