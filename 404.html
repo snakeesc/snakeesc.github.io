@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>404 · Escape the Snake</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%90%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: #0e1a0e;
+      font-family: monospace;
+      color: white;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.35;
+    }
+
+    .center {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      gap: 16px;
+    }
+
+    .code {
+      font-size: clamp(72px, 18vw, 140px);
+      font-weight: bold;
+      color: #a3e635;
+      line-height: 1;
+      letter-spacing: -4px;
+      text-shadow: 0 0 40px rgba(163, 230, 53, 0.25);
+    }
+
+    .label {
+      font-size: clamp(13px, 3vw, 18px);
+      color: #78716c;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .msg {
+      font-size: clamp(12px, 2.5vw, 15px);
+      color: #a8a29e;
+      max-width: 340px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      background: #65a30d;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-family: monospace;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      transition: filter 0.1s, transform 0.1s;
+    }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: #292524;
+      color: white;
+      border: 1px solid #44403c;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-family: monospace;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: filter 0.1s, transform 0.1s;
+    }
+    .btn-secondary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div class="center">
+    <div class="code">404</div>
+    <div class="label">The snake ate this page</div>
+    <div class="msg">Looks like this page hopped away — or got eaten. Either way, it's gone.</div>
+    <div class="actions">
+      <a class="btn-primary" href="/">Play the game</a>
+      <a class="btn-secondary" href="/recent">Recent Runs</a>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("c");
+    const ctx    = canvas.getContext("2d");
+
+    const CELL   = 28;
+    const SPEED  = 0.13; // seconds per step
+    const COLORS = { head: "#a3e635", body: "#65a30d", frog: "#4ade80", dead: "#dc2626" };
+
+    let cols, rows, snake, frogs, dir, nextDir, timer, dead, deadTimer;
+
+    function resize() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      cols = Math.floor(canvas.width  / CELL);
+      rows = Math.floor(canvas.height / CELL);
+      init();
+    }
+
+    function rand(n) { return Math.floor(Math.random() * n); }
+
+    function spawnFrogs(n) {
+      frogs = [];
+      for (let i = 0; i < n; i++) {
+        frogs.push({ x: rand(cols), y: rand(rows) });
+      }
+    }
+
+    function init() {
+      const cx = Math.floor(cols / 2);
+      const cy = Math.floor(rows / 2);
+      snake    = [{ x: cx, y: cy }, { x: cx - 1, y: cy }, { x: cx - 2, y: cy }];
+      dir      = { x: 1, y: 0 };
+      nextDir  = { x: 1, y: 0 };
+      timer    = 0;
+      dead     = false;
+      deadTimer = 0;
+      spawnFrogs(8);
+    }
+
+    function step() {
+      dir = { ...nextDir };
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+      // Wrap around walls
+      head.x = (head.x + cols) % cols;
+      head.y = (head.y + rows) % rows;
+
+      // Eat frog?
+      const fi = frogs.findIndex(f => f.x === head.x && f.y === head.y);
+      if (fi !== -1) {
+        frogs.splice(fi, 1);
+        frogs.push({ x: rand(cols), y: rand(rows) });
+        snake.unshift(head);
+      } else {
+        snake.pop();
+        snake.unshift(head);
+      }
+
+      // Random direction changes (wandering AI)
+      if (Math.random() < 0.18) {
+        // Steer toward nearest frog
+        if (frogs.length) {
+          const nearest = frogs.reduce((best, f) => {
+            const d = Math.abs(f.x - head.x) + Math.abs(f.y - head.y);
+            return d < best.d ? { f, d } : best;
+          }, { f: frogs[0], d: Infinity }).f;
+
+          const dx = nearest.x - head.x;
+          const dy = nearest.y - head.y;
+          const options = [];
+          if (Math.abs(dx) >= Math.abs(dy)) {
+            options.push({ x: Math.sign(dx), y: 0 });
+            options.push({ x: 0, y: Math.sign(dy) || (Math.random() < 0.5 ? 1 : -1) });
+          } else {
+            options.push({ x: 0, y: Math.sign(dy) });
+            options.push({ x: Math.sign(dx) || (Math.random() < 0.5 ? 1 : -1), y: 0 });
+          }
+          for (const opt of options) {
+            if (opt.x !== -dir.x || opt.y !== -dir.y) {
+              nextDir = opt;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Frogs
+      ctx.fillStyle = COLORS.frog;
+      for (const f of frogs) {
+        ctx.beginPath();
+        ctx.arc(f.x * CELL + CELL / 2, f.y * CELL + CELL / 2, CELL * 0.28, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Snake body
+      for (let i = snake.length - 1; i >= 0; i--) {
+        const seg = snake[i];
+        const t   = i / snake.length;
+        ctx.fillStyle = i === 0
+          ? (dead ? COLORS.dead : COLORS.head)
+          : COLORS.body;
+        ctx.globalAlpha = dead ? Math.max(0, 1 - deadTimer * 1.5) : (0.4 + 0.6 * (1 - t));
+        const r = i === 0 ? CELL * 0.44 : CELL * 0.36;
+        const px = seg.x * CELL + CELL / 2;
+        const py = seg.y * CELL + CELL / 2;
+        ctx.beginPath();
+        ctx.roundRect(px - r, py - r, r * 2, r * 2, 4);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+    }
+
+    let last = 0;
+    function loop(ts) {
+      const dt = Math.min((ts - last) / 1000, 0.1);
+      last = ts;
+
+      if (dead) {
+        deadTimer += dt;
+        if (deadTimer > 1.2) init();
+      } else {
+        timer += dt;
+        if (timer >= SPEED) {
+          timer -= SPEED;
+          step();
+        }
+      }
+
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
