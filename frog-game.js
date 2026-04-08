@@ -5833,9 +5833,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </div>
     </div>
 
-    ${buildSnakeSkinSelectorHtml()}
-    ${buildStartingBuffSelectorHtml()}
-
     <div style="margin-bottom:12px;">
       <input
         id="dashboardTagInput"
@@ -5870,6 +5867,11 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </button>
       <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
     </div>
+
+    ${buildStartingBuffSelectorHtml()}
+    
+    ${buildSnakeSkinSelectorHtml()}
+
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
