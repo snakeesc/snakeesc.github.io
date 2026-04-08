@@ -6609,16 +6609,51 @@ function getDashboardPfp() {
     gamePaused = false;
   }
 
-  function initUpgradeOverlay() {
-    if (upgradeOverlay) return;
+function initUpgradeOverlay() {
+  if (upgradeOverlay) return;
 
-    upgradeOverlay = document.getElementById("upgradeOverlay");
-    upgradeOverlayButtonsContainer = document.getElementById("upgradeChoicesContainer");
-    upgradeOverlayTitleEl = upgradeOverlay
-      ? upgradeOverlay.querySelector(".frog-panel-title")
-      : null;
-    upgradeOverlaySubEl = document.getElementById("upgradeOverlaySub");
+  upgradeOverlay = document.getElementById("upgradeOverlay");
+  upgradeOverlayButtonsContainer = document.getElementById("upgradeChoicesContainer");
+  upgradeOverlayTitleEl = upgradeOverlay
+    ? upgradeOverlay.querySelector(".frog-panel-title")
+    : null;
+  upgradeOverlaySubEl = document.getElementById("upgradeOverlaySub");
+
+  if (!upgradeOverlay) return;
+
+  const panel = upgradeOverlay.querySelector(".frog-panel");
+
+  // Clicking anywhere on the upgrade overlay backdrop should do nothing.
+  upgradeOverlay.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  // Also block pointer presses so they do not leak through to the game.
+  upgradeOverlay.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  upgradeOverlay.addEventListener("mouseup", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  if (panel) {
+    panel.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+
+    panel.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+    });
+
+    panel.addEventListener("mouseup", (e) => {
+      e.stopPropagation();
+    });
   }
+}
 
   function selectUpgrade(choice) {
     if (!choice) return;
