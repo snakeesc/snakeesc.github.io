@@ -11,9 +11,12 @@
       margin: 0;
       padding: 0;
       min-height: 100%;
+      background: #0e1a0e;
+      font-family: monospace;
+      color: white;
     }
 
-    .rr-wrap {
+    .rr-page {
       max-width: 700px;
       margin: 0 auto;
       padding: 32px 16px 48px;
@@ -23,41 +26,39 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
       margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .rr-title {
       font-size: 20px;
       font-weight: bold;
       color: white;
-      text-shadow: 1px 1px gray;
-      margin: 0;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      margin: 0;
+      text-shadow: 1px 1px gray;
     }
 
     .rr-nav {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .rr-back {
       font-size: 12px;
-      color: white;
+      color: #a3e635;
       text-decoration: none;
-      opacity: 0.8;
     }
 
-    .rr-back:hover { opacity: 1; text-decoration: underline; }
+    .rr-back:hover { text-decoration: underline; }
 
     .rr-meta {
       font-size: 11px;
-      color: white;
-      opacity: 0.5;
+      color: #78716c;
       margin-bottom: 14px;
     }
 
@@ -79,7 +80,7 @@
 </head>
 <body>
 
-  <div class="rr-wrap">
+  <div class="rr-page">
 
     <div class="rr-header">
       <h1 class="rr-title">🐍 Recent Runs</h1>
