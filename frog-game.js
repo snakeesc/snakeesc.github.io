@@ -530,28 +530,42 @@ function rollFrogCosmetics() {
       "higherHops",
       "swarmDivide",
       "survivalInstinct",
-      "greedsToll"
+      "greedsToll",
+      "mutation",
+      "pairOfScissors",
+      "frogScatter"
     ];
 
     const survivalIds = [
       "deathrattle",
-      "epicDeathrattle",
+      "commonDeathRattle",
+      "epicDeathRattle",
       "lastStand",
       "ouroborosPact",
       "secondWind",
-      "toxicBlood"
+      "toxicBlood",
+      "graveWave"
     ];
 
-    // buff duration / orbs / magnet style
+    // buff duration / orbs / luck / proc style
     const buffIds = [
       "buffDuration",
       "epicBuffDuration",
       "orbMagnet",
       "orbLinger",
+      "orbWhisperer",
       "orbSpawn",
+      "epicMoreOrbs",
+      "epicOrbStorm",
       "orbSpecialist",
+      "epicOrbSpecialist",
       "moltFortune",
-      "quantumOrbs"
+      "quantumOrbs",
+      "doubleYolker",
+      "luckyRoll",
+      "chainReaction",
+      "nightBloom",
+      "luck"
     ];
 
     // orb creation / collector
@@ -561,12 +575,16 @@ function rollFrogCosmetics() {
 
     // frog role / squad / promotions
     const roleIds = [
+      "spawn20",
       "extraFrogCap",
       "frogPromotion",
       "frogPromotionEpic",
+      "promotionEpic",
       "cannibalPromotion",
       "roleDraft",
-      "mysticPortal"
+      "mysticPortal",
+      "tidalWave",
+      "extraUpgradeOption"
     ];
 
     if (mobilityIds.includes(upgradeId)) return "upgrade-type-mobility";
@@ -575,10 +593,8 @@ function rollFrogCosmetics() {
     if (orbIds.includes(upgradeId)) return "upgrade-type-orb";
     if (roleIds.includes(upgradeId)) return "upgrade-type-role";
 
-    // default: plain green
     return "upgrade-type-mobility";
   }
-
 
   // --------------------------------------------------
   // PLAYER TAG STORAGE (client-side only)
