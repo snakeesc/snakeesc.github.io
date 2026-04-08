@@ -593,7 +593,7 @@ function generateLocalTag() {
 
     // Also push to global recent-runs feed on the server
     submitRecentRun({
-      tag:       getSavedDashboardTag(),
+      tag:       getSavedPlayerTag ? getSavedPlayerTag() : null,
       score:     runScore,
       time:      runTime,
       orbs:      runOrbs,
@@ -1518,14 +1518,9 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       await saveDashboardTag(newTag);
       if (tagMsg) { tagMsg.textContent = "Tag saved."; tagMsg.style.color = "#bef264"; }
       try {
-        // Always submit with new tag — use current run score, worker will keep
-        // whichever is higher between this and any existing entry
-        await submitScoreToServer(
-          Math.floor(run.score || 0),
-          run.time || 0,
-          null,
-          newTag
-        );
+        if (leaderboardBest.found && (leaderboardBest.bestRun > 0 || leaderboardBest.bestTime > 0)) {
+          await submitScoreToServer(leaderboardBest.bestRun, leaderboardBest.bestTime, null, newTag);
+        }
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
       } catch (e) {}
@@ -6126,59 +6121,27 @@ async function showDashboardOverlay(cachedLeaderboard) {
           margin-bottom:6px;
         "
       />
-      <button
-        id="dashboardSaveTagBtn"
-        class="frog-btn frog-btn-secondary"
-        style="
-          width:auto;
-          padding:6px 10px;
-          font-size:12px;
-          margin-bottom:4px;
-        "
-      >
-        Save Tag
-      </button>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <button
+          id="dashboardSaveTagBtn"
+          class="frog-btn frog-btn-secondary"
+          style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
+        >
+          Save Tag
+        </button>
+        ${latestCompletedRun ? `
+          <button
+            id="dashboardLastRunBtn"
+            class="frog-btn frog-btn-secondary"
+            style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
+          >
+            📋 Last Run
+          </button>
+        ` : ""}
+      </div>
     </div>
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
-    <div class="frog-panel-section-label">Stats</div>
-
-    <div class="dashboard-stats-featured">
-      <div class="dashboard-stats-featured-row">
-        <span class="dashboard-stats-featured-label">Best Record</span>
-        <strong class="dashboard-stats-featured-value">
-          ${
-            leaderboardBest.found
-              ? `${bestRecordPrefix}${currentTag || "You"} · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
-              : "—"
-          }
-        </strong>
-      </div>
-
-      <div class="dashboard-stats-featured-row">
-        <span class="dashboard-stats-featured-label">Last Run</span>
-        <strong class="dashboard-stats-featured-value">
-          ${
-            savedLatestRun
-              ? `${currentTag || "You"} · ${Math.floor(savedLatestRun.score)} score · ${formatDashboardDuration(savedLatestRun.time)}`
-              : "—"
-          }
-        </strong>
-      </div>
-    </div>
-
-    <div class="frog-panel-section-label">Run Summary</div>
-    <div class="dashboard-stats-inline">
-      <div class="dashboard-stats-row">
-        <span>Orbs Collected</span>
-        <strong>${savedLatestRun ? savedLatestRun.orbs : "—"}</strong>
-      </div>
-      <div class="dashboard-stats-row">
-        <span>Frogs Lost</span>
-        <strong>${savedLatestRun ? savedLatestRun.frogsLost : "—"}</strong>
-      </div>
-    </div>
-    
   `; 
 
   const tagInput = document.getElementById("dashboardTagInput");
@@ -6225,6 +6188,14 @@ async function showDashboardOverlay(cachedLeaderboard) {
       } catch (e) {
         // ignore
       }
+    });
+  }
+
+  const lastRunBtn = document.getElementById("dashboardLastRunBtn");
+  if (lastRunBtn) {
+    lastRunBtn.addEventListener("click", () => {
+      closeAnimatedOverlay(dashboardOverlay);
+      showEndGameSummaryOverlay(Array.isArray(leaderboardEntries) ? leaderboardEntries : []);
     });
   }
 
@@ -7296,7 +7267,7 @@ function startRunFromMenu() {
 
     const finalStats = { frogsEaten: totalFrogsSpawned };
 
-    const playerTag = getSavedDashboardTag();
+    const playerTag = getSavedPlayerTag();
     summaryPending = true;
 
     (async () => {
