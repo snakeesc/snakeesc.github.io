@@ -1323,10 +1323,6 @@ function initEndGameSummaryOverlay() {
         <span class="emoji">📋</span>
       </div>
 
-      <div class="frog-panel-sub">
-        A quick look at how that run went.
-      </div>
-
       <div id="endGameSummaryContent"></div>
 
       <div class="frog-panel-footer">
