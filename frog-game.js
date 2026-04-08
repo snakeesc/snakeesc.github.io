@@ -7468,7 +7468,7 @@ doubleYolkerActive = false;
       const overlayOpen =
         upgradeOverlay && upgradeOverlay.style.display !== "none";
 
-      if (!overlayOpen) {
+      if (!gameOver && !overlayOpen) {
         // Epic chain: normal -> epic back-to-back at epic marks
         if (elapsedTime >= nextEpicChoiceTime &&
                  elapsedTime >= nextPermanentChoiceTime) {
