@@ -5869,7 +5869,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
     </div>
 
     ${buildStartingBuffSelectorHtml()}
-    
     ${buildSnakeSkinSelectorHtml()}
 
   `;
