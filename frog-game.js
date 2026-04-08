@@ -1352,13 +1352,6 @@ function initEndGameSummaryOverlay() {
 
   container.appendChild(endGameSummaryOverlay);
 
-  endGameSummaryOverlay.addEventListener("click", (e) => {
-    if (e.target === endGameSummaryOverlay) {
-      hideEndGameSummaryOverlay();
-      showDashboardOverlay();
-    }
-  });
-
   document.addEventListener("keydown", (e) => {
     if (
       endGameSummaryOverlay &&
@@ -1366,7 +1359,6 @@ function initEndGameSummaryOverlay() {
       e.key === "Escape"
     ) {
       hideEndGameSummaryOverlay();
-      showDashboardOverlay();
     }
   });
 
@@ -1423,42 +1415,38 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   // Find rank and best run from cached leaderboard
   let rankIdx = -1;
   let leaderboardBest = { bestRun: 0, bestTime: 0, found: false };
+  const list = Array.isArray(cachedLeaderboard) ? cachedLeaderboard : [];
 
-  if (cachedLeaderboard && Array.isArray(cachedLeaderboard)) {
-    const myEntry = window.FrogGameLeaderboard && window.FrogGameLeaderboard._lastMyEntry
-      ? window.FrogGameLeaderboard._lastMyEntry : null;
+  const myEntry = window.FrogGameLeaderboard && window.FrogGameLeaderboard._lastMyEntry
+    ? window.FrogGameLeaderboard._lastMyEntry : null;
 
-    if (myEntry && myEntry.userId) {
-      rankIdx = cachedLeaderboard.findIndex(e => e && e.userId === myEntry.userId);
-    }
-    if (rankIdx === -1 && playerTag) {
-      rankIdx = cachedLeaderboard.findIndex(e =>
-        typeof e?.tag === "string" &&
-        e.tag.trim().toLowerCase() === playerTag.trim().toLowerCase()
-      );
-    }
-    if (rankIdx !== -1) {
-      const match = cachedLeaderboard[rankIdx];
-      leaderboardBest = {
-        bestRun: Math.floor(Number(match.bestScore ?? match.score ?? 0)),
-        bestTime: Number(match.bestTime ?? match.time ?? 0),
-        found: true
-      };
-    }
+  if (myEntry && myEntry.userId) {
+    rankIdx = list.findIndex(e => e && e.userId === myEntry.userId);
+  }
+  if (rankIdx === -1 && playerTag) {
+    rankIdx = list.findIndex(e =>
+      typeof e?.tag === "string" &&
+      e.tag.trim().toLowerCase() === playerTag.trim().toLowerCase()
+    );
+  }
+  if (rankIdx !== -1) {
+    const match = list[rankIdx];
+    leaderboardBest = {
+      bestRun: Math.floor(Number(match.bestScore ?? match.score ?? 0)),
+      bestTime: Number(match.bestTime ?? match.time ?? 0),
+      found: true
+    };
   }
 
-  const rankHtml = rankIdx !== -1
-    ? `· <span class="stat-highlight">#${rankIdx + 1}</span> ranked`
-    : "";
-
+  const rankHtml = rankIdx !== -1 ? ` · <span class="stat-highlight">#${rankIdx + 1}</span> ranked` : "";
   const bestRunHtml = leaderboardBest.found
-    ? `<li><strong>${leaderboardBest.bestRun}</strong> score · ${formatLeaderboardTime(leaderboardBest.bestTime)} ${rankHtml}</li>`
+    ? `<li><strong>${leaderboardBest.bestRun}</strong> score · ${formatLeaderboardTime(leaderboardBest.bestTime)}${rankHtml}</li>`
     : `<li>No leaderboard entry yet.</li>`;
 
-  const totalRuns    = localStats.totalRuns || 0;
-  const totalTime    = formatDashboardDuration(localStats.totalPlayTime || 0);
-  const totalOrbs    = localStats.totalOrbsCollected || 0;
-  const totalFrogs   = localStats.totalFrogsLost || 0;
+  const totalRuns  = localStats.totalRuns || 0;
+  const totalTime  = formatDashboardDuration(localStats.totalPlayTime || 0);
+  const totalOrbs  = localStats.totalOrbsCollected || 0;
+  const totalFrogs = localStats.totalFrogsLost || 0;
 
   content.innerHTML = `
     <div class="frog-panel-section-label">This Run</div>
@@ -1480,105 +1468,106 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       <li>${totalRuns} runs · ${totalTime} played · ${totalOrbs} orbs · ${totalFrogs} frogs lost</li>
     </ul>
 
-    <div class="frog-panel-section-label" style="margin-top:8px;">
-      Recent Runs
-      <span style="font-size:10px; font-weight:normal; color:#888; margin-left:6px;">global · newest first</span>
-    </div>
-    <div id="endGameRecentRunsContent">
+    <div class="frog-panel-section-label" style="margin-top:8px;">Global Leaderboard</div>
+    <div id="endGameLeaderboardContent">
       <div class="leaderboard-loading">Loading…</div>
     </div>
   `;
 
   openAnimatedOverlay(endGameSummaryOverlay);
 
-  // Fetch and render paginated recent runs
-  (async () => {
-    const runsEl = document.getElementById("endGameRecentRunsContent");
-    if (!runsEl) return;
-    try {
-      const allRuns = await fetchRecentRuns();
-      const runs = Array.isArray(allRuns) ? allRuns.slice(0, 50) : [];
+  // Render leaderboard using already-fetched list, jump to user's page
+  const lbEl = document.getElementById("endGameLeaderboardContent");
+  if (!lbEl) return;
 
-      if (runs.length === 0) {
-        runsEl.innerHTML = '<ul class="frog-panel-list"><li>No recent runs yet.</li></ul>';
-        return;
-      }
+  if (list.length === 0) {
+    lbEl.innerHTML = '<ul class="frog-panel-list"><li>No entries yet.</li></ul>';
+    return;
+  }
 
-      function escRR(str) {
-        if (str == null) return "";
-        return String(str)
-          .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-      }
+  function normalizeTag(tag) {
+    return typeof tag === "string" ? tag.trim().toLowerCase() : "";
+  }
 
-      function fmtTsRR(ts) {
-        if (!ts) return "";
-        const d = new Date(ts);
-        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
-               " · " + d.toLocaleDateString([], { month: "short", day: "numeric" });
-      }
+  function entryMatchesUser(entry) {
+    if (!entry || !playerTag) return false;
+    return normalizeTag(entry.tag) === normalizeTag(playerTag) ||
+           normalizeTag(entry.name) === normalizeTag(playerTag);
+  }
 
-      const normalizedTag = playerTag ? playerTag.trim().toLowerCase() : null;
-      const pageSize = 10;
-      let currentPage = 0;
-      const totalPages = Math.ceil(runs.length / pageSize);
-
-      function renderRunsPage(pageIndex) {
-        currentPage = Math.max(0, Math.min(pageIndex, totalPages - 1));
-        const start = currentPage * pageSize;
-        const end = Math.min(start + pageSize, runs.length);
-        const pageRuns = runs.slice(start, end);
-
-        const itemsHtml = pageRuns.map(r => {
-          const isMe = normalizedTag && typeof r.tag === "string" &&
-                       r.tag.trim().toLowerCase() === normalizedTag;
-          return `
-            <li${isMe ? ' style="color:#bef264;"' : ""}>
-              ${isMe ? "⭐ " : ""}<strong>${escRR(r.tag || "Frog")}</strong>
-              · ${formatLeaderboardTime(r.time || 0)}
-              · ${Math.floor(r.score || 0)} score
-              · ${r.orbs || 0} orbs
-              · ${r.sheds || 0} sheds
-              <span style="font-size:10px; color:#78716c; margin-left:4px;">${fmtTsRR(r.at)}</span>
-            </li>
-          `;
-        }).join("");
-
-        runsEl.innerHTML = `
-          <ul class="frog-panel-list">${itemsHtml}</ul>
-          <div class="frog-panel-footer">
-            <div style="margin-bottom:6px; font-size:11px; color:#a8a29e;">
-              Showing ${start + 1}–${end} of ${runs.length}
-            </div>
-            <div style="display:flex; gap:8px; justify-content:center;">
-              <button
-                id="recentRunsPrevBtn"
-                class="frog-btn frog-btn-secondary"
-                style="width:auto; margin-bottom:0;"
-                ${currentPage === 0 ? "disabled" : ""}
-              >Prev</button>
-              <button
-                id="recentRunsNextBtn"
-                class="frog-btn frog-btn-secondary"
-                style="width:auto; margin-bottom:0;"
-                ${end >= runs.length ? "disabled" : ""}
-              >Next</button>
-            </div>
-          </div>
-        `;
-
-        const prevBtn = document.getElementById("recentRunsPrevBtn");
-        const nextBtn = document.getElementById("recentRunsNextBtn");
-        if (prevBtn) prevBtn.addEventListener("click", () => renderRunsPage(currentPage - 1));
-        if (nextBtn) nextBtn.addEventListener("click", () => renderRunsPage(currentPage + 1));
-      }
-
-      renderRunsPage(0);
-
-    } catch (err) {
-      if (runsEl) runsEl.innerHTML = '<ul class="frog-panel-list"><li>Could not load recent runs.</li></ul>';
+  function getScore(entry) {
+    if (!entry) return 0;
+    for (const k of ["bestScore", "score", "maxScore", "points", "value"]) {
+      if (!(k in entry)) continue;
+      let v = entry[k];
+      if (typeof v === "string") v = parseFloat(v);
+      if (typeof v === "number" && isFinite(v)) return v;
     }
-  })();
+    return 0;
+  }
+
+  function getTime(entry) {
+    if (!entry) return 0;
+    for (const k of ["bestTime", "time", "maxTime", "seconds", "duration"]) {
+      if (!(k in entry)) continue;
+      let v = entry[k];
+      if (typeof v === "string") v = parseFloat(v);
+      if (typeof v === "number" && isFinite(v) && v >= 0) return v;
+    }
+    return 0;
+  }
+
+  function getDisplayName(entry, fallback) {
+    if (entry && typeof entry.tag === "string" && entry.tag.trim()) return entry.tag;
+    if (entry && typeof entry.name === "string" && entry.name.trim()) return entry.name;
+    return fallback;
+  }
+
+  const pageSize = 10;
+  const myPageStart = rankIdx >= 0 ? Math.floor(rankIdx / pageSize) : 0;
+  let currentPage = myPageStart;
+
+  function renderLbPage(pageIndex) {
+    currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
+    const start = currentPage * pageSize;
+    const end = Math.min(start + pageSize, list.length);
+
+    const itemsHtml = list.slice(start, end).map((entry, idx) => {
+      const rank  = start + idx + 1;
+      const name  = getDisplayName(entry, `Player ${rank}`);
+      const score = Math.floor(getScore(entry));
+      const time  = formatLeaderboardTime(getTime(entry));
+      const isMe  = entryMatchesUser(entry);
+      return `
+        <li${isMe ? ' style="color:#bef264;"' : ""}>
+          <strong>#${rank}</strong>
+          ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} score
+        </li>
+      `;
+    }).join("");
+
+    lbEl.innerHTML = `
+      <ul class="frog-panel-list">${itemsHtml}</ul>
+      <div class="frog-panel-footer">
+        <div style="margin-bottom:6px; font-size:11px; color:#a8a29e;">
+          Showing ${start + 1}–${end} of ${list.length}
+        </div>
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <button id="endLbPrevBtn" class="frog-btn frog-btn-secondary"
+            style="width:auto; margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
+          <button id="endLbNextBtn" class="frog-btn frog-btn-secondary"
+            style="width:auto; margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
+        </div>
+      </div>
+    `;
+
+    const prevBtn = document.getElementById("endLbPrevBtn");
+    const nextBtn = document.getElementById("endLbNextBtn");
+    if (prevBtn) prevBtn.addEventListener("click", () => renderLbPage(currentPage - 1));
+    if (nextBtn) nextBtn.addEventListener("click", () => renderLbPage(currentPage + 1));
+  }
+
+  renderLbPage(currentPage);
 }
 function clampLuck(value) {
   return Math.max(0, Math.min(MAX_LUCK, Math.floor(value || 0)));
