@@ -5812,6 +5812,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </button>
     </div>
     ${buildStartingBuffSelectorHtml()}
+    ${buildSnakeSkinSelectorHtml()}
     <div class="frog-panel-section-label">Stats</div>
 
     <div class="dashboard-stats-featured">
@@ -5838,7 +5839,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </div>
     </div>
     
-  `; //${buildSnakeSkinSelectorHtml()}
+  `; //
 
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
