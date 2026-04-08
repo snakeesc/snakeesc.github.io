@@ -1412,120 +1412,103 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     sheds: Number(snakeShedCount) || 0
   };
 
-  // Check rank from cached leaderboard - use myEntry from lastMyEntry if available
+  const playerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
+
+  // Find leaderboard rank — prefer userId match, fall back to tag match
   let rankHtml = "";
   if (cachedLeaderboard && Array.isArray(cachedLeaderboard)) {
     let rankIdx = -1;
-
-    // Prefer matching by userId via lastMyEntry
     const myEntry = window.FrogGameLeaderboard && window.FrogGameLeaderboard._lastMyEntry
-      ? window.FrogGameLeaderboard._lastMyEntry
-      : null;
-
+      ? window.FrogGameLeaderboard._lastMyEntry : null;
     if (myEntry && myEntry.userId) {
       rankIdx = cachedLeaderboard.findIndex(e => e && e.userId === myEntry.userId);
     }
-
-    // Fallback: match by tag
     if (rankIdx === -1 && playerTag) {
       rankIdx = cachedLeaderboard.findIndex(e =>
-        typeof e?.tag === "string" && e.tag.trim().toLowerCase() === playerTag.trim().toLowerCase()
+        typeof e?.tag === "string" &&
+        e.tag.trim().toLowerCase() === playerTag.trim().toLowerCase()
       );
     }
-
     if (rankIdx !== -1) {
-      rankHtml = `<li><strong>Leaderboard Rank:</strong> <span class="stat-highlight">#${rankIdx + 1}</span></li>`;
+      rankHtml = `<li>Leaderboard rank · <span class="stat-highlight">#${rankIdx + 1}</span></li>`;
     }
   }
 
+  const runTime = formatLeaderboardTime(run.time || 0);
+
   content.innerHTML = `
     <div class="frog-panel-section-label">Your Run</div>
-    <ul class="frog-panel-list" style="margin-bottom:10px;">
-      <li><strong>Score:</strong> <span class="stat-highlight">${Math.floor(run.score || 0)}</span></li>
-      <li><strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(run.time || 0)}</span></li>
-      <li><strong>Orbs Collected:</strong> <span class="stat-highlight">${run.orbs || 0}</span></li>
-      <li><strong>Frogs Lost:</strong> <span class="stat-highlight">${run.frogsLost || 0}</span></li>
-      <li><strong>Snake Sheds:</strong> <span class="stat-highlight">${run.sheds || 0}</span></li>
+    <ul class="frog-panel-list">
+      <li style="color:#bef264;">
+        <strong>${Math.floor(run.score || 0)}</strong> score
+        · ${runTime}
+        · ${run.orbs || 0} orbs
+        · ${run.frogsLost || 0} frogs lost
+        · ${run.sheds || 0} sheds
+      </li>
       ${rankHtml}
     </ul>
 
-    <div class="frog-panel-section-label" style="margin-top:12px;">
+    <div class="frog-panel-section-label" style="margin-top:10px;">
       Recent Runs
-      <span style="font-size:10px;font-weight:normal;color:#888;margin-left:6px;">global · newest first</span>
+      <span style="font-size:10px; font-weight:normal; color:#888; margin-left:6px;">global · newest first</span>
     </div>
-    <div id="endGameRecentRunsContent" style="margin-top:4px;">
+    <div id="endGameRecentRunsContent">
       <div class="leaderboard-loading">Loading…</div>
     </div>
   `;
 
   openAnimatedOverlay(endGameSummaryOverlay);
 
-  // Async: fetch and render global recent runs
+  // Fetch and render global recent runs to match leaderboard list style
   (async () => {
     const runsEl = document.getElementById("endGameRecentRunsContent");
     if (!runsEl) return;
     try {
       const runs = await fetchRecentRuns();
+
       if (!runs || runs.length === 0) {
-        runsEl.innerHTML = '<div class="leaderboard-loading">No recent runs yet.</div>';
+        runsEl.innerHTML = '<ul class="frog-panel-list"><li>No recent runs yet.</li></ul>';
         return;
       }
 
-      function pad2RR(n) { return n < 10 ? "0" + n : String(n); }
-      function fmtTimeRR(s) {
-        if (!s || !isFinite(s) || s <= 0) return "00:00.0";
-        const m = Math.floor(s / 60);
-        const sec = (s - m * 60).toFixed(1);
-        return pad2RR(m) + ":" + sec.padStart(4, "0");
+      function escRR(str) {
+        if (str == null) return "";
+        return String(str)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       }
+
       function fmtTsRR(ts) {
         if (!ts) return "";
         const d = new Date(ts);
         return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
                " · " + d.toLocaleDateString([], { month: "short", day: "numeric" });
       }
-      function escRR(str) {
-        if (str == null) return "";
-        return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-      }
 
       const normalizedTag = playerTag ? playerTag.trim().toLowerCase() : null;
-      const rows = runs.map((r, i) => {
+
+      const itemsHtml = runs.map(r => {
         const isMe = normalizedTag && typeof r.tag === "string" &&
                      r.tag.trim().toLowerCase() === normalizedTag;
+        const tag   = escRR(r.tag || "Frog");
+        const score = Math.floor(r.score || 0);
+        const time  = formatLeaderboardTime(r.time || 0);
+        const when  = fmtTsRR(r.at);
+
         return `
-          <tr class="scoreboard-row${isMe ? " scoreboard-row--me" : ""}">
-            <td class="scoreboard-td scoreboard-rank">${i + 1}</td>
-            <td class="scoreboard-td scoreboard-name">${escRR(r.tag || "Frog")}</td>
-            <td class="scoreboard-td scoreboard-score">${Math.floor(r.score || 0)}</td>
-            <td class="scoreboard-td">${fmtTimeRR(r.time)}</td>
-            <td class="scoreboard-td">${r.orbs || 0}</td>
-            <td class="scoreboard-td">${r.sheds || 0}</td>
-            <td class="scoreboard-td" style="font-size:10px;color:#888;white-space:nowrap;">${fmtTsRR(r.at)}</td>
-          </tr>
+          <li${isMe ? ' style="color:#bef264;"' : ""}>
+            ${isMe ? "⭐ " : ""}<strong>${tag}</strong>
+            · ${time} · ${score} score · ${r.orbs || 0} orbs · ${r.sheds || 0} sheds
+            <span style="font-size:10px; color:#78716c; margin-left:4px;">${when}</span>
+          </li>
         `;
       }).join("");
 
-      runsEl.innerHTML = `
-        <div style="overflow-x:auto;max-height:260px;overflow-y:auto;">
-          <table class="scoreboard-table" style="width:100%;border-collapse:collapse;">
-            <thead>
-              <tr>
-                <th class="scoreboard-th">#</th>
-                <th class="scoreboard-th">Player</th>
-                <th class="scoreboard-th">Score</th>
-                <th class="scoreboard-th">Time</th>
-                <th class="scoreboard-th">Orbs</th>
-                <th class="scoreboard-th">Sheds</th>
-                <th class="scoreboard-th">When</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      `;
+      runsEl.innerHTML = `<ul class="frog-panel-list">${itemsHtml}</ul>`;
+
     } catch (err) {
-      if (runsEl) runsEl.innerHTML = '<div class="leaderboard-loading">Could not load recent runs.</div>';
+      if (runsEl) runsEl.innerHTML = '<ul class="frog-panel-list"><li>Could not load recent runs.</li></ul>';
     }
   })();
 }
