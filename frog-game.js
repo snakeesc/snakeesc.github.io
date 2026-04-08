@@ -6221,7 +6221,8 @@ async function showDashboardOverlay(cachedLeaderboard) {
           };
         }
       }
-      closeAnimatedOverlay(dashboardOverlay);
+      // Hide dashboard silently — don't use hideDashboardOverlay which chains to showMainMenu
+      if (dashboardOverlay) dashboardOverlay.style.display = "none";
       showEndGameSummaryOverlay(Array.isArray(leaderboardEntries) ? leaderboardEntries : []);
     });
   }
