@@ -865,6 +865,7 @@ function rollFrogCosmetics() {
   let elapsedTime   = 0;
   let gameOver      = false;
   let gamePaused    = false;
+  let summaryPending = false; // true while end-game async is resolving
   let nextOrbTime   = 0;
   let score         = 0;
   let frogsEatenCount = 0; // grow one segment every 2 frogs
@@ -1020,9 +1021,9 @@ const MAX_LUCK = 30;
       return;
     }
 
-    // Don't restart if any panel overlay is currently open
+    // Don't restart if any panel overlay is currently open or summary is loading
     const anyOverlayOpen = document.querySelector(".frog-overlay[style*='flex']");
-    if (anyOverlayOpen) return;
+    if (anyOverlayOpen || summaryPending) return;
 
     if (gameOver) {
       startNewRun();
@@ -1294,10 +1295,11 @@ const MAX_LUCK = 30;
   }
 
   if (btnEnd) {
-    btnEnd.onclick = () => {
+    btnEnd.onclick = (ev) => {
+      ev.stopPropagation();
       if (soundEnabled) playButtonClick();
       if (!gameOver) {
-        endGame(); // ends game and submits score to leaderboard
+        endGame();
       }
     };
   }
@@ -1324,6 +1326,10 @@ function initEndGameSummaryOverlay() {
       <div class="frog-panel-title">
         Run Summary
         <span class="emoji">📋</span>
+      </div>
+
+      <div class="frog-panel-sub">
+        A quick look at how that run went.
       </div>
 
       <div id="endGameSummaryContent"></div>
@@ -7246,6 +7252,7 @@ function startRunFromMenu() {
     const finalStats = { frogsEaten: totalFrogsSpawned };
 
     const playerTag = getSavedPlayerTag();
+    summaryPending = true;
 
     (async () => {
       const posted = await submitScoreToServer(
@@ -7260,7 +7267,7 @@ function startRunFromMenu() {
 
       updateMiniLeaderboard(topList);
       hideGameOver();
-
+      summaryPending = false;
       showEndGameSummaryOverlay(topList);
     })();
 
@@ -7347,6 +7354,7 @@ luckStat = 0;
     lastTime        = 0;
     gameOver        = false;
     gamePaused      = false;
+    summaryPending  = false;
     score           = 0;
     frogsEatenCount = 0;
     nextOrbTime     = 0;
