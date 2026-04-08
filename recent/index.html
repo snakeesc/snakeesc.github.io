@@ -7,22 +7,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    html, body { margin: 0; padding: 0; min-height: 100vh; }
-    .rr-wrap {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 28px 16px 56px;
-      position: relative;
-      z-index: 1;
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
     }
+
+    #frog-bg { position: fixed; inset: 0; }
+
+    .rr-page {
+      position: fixed;
+      inset: 0;
+      overflow-y: auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px 48px;
+      z-index: 10;
+    }
+
+    .rr-inner {
+      width: 100%;
+      max-width: 700px;
+    }
+
     .rr-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 20px;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
+      gap: 12px;
     }
+
     .rr-title {
       font-size: 20px;
       font-weight: bold;
@@ -33,23 +51,27 @@
       margin: 0;
       text-shadow: 1px 1px gray;
     }
+
     .rr-nav {
       display: flex;
-      gap: 10px;
       align-items: center;
-      flex-wrap: wrap;
+      gap: 12px;
     }
-    .rr-nav a {
+
+    .rr-back {
       font-size: 12px;
       color: #a3e635;
       text-decoration: none;
     }
-    .rr-nav a:hover { text-decoration: underline; }
+
+    .rr-back:hover { text-decoration: underline; }
+
     .rr-meta {
       font-size: 11px;
       color: #78716c;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
+
     .rr-pager {
       display: flex;
       align-items: center;
@@ -58,6 +80,7 @@
       flex-wrap: wrap;
       gap: 8px;
     }
+
     .rr-ts {
       font-size: 10px;
       color: #78716c;
@@ -69,47 +92,58 @@
 
   <div id="frog-bg"><div class="grass-field" id="grassField"></div></div>
 
-  <div class="rr-wrap">
-    <div class="rr-header">
-      <h1 class="rr-title">🐍 Recent Runs</h1>
-      <div class="rr-nav">
-        <button id="refreshBtn" class="frog-btn frog-btn-secondary" style="width:auto;padding:6px 14px;font-size:12px;margin-bottom:0;">↺ Refresh</button>
-        <a href="/">← Back to game</a>
-      </div>
-    </div>
+  <div class="rr-page">
+    <div class="rr-inner">
 
-    <div class="rr-meta" id="metaLine">Global · newest first · loading…</div>
-
-    <div class="frog-panel" style="margin-bottom:14px;">
-      <div class="frog-panel-section-label" style="margin-top:0;">Global Stats</div>
-      <div id="statsContent"><div class="leaderboard-loading">Loading…</div></div>
-    </div>
-
-    <div class="frog-panel">
-      <div class="frog-panel-section-label" style="margin-top:0;">Recent Runs</div>
-      <div id="runsContent">
-        <div class="leaderboard-loading">Loading…</div>
-      </div>
-      <div class="rr-pager" id="pager" style="display:none;">
-        <span style="font-size:11px;color:#a8a29e;" id="pageInfo"></span>
-        <div style="display:flex;gap:8px;">
-          <button class="frog-btn frog-btn-secondary" id="prevBtn" style="width:auto;padding:6px 16px;font-size:12px;margin-bottom:0;" disabled>Prev</button>
-          <button class="frog-btn frog-btn-secondary" id="nextBtn" style="width:auto;padding:6px 16px;font-size:12px;margin-bottom:0;">Next</button>
+      <div class="rr-header">
+        <h1 class="rr-title">🐍 Recent Runs</h1>
+        <div class="rr-nav">
+          <button id="refreshBtn" class="frog-btn frog-btn-secondary" style="width:auto; padding:6px 14px; font-size:12px; margin-bottom:0;">↺ Refresh</button>
+          <a class="rr-back" href="/">← Back to game</a>
         </div>
       </div>
+
+      <div class="rr-meta" id="metaLine">Global · newest first · loading…</div>
+
+      <div class="frog-panel" style="margin-bottom:12px;">
+        <div class="frog-panel-section-label" style="margin-top:0;">Global Stats</div>
+        <div id="statsContent">
+          <div class="leaderboard-loading">Loading…</div>
+        </div>
+      </div>
+
+      <div class="frog-panel">
+        <div class="frog-panel-section-label" style="margin-top:0;">Recent Runs</div>
+        <div id="runsContent">
+          <div class="leaderboard-loading">Loading…</div>
+        </div>
+
+        <div class="rr-pager" id="pager" style="display:none;">
+          <span style="font-size:11px; color:#a8a29e;" id="pageInfo"></span>
+          <div style="display:flex; gap:8px;">
+            <button class="frog-btn frog-btn-secondary" id="prevBtn" style="width:auto; padding:6px 16px; font-size:12px; margin-bottom:0;" disabled>Prev</button>
+            <button class="frog-btn frog-btn-secondary" id="nextBtn" style="width:auto; padding:6px 16px; font-size:12px; margin-bottom:0;">Next</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script>
-    (function() {
+    (function () {
       const field = document.getElementById("grassField");
       if (!field) return;
       const count = Math.floor((window.innerWidth * window.innerHeight) / 24000);
       for (let i = 0; i < count; i++) {
         const tuft = document.createElement("div");
         tuft.className = `grass variant-${1 + Math.floor(Math.random() * 4)}`;
-        tuft.style.cssText = `left:${Math.random()*window.innerWidth}px;top:${Math.random()*window.innerHeight}px;transform:scale(${0.8+Math.random()*0.55});animation-duration:${2.5+Math.random()*2.5}s`;
-        ["b1","b2","b3","b4"].forEach(c => { const b = document.createElement("div"); b.className = "blade "+c; tuft.appendChild(b); });
+        tuft.style.cssText = `left:${Math.random() * window.innerWidth}px; top:${Math.random() * window.innerHeight}px; transform:scale(${0.8 + Math.random() * 0.55}); animation-duration:${2.5 + Math.random() * 2.5}s`;
+        ["b1", "b2", "b3", "b4"].forEach(c => {
+          const b = document.createElement("div");
+          b.className = "blade " + c;
+          tuft.appendChild(b);
+        });
         field.appendChild(tuft);
       }
     })();
@@ -117,22 +151,32 @@
     const RECENT_RUNS_URL = "https://lucky-king-0d37.danielssouthworth.workers.dev/recent-runs";
     const SUMMARY_URL     = "https://lucky-king-0d37.danielssouthworth.workers.dev/updates-summary";
     const PAGE_SIZE = 25;
-    let allRuns = [], currentPage = 0;
+    const MAX_RUNS  = 100;
+
+    let allRuns = [];
+    let currentPage = 0;
 
     function pad2(n) { return n < 10 ? "0" + n : String(n); }
+
     function fmtTime(s) {
       if (!s || !isFinite(s) || s <= 0) return "00:00.0";
-      const m = Math.floor(s / 60), sec = (s - m * 60).toFixed(1);
+      const m   = Math.floor(s / 60);
+      const sec = (s - m * 60).toFixed(1);
       return pad2(m) + ":" + sec.padStart(4, "0");
     }
+
     function fmtTs(ts) {
       if (!ts) return "";
       const d = new Date(ts);
-      return d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) + " · " + d.toLocaleDateString([], {month:"short",day:"numeric"});
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
+             " · " + d.toLocaleDateString([], { month: "short", day: "numeric" });
     }
+
     function esc(s) {
-      return s == null ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+      if (s == null) return "";
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
+
     function fmtDuration(seconds) {
       const s = Math.max(0, Math.floor(Number(seconds) || 0));
       const h = Math.floor(s / 3600);
@@ -146,10 +190,11 @@
       const el = document.getElementById("statsContent");
       try {
         const data = await (await fetch(SUMMARY_URL)).json();
-        el.innerHTML = `<ul class="frog-panel-list">
-          <li>${(data.totalUsers || 0).toLocaleString()} players · ${(data.totalRuns || 0).toLocaleString()} total runs · ${fmtDuration(data.totalPlaytime)} played</li>
-          <li>${(data.totalFrogsEaten || 0).toLocaleString()} frogs eaten · ${(data.totalScore || 0).toLocaleString()} total score</li>
-        </ul>`;
+        el.innerHTML = `
+          <ul class="frog-panel-list">
+            <li>${(data.totalUsers || 0).toLocaleString()} players · ${(data.totalRuns || 0).toLocaleString()} runs · ${fmtDuration(data.totalPlaytime)} played</li>
+            <li>${(data.totalFrogsEaten || 0).toLocaleString()} frogs eaten · ${(data.totalScore || 0).toLocaleString()} total score</li>
+          </ul>`;
       } catch {
         el.innerHTML = '<div class="leaderboard-loading">Could not load stats.</div>';
       }
@@ -173,12 +218,12 @@
       el.innerHTML = `<ul class="frog-panel-list">${slice.map(r => `
         <li>
           <strong>${esc(r.tag || "Frog")}</strong>
-          · ${fmtTime(r.time)} · ${Math.floor(r.score||0)} score · ${r.orbs||0} orbs · ${r.sheds||0} sheds
+          · ${fmtTime(r.time)} · ${Math.floor(r.score || 0)} score · ${r.orbs || 0} orbs · ${r.sheds || 0} sheds
           <span class="rr-ts">${fmtTs(r.at)}</span>
         </li>`).join("")}</ul>`;
 
       pager.style.display = "flex";
-      document.getElementById("pageInfo").textContent = `Showing ${start+1}–${end} of ${allRuns.length}`;
+      document.getElementById("pageInfo").textContent = `Showing ${start + 1}–${end} of ${allRuns.length}`;
       document.getElementById("prevBtn").disabled = currentPage === 0;
       document.getElementById("nextBtn").disabled = end >= allRuns.length;
     }
@@ -188,19 +233,23 @@
       document.getElementById("pager").style.display = "none";
       try {
         const data = await (await fetch(RECENT_RUNS_URL)).json();
-        allRuns = Array.isArray(data.runs) ? data.runs : [];
-        const now = new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
-        document.getElementById("metaLine").textContent = `Global · newest first · ${allRuns.length} runs · updated ${now}`;
+        allRuns = Array.isArray(data.runs) ? data.runs.slice(0, MAX_RUNS) : [];
+        const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        document.getElementById("metaLine").textContent =
+          `Global · newest first · ${allRuns.length} runs · updated ${now}`;
         currentPage = 0;
         renderPage(0);
       } catch {
-        document.getElementById("runsContent").innerHTML = '<div class="leaderboard-loading">Failed to load runs.</div>';
+        document.getElementById("runsContent").innerHTML =
+          '<div class="leaderboard-loading">Failed to load runs.</div>';
+        document.getElementById("metaLine").textContent = "Global · newest first";
       }
     }
 
     document.getElementById("prevBtn").addEventListener("click", () => renderPage(currentPage - 1));
     document.getElementById("nextBtn").addEventListener("click", () => renderPage(currentPage + 1));
     document.getElementById("refreshBtn").addEventListener("click", () => { loadStats(); loadRuns(); });
+
     loadStats();
     loadRuns();
   </script>
