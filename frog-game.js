@@ -5065,7 +5065,6 @@ function closeAnimatedOverlay(overlayEl) {
         </div>
 
         <div class="frog-panel-footer">
-          Color indicates upgrade type.
           <br />
           <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
             Close
