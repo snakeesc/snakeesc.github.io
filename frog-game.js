@@ -4953,21 +4953,25 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     const upgrades = [
+      // GREEN — mobility
       { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +15% jump height." },
-      { type: "buff",     label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog/orb spawn rolls, and more." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they hop 20% faster." },
       { type: "mobility", label: "✂️ Pair of Scissors", desc: "Cuts the snake in half and slows it by 20%." },
+      { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
 
-      { type: "buff",     label: "🎲 Lucky Roll", desc: "Instantly triggers a random orb buff at 1.5× duration for free." },
-      { type: "buff",     label: "🌀 Orb Whisperer", desc: "Orbs linger 30% longer." },
-      { type: "buff",     label: "🎯 Orb Flow", desc: "Increases orb spawn frequency." },
-      { type: "buff",     label: "🌩️ Orb Storm", desc: "Drops a burst of random orbs immediately." },
-      { type: "buff",     label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
-      { type: "buff",     label: "⚡ Chain Reaction", desc: "When a frog collects an orb, there's a 25% chance to trigger another buff." },
-      { type: "buff",     label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 50% chance to spawn a frog at that spot." },
-      { type: "buff",     label: "🧪 Orb Specialist", desc: "Every collected orb guarantees 1 extra frog." },
-      { type: "buff",     label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
+      // ORANGE — buff
+      { type: "buff", label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog and orb spawn rolls, and more." },
+      { type: "buff", label: "🎲 Lucky Roll", desc: "Instantly triggers a random orb buff at 1.5× duration for free." },
+      { type: "buff", label: "🌀 Orb Whisperer", desc: "Orbs linger 30% longer." },
+      { type: "buff", label: "🎯 Orb Flow", desc: "Increases orb spawn frequency." },
+      { type: "buff", label: "🌩️ Orb Storm", desc: "Drops a burst of random orbs immediately." },
+      { type: "buff", label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
+      { type: "buff", label: "⚡ Chain Reaction", desc: "When a frog collects an orb, there is a 25% chance to trigger a second buff." },
+      { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 25% chance to spawn a frog at that spot." },
+      { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb guarantees 1 extra frog." },
+      { type: "buff", label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
 
+      // RED — survival
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
       { type: "survival", label: "⚱️ Ouroboros Pact", desc: "Dead frogs have a 20% chance to drop an orb." },
@@ -4975,16 +4979,15 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "🧪 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 10–15 frogs." },
 
-      { type: "role",     label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
-      { type: "role",     label: "🎭 Role Draft", desc: "Choose between 2 random frog roles." },
-      { type: "role",     label: "🥇 Promotion", desc: "All current frogs gain +1 star immediately." },
-      { type: "role",     label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
-      { type: "role",     label: "🔷 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." },
-
-      { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." }
+      // PURPLE — role
+      { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
+      { type: "role", label: "🎭 Role Draft", desc: "Choose between 2 random frog roles." },
+      { type: "role", label: "🥇 Promotion", desc: "All current frogs gain +1 star immediately." },
+      { type: "role", label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
+      { type: "role", label: "🔷 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
     ];
 
-    const itemsPerPage = 15;
+    const itemsPerPage = 14;
     const totalPages = Math.max(1, Math.ceil(upgrades.length / itemsPerPage));
     let currentPage = 0;
 
@@ -5009,13 +5012,14 @@ function closeAnimatedOverlay(overlayEl) {
         </div>
 
         <div class="frog-panel-sub" style="color: white !important;">
-          All upgrades in one list. Color shows upgrade type.
+          All upgrades in one list, sorted by type color.
         </div>
 
         <ul class="upgrade-guide-list">
           ${pageItems.map((item) => `
             <li class="upgrade-guide-item ${getTypeClass(item.type)}">
-              <strong>${item.label}</strong> — ${item.desc}
+              <span class="upgrade-guide-label">${item.label}</span>
+              <span class="upgrade-guide-desc"> — ${item.desc}</span>
             </li>
           `).join("")}
         </ul>
