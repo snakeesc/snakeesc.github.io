@@ -132,100 +132,6 @@
   const DASHBOARD_PFP_EYES_CHANCE = 0.12; // 12% chance
   const LEADERBOARD_RESET_NOTE = "";
 
-// --------------------------------------------------
-// STARTING UPGRADE SYSTEM
-// --------------------------------------------------
-const STARTING_UPGRADE_KEY = "frogSnake_startingUpgrade";
-
-const STARTING_UPGRADES = [
-  {
-    id: "headStart",
-    label: "🐸 Head Start",
-    desc: "Spawn 10 extra frogs at the start",
-    requiredLevel: 1,
-    apply: () => { spawnExtraFrogs(10); }
-  },
-  {
-    id: "quickReflexes",
-    label: "⚡ Quick Reflexes",
-    desc: "Frogs start 10% faster",
-    requiredLevel: 3,
-    apply: () => { frogPermanentSpeedFactor *= 0.90; }
-  },
-  {
-    id: "insurance",
-    label: "💀 Insurance",
-    desc: "Start with 10% deathrattle chance",
-    requiredLevel: 5,
-    apply: () => { frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + 0.10); }
-  },
-  {
-    id: "orbSense",
-    label: "🧲 Orb Sense",
-    desc: "3 orbs spawn immediately at run start",
-    requiredLevel: 7,
-    apply: () => {
-      const w = window.innerWidth, h = window.innerHeight;
-      for (let i = 0; i < 3; i++) spawnOrbRandom(w, h);
-    }
-  },
-  {
-    id: "stormFront",
-    label: "🌩️ Storm Front",
-    desc: "Start with an Orb Storm already triggered",
-    requiredLevel: 10,
-    apply: () => {
-      const w = window.innerWidth, h = window.innerHeight;
-      for (let i = 0; i < ORB_STORM_COUNT; i++) spawnOrbRandom(w, h);
-    }
-  },
-  {
-    id: "shieldedStart",
-    label: "🛡️ Shielded Start",
-    desc: "Frogs are shielded for the first 20 seconds",
-    requiredLevel: 13,
-    apply: () => { frogShieldTime = 20 * buffDurationFactor; }
-  },
-  {
-    id: "evolved",
-    label: "⚗️ Evolved",
-    desc: "Start with one random Champion, Aura, or Magnet frog",
-    requiredLevel: 16,
-    apply: () => {
-      const roles = ["champion", "aura", "magnet"];
-      spawnRoleFrog(roles[Math.floor(Math.random() * roles.length)]);
-    }
-  },
-  {
-    id: "dynasty",
-    label: "👑 Dynasty",
-    desc: "Start with 30 extra frogs and 10% deathrattle",
-    requiredLevel: 20,
-    apply: () => {
-      spawnExtraFrogs(30);
-      frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + 0.10);
-    }
-  }
-];
-
-function getSelectedStartingUpgrade() {
-  try {
-    const saved = localStorage.getItem(STARTING_UPGRADE_KEY);
-    if (saved) {
-      const match = STARTING_UPGRADES.find(u => u.id === saved);
-      if (match) {
-        const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-        if (levelData.level >= match.requiredLevel) return match;
-      }
-    }
-  } catch (e) {}
-  return STARTING_UPGRADES[0]; // default: Head Start
-}
-
-function saveSelectedStartingUpgrade(id) {
-  try { localStorage.setItem(STARTING_UPGRADE_KEY, id); } catch (e) {}
-}
-
 function getDefaultDashboardCosmetics() {
   return {
     lastProcessedLevel: 1,
@@ -910,173 +816,112 @@ const MAX_LUCK = 30;
     mouse.follow = true;
   });
 
-// --------------------------------------------------
+  // --------------------------------------------------
   // HUD
   // --------------------------------------------------
   let inGameUIVisible = true;
 
-  // Top center — timer / frogs / score / shed countdown
   const hud = document.createElement("div");
-  hud.style.cssText = `
-    position:absolute; top:10px; left:50%; transform:translateX(-50%);
-    display:flex; gap:0; align-items:stretch;
-    background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.08);
-    border-radius:10px; overflow:hidden; z-index:100; pointer-events:none;
-    font-family:monospace; font-size:13px; color:#fff;
-  `;
+  hud.style.position = "absolute";
+  hud.style.top = "10px";
+  hud.style.left = "50%";
+  hud.style.transform = "translateX(-50%)";
+  hud.style.padding = "6px 12px";
+  hud.style.borderRadius = "8px";
+  hud.style.background = "rgba(0,0,0,0.55)";
+  hud.style.color = "#fff";
+  hud.style.fontFamily = "monospace";
+  hud.style.fontSize = "14px";
+  hud.style.zIndex = "100";
+  hud.style.pointerEvents = "none";
 
-  function makeHudCell(id) {
-    const cell = document.createElement("div");
-    cell.id = id;
-    cell.style.cssText = `
-      padding:5px 14px; display:flex; flex-direction:column;
-      align-items:center; justify-content:center; gap:1px;
-      border-right:1px solid rgba(255,255,255,0.08);
-    `;
-    return cell;
-  }
-
-  const timerCell  = makeHudCell("hud-timer");
-  const frogsCell  = makeHudCell("hud-frogs");
-  const scoreCell  = makeHudCell("hud-score");
-  const shedCell   = makeHudCell("hud-shed");
-  shedCell.style.borderRight = "none";
-
-  // reuse old variable names so the rest of the code still works
   const timerLabel = document.createElement("span");
   const frogsLabel = document.createElement("span");
   const scoreLabel = document.createElement("span");
-  const shedLabel  = document.createElement("span");
+  frogsLabel.style.marginLeft = "12px";
+  scoreLabel.style.marginLeft = "12px";
 
-  function makeHudSubLabel(text) {
-    const s = document.createElement("span");
-    s.textContent = text;
-    s.style.cssText = "font-size:9px; opacity:0.5; text-transform:uppercase; letter-spacing:0.5px;";
-    return s;
-  }
-
-  timerCell.appendChild(makeHudSubLabel("time"));
-  timerCell.appendChild(timerLabel);
-  frogsCell.appendChild(makeHudSubLabel("frogs"));
-  frogsCell.appendChild(frogsLabel);
-  scoreCell.appendChild(makeHudSubLabel("score"));
-  scoreCell.appendChild(scoreLabel);
-  shedCell.appendChild(makeHudSubLabel("next shed"));
-  shedCell.appendChild(shedLabel);
-
-  hud.appendChild(timerCell);
-  hud.appendChild(frogsCell);
-  hud.appendChild(scoreCell);
-  hud.appendChild(shedCell);
+  hud.appendChild(timerLabel);
+  hud.appendChild(frogsLabel);
+  hud.appendChild(scoreLabel);
   container.appendChild(hud);
 
-  // Top right — mini leaderboard
+  // mini leaderboard
   const miniBoard = document.createElement("div");
   miniBoard.id = "frog-mini-leaderboard";
-  miniBoard.style.cssText = `
-    position:absolute; top:10px; right:10px;
-    padding:8px 12px; border-radius:10px;
-    background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.08);
-    color:#fff; font-family:monospace; font-size:11px;
-    z-index:100; max-width:200px; pointer-events:none; line-height:1.6;
-  `;
-  miniBoard.textContent = "Loading…";
+  miniBoard.style.position = "absolute";
+  miniBoard.style.top = "10px";
+  miniBoard.style.right = "10px";
+  miniBoard.style.padding = "6px 10px";
+  miniBoard.style.borderRadius = "8px";
+  miniBoard.style.background = "rgba(0,0,0,0.55)";
+  miniBoard.style.color = "#fff";
+  miniBoard.style.fontFamily = "monospace";
+  miniBoard.style.fontSize = "11px";
+  miniBoard.style.zIndex = "100";
+  miniBoard.style.maxWidth = "220px";
+  miniBoard.style.pointerEvents = "none";
+  miniBoard.textContent = "Loading leaderboard…";
   container.appendChild(miniBoard);
 
-  // Bottom — active buff strip
-  const buffStrip = document.createElement("div");
-  buffStrip.id = "frog-buff-strip";
-  buffStrip.style.cssText = `
-    position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
-    display:flex; gap:8px; align-items:flex-end;
-    z-index:100; pointer-events:none; min-height:54px;
-  `;
-  container.appendChild(buffStrip);
-
-  // Bottom left — permanent upgrade pills
-  const permStrip = document.createElement("div");
-  permStrip.id = "frog-perm-strip";
-  permStrip.style.cssText = `
-    position:absolute; bottom:10px; left:10px;
-    display:flex; flex-wrap:wrap; gap:4px; max-width:300px;
-    z-index:100; pointer-events:none;
-  `;
-  container.appendChild(permStrip);
-
-  // stats panel kept for toggle (hidden by default)
+  // detailed stats panel (bottom-left)
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";
-  statsPanel.style.cssText = `
-    position:absolute; bottom:10px; left:10px;
-    padding:8px 12px; border-radius:10px;
-    background:rgba(0,0,0,0.75); border:1px solid #444;
-    color:#fff; font-family:monospace; font-size:11px;
-    z-index:101; max-width:260px; pointer-events:none;
-    line-height:1.4; display:none;
-  `;
+  statsPanel.style.position = "absolute";
+  statsPanel.style.bottom = "10px";
+  statsPanel.style.left = "10px";
+  statsPanel.style.padding = "8px 12px";
+  statsPanel.style.borderRadius = "10px";
+  statsPanel.style.background = "rgba(0,0,0,0.75)";
+  statsPanel.style.border = "1px solid #444";
+  statsPanel.style.color = "#fff";
+  statsPanel.style.fontFamily = "monospace";
+  statsPanel.style.fontSize = "11px";
+  statsPanel.style.zIndex = "100";
+  statsPanel.style.maxWidth = "260px";
+  statsPanel.style.pointerEvents = "none";
+  statsPanel.style.lineHeight = "1.4";
+  statsPanel.style.display = "none";
   container.appendChild(statsPanel);
 
-  // Top left — gear button that opens a small menu
+  // Small control buttons (top-left)
   const controlsBar = document.createElement("div");
-  controlsBar.style.cssText = `
-    position:absolute; top:10px; left:10px;
-    z-index:120; pointer-events:auto;
-  `;
-
-  const gearBtn = document.createElement("button");
-  gearBtn.textContent = "⚙️";
-  gearBtn.style.cssText = `
-    font-size:18px; background:rgba(0,0,0,0.65);
-    border:1px solid rgba(255,255,255,0.08); border-radius:8px;
-    width:36px; height:36px; cursor:pointer; color:#fff;
-    display:flex; align-items:center; justify-content:center;
-    padding:0; outline:none;
-  `;
-
-  const gearMenu = document.createElement("div");
-  gearMenu.style.cssText = `
-    display:none; flex-direction:column; gap:4px;
-    position:absolute; top:40px; left:0;
-    background:rgba(0,0,0,0.85); border:1px solid #444;
-    border-radius:8px; padding:6px; min-width:110px;
-  `;
+  controlsBar.style.position = "absolute";
+  controlsBar.style.top = "10px";
+  controlsBar.style.left = "10px";
+  controlsBar.style.display = "flex";
+  controlsBar.style.flexDirection = "column";
+  controlsBar.style.gap = "4px";
+  controlsBar.style.zIndex = "120";
+  controlsBar.style.pointerEvents = "auto";
 
   function makeControlButton(label) {
     const btn = document.createElement("button");
     btn.textContent = label;
-    btn.style.cssText = `
-      font-family:monospace; font-size:11px; padding:4px 8px;
-      border-radius:6px; border:1px solid #444;
-      background:rgba(255,255,255,0.05); color:#fff;
-      cursor:pointer; outline:none; text-align:left; width:100%;
-    `;
+    btn.style.fontFamily = "monospace";
+    btn.style.fontSize = "11px";
+    btn.style.padding = "3px 6px";
+    btn.style.borderRadius = "6px";
+    btn.style.border = "1px solid #444";
+    btn.style.background = "rgba(0,0,0,0.8)";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
+    btn.style.outline = "none";
     btn.onmouseenter = () => { btn.style.background = "#222"; };
-    btn.onmouseleave = () => { btn.style.background = "rgba(255,255,255,0.05)"; };
+    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.8)"; };
     return btn;
   }
 
+  //const btnHowTo = makeControlButton("How to play");
   const btnStats = makeControlButton("Toggle stats");
   const btnSound = makeControlButton("Sound: ON");
   const btnEnd   = makeControlButton("End run");
 
-  gearMenu.appendChild(btnStats);
-  gearMenu.appendChild(btnSound);
-  gearMenu.appendChild(btnEnd);
-  controlsBar.appendChild(gearBtn);
-  controlsBar.appendChild(gearMenu);
+  //controlsBar.appendChild(btnHowTo);
+  controlsBar.appendChild(btnStats);
+  controlsBar.appendChild(btnSound);
+  controlsBar.appendChild(btnEnd);
   container.appendChild(controlsBar);
-
-  let gearMenuOpen = false;
-  gearBtn.addEventListener("click", () => {
-    gearMenuOpen = !gearMenuOpen;
-    gearMenu.style.display = gearMenuOpen ? "flex" : "none";
-  });
-  document.addEventListener("click", (e) => {
-    if (gearMenuOpen && !controlsBar.contains(e.target)) {
-      gearMenuOpen = false;
-      gearMenu.style.display = "none";
-    }
-  });
 
   const gameOverBanner = document.createElement("div");
   gameOverBanner.style.position = "absolute";
@@ -1098,12 +943,18 @@ const MAX_LUCK = 30;
 
   function setInGameUIVisible(show) {
     inGameUIVisible = show;
-    if (hud)        hud.style.display        = show ? "flex"  : "none";
-    if (miniBoard)  miniBoard.style.display   = show ? "block" : "none";
-    if (controlsBar) controlsBar.style.display = show ? "block" : "none";
-    if (buffStrip)  buffStrip.style.display   = show ? "flex"  : "none";
-    if (permStrip)  permStrip.style.display   = show ? "flex"  : "none";
-    if (statsPanel) statsPanel.style.display  = (show && statsPanelVisible) ? "block" : "none";
+
+    if (hud) hud.style.display = show ? "block" : "none";
+    if (miniBoard) miniBoard.style.display = show ? "block" : "none";
+    if (controlsBar) controlsBar.style.display = show ? "flex" : "none";
+
+    if (statsPanel) {
+      if (show && statsPanelVisible) {
+        statsPanel.style.display = "block";
+      } else {
+        statsPanel.style.display = "none";
+      }
+    }
   }
 
   setInGameUIVisible(false);
@@ -1115,88 +966,12 @@ const MAX_LUCK = 30;
     return `${String(m).padStart(2, "0")}:${s.toFixed(1).padStart(4, "0")}`;
   }
 
-function updateHUD() {
+  function updateHUD() {
     if (!inGameUIVisible) return;
 
-    timerLabel.textContent = formatTime(elapsedTime);
-    frogsLabel.textContent = frogs.length;
-    scoreLabel.textContent = Math.floor(score);
-
-    // Shed countdown
-    const shedIn = Math.max(0, nextShedTime - elapsedTime);
-    shedLabel.textContent = formatTime(shedIn);
-    shedLabel.style.color = shedIn < 30 ? "#f87171" : shedIn < 60 ? "#fbbf24" : "#bef264";
-
-    updateBuffStrip();
-    updatePermStrip();
-  }
-
-  function updateBuffStrip() {
-    if (!buffStrip) return;
-    buffStrip.innerHTML = "";
-
-    const activeBuff = [
-      { label: "⚡", name: "Speed",   time: speedBuffTime,    max: SPEED_BUFF_DURATION },
-      { label: "🦘", name: "Jump",    time: jumpBuffTime,     max: JUMP_BUFF_DURATION },
-      { label: "🧊", name: "Slow",    time: snakeSlowTime,    max: SNAKE_SLOW_DURATION },
-      { label: "🤪", name: "Confuse", time: snakeConfuseTime, max: SNAKE_CONFUSE_DURATION },
-      { label: "📏", name: "Shrink",  time: snakeShrinkTime,  max: SNAKE_SHRINK_DURATION },
-      { label: "🛡️", name: "Shield",  time: frogShieldTime,   max: FROG_SHIELD_DURATION },
-      { label: "⏱️", name: "T.Slow",  time: timeSlowTime,     max: TIME_SLOW_DURATION },
-      { label: "🧲", name: "Magnet",  time: orbMagnetTime,    max: ORB_MAGNET_DURATION },
-      { label: "💰", name: "×2 Score",time: scoreMultiTime,   max: SCORE_MULTI_DURATION },
-      { label: "😱", name: "Panic",   time: panicHopTime,     max: PANIC_HOP_DURATION },
-      { label: "🩺", name: "Lifeline",time: lifeStealTime,    max: LIFE_STEAL_DURATION },
-    ].filter(b => b.time > 0);
-
-    for (const b of activeBuff) {
-      const pct = Math.min(1, b.time / (b.max * (buffDurationFactor || 1)));
-      const card = document.createElement("div");
-      card.style.cssText = `
-        display:flex; flex-direction:column; align-items:center; gap:2px;
-        background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.12);
-        border-radius:8px; padding:4px 6px; min-width:44px;
-      `;
-      card.innerHTML = `
-        <span style="font-size:16px;line-height:1;">${b.label}</span>
-        <span style="font-size:9px;color:#d6d3d1;font-family:monospace;">${b.name}</span>
-        <span style="font-size:9px;color:#bef264;font-family:monospace;">${b.time.toFixed(1)}s</span>
-        <div style="width:100%;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;">
-          <div style="width:${Math.round(pct*100)}%;height:100%;background:#bef264;border-radius:2px;transition:width 0.1s;"></div>
-        </div>
-      `;
-      buffStrip.appendChild(card);
-    }
-  }
-
-  function updatePermStrip() {
-    if (!permStrip) return;
-    permStrip.innerHTML = "";
-
-    const perms = [
-      { label: "💀 Deathrattle",  active: frogDeathRattleChance > 0, value: `${Math.round(frogDeathRattleChance*100)}%` },
-      { label: "🏹 Last Stand",   active: lastStandActive },
-      { label: "👻 Grave Wave",   active: graveWaveActive },
-      { label: "🧪 Orb Spec.",    active: orbSpecialistActive },
-      { label: "🌀 Orb Whisp.",   active: orbLingerBonusUsed },
-      { label: "⚱️ Ouroboros",    active: ouroborosPactUsed },
-      { label: "🧪 Toxic",        active: toxicBloodActive },
-      { label: "💨 2nd Wind",     active: secondWindActive },
-      { label: "⚡ Surv. Inst.",  active: survivalInstinctActive },
-      { label: "🌙 Night Bloom",  active: nightBloomActive },
-      { label: "⚡ Chain React.", active: chainReactionActive },
-    ].filter(p => p.active);
-
-    for (const p of perms) {
-      const pill = document.createElement("div");
-      pill.style.cssText = `
-        font-family:monospace; font-size:9px; color:#bef264;
-        background:rgba(0,0,0,0.65); border:1px solid rgba(190,242,100,0.3);
-        border-radius:999px; padding:2px 7px; white-space:nowrap;
-      `;
-      pill.textContent = p.value ? `${p.label} ${p.value}` : p.label;
-      permStrip.appendChild(pill);
-    }
+    timerLabel.textContent = `Time: ${formatTime(elapsedTime)}`;
+    frogsLabel.textContent = `Frogs left: ${frogs.length}`;
+    scoreLabel.textContent = `Score: ${Math.floor(score)}`;
   }
 
   function updateStatsPanel() {
@@ -5529,127 +5304,82 @@ function closeAnimatedOverlay(overlayEl) {
       closeAnimatedOverlay(leaderboardOverlay);
     }
   }
-  function buildSnakeSkinSelectorHtml() {
-    const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-    const currentLevel = levelData.level;
-    const selectedId = getSelectedSnakeSkinId();
-
-    const items = SNAKE_SKINS.map(skin => {
-      const unlocked = currentLevel >= skin.requiredLevel;
-      const isSelected = skin.id === selectedId;
-
-      return `
-        <div
-          class="snake-skin-option${isSelected ? " is-selected" : ""}${!unlocked ? " is-locked" : ""}"
-          data-skin-id="${skin.id}"
-          style="
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            cursor: ${unlocked ? "pointer" : "default"};
-            opacity: ${unlocked ? "1" : "0.4"};
-          "
-        >
-          <div style="
-            width: 56px;
-            height: 56px;
-            border-radius: 999px;
-            border: 2px solid ${isSelected ? "#84cc16" : "#44403c"};
-            background: #0f172a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: ${isSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none"};
-            transition: border-color 0.15s, box-shadow 0.15s;
-            position: relative;
-          ">
-            <img
-              src="${skin.head}"
-              alt="${skin.label}"
-              style="
-                width: 44px;
-                height: 44px;
-                image-rendering: pixelated;
-                ${!unlocked ? "filter: grayscale(1);" : ""}
-              "
-            />
-            ${!unlocked ? `
-              <div style="
-                position: absolute;
-                inset: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 18px;
-              ">🔒</div>
-            ` : ""}
-          </div>
-          <div style="font-size: 11px; color: ${isSelected ? "#bef264" : "#a8a29e"}; font-weight: ${isSelected ? "700" : "400"};">
-            ${unlocked ? skin.label : `Lv ${skin.requiredLevel}`}
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    return `
-      <div class="frog-panel-section-label">Snake Skin</div>
-      <div
-        id="snakeSkinSelector"
-        style="
-          display: flex;
-          gap: 16px;
-          align-items: flex-start;
-          margin-bottom: 8px;
-        "
-      >
-        ${items}
-      </div>
-    `;
-  }
-function buildStartingUpgradeSelectorHtml() {
+function buildSnakeSkinSelectorHtml() {
   const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
   const currentLevel = levelData.level;
-  const selectedId = getSelectedStartingUpgrade().id;
+  const selectedId = getSelectedSnakeSkinId();
 
-  const items = STARTING_UPGRADES.map(upgrade => {
-    const unlocked = currentLevel >= upgrade.requiredLevel;
-    const isSelected = upgrade.id === selectedId;
+  const items = SNAKE_SKINS.map(skin => {
+    const unlocked = currentLevel >= skin.requiredLevel;
+    const isSelected = skin.id === selectedId;
 
     return `
       <div
-        data-starting-upgrade-id="${upgrade.id}"
+        class="snake-skin-option${isSelected ? " is-selected" : ""}${!unlocked ? " is-locked" : ""}"
+        data-skin-id="${skin.id}"
         style="
-          display:flex; flex-direction:column; align-items:center; gap:4px;
-          cursor:${unlocked ? "pointer" : "default"};
-          opacity:${unlocked ? "1" : "0.4"};
+          display: inline-flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          cursor: ${unlocked ? "pointer" : "default"};
+          opacity: ${unlocked ? "1" : "0.4"};
         "
       >
         <div style="
-          width:48px; height:48px; border-radius:999px;
-          border:2px solid ${isSelected ? "#84cc16" : "#44403c"};
-          background:#0f172a; display:flex; align-items:center;
-          justify-content:center; font-size:20px; position:relative;
-          box-shadow:${isSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none"};
+          width: 56px;
+          height: 56px;
+          border-radius: 999px;
+          border: 2px solid ${isSelected ? "#84cc16" : "#44403c"};
+          background: #0f172a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          box-shadow: ${isSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none"};
+          transition: border-color 0.15s, box-shadow 0.15s;
+          position: relative;
         ">
-          ${upgrade.label.split(" ")[0]}
-          ${!unlocked ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;background:rgba(0,0,0,0.5);border-radius:999px;">🔒</div>` : ""}
+          <img
+            src="${skin.head}"
+            alt="${skin.label}"
+            style="
+              width: 44px;
+              height: 44px;
+              image-rendering: pixelated;
+              ${!unlocked ? "filter: grayscale(1);" : ""}
+            "
+          />
+          ${!unlocked ? `
+            <div style="
+              position: absolute;
+              inset: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 18px;
+            ">🔒</div>
+          ` : ""}
         </div>
-        <div style="font-size:10px; text-align:center; max-width:56px; color:${isSelected ? "#bef264" : "#a8a29e"}; font-weight:${isSelected ? "700" : "400"}; line-height:1.2;">
-          ${unlocked ? upgrade.label.split(" ").slice(1).join(" ") : `Lv ${upgrade.requiredLevel}`}
+        <div style="font-size: 11px; color: ${isSelected ? "#bef264" : "#a8a29e"}; font-weight: ${isSelected ? "700" : "400"};">
+          ${unlocked ? skin.label : `Lv ${skin.requiredLevel}`}
         </div>
       </div>
     `;
   }).join("");
 
   return `
-    <div class="frog-panel-section-label">Starting Upgrade</div>
-    <div id="startingUpgradeSelector" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-start; margin-bottom:8px;">
+    <div class="frog-panel-section-label">Snake Skin</div>
+    <div
+      id="snakeSkinSelector"
+      style="
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      "
+    >
       ${items}
-    </div>
-    <div id="startingUpgradeDesc" style="font-size:11px; color:#a8a29e; margin-bottom:10px; min-height:14px;">
-      ${STARTING_UPGRADES.find(u => u.id === selectedId)?.desc || ""}
     </div>
   `;
 }
@@ -5664,250 +5394,294 @@ async function showDashboardOverlay(cachedLeaderboard) {
   content.innerHTML = '<div class="leaderboard-loading">Loading dashboard…</div>';
 
   const localStats = loadDashboardStats();
+  const dashboardPfp = getDashboardPfp();
   const currentTag = getSavedDashboardTag() || "";
+
   const leaderboardEntries = cachedLeaderboard || await fetchLeaderboard();
   const normalizedCurrentTag = typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
-
   const leaderboardBest = (() => {
     const match = leaderboardEntries.find(e =>
       typeof e?.tag === "string" && e.tag.trim().toLowerCase() === normalizedCurrentTag
     );
-    if (!match) return { bestRun: 0, bestTime: 0, found: false, rank: -1 };
-    const rank = leaderboardEntries.indexOf(match);
+    if (!match) return { bestRun: 0, bestTime: 0, found: false };
     return {
       bestRun: Math.floor(Number(match.bestScore ?? match.score ?? 0)),
       bestTime: Number(match.bestTime ?? match.time ?? 0),
-      found: true,
-      rank: rank >= 0 ? rank + 1 : null
+      found: true
     };
   })();
+  const topTenLeaderboard = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.slice(0, 10)
+    : [];
+
+  const bestRecordRank = Array.isArray(leaderboardEntries)
+    ? leaderboardEntries.findIndex((entry) => {
+        const entryTag =
+          typeof entry?.tag === "string" ? entry.tag.trim().toLowerCase() : "";
+        const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+        const entryTime = Number(entry?.bestTime ?? entry?.time ?? 0);
+
+        return (
+          entryTag &&
+          normalizedCurrentTag &&
+          entryTag === normalizedCurrentTag &&
+          entryScore === Math.floor(Number(leaderboardBest.bestRun || 0)) &&
+          Math.abs(entryTime - Number(leaderboardBest.bestTime || 0)) < 0.01
+        );
+      })
+    : -1;
+
+  const bestRecordPrefix =
+    leaderboardBest.found && bestRecordRank >= 0
+      ? `#${bestRecordRank + 1} `
+      : "";
 
   const levelData = getDashboardLevelData(localStats.totalOrbsCollected);
-  const savedLatestRun = Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
-    ? localStats.recentRuns[0] : null;
 
-  const selectedUpgrade = getSelectedStartingUpgrade();
-  const selectedSkinId = getSelectedSnakeSkinId();
+  const savedLatestRun =
+    Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
+      ? localStats.recentRuns[0]
+      : null;
 
-  // build perm upgrade pills from last run if we have them stored
-  // (we store them in latestCompletedRun if available)
-  const permUpgradePills = (() => {
-    const items = [];
-    if (savedLatestRun) {
-      if (savedLatestRun.deathrattleChance > 0) items.push(`💀 ${Math.round(savedLatestRun.deathrattleChance * 100)}%`);
-      if (savedLatestRun.lastStand)           items.push("🏹 Last Stand");
-      if (savedLatestRun.graveWave)           items.push("👻 Grave Wave");
-      if (savedLatestRun.orbSpecialist)       items.push("🧪 Orb Spec.");
-      if (savedLatestRun.orbLinger)           items.push("🌀 Orb Whisp.");
-      if (savedLatestRun.ouroboros)           items.push("⚱️ Ouroboros");
-      if (savedLatestRun.toxicBlood)          items.push("🧪 Toxic");
-      if (savedLatestRun.survivalInstinct)    items.push("⚡ Instinct");
-      if (savedLatestRun.chainReaction)       items.push("⚡ Chain");
-      if (savedLatestRun.nightBloom)          items.push("🌙 Bloom");
-    }
-    return items;
-  })();
+  const latestRunHtml = savedLatestRun
+    ? `
+      <div class="frog-panel-section-label">Last Run</div>
+      <ul class="frog-panel-list">
+        <li style="color:#bef264;">
+          <strong>Score:</strong> <span class="stat-highlight">${Math.floor(savedLatestRun.score)}</span>
+          · <strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(savedLatestRun.time)}</span>
+          · <strong>Orbs:</strong> <span class="stat-highlight">${savedLatestRun.orbs}</span>
+          · <strong>Frogs Lost:</strong> <span class="stat-highlight">${savedLatestRun.frogsLost || 0}</span>
+        </li>
+      </ul>
+    `
+    : "";
 
-  const sep = `<div style="color:#44403c;margin:4px 0;">···········································</div>`;
+  const leaderboardTopHtml = topTenLeaderboard.length
+    ? `
+      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
+      <ul class="frog-panel-list">
+        ${topTenLeaderboard.map((entry, i) => {
+          const name =
+            (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
+              ? entry.tag
+              : (entry && typeof entry.name === "string" && entry.name.trim() !== "")
+                ? entry.name
+                : `Player ${i + 1}`;
 
-  const skinPickerHtml = SNAKE_SKINS.map(skin => {
-    const unlocked = levelData.level >= skin.requiredLevel;
-    const isSel = skin.id === selectedSkinId;
-    return `<div data-dash-skin="${skin.id}" style="
-      display:inline-flex;flex-direction:column;align-items:center;gap:3px;
-      cursor:${unlocked ? "pointer" : "default"};opacity:${unlocked ? "1" : "0.25"};
-      margin-right:8px;
-    ">
-      <div style="
-        width:36px;height:36px;border-radius:50%;background:#0c0a09;
-        border:${isSel ? "2px solid #65a30d" : "1px solid #44403c"};
-        display:flex;align-items:center;justify-content:center;font-size:15px;
-      ">${unlocked ? "🐍" : "🔒"}</div>
-      <span style="font-size:9px;color:${isSel ? "#bef264" : "#57534e"};">${unlocked ? skin.label : "Lv " + skin.requiredLevel}</span>
-    </div>`;
-  }).join("");
+          const score = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+          const time = formatDashboardDuration(Number(entry?.bestTime ?? entry?.time ?? 0));
 
-  const upgradePickerHtml = STARTING_UPGRADES.map(u => {
-    const unlocked = levelData.level >= u.requiredLevel;
-    const isSel = u.id === selectedUpgrade.id;
-    return `<div data-dash-upgrade="${u.id}" title="${u.label}&#10;${u.desc}${!unlocked ? "&#10;Requires level " + u.requiredLevel : ""}" style="
-      width:42px;height:42px;border-radius:7px;background:#0c0a09;
-      border:${isSel ? "2px solid #65a30d" : "1px solid #44403c"};
-      display:inline-flex;align-items:center;justify-content:center;
-      font-size:18px;cursor:${unlocked ? "pointer" : "default"};
-      opacity:${unlocked ? "1" : "0.22"};position:relative;margin:0 3px 3px 0;
-    ">${u.label.split(" ")[0]}${!unlocked ? `<span style="position:absolute;bottom:1px;right:2px;font-size:8px;color:#44403c;">${u.requiredLevel}</span>` : ""}</div>`;
-  }).join("");
+          const entryTag =
+            typeof entry?.tag === "string"
+              ? entry.tag.trim().toLowerCase()
+              : typeof entry?.name === "string"
+                ? entry.name.trim().toLowerCase()
+                : "";
+
+          const isMe =
+            !!normalizedCurrentTag &&
+            !!entryTag &&
+            entryTag === normalizedCurrentTag;
+
+          return `
+            <li style="${
+              isMe
+                ? "color:#bef264; font-weight:700; background:rgba(190,242,100,0.08); border:1px solid rgba(190,242,100,0.35); padding:6px 8px; border-radius:8px;"
+                : ""
+            }">
+              <strong>#${i + 1}</strong>
+              ${isMe ? "⭐ " : ""}
+              ${name} · ${score} score · ${time}
+            </li>
+          `;
+        }).join("")}
+      </ul>
+    `
+    : `
+      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
+      <ul class="frog-panel-list">
+        <li>No leaderboard entries yet.</li>
+      </ul>
+    `;
 
   content.innerHTML = `
-    <div style="font-size:11px;line-height:2;font-family:monospace;">
-
-      <div style="display:flex;gap:8px;margin-bottom:2px;">
-        <span style="color:#65a30d;user-select:none;">›</span>
-        <span style="color:#57534e;">whoami</span>
-      </div>
-      <div style="padding-left:16px;margin-bottom:8px;">
-        <span style="font-size:15px;font-weight:bold;color:#bef264;" id="dashboardCurrentTag">${currentTag || "unnamed"}</span>
-        <span style="color:#44403c;"> · lv${levelData.level}${leaderboardBest.found && leaderboardBest.rank ? " · #" + leaderboardBest.rank + " global" : ""}</span>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
-          <div style="flex:1;max-width:160px;height:3px;background:#292524;border-radius:999px;overflow:hidden;">
-            <div style="width:${levelData.progressPercent}%;height:100%;background:#65a30d;border-radius:999px;"></div>
-          </div>
-          <span style="font-size:9px;color:#57534e;">${levelData.orbsNeededForNextLevel} orbs to lv${levelData.nextLevel}</span>
-        </div>
-      </div>
-
-      ${sep}
-
-      <div style="display:flex;gap:8px;margin-bottom:2px;">
-        <span style="color:#65a30d;user-select:none;">›</span>
-        <span style="color:#57534e;">stats --all</span>
-      </div>
-      <div style="padding-left:16px;margin-bottom:8px;display:flex;flex-direction:column;gap:0;">
-        ${leaderboardBest.found ? `<div>best_score  <span style="color:#bef264;">${leaderboardBest.bestRun}</span>  <span style="color:#44403c;">· ${formatDashboardDuration(leaderboardBest.bestTime)}</span></div>` : ""}
-        <div>total_runs  <span style="color:#bef264;">${localStats.totalRuns ?? 0}</span></div>
-        <div>total_orbs  <span style="color:#bef264;">${localStats.totalOrbsCollected ?? 0}</span></div>
-        <div>playtime    <span style="color:#bef264;">${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</span></div>
-        <div>frogs_lost  <span style="color:#bef264;">${localStats.totalFrogsLost ?? 0}</span></div>
-      </div>
-
-      ${savedLatestRun ? `
-        ${sep}
-        <div style="display:flex;gap:8px;margin-bottom:2px;">
-          <span style="color:#65a30d;user-select:none;">›</span>
-          <span style="color:#57534e;">last-run --show</span>
-        </div>
-        <div style="padding-left:16px;margin-bottom:8px;">
-          <div>score   <span style="color:#bef264;">${Math.floor(savedLatestRun.score)}</span>  time <span style="color:#bef264;">${formatDashboardDuration(savedLatestRun.time)}</span></div>
-          <div>orbs    <span style="color:#bef264;">${savedLatestRun.orbs ?? 0}</span>     lost <span style="color:#bef264;">${savedLatestRun.frogsLost ?? 0}</span></div>
-          ${permUpgradePills.length ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px;">${permUpgradePills.map(p => `<span style="font-size:9px;padding:1px 6px;border-radius:999px;background:#292524;border:1px solid #44403c;color:#bef264;">${p}</span>`).join("")}</div>` : ""}
-        </div>
-      ` : ""}
-
-      ${sep}
-
-      <div style="display:flex;gap:8px;margin-bottom:2px;">
-        <span style="color:#65a30d;user-select:none;">›</span>
-        <span style="color:#57534e;">set start-upgrade</span>
-      </div>
-      <div style="padding-left:16px;margin-bottom:4px;display:flex;align-items:center;gap:10px;cursor:pointer;" id="dashStartUpgradeRow">
-        <span style="font-size:20px;" id="dashStartUpgradeEmoji">${selectedUpgrade.label.split(" ")[0]}</span>
-        <span style="color:#bef264;font-size:11px;" id="dashStartUpgradeName">${selectedUpgrade.label.split(" ").slice(1).join(" ")}</span>
-        <span style="color:#44403c;font-size:9px;margin-left:auto;">[change]</span>
-      </div>
-      <div id="dashUpgradePicker" style="padding-left:16px;display:none;margin-bottom:8px;">
-        <div style="background:#0c0a09;border:1px solid #44403c;border-radius:7px;padding:10px;">
-          <div style="display:flex;flex-wrap:wrap;gap:0;">${upgradePickerHtml}</div>
-          <div id="dashUpgradeDesc" style="font-size:10px;color:#a8a29e;margin-top:6px;line-height:1.4;">${selectedUpgrade.desc}</div>
-        </div>
-      </div>
-
-      ${sep}
-
-      <div style="display:flex;gap:8px;margin-bottom:2px;">
-        <span style="color:#65a30d;user-select:none;">›</span>
-        <span style="color:#57534e;">set snake-skin</span>
-      </div>
-      <div style="padding-left:16px;margin-bottom:8px;">
-        <div style="display:flex;align-items:flex-end;flex-wrap:wrap;">${skinPickerHtml}</div>
-      </div>
-
-      ${sep}
-
-      <div style="display:flex;gap:8px;margin-bottom:2px;">
-        <span style="color:#65a30d;user-select:none;">›</span>
-        <span style="color:#57534e;">set tag</span>
-      </div>
-      <div style="padding-left:16px;">
-        <div style="display:flex;gap:6px;align-items:center;">
-          <input
-            id="dashboardTagInput"
-            type="text"
-            maxlength="20"
-            value="${String(currentTag).replace(/"/g, "&quot;")}"
-            placeholder="enter tag"
+    <div class="frog-panel-section-label">Player Profile</div>
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:10px;
+        padding:8px 10px;
+        border:1px solid #44403c;
+        border-radius:12px;
+        background:#1c1917;
+      "
+    >
+      <div
+        style="
+          position:relative;
+          width:96px;
+          height:96px;
+          min-width:96px;
+          border-radius:999px;
+          overflow:hidden;
+          border:0px solid #57534e;
+          background:${dashboardPfp.bgColor};
+        "
+      >
+        <img
+          src="${dashboardPfp.spriteSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:1;
+          "
+        />
+        <img
+          src="${dashboardPfp.skinSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:2;
+          "
+        />
+        ${dashboardPfp.eyesSrc ? `
+          <img
+            src="${dashboardPfp.eyesSrc}"
+            alt=""
             style="
-              flex:1;padding:5px 8px;border-radius:5px;
-              border:1px solid #44403c;background:#0c0a09;
-              color:#bef264;font-family:monospace;font-size:11px;
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:3;
             "
           />
-          <button id="dashboardSaveTagBtn" style="
-            padding:5px 10px;border-radius:5px;border:1px solid #44403c;
-            background:#0c0a09;color:#a3e635;font-size:11px;
-            cursor:pointer;font-family:monospace;
-          ">save</button>
-        </div>
-        <div id="dashboardTagMessage" style="font-size:10px;min-height:14px;margin-top:3px;color:#fca5a5;"></div>
+        ` : ""}
+        ${dashboardPfp.hatSrc ? `
+          <img
+            src="${dashboardPfp.hatSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:4;
+            "
+          />
+        ` : ""}
       </div>
 
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <div>
+          <strong>Tag:</strong>
+          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag}</span>
+        </div>
+        <div>
+          <strong>Level:</strong>
+          <span class="stat-highlight">${levelData.level}</span>
+        </div>
+      </div>
     </div>
+
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
+        ${levelData.orbsNeededForNextLevel} orbs until level ${levelData.nextLevel}
+      </div>
+      <div
+        style="
+          width:100%;
+          height:8px;
+          background:#292524;
+          border:1px solid #44403c;
+          border-radius:999px;
+          overflow:hidden;
+        "
+      >
+        <div
+          style="
+            width:${levelData.progressPercent}%;
+            height:100%;
+            background:#65a30d;
+            border-radius:999px;
+          "
+        ></div>
+      </div>
+    </div>
+
+    ${buildSnakeSkinSelectorHtml()}
+
+    <div style="margin-bottom:12px;">
+      <input
+        id="dashboardTagInput"
+        type="text"
+        maxlength="12"
+        value="${String(currentTag).replace(/"/g, "&quot;")}"
+        placeholder="Enter player tag"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:5px 8px;
+          border-radius:6px;
+          border:1px solid #44403c;
+          background:#292524;
+          color:white;
+          font-family:inherit;
+          font-size:12px;
+          margin-bottom:6px;
+        "
+      />
+      <button
+        id="dashboardSaveTagBtn"
+        class="frog-btn frog-btn-secondary"
+        style="
+          width:auto;
+          padding:6px 10px;
+          font-size:12px;
+          margin-bottom:4px;
+        "
+      >
+        Save Tag
+      </button>
+      <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
+    </div>
+
+    <div class="frog-panel-section-label">Lifetime Stats</div>
+    <ul class="frog-panel-list">
+      <li>Total Orbs: <span class="stat-highlight">${localStats.totalOrbsCollected ?? 0}</span></li>
+      ${localStats.totalRuns != null ? `<li>Total Runs: <span class="stat-highlight">${localStats.totalRuns}</span></li>` : ""}
+      ${localStats.totalPlayTime != null ? `<li>Total Play Time: <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime)}</span></li>` : ""}
+      ${localStats.totalFrogsLost != null ? `<li>Total Frogs Lost: <span class="stat-highlight">${localStats.totalFrogsLost}</span></li>` : ""}
+      ${localStats.totalSnakesShed != null ? `<li>Total Snakes Shed: <span class="stat-highlight">${localStats.totalSnakesShed}</span></li>` : ""}
+    </ul>
+
+    <div class="frog-panel-section-label">Best Record</div>
+    <ul class="frog-panel-list">
+      <li>
+        ${leaderboardBest.found
+          ? `${bestRecordPrefix}${currentTag || "You"} · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
+          : "No best record yet."
+        }
+      </li>
+    </ul>
+
+    ${latestRunHtml}
+
   `;
 
-  // Wire start upgrade picker
-  const startRow = document.getElementById("dashStartUpgradeRow");
-  const upgradePicker = document.getElementById("dashUpgradePicker");
-  const upgradeDesc = document.getElementById("dashUpgradeDesc");
-  const startEmoji = document.getElementById("dashStartUpgradeEmoji");
-  const startName = document.getElementById("dashStartUpgradeName");
-
-  if (startRow && upgradePicker) {
-    startRow.addEventListener("click", () => {
-      upgradePicker.style.display = upgradePicker.style.display === "none" ? "block" : "none";
-    });
-
-    upgradePicker.querySelectorAll("[data-dash-upgrade]").forEach(el => {
-      el.addEventListener("click", () => {
-        const id = el.dataset.dashUpgrade;
-        const upgrade = STARTING_UPGRADES.find(u => u.id === id);
-        if (!upgrade) return;
-        if (levelData.level < upgrade.requiredLevel) return;
-
-        saveSelectedStartingUpgrade(id);
-
-        upgradePicker.querySelectorAll("[data-dash-upgrade]").forEach(e => {
-          e.style.border = "1px solid #44403c";
-        });
-        el.style.border = "2px solid #65a30d";
-
-        if (startEmoji) startEmoji.textContent = upgrade.label.split(" ")[0];
-        if (startName) startName.textContent = upgrade.label.split(" ").slice(1).join(" ");
-        if (upgradeDesc) upgradeDesc.textContent = upgrade.desc;
-        upgradePicker.style.display = "none";
-      });
-
-      el.addEventListener("mouseenter", () => {
-        const id = el.dataset.dashUpgrade;
-        const upgrade = STARTING_UPGRADES.find(u => u.id === id);
-        if (upgrade && upgradeDesc) upgradeDesc.textContent = upgrade.desc;
-      });
-      el.addEventListener("mouseleave", () => {
-        const current = getSelectedStartingUpgrade();
-        if (upgradeDesc) upgradeDesc.textContent = current.desc;
-      });
-    });
-  }
-
-  // Wire snake skin selector
-  if (content) {
-    content.querySelectorAll("[data-dash-skin]").forEach(el => {
-      el.addEventListener("click", () => {
-        const skinId = el.dataset.dashSkin;
-        const skin = SNAKE_SKINS.find(s => s.id === skinId);
-        if (!skin || levelData.level < skin.requiredLevel) return;
-        saveSelectedSnakeSkinId(skinId);
-        content.querySelectorAll("[data-dash-skin]").forEach(e => {
-          const isSel = e.dataset.dashSkin === skinId;
-          const circle = e.querySelector("div");
-          const label = e.querySelector("span");
-          if (circle) circle.style.border = isSel ? "2px solid #65a30d" : "1px solid #44403c";
-          if (label) label.style.color = isSel ? "#bef264" : "#57534e";
-        });
-      });
-    });
-  }
-
-  // Wire tag save
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
   const msgEl = document.getElementById("dashboardTagMessage");
@@ -5916,25 +5690,80 @@ async function showDashboardOverlay(cachedLeaderboard) {
   if (saveBtn && tagInput) {
     saveBtn.addEventListener("click", async () => {
       const validation = validateDashboardTag(tagInput.value);
+
       if (!validation.ok) {
-        if (msgEl) { msgEl.textContent = validation.message; msgEl.style.color = "#fca5a5"; }
+        if (msgEl) {
+          msgEl.textContent = validation.message;
+          msgEl.style.color = "#fca5a5";
+        }
         return;
       }
+
       const newTag = validation.tag;
       await saveDashboardTag(newTag);
-      if (currentTagEl) currentTagEl.textContent = newTag;
-      if (msgEl) { msgEl.textContent = "tag saved."; msgEl.style.color = "#bef264"; }
+
+      if (currentTagEl) {
+        currentTagEl.textContent = newTag;
+      }
+
+      if (msgEl) {
+        msgEl.textContent = "Tag saved.";
+        msgEl.style.color = "#bef264";
+      }
+
       try {
-        const bestScore = leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
-        const bestTime  = leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+        const bestScore =
+          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
+        const bestTime =
+          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+
         if (bestScore > 0 || bestTime > 0) {
           await submitScoreToServer(bestScore, bestTime, null, newTag);
         }
+
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
-      } catch (e) {}
+      } catch (e) {
+        // ignore
+      }
     });
   }
+  // Wire up snake skin selector
+  function wireSkinSelector() {
+    const skinSelector = document.getElementById("snakeSkinSelector");
+    if (!skinSelector) return;
+    skinSelector.addEventListener("click", (e) => {
+      const option = e.target.closest("[data-skin-id]");
+      if (!option) return;
+
+      const skinId = option.dataset.skinId;
+      const skin = SNAKE_SKINS.find(s => s.id === skinId);
+      if (!skin) return;
+
+      const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+      if (levelData.level < skin.requiredLevel) return;
+
+      saveSelectedSnakeSkinId(skinId);
+
+      // Update visuals without full re-render
+      skinSelector.querySelectorAll("[data-skin-id]").forEach(el => {
+        const id = el.dataset.skinId;
+        const circle = el.querySelector("div");
+        const label = el.querySelector("div + div") || el.lastElementChild;
+        const isNowSelected = id === skinId;
+
+        if (circle) {
+          circle.style.borderColor = isNowSelected ? "#84cc16" : "#44403c";
+          circle.style.boxShadow = isNowSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none";
+        }
+        if (label) {
+          label.style.color = isNowSelected ? "#bef264" : "#a8a29e";
+          label.style.fontWeight = isNowSelected ? "700" : "400";
+        }
+      });
+    });
+  }
+  wireSkinSelector();
 }
 function formatDuration(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
@@ -6670,28 +6499,8 @@ function getDashboardPfp() {
     }
   }
 
-  function showStartingUpgradeToast(label) {
-    const toast = document.createElement("div");
-    toast.textContent = `Started with: ${label}`;
-    toast.style.cssText = `
-      position:absolute; top:60px; left:50%; transform:translateX(-50%);
-      background:rgba(0,0,0,0.85); color:#bef264; font-family:monospace;
-      font-size:13px; padding:6px 16px; border-radius:8px;
-      border:1px solid rgba(190,242,100,0.4); z-index:200;
-      pointer-events:none; opacity:1; transition:opacity 0.6s;
-      white-space:nowrap;
-    `;
-    container.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = "0"; }, 2200);
-    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 2900);
-  }
-
   function openFirstUpgradeSelection() {
-    const upgrade = getSelectedStartingUpgrade();
-    initialUpgradeDone = true;
-    nextPermanentChoiceTime = elapsedTime + 60;
-    try { upgrade.apply(); } catch(e) { console.warn("Starting upgrade failed:", e); }
-    showStartingUpgradeToast(upgrade.label);
+    openUpgradeOverlay("normal", { context: "start" });
   }
 
 function startNewRun() {
