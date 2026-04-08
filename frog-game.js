@@ -5534,8 +5534,8 @@ function buildSnakeSkinSelectorHtml() {
         "
       >
         <div style="
-          width: 56px;
-          height: 56px;
+          width: 48px;
+          height: 48px;
           border-radius: 999px;
           border: 2px solid ${isSelected ? "#84cc16" : "#44403c"};
           background: #0f172a;
