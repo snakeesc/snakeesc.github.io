@@ -5345,167 +5345,294 @@ function closeAnimatedOverlay(overlayEl) {
     return pad2(m) + ":" + sStr.padStart(4, "0");
   }
 
-  async function showLeaderboardOverlay() {
-    if (!leaderboardOverlay) initLeaderboardOverlay();
-    if (!leaderboardOverlay) return;
+async function showLeaderboardOverlay() {
+  if (!leaderboardOverlay) initLeaderboardOverlay();
+  if (!leaderboardOverlay) return;
 
-    const content = document.getElementById("leaderboardContent");
-    if (!content) return;
+  const content = document.getElementById("leaderboardContent");
+  if (!content) return;
 
-    content.innerHTML = '<div class="leaderboard-loading">Loading leaderboard…</div>';
+  content.innerHTML = '<div class="leaderboard-loading">Loading leaderboard…</div>';
 
-    try {
-      const entries = await fetchLeaderboard();
-      const list = Array.isArray(entries) ? entries.slice(0, 50) : [];
+  try {
+    const entries = await fetchLeaderboard();
+    const list = Array.isArray(entries) ? entries.slice(0, 50) : [];
 
-      if (list.length === 0) {
-        content.innerHTML = `
-          <div class="frog-panel-section-label">Leaderboard</div>
-          <ul class="frog-panel-list">
-            <li>No runs yet.</li>
-          </ul>
-        `;
-        leaderboardOverlay.style.display = "flex";
-        return;
-      }
+    const localStats = loadDashboardStats();
+    const currentTag = getSavedDashboardTag() || "";
+    const normalizedCurrentTag =
+      typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
 
-      const userLabel =
-        (window.FrogGameLeaderboard &&
-          typeof window.FrogGameLeaderboard.getCurrentUserLabel === "function" &&
-          window.FrogGameLeaderboard.getCurrentUserLabel()) ||
-        null;
+    const leaderboardBest = (() => {
+      const match = list.find((e) =>
+        typeof e?.tag === "string" &&
+        e.tag.trim().toLowerCase() === normalizedCurrentTag
+      );
 
-      function normalizeTag(tag) {
-        return typeof tag === "string" ? tag.trim().toLowerCase() : "";
-      }
+      if (!match) return { bestRun: 0, bestTime: 0, found: false };
 
-      function entryMatchesUser(entry) {
-        if (!entry || !userLabel) return false;
-        const tag = normalizeTag(entry.tag);
-        const name = normalizeTag(entry.name);
-        const target = normalizeTag(userLabel);
-        return tag === target || name === target;
-      }
+      return {
+        bestRun: Math.floor(Number(match.bestScore ?? match.score ?? 0)),
+        bestTime: Number(match.bestTime ?? match.time ?? 0),
+        found: true
+      };
+    })();
 
-      function getScore(entry) {
-        if (!entry) return 0;
-        const keys = ["bestScore", "score", "maxScore", "points", "value"];
-        for (const key of keys) {
-          if (!(key in entry)) continue;
-          let v = entry[key];
-          if (typeof v === "string") v = parseFloat(v);
-          if (typeof v === "number" && isFinite(v)) return v;
-        }
-        return 0;
-      }
+    const bestRecordRank = Array.isArray(list)
+      ? list.findIndex((entry) => {
+          const entryTag =
+            typeof entry?.tag === "string" ? entry.tag.trim().toLowerCase() : "";
+          const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+          const entryTime = Number(entry?.bestTime ?? entry?.time ?? 0);
 
-      function getTime(entry) {
-        if (!entry) return 0;
-        const keys = ["bestTime", "time", "maxTime", "seconds", "duration"];
-        for (const key of keys) {
-          if (!(key in entry)) continue;
-          let v = entry[key];
-          if (typeof v === "string") v = parseFloat(v);
-          if (typeof v === "number" && isFinite(v) && v >= 0) return v;
-        }
-        return 0;
-      }
+          return (
+            entryTag &&
+            normalizedCurrentTag &&
+            entryTag === normalizedCurrentTag &&
+            entryScore === Math.floor(Number(leaderboardBest.bestRun || 0)) &&
+            Math.abs(entryTime - Number(leaderboardBest.bestTime || 0)) < 0.01
+          );
+        })
+      : -1;
 
-      function getDisplayName(entry, fallback) {
-        if (entry && typeof entry.tag === "string" && entry.tag.trim() !== "") return entry.tag;
-        if (entry && typeof entry.name === "string" && entry.name.trim() !== "") return entry.name;
-        return fallback;
-      }
+    const bestRecordPrefix =
+      leaderboardBest.found && bestRecordRank >= 0
+        ? `#${bestRecordRank + 1} `
+        : "";
 
-      const pageSize = 10;
-      let currentPage = 0;
+    const savedLatestRun =
+      Array.isArray(localStats.recentRuns) && localStats.recentRuns.length
+        ? localStats.recentRuns[0]
+        : null;
 
-      const myIndex = list.findIndex(entryMatchesUser);
-      if (myIndex >= 0) {
-        currentPage = Math.floor(myIndex / pageSize);
-      }
-
-      function renderPage(pageIndex) {
-        currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
-
-        const start = currentPage * pageSize;
-        const end = Math.min(start + pageSize, list.length);
-        const pageEntries = list.slice(start, end);
-
-        const itemsHtml = pageEntries.map((entry, idx) => {
-          const rank = start + idx + 1;
-          const name = getDisplayName(entry, `Player ${rank}`);
-          const score = Math.floor(getScore(entry));
-          const time = formatLeaderboardTime(getTime(entry));
-          const isMe = entryMatchesUser(entry);
-
-          return `
-            <li${isMe ? ' style="color:#bef264;"' : ""}>
-              <strong>#${rank}</strong>
-              ${isMe ? "⭐ " : ""}
-              ${name} · ${time} · ${score} score
-            </li>
-          `;
-        }).join("");
-
-        content.innerHTML = `
-          <div class="frog-panel-section-label">Global Leaderboard</div>
-          <div style="font-size:12px; color:#d6d3d1; margin-bottom:8px;">
-            ${LEADERBOARD_RESET_NOTE}
-          </div>
-          <ul class="frog-panel-list">
-            ${itemsHtml}
-          </ul>
-
-          <div class="frog-panel-footer">
-            <div style="margin-bottom:8px;">
-              Showing ${start + 1}-${end} of ${list.length}
-            </div>
-            <div style="display:flex; gap:8px; justify-content:center;">
-              <button
-                id="leaderboardPrevBtn"
-                class="frog-btn frog-btn-secondary"
-                style="width:auto; margin-bottom:0;"
-                ${currentPage === 0 ? "disabled" : ""}
-              >
-                Prev
-              </button>
-              <button
-                id="leaderboardNextBtn"
-                class="frog-btn frog-btn-secondary"
-                style="width:auto; margin-bottom:0;"
-                ${end >= list.length ? "disabled" : ""}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        `;
-
-        const prevBtn = document.getElementById("leaderboardPrevBtn");
-        const nextBtn = document.getElementById("leaderboardNextBtn");
-
-        if (prevBtn) {
-          prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
-        }
-        if (nextBtn) {
-          nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
-        }
-      }
-
-      renderPage(currentPage);
-    } catch (err) {
-      console.error("Failed to load leaderboard:", err);
+    if (list.length === 0) {
       content.innerHTML = `
         <div class="frog-panel-section-label">Leaderboard</div>
         <ul class="frog-panel-list">
-          <li>Failed to load leaderboard.</li>
+          <li>No runs yet.</li>
         </ul>
+
+        <div class="frog-panel-section-label">Lifetime Stats</div>
+        <div
+          style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:6px 14px;
+            margin-bottom:12px;
+            font-size:12px;
+            color:#e7e5e4;
+          "
+        >
+          <div><strong>Total Orbs:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected ?? 0}</span></div>
+          <div><strong>Total Runs:</strong> <span class="stat-highlight">${localStats.totalRuns ?? 0}</span></div>
+          <div><strong>Play Time:</strong> <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</span></div>
+          <div><strong>Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost ?? 0}</span></div>
+        </div>
+
+        <div class="frog-panel-section-label">Best Record</div>
+        <div style="margin-bottom:10px; font-size:12px; color:#e7e5e4;">
+          No best record yet.
+        </div>
+
+        <div class="frog-panel-section-label">Last Run</div>
+        <div style="font-size:12px; color:#e7e5e4;">
+          ${
+            savedLatestRun
+              ? `${Math.floor(savedLatestRun.score)} score · ${formatDashboardDuration(savedLatestRun.time)} · ${savedLatestRun.orbs} orbs`
+              : `No run recorded yet.`
+          }
+        </div>
       `;
+
+      openAnimatedOverlay(leaderboardOverlay);
+      return;
     }
 
+    const userLabel =
+      (window.FrogGameLeaderboard &&
+        typeof window.FrogGameLeaderboard.getCurrentUserLabel === "function" &&
+        window.FrogGameLeaderboard.getCurrentUserLabel()) ||
+      null;
+
+    function normalizeTag(tag) {
+      return typeof tag === "string" ? tag.trim().toLowerCase() : "";
+    }
+
+    function entryMatchesUser(entry) {
+      if (!entry || !userLabel) return false;
+      const tag = normalizeTag(entry.tag);
+      const name = normalizeTag(entry.name);
+      const target = normalizeTag(userLabel);
+      return tag === target || name === target;
+    }
+
+    function getScore(entry) {
+      if (!entry) return 0;
+      const keys = ["bestScore", "score", "maxScore", "points", "value"];
+      for (const key of keys) {
+        if (!(key in entry)) continue;
+        let v = entry[key];
+        if (typeof v === "string") v = parseFloat(v);
+        if (typeof v === "number" && isFinite(v)) return v;
+      }
+      return 0;
+    }
+
+    function getTime(entry) {
+      if (!entry) return 0;
+      const keys = ["bestTime", "time", "maxTime", "seconds", "duration"];
+      for (const key of keys) {
+        if (!(key in entry)) continue;
+        let v = entry[key];
+        if (typeof v === "string") v = parseFloat(v);
+        if (typeof v === "number" && isFinite(v) && v >= 0) return v;
+      }
+      return 0;
+    }
+
+    function getDisplayName(entry, fallback) {
+      if (entry && typeof entry.tag === "string" && entry.tag.trim() !== "") return entry.tag;
+      if (entry && typeof entry.name === "string" && entry.name.trim() !== "") return entry.name;
+      return fallback;
+    }
+
+    const pageSize = 10;
+    let currentPage = 0;
+
+    const myIndex = list.findIndex(entryMatchesUser);
+    if (myIndex >= 0) {
+      currentPage = Math.floor(myIndex / pageSize);
+    }
+
+    function renderPage(pageIndex) {
+      currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
+
+      const start = currentPage * pageSize;
+      const end = Math.min(start + pageSize, list.length);
+      const pageEntries = list.slice(start, end);
+
+      const itemsHtml = pageEntries.map((entry, idx) => {
+        const rank = start + idx + 1;
+        const name = getDisplayName(entry, `Player ${rank}`);
+        const score = Math.floor(getScore(entry));
+        const time = formatLeaderboardTime(getTime(entry));
+        const isMe = entryMatchesUser(entry);
+
+        return `
+          <tr class="leaderboard-row ${isMe ? "is-me" : ""}">
+            <td class="leaderboard-cell">${rank}</td>
+            <td class="leaderboard-cell leaderboard-name">${name}</td>
+            <td class="leaderboard-cell">${score}</td>
+            <td class="leaderboard-cell">${time}</td>
+          </tr>
+        `;
+      }).join("");
+
+      content.innerHTML = `
+        <div class="leaderboard-header">
+          <div class="leaderboard-title">Top Frogs</div>
+          <div class="leaderboard-subtitle">Best score first · best time as tie breaker</div>
+        </div>
+
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th class="leaderboard-head-cell">#</th>
+              <th class="leaderboard-head-cell">Player</th>
+              <th class="leaderboard-head-cell">Score</th>
+              <th class="leaderboard-head-cell">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+
+        <div class="leaderboard-pager">
+          <button
+            class="frog-btn frog-btn-secondary leaderboard-page-btn"
+            id="leaderboardPrevBtn"
+            ${currentPage <= 0 ? "disabled" : ""}
+          >
+            Prev
+          </button>
+
+          <div class="leaderboard-page-info">
+            Page ${currentPage + 1} / ${Math.max(1, Math.ceil(list.length / pageSize))}
+          </div>
+
+          <button
+            class="frog-btn frog-btn-secondary leaderboard-page-btn"
+            id="leaderboardNextBtn"
+            ${currentPage >= Math.ceil(list.length / pageSize) - 1 ? "disabled" : ""}
+          >
+            Next
+          </button>
+        </div>
+
+        <div class="leaderboard-legend">
+          Your row is highlighted when your saved tag matches the leaderboard.
+        </div>
+
+        <div class="frog-panel-section-label">Lifetime Stats</div>
+        <div
+          style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:6px 14px;
+            margin-bottom:12px;
+            font-size:12px;
+            color:#e7e5e4;
+          "
+        >
+          <div><strong>Total Orbs:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected ?? 0}</span></div>
+          <div><strong>Total Runs:</strong> <span class="stat-highlight">${localStats.totalRuns ?? 0}</span></div>
+          <div><strong>Play Time:</strong> <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</span></div>
+          <div><strong>Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost ?? 0}</span></div>
+        </div>
+
+        <div class="frog-panel-section-label">Best Record</div>
+        <div style="margin-bottom:10px; font-size:12px; color:#e7e5e4;">
+          ${
+            leaderboardBest.found
+              ? `<span class="stat-highlight">${bestRecordPrefix}${currentTag || "You"}</span> · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
+              : `No best record yet.`
+          }
+        </div>
+
+        <div class="frog-panel-section-label">Last Run</div>
+        <div style="font-size:12px; color:#e7e5e4;">
+          ${
+            savedLatestRun
+              ? `${Math.floor(savedLatestRun.score)} score · ${formatDashboardDuration(savedLatestRun.time)} · ${savedLatestRun.orbs} orbs`
+              : `No run recorded yet.`
+          }
+        </div>
+      `;
+
+      const prevBtn = document.getElementById("leaderboardPrevBtn");
+      const nextBtn = document.getElementById("leaderboardNextBtn");
+
+      if (prevBtn) {
+        prevBtn.onclick = () => renderPage(currentPage - 1);
+      }
+
+      if (nextBtn) {
+        nextBtn.onclick = () => renderPage(currentPage + 1);
+      }
+    }
+
+    renderPage(currentPage);
+    openAnimatedOverlay(leaderboardOverlay);
+  } catch (err) {
+    content.innerHTML = `
+      <div class="leaderboard-error">
+        Failed to load leaderboard.
+      </div>
+    `;
     openAnimatedOverlay(leaderboardOverlay);
   }
+}
 
   function hideLeaderboardOverlay() {
     if (leaderboardOverlay) {
