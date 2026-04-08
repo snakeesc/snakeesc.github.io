@@ -6612,27 +6612,7 @@ function startRunFromMenu() {
 
     recordRunToDashboard();
 
-    const finalStats = {
-      // Core run results
-      score: lastRunScore,
-      timeSeconds: lastRunTime,
-  
-      // Live buff values at the end of the run
-      deathrattleChance: frogDeathRattleChance,
-      frogSpeedFactor: frogPermanentSpeedFactor,
-      frogJumpFactor: frogPermanentJumpFactor,
-      buffDurationFactor,
-      orbSpawnIntervalFactor,
-      orbCollectorChance,
-      orbSpecialistActive,
-  
-      // Totals for this run
-      totalFrogsSpawned,
-      //totalOrbsSpawned,
-      //totalOrbsCollected,
-      //totalGhostFrogsSpawned,
-      //totalCannibalEvents,
-    };
+    const finalStats = { frogsEaten: totalFrogsSpawned };
 
     // Grab whatever tag the user has already saved (if any)
     const playerTag = getSavedPlayerTag();
