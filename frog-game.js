@@ -6770,6 +6770,10 @@ function startNewRun() {
     }
   }
 
+  applySelectedStartingBuff();
+  updateStatsPanel();
+  updateHUD();
+
   syncAudioMuteState();
   openFirstUpgradeSelection();
 }
