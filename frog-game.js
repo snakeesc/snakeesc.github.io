@@ -6308,8 +6308,14 @@ function getDashboardPfp() {
       btn.className = `frog-btn frog-upgrade-choice ${getUpgradeColorClass(choice.id)}`;
       btn.style.animationDelay = `${index * 70}ms`;
 
+      const rawLabel = String(choice.label || "").trim();
+      const parts = rawLabel.split(/<br\s*\/?>/i);
+      const titleHtml = (parts.shift() || "").trim();
+      const descHtml = parts.join("<br>").trim();
+
       btn.innerHTML = `
-        <div class="frog-upgrade-title">${choice.label}</div>
+        <div class="frog-upgrade-title">${titleHtml}</div>
+        ${descHtml ? `<div class="frog-upgrade-desc">${descHtml}</div>` : ""}
       `;
 
       btn.addEventListener("click", () => {
@@ -6324,11 +6330,7 @@ function getDashboardPfp() {
         choice.apply();
 
         if (soundEnabled) {
-          if (isEpic) {
-            playPermanentChoiceSound();
-          } else {
-            playPermanentChoiceSound();
-          }
+          playPermanentChoiceSound();
         }
 
         if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
