@@ -7054,6 +7054,312 @@ function startRunFromMenu() {
     showGameOver();
   }
 
+  function openScoreboardOverlay(entries, lastScore, lastTime, finalStats, options) {
+    if (!scoreboardOverlay || !scoreboardOverlayInner) return;
+
+    const safeOptions = options || {};
+    const { onPlayAgain, onReturnToMenu, onEditTag } = safeOptions;
+
+    const safeList = Array.isArray(entries) ? entries : [];
+
+    scoreboardOverlayInner.innerHTML = "";
+
+    const header = document.createElement("div");
+    header.className = "scoreboard-header";
+    header.innerHTML = `
+      <div class="scoreboard-title">Run summary</div>
+      <div class="scoreboard-subtitle">Leaderboard updated</div>
+    `;
+    scoreboardOverlayInner.appendChild(header);
+
+    const { index: myIndex, entry: myEntry } =
+      findMyIndexInList(safeList, lastScore, lastTime);
+
+    const summary = document.createElement("div");
+    summary.className = "scoreboard-summary";
+
+    const summaryName = getDisplayName(myEntry, "You");
+    const safeName = escapeHtml(summaryName);
+    const displayScore = Math.floor(
+      typeof lastScore === "number" ? lastScore : getEntryScore(myEntry)
+    );
+    const displayTime = formatTime(
+      typeof lastTime === "number" ? lastTime : getEntryTime(myEntry)
+    );
+
+    summary.innerHTML = `
+      <div class="summary-heading">${safeName}</div>
+      <div class="summary-metrics">
+        <div class="summary-pill">
+          <div class="pill-label">Score</div>
+          <div class="pill-value">${displayScore}</div>
+        </div>
+        <div class="summary-pill">
+          <div class="pill-label">Time survived</div>
+          <div class="pill-value">${displayTime}</div>
+        </div>
+      </div>
+    `;
+    scoreboardOverlayInner.appendChild(summary);
+
+    if (onEditTag) {
+      const tagRow = document.createElement("div");
+      tagRow.style.marginTop = "8px";
+      tagRow.style.marginBottom = "10px";
+      tagRow.style.textAlign = "center";
+
+      const tagBtn = document.createElement("button");
+      tagBtn.className = "scoreboard-btn scoreboard-btn--ghost";
+      tagBtn.textContent = "Change player tag";
+      tagBtn.addEventListener("click", () => {
+        hideScoreboardOverlay();
+        onEditTag();
+      });
+
+      tagRow.appendChild(tagBtn);
+      scoreboardOverlayInner.appendChild(tagRow);
+    }
+
+    // ----- Leaderboard table with pagination (10 per page) -----
+    const PAGE_SIZE = 10;
+    let currentPage = 0;
+    const totalEntries = safeList.length;
+    const totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
+
+    const tableWrapper = document.createElement("div");
+    tableWrapper.className = "scoreboard-table-wrapper";
+
+    const table = document.createElement("table");
+    table.className = "scoreboard-table";
+
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+
+    const thRank = document.createElement("th");
+    const thName = document.createElement("th");
+    const thTime = document.createElement("th");
+    const thScore = document.createElement("th");
+
+    thRank.textContent = "#";
+    thName.textContent = "Name";
+    thTime.textContent = "Time";
+    thScore.textContent = "Score";
+
+    for (const th of [thRank, thName, thTime, thScore]) {
+      th.className = "scoreboard-th";
+    }
+
+    headRow.appendChild(thRank);
+    headRow.appendChild(thName);
+    headRow.appendChild(thTime);
+    headRow.appendChild(thScore);
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    table.appendChild(tbody);
+    tableWrapper.appendChild(table);
+
+    const pager = document.createElement("div");
+    pager.className = "scoreboard-pager";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "◀ Prev";
+    prevBtn.className = "scoreboard-btn scoreboard-btn--ghost";
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next ▶";
+    nextBtn.className = "scoreboard-btn scoreboard-btn--ghost";
+
+    const pageInfo = document.createElement("div");
+    pageInfo.className = "scoreboard-page-info";
+
+    pager.appendChild(prevBtn);
+    pager.appendChild(pageInfo);
+    pager.appendChild(nextBtn);
+    tableWrapper.appendChild(pager);
+    scoreboardOverlayInner.appendChild(tableWrapper);
+
+    function renderPage() {
+      tbody.innerHTML = "";
+
+      if (totalEntries === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = "No scores yet.";
+        td.style.padding = "4px";
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+
+        pageInfo.textContent = "No entries";
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        prevBtn.style.opacity = "0.4";
+        nextBtn.style.opacity = "0.4";
+        return;
+      }
+
+      const startIndex = currentPage * PAGE_SIZE;
+      const endIndex = Math.min(startIndex + PAGE_SIZE, totalEntries);
+
+      for (let i = startIndex; i < endIndex; i++) {
+        const e = safeList[i];
+        if (!e) continue;
+
+        const rank = i + 1;
+        const name = getDisplayName(e, `Frog #${rank}`);
+        const score = getEntryScore(e);
+        const time = getEntryTime(e);
+
+        const tr = document.createElement("tr");
+        tr.className = "scoreboard-row";
+
+        const rankCell = document.createElement("td");
+        const nameCell = document.createElement("td");
+        const timeCell = document.createElement("td");
+        const scoreCell = document.createElement("td");
+
+        rankCell.textContent = rank;
+        nameCell.textContent = name;
+        timeCell.textContent = formatTime(time);
+        scoreCell.textContent = Math.floor(score);
+
+        rankCell.className = "scoreboard-td scoreboard-rank";
+        nameCell.className = "scoreboard-td scoreboard-name";
+        timeCell.className = "scoreboard-td";
+        scoreCell.className = "scoreboard-td scoreboard-score";
+
+        if (i === myIndex) {
+          tr.classList.add("scoreboard-row--me");
+        }
+
+        tr.appendChild(rankCell);
+        tr.appendChild(nameCell);
+        tr.appendChild(timeCell);
+        tr.appendChild(scoreCell);
+        tbody.appendChild(tr);
+      }
+
+      const fromNum = startIndex + 1;
+      const toNum = endIndex;
+      pageInfo.textContent = `Showing ${fromNum}–${toNum} of ${totalEntries}`;
+
+      prevBtn.disabled = currentPage === 0;
+      nextBtn.disabled = currentPage >= totalPages - 1;
+      prevBtn.style.opacity = prevBtn.disabled ? "0.4" : "1.0";
+      nextBtn.style.opacity = nextBtn.disabled ? "0.4" : "1.0";
+    }
+
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 0) {
+        currentPage--;
+        renderPage();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentPage < totalPages - 1) {
+        currentPage++;
+        renderPage();
+      }
+    });
+
+    renderPage();
+
+    if (finalStats && typeof finalStats === "object") {
+      const s = finalStats;
+
+      const statsBox = document.createElement("div");
+      statsBox.style.marginTop = "10px";
+      statsBox.style.padding = "8px 10px";
+      statsBox.style.borderTop = "1px solid #333";
+      statsBox.style.fontSize = "11px";
+      statsBox.style.textAlign = "left";
+
+      function fmtPct(val) {
+        return typeof val === "number" ? (val * 100).toFixed(1) + "%" : "—";
+      }
+
+      function fmtMult(val) {
+        return typeof val === "number" ? "×" + val.toFixed(2) : "—";
+      }
+
+      function fmtInt(val) {
+        return typeof val === "number" ? String(Math.floor(val)) : "—";
+      }
+
+      const deathrattleChance =
+        typeof s.deathrattleChance === "number"
+          ? s.deathrattleChance
+          : (typeof s.frogDeathRattleChance === "number"
+              ? s.frogDeathRattleChance
+              : null);
+
+      /*
+      statsBox.innerHTML = `
+        <div style="font-weight:bold; margin-bottom:4px;">Run stats</div>
+        <div>Deathrattle chance: ${fmtPct(deathrattleChance)}</div>
+        <div>Frog speed factor: ${fmtMult(s.frogSpeedFactor)}</div>
+        <div>Frog jump factor: ${fmtMult(s.frogJumpFactor)}</div>
+        <div>Buff duration: ${fmtMult(s.buffDurationFactor)}</div>
+        <div>Orb spawn interval factor: ${fmtMult(s.orbSpawnIntervalFactor)}</div>
+        <div>Total frogs spawned: ${fmtInt(s.totalFrogsSpawned)}</div>
+      `;
+
+      scoreboardOverlayInner.appendChild(statsBox);
+      */
+    }
+
+    if (onPlayAgain || onReturnToMenu || onEditTag) {
+      const actions = document.createElement("div");
+      actions.className = "scoreboard-actions";
+
+      if (onPlayAgain) {
+        const playAgainBtn = document.createElement("button");
+        playAgainBtn.className = "scoreboard-btn scoreboard-btn--primary";
+        playAgainBtn.textContent = "Play again";
+        playAgainBtn.addEventListener("click", () => {
+          hideScoreboardOverlay();
+          onPlayAgain();
+        });
+        actions.appendChild(playAgainBtn);
+      }
+
+      if (onEditTag) {
+        const tagBtn = document.createElement("button");
+        tagBtn.className = "scoreboard-btn scoreboard-btn--ghost";
+        tagBtn.textContent = "Change player tag";
+        tagBtn.addEventListener("click", () => {
+          hideScoreboardOverlay();
+          onEditTag();
+        });
+        actions.appendChild(tagBtn);
+      }
+
+      if (onReturnToMenu) {
+        const menuBtn = document.createElement("button");
+        menuBtn.className = "scoreboard-btn";
+        menuBtn.textContent = "Return to menu";
+        menuBtn.addEventListener("click", () => {
+          hideScoreboardOverlay();
+          onReturnToMenu();
+        });
+        actions.appendChild(menuBtn);
+      }
+
+      scoreboardOverlayInner.appendChild(actions);
+    }
+
+    const hint = document.createElement("div");
+    hint.textContent = "Click outside this panel to close.";
+    hint.className = "scoreboard-hint";
+    scoreboardOverlayInner.appendChild(hint);
+
+    scoreboardOverlay.style.display = "flex";
+  }
+
   function restartGame() {
     // Stop old loop
     if (animId) {
