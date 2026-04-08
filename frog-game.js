@@ -5796,9 +5796,9 @@ async function showDashboardOverlay(cachedLeaderboard) {
       <div
         style="
           position:relative;
-          width:96px;
-          height:96px;
-          min-width:96px;
+          width:48px;
+          height:48px;
+          min-width:48px;
           border-radius:999px;
           overflow:hidden;
           border:0px solid #57534e;
