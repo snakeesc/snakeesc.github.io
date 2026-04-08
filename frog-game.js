@@ -5865,12 +5865,9 @@ async function showDashboardOverlay(cachedLeaderboard) {
       >
         Save Tag
       </button>
-      <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
     </div>
-
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
-
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
