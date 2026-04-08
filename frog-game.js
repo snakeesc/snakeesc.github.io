@@ -132,6 +132,198 @@
   const DASHBOARD_PFP_EYES_CHANCE = 0.12; // 12% chance
   const LEADERBOARD_RESET_NOTE = "";
 
+const DASHBOARD_STARTING_BUFF_KEY = "frogSnake_dashboardStartingBuff_v1";
+
+const STARTING_BUFFS = [
+  {
+    id: "headStart",
+    levelRequired: 1,
+    emoji: "🐸",
+    name: "Head Start",
+    desc: "Spawn 10 extra frogs immediately"
+  },
+  {
+    id: "quickReflexes",
+    levelRequired: 3,
+    emoji: "⚡",
+    name: "Quick Reflexes",
+    desc: "Frogs start 10% faster"
+  },
+  {
+    id: "insurance",
+    levelRequired: 5,
+    emoji: "💀",
+    name: "Insurance",
+    desc: "Start with 10% deathrattle chance"
+  },
+  {
+    id: "orbSense",
+    levelRequired: 7,
+    emoji: "🧲",
+    name: "Orb Sense",
+    desc: "First 3 orbs spawn immediately at run start"
+  },
+  {
+    id: "stormFront",
+    levelRequired: 10,
+    emoji: "🌩️",
+    name: "Storm Front",
+    desc: "Start with Orb Storm already triggered"
+  },
+  {
+    id: "shieldedStart",
+    levelRequired: 13,
+    emoji: "🛡️",
+    name: "Shielded Start",
+    desc: "First 20 seconds frogs have a shield buff active"
+  },
+  {
+    id: "evolved",
+    levelRequired: 16,
+    emoji: "⚗️",
+    name: "Evolved",
+    desc: "Start with one random frog already at a role"
+  },
+  {
+    id: "dynasty",
+    levelRequired: 20,
+    emoji: "👑",
+    name: "Dynasty",
+    desc: "Start with 30 extra frogs AND 10% deathrattle"
+  }
+];
+
+function getUnlockedStartingBuffs(level) {
+  const lvl = Math.max(1, Math.floor(Number(level) || 1));
+  return STARTING_BUFFS.filter(buff => lvl >= buff.levelRequired);
+}
+
+function getDefaultStartingBuffId() {
+  return "headStart";
+}
+
+function getStartingBuffById(id) {
+  return STARTING_BUFFS.find(buff => buff.id === id) || STARTING_BUFFS[0];
+}
+
+function getSelectedStartingBuffId() {
+  try {
+    if (typeof localStorage === "undefined") return getDefaultStartingBuffId();
+    const saved = localStorage.getItem(DASHBOARD_STARTING_BUFF_KEY);
+    return saved || getDefaultStartingBuffId();
+  } catch (e) {
+    return getDefaultStartingBuffId();
+  }
+}
+
+function getSelectedStartingBuff(level) {
+  const unlocked = getUnlockedStartingBuffs(level);
+  const selectedId = getSelectedStartingBuffId();
+  const selected = unlocked.find(buff => buff.id === selectedId);
+  return selected || unlocked[0] || STARTING_BUFFS[0];
+}
+
+function saveSelectedStartingBuffId(id) {
+  try {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(DASHBOARD_STARTING_BUFF_KEY, id);
+  } catch (e) {
+    // ignore
+  }
+}
+
+function applySelectedStartingBuff() {
+  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+  const selected = getSelectedStartingBuff(levelData.level);
+  if (!selected) return;
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  switch (selected.id) {
+    case "headStart":
+      spawnExtraFrogs(10);
+      break;
+
+    case "quickReflexes":
+      frogPermanentSpeedFactor *= 0.90;
+      if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
+        frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
+      }
+      break;
+
+    case "insurance":
+      frogDeathRattleChance = Math.min(
+        MAX_DEATHRATTLE_CHANCE,
+        frogDeathRattleChance + 0.10
+      );
+      break;
+
+    case "orbSense":
+      for (let i = 0; i < 3; i++) {
+        spawnOrbRandom(width, height);
+      }
+      break;
+
+    case "stormFront":
+      for (let i = 0; i < ORB_STORM_COUNT; i++) {
+        spawnOrbRandom(width, height);
+      }
+      break;
+
+    case "shieldedStart":
+      frogShieldTime = Math.max(frogShieldTime, 20);
+      break;
+
+    case "evolved": {
+      if (!frogs.length) break;
+      const frog = frogs[Math.floor(Math.random() * frogs.length)];
+      const roles = ["champion", "aura", "magnet"];
+      const role = roles[Math.floor(Math.random() * roles.length)];
+      applySpecificRoleToFrog(frog, role);
+      break;
+    }
+
+    case "dynasty":
+      spawnExtraFrogs(30);
+      frogDeathRattleChance = Math.min(
+        MAX_DEATHRATTLE_CHANCE,
+        frogDeathRattleChance + 0.10
+      );
+      break;
+  }
+}
+
+function buildStartingBuffSelectorHtml() {
+  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+  const selected = getSelectedStartingBuff(levelData.level);
+
+  return `
+    <div class="frog-panel-section-label">Starting Buff</div>
+    <button
+      id="dashboardStartingBuffBtn"
+      class="frog-btn frog-btn-secondary"
+      style="
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:6px 10px;
+        margin-bottom:10px;
+        font-size:12px;
+        line-height:1;
+        background:#1c1917;
+        border:1px solid #44403c;
+        color:#f5f5f4;
+        width:auto;
+        min-width:0;
+      "
+    >
+      <span style="font-size:16px; line-height:1;">${selected.emoji}</span>
+      <span style="font-weight:700;">${selected.name}</span>
+    </button>
+  `;
+}
+
 function getDefaultDashboardCosmetics() {
   return {
     lastProcessedLevel: 1,
@@ -5410,9 +5602,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
       found: true
     };
   })();
-  const topTenLeaderboard = Array.isArray(leaderboardEntries)
-    ? leaderboardEntries.slice(0, 10)
-    : [];
 
   const bestRecordRank = Array.isArray(leaderboardEntries)
     ? leaderboardEntries.findIndex((entry) => {
@@ -5456,54 +5645,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </ul>
     `
     : "";
-
-  const leaderboardTopHtml = topTenLeaderboard.length
-    ? `
-      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
-      <ul class="frog-panel-list">
-        ${topTenLeaderboard.map((entry, i) => {
-          const name =
-            (entry && typeof entry.tag === "string" && entry.tag.trim() !== "")
-              ? entry.tag
-              : (entry && typeof entry.name === "string" && entry.name.trim() !== "")
-                ? entry.name
-                : `Player ${i + 1}`;
-
-          const score = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
-          const time = formatDashboardDuration(Number(entry?.bestTime ?? entry?.time ?? 0));
-
-          const entryTag =
-            typeof entry?.tag === "string"
-              ? entry.tag.trim().toLowerCase()
-              : typeof entry?.name === "string"
-                ? entry.name.trim().toLowerCase()
-                : "";
-
-          const isMe =
-            !!normalizedCurrentTag &&
-            !!entryTag &&
-            entryTag === normalizedCurrentTag;
-
-          return `
-            <li style="${
-              isMe
-                ? "color:#bef264; font-weight:700; background:rgba(190,242,100,0.08); border:1px solid rgba(190,242,100,0.35); padding:6px 8px; border-radius:8px;"
-                : ""
-            }">
-              <strong>#${i + 1}</strong>
-              ${isMe ? "⭐ " : ""}
-              ${name} · ${score} score · ${time}
-            </li>
-          `;
-        }).join("")}
-      </ul>
-    `
-    : `
-      <div class="frog-panel-section-label">Top 10 Leaderboard</div>
-      <ul class="frog-panel-list">
-        <li>No leaderboard entries yet.</li>
-      </ul>
-    `;
 
   content.innerHTML = `
     <div class="frog-panel-section-label">Player Profile</div>
@@ -5623,6 +5764,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
     </div>
 
     ${buildSnakeSkinSelectorHtml()}
+    ${buildStartingBuffSelectorHtml()}
 
     <div style="margin-bottom:12px;">
       <input
@@ -5679,7 +5821,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
     </ul>
 
     ${latestRunHtml}
-
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
@@ -5728,10 +5869,11 @@ async function showDashboardOverlay(cachedLeaderboard) {
       }
     });
   }
-  // Wire up snake skin selector
+
   function wireSkinSelector() {
     const skinSelector = document.getElementById("snakeSkinSelector");
     if (!skinSelector) return;
+
     skinSelector.addEventListener("click", (e) => {
       const option = e.target.closest("[data-skin-id]");
       if (!option) return;
@@ -5745,7 +5887,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
 
       saveSelectedSnakeSkinId(skinId);
 
-      // Update visuals without full re-render
       skinSelector.querySelectorAll("[data-skin-id]").forEach(el => {
         const id = el.dataset.skinId;
         const circle = el.querySelector("div");
@@ -5763,6 +5904,133 @@ async function showDashboardOverlay(cachedLeaderboard) {
       });
     });
   }
+
+function showStartingBuffSelector() {
+  let overlay = document.getElementById("startingBuffOverlay");
+
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "startingBuffOverlay";
+    overlay.className = "frog-overlay";
+    overlay.style.zIndex = "1200";
+    overlay.style.background = "rgba(0,0,0,0.18)";
+    overlay.innerHTML = `
+      <div
+        class="frog-panel"
+        style="
+          width:min(320px, calc(100vw - 24px));
+          max-width:320px;
+          padding:10px 10px 8px;
+          border-radius:10px;
+          background:#1c1917;
+          border:1px solid #44403c;
+          box-shadow:0 10px 30px rgba(0,0,0,0.45);
+        "
+      >
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            margin-bottom:8px;
+          "
+        >
+          <div style="font-size:13px; font-weight:700; color:#f5f5f4;">
+            Starting Buff
+          </div>
+          <button
+            id="startingBuffCloseBtn"
+            class="frog-btn frog-btn-secondary"
+            style="
+              width:auto;
+              min-width:0;
+              padding:4px 8px;
+              font-size:11px;
+              line-height:1;
+            "
+          >
+            Close
+          </button>
+        </div>
+
+        <div id="startingBuffOptions" style="display:flex; flex-direction:column; gap:6px;"></div>
+      </div>
+    `;
+    container.appendChild(overlay);
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        closeAnimatedOverlay(overlay);
+      }
+    });
+  }
+
+  const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+  const selected = getSelectedStartingBuff(levelData.level);
+  const optionsEl = overlay.querySelector("#startingBuffOptions");
+
+  optionsEl.innerHTML = STARTING_BUFFS.map(buff => {
+    const unlocked = levelData.level >= buff.levelRequired;
+    const isSelected = selected.id === buff.id;
+
+    return `
+      <button
+        class="frog-btn frog-btn-secondary starting-buff-option"
+        data-buff-id="${buff.id}"
+        ${unlocked ? "" : "disabled"}
+        style="
+          width:100%;
+          text-align:left;
+          padding:7px 9px;
+          margin:0;
+          font-size:12px;
+          line-height:1.2;
+          background:${isSelected ? "rgba(132,204,22,0.12)" : "#292524"};
+          border:1px solid ${isSelected ? "#84cc16" : "#44403c"};
+          color:${unlocked ? "#f5f5f4" : "#78716c"};
+          opacity:${unlocked ? "1" : "0.55"};
+          box-shadow:none;
+        "
+      >
+        <span style="display:inline-flex; align-items:center; gap:8px;">
+          <span style="font-size:15px; line-height:1;">${buff.emoji}</span>
+          <span style="font-weight:${isSelected ? "700" : "400"};">
+            ${buff.name}${unlocked ? "" : ` (Lv ${buff.levelRequired})`}
+          </span>
+        </span>
+      </button>
+    `;
+  }).join("");
+
+  const closeBtn = overlay.querySelector("#startingBuffCloseBtn");
+  if (closeBtn) {
+    closeBtn.onclick = () => closeAnimatedOverlay(overlay);
+  }
+
+  optionsEl.querySelectorAll(".starting-buff-option").forEach(btn => {
+    btn.onclick = () => {
+      const buffId = btn.dataset.buffId;
+      const buff = STARTING_BUFFS.find(x => x.id === buffId);
+      if (!buff) return;
+      if (levelData.level < buff.levelRequired) return;
+
+      saveSelectedStartingBuffId(buffId);
+      closeAnimatedOverlay(overlay);
+      showDashboardOverlay();
+    };
+  });
+
+  openAnimatedOverlay(overlay);
+}
+
+  const startingBuffBtn = document.getElementById("dashboardStartingBuffBtn");
+  if (startingBuffBtn) {
+    startingBuffBtn.addEventListener("click", () => {
+      showStartingBuffSelector();
+    });
+  }
+
   wireSkinSelector();
 }
 function formatDuration(seconds) {
@@ -6538,6 +6806,10 @@ function startNewRun() {
     }
   }
 
+  applySelectedStartingBuff();
+  updateStatsPanel();
+  updateHUD();
+
   syncAudioMuteState();
   openFirstUpgradeSelection();
 }
@@ -6822,7 +7094,12 @@ doubleYolkerActive = false;
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
-    createInitialFrogs(width, height).then(() => {});
+    createInitialFrogs(width, height).then(() => {
+      applySelectedStartingBuff();
+      updateStatsPanel();
+      updateHUD();
+    });
+
     initSnake(width, height);
 
     setNextOrbTime();
