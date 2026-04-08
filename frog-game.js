@@ -1515,15 +1515,31 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         return;
       }
       const newTag = validation.tag;
-      await saveDashboardTag(newTag);
-      if (tagMsg) { tagMsg.textContent = "Tag saved."; tagMsg.style.color = "#bef264"; }
+
       try {
-        if (leaderboardBest.found && (leaderboardBest.bestRun > 0 || leaderboardBest.bestTime > 0)) {
-          await submitScoreToServer(leaderboardBest.bestRun, leaderboardBest.bestTime, null, newTag);
+        const result = await submitScoreToServer(
+          Math.floor(run.score || 0),
+          run.time || 0,
+          null,
+          newTag
+        );
+
+        if (result && result._error) {
+          const msg = result.error === "tag_taken"
+            ? "That tag is already taken — try another."
+            : (result.message || "Could not save tag. Try again.");
+          if (tagMsg) { tagMsg.textContent = msg; tagMsg.style.color = "#fca5a5"; }
+          return;
         }
+
+        await saveDashboardTag(newTag);
+        if (tagMsg) { tagMsg.textContent = "Tag saved."; tagMsg.style.color = "#bef264"; }
+
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
-      } catch (e) {}
+      } catch (e) {
+        if (tagMsg) { tagMsg.textContent = "Connection error. Try again."; tagMsg.style.color = "#fca5a5"; }
+      }
     });
   }
 
@@ -6154,39 +6170,35 @@ async function showDashboardOverlay(cachedLeaderboard) {
       const validation = validateDashboardTag(tagInput.value);
 
       if (!validation.ok) {
-        if (msgEl) {
-          msgEl.textContent = validation.message;
-          msgEl.style.color = "#fca5a5";
-        }
+        if (msgEl) { msgEl.textContent = validation.message; msgEl.style.color = "#fca5a5"; }
         return;
       }
 
       const newTag = validation.tag;
-      await saveDashboardTag(newTag);
 
-      if (currentTagEl) {
-        currentTagEl.textContent = newTag;
-      }
-
-      if (msgEl) {
-        msgEl.textContent = "Tag saved.";
-        msgEl.style.color = "#bef264";
-      }
-
+      // Submit to server first — don't save locally until we know the tag is accepted
       try {
-        const bestScore =
-          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
-        const bestTime =
-          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+        const bestScore = leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
+        const bestTime  = leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+        const result = await submitScoreToServer(bestScore, bestTime, null, newTag);
 
-        if (bestScore > 0 || bestTime > 0) {
-          await submitScoreToServer(bestScore, bestTime, null, newTag);
+        if (result && result._error) {
+          const msg = result.error === "tag_taken"
+            ? "That tag is already taken — try another."
+            : (result.message || "Could not save tag. Try again.");
+          if (msgEl) { msgEl.textContent = msg; msgEl.style.color = "#fca5a5"; }
+          return;
         }
+
+        // Server accepted — now save locally
+        await saveDashboardTag(newTag);
+        if (currentTagEl) currentTagEl.textContent = newTag;
+        if (msgEl) { msgEl.textContent = "Tag saved."; msgEl.style.color = "#bef264"; }
 
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
       } catch (e) {
-        // ignore
+        if (msgEl) { msgEl.textContent = "Connection error. Try again."; msgEl.style.color = "#fca5a5"; }
       }
     });
   }

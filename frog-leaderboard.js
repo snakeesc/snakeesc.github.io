@@ -422,8 +422,9 @@
       });
       
       if (!res.ok) {
-        console.warn("Failed to submit score:", res.status, res.statusText);
-        return null;
+        const errData = await res.json().catch(() => null);
+        console.warn("Failed to submit score:", res.status, errData);
+        return { _error: true, status: res.status, ...(errData || {}) };
       }
       
       const data = await res.json().catch(() => null);
