@@ -322,15 +322,37 @@ function getDashboardLevelData(totalOrbsCollected) {
   };
 }
 
+function generateLocalTag() {
+    const first = [
+      "Amber","Arcane","Bloom","Cloud","Clover","Crimson","Echo","Ember",
+      "Frost","Golden","Jade","Lucky","Lunar","Mint","Mossy","Neon",
+      "Nova","Pixel","Rune","Shadow","Silver","Sleepy","Solar","Storm","Swampy"
+    ];
+    const second = [
+      "Bog","Croak","Drift","Fern","Flip","Frog","Glow","Hop",
+      "Jumper","Lily","Marsh","Pond","Prince","Ripple","Scout",
+      "Skipper","Sprite","Tadpole","Toad","Traveler"
+    ];
+    const num = Math.floor(100 + Math.random() * 900);
+    const tag = first[Math.floor(Math.random() * first.length)] +
+                second[Math.floor(Math.random() * second.length)] +
+                num;
+    return tag;
+  }
+
   function getSavedDashboardTag() {
     try {
       if (typeof localStorage === "undefined") return null;
       const tag = localStorage.getItem(TAG_STORAGE_KEY);
       if (tag && String(tag).trim() !== "") return String(tag).trim();
+
+      // First visit — generate and persist a random tag
+      const newTag = generateLocalTag();
+      localStorage.setItem(TAG_STORAGE_KEY, newTag);
+      return newTag;
     } catch (e) {
-      // ignore
+      return null;
     }
-    return null;
   }
 
   function recordRunToDashboard() {
@@ -5373,11 +5395,7 @@ async function showDashboardOverlay() {
 
   const localStats = loadDashboardStats();
   const dashboardPfp = getDashboardPfp();
-  const currentTag =
-    (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
-    (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
-    getSavedDashboardTag() ||
-    "";
+  const currentTag = getSavedDashboardTag() || "";
 
   const leaderboardBest = await getMyDashboardBestFromLeaderboard();
   const leaderboardEntries = await fetchLeaderboard();
@@ -5562,7 +5580,7 @@ async function showDashboardOverlay() {
       <div style="display:flex; flex-direction:column; gap:2px;">
         <div>
           <strong>Tag:</strong>
-          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "None"}</span>
+          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag}</span>
         </div>
         <div>
           <strong>Level:</strong>
