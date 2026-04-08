@@ -5943,41 +5943,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </button>
       <div id="dashboardTagMessage" style="font-size:12px; min-height:16px; color:#fca5a5;"></div>
     </div>
-
-    <div class="frog-panel-section-label">Lifetime Stats</div>
-    <div
-      style="
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:6px 14px;
-        margin-bottom:12px;
-        font-size:12px;
-        color:#e7e5e4;
-      "
-    >
-      <div><strong>Total Orbs:</strong> <span class="stat-highlight">${localStats.totalOrbsCollected ?? 0}</span></div>
-      <div><strong>Total Runs:</strong> <span class="stat-highlight">${localStats.totalRuns ?? 0}</span></div>
-      <div><strong>Play Time:</strong> <span class="stat-highlight">${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</span></div>
-      <div><strong>Frogs Lost:</strong> <span class="stat-highlight">${localStats.totalFrogsLost ?? 0}</span></div>
-    </div>
-
-    <div class="frog-panel-section-label">Best Record</div>
-    <div style="margin-bottom:10px; font-size:12px; color:#e7e5e4;">
-      ${
-        leaderboardBest.found
-          ? `<span class="stat-highlight">${bestRecordPrefix}${currentTag || "You"}</span> · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
-          : `No best record yet.`
-      }
-    </div>
-
-    <div class="frog-panel-section-label">Last Run</div>
-    <div style="font-size:12px; color:#e7e5e4;">
-      ${
-        savedLatestRun
-          ? `${Math.floor(savedLatestRun.score)} score · ${formatDashboardDuration(savedLatestRun.time)} · ${savedLatestRun.orbs} orbs`
-          : `No run recorded yet.`
-      }
-    </div>
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");
