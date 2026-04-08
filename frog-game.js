@@ -4960,14 +4960,14 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
 
       // ORANGE — buff
-      { type: "buff", label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog and orb spawn rolls, and more." },
+      { type: "buff", label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog and orb spawn rolls, and raises the odds of bonus effects." },
       { type: "buff", label: "🎲 Lucky Roll", desc: "Instantly triggers a random orb buff at 1.5× duration for free." },
       { type: "buff", label: "🌀 Orb Whisperer", desc: "Orbs linger 30% longer." },
       { type: "buff", label: "🎯 Orb Flow", desc: "Increases orb spawn frequency." },
       { type: "buff", label: "🌩️ Orb Storm", desc: "Drops a burst of random orbs immediately." },
       { type: "buff", label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
-      { type: "buff", label: "⚡ Chain Reaction", desc: "When a frog collects an orb, there is a 25% chance to trigger a second buff." },
-      { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 25% chance to spawn a frog at that spot." },
+      { type: "buff", label: "⚡ Chain Reaction", desc: "When a frog collects an orb, there is a 25% chance to trigger a second free orb buff." },
+      { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 50% chance to spawn a frog at that spot." },
       { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb guarantees 1 extra frog." },
       { type: "buff", label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
 
@@ -5006,66 +5006,48 @@ function closeAnimatedOverlay(overlayEl) {
       const pageItems = upgrades.slice(start, start + itemsPerPage);
 
       panel.innerHTML = `
-        <div class="frog-panel-title" style="color: white !important;">
+        <div class="frog-panel-title">
           Upgrades
           <span class="emoji">⚡</span>
         </div>
 
-        <div class="frog-panel-sub" style="color: white !important;">
-          All upgrades from this build.
+        <div class="frog-panel-sub">
+          All upgrades in one list, grouped by type color.
         </div>
 
         <ul class="upgrade-guide-list">
           ${pageItems.map((item) => `
             <li class="upgrade-guide-item ${getTypeClass(item.type)}">
-              <span class="upgrade-guide-label">${item.label}</span>
-              <span class="upgrade-guide-desc"> — ${item.desc}</span>
+              <strong>${item.label}</strong> — ${item.desc}
             </li>
           `).join("")}
         </ul>
 
-        <div
-          style="
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:8px;
-            margin-top:10px;
-            margin-bottom:4px;
-          "
-        >
-          <button
-            id="buffGuidePrevBtn"
-            class="frog-btn frog-btn-secondary"
-            style="width:auto; min-width:88px; margin-bottom:0;"
-            ${currentPage === 0 ? "disabled" : ""}
-          >
-            Prev
-          </button>
+        <div class="frog-panel-footer">
+          <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px;">
+            <button
+              id="buffGuidePrevBtn"
+              class="frog-btn frog-btn-secondary"
+              style="width:auto; min-width:88px; margin-bottom:0;"
+              ${currentPage === 0 ? "disabled" : ""}
+            >
+              Prev
+            </button>
 
-          <div
-            style="
-              min-width:70px;
-              text-align:center;
-              font-size:12px;
-              color:#d6d3d1;
-            "
-          >
-            ${currentPage + 1} / ${totalPages}
+            <div style="min-width:70px; text-align:center; font-size:12px;">
+              ${currentPage + 1} / ${totalPages}
+            </div>
+
+            <button
+              id="buffGuideNextBtn"
+              class="frog-btn frog-btn-secondary"
+              style="width:auto; min-width:88px; margin-bottom:0;"
+              ${currentPage === totalPages - 1 ? "disabled" : ""}
+            >
+              Next
+            </button>
           </div>
 
-          <button
-            id="buffGuideNextBtn"
-            class="frog-btn frog-btn-secondary"
-            style="width:auto; min-width:88px; margin-bottom:0;"
-            ${currentPage === totalPages - 1 ? "disabled" : ""}
-          >
-            Next
-          </button>
-        </div>
-
-        <div class="frog-panel-footer">
-          <br />
           <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
             Close
           </button>
