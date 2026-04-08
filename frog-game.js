@@ -4968,7 +4968,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." }
     ];
 
-    const itemsPerPage = 10;
+    const itemsPerPage = 15;
     const totalPages = Math.max(1, Math.ceil(upgrades.length / itemsPerPage));
     let currentPage = 0;
 
