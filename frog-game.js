@@ -1017,9 +1017,12 @@ const MAX_LUCK = 30;
     // don't treat this as a "restart" click.
     const overlayEl = document.getElementById("frog-scoreboard-overlay");
     if (overlayEl && overlayEl.contains(ev.target)) {
-      // Let the leaderboard UI handle this click (Prev/Next/etc.)
       return;
     }
+
+    // Don't restart if any panel overlay is currently open
+    const anyOverlayOpen = document.querySelector(".frog-overlay[style*='flex']");
+    if (anyOverlayOpen) return;
 
     if (gameOver) {
       startNewRun();
