@@ -5383,7 +5383,7 @@ function buildSnakeSkinSelectorHtml() {
     </div>
   `;
 }
-async function showDashboardOverlay() {
+async function showDashboardOverlay(cachedLeaderboard) {
   if (!dashboardOverlay) initDashboardOverlay();
   if (!dashboardOverlay) return;
 
@@ -5397,14 +5397,22 @@ async function showDashboardOverlay() {
   const dashboardPfp = getDashboardPfp();
   const currentTag = getSavedDashboardTag() || "";
 
-  const leaderboardBest = await getMyDashboardBestFromLeaderboard();
-  const leaderboardEntries = await fetchLeaderboard();
+  const leaderboardEntries = cachedLeaderboard || await fetchLeaderboard();
+  const normalizedCurrentTag = typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
+  const leaderboardBest = (() => {
+    const match = leaderboardEntries.find(e =>
+      typeof e?.tag === "string" && e.tag.trim().toLowerCase() === normalizedCurrentTag
+    );
+    if (!match) return { bestRun: 0, bestTime: 0, found: false };
+    return {
+      bestRun: Math.floor(Number(match.bestScore ?? match.score ?? 0)),
+      bestTime: Number(match.bestTime ?? match.time ?? 0),
+      found: true
+    };
+  })();
   const topTenLeaderboard = Array.isArray(leaderboardEntries)
     ? leaderboardEntries.slice(0, 10)
     : [];
-
-  const normalizedCurrentTag =
-    typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
 
   const bestRecordRank = Array.isArray(leaderboardEntries)
     ? leaderboardEntries.findIndex((entry) => {
