@@ -132,6 +132,100 @@
   const DASHBOARD_PFP_EYES_CHANCE = 0.12; // 12% chance
   const LEADERBOARD_RESET_NOTE = "";
 
+// --------------------------------------------------
+// STARTING UPGRADE SYSTEM
+// --------------------------------------------------
+const STARTING_UPGRADE_KEY = "frogSnake_startingUpgrade";
+
+const STARTING_UPGRADES = [
+  {
+    id: "headStart",
+    label: "🐸 Head Start",
+    desc: "Spawn 10 extra frogs at the start",
+    requiredLevel: 1,
+    apply: () => { spawnExtraFrogs(10); }
+  },
+  {
+    id: "quickReflexes",
+    label: "⚡ Quick Reflexes",
+    desc: "Frogs start 10% faster",
+    requiredLevel: 3,
+    apply: () => { frogPermanentSpeedFactor *= 0.90; }
+  },
+  {
+    id: "insurance",
+    label: "💀 Insurance",
+    desc: "Start with 10% deathrattle chance",
+    requiredLevel: 5,
+    apply: () => { frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + 0.10); }
+  },
+  {
+    id: "orbSense",
+    label: "🧲 Orb Sense",
+    desc: "3 orbs spawn immediately at run start",
+    requiredLevel: 7,
+    apply: () => {
+      const w = window.innerWidth, h = window.innerHeight;
+      for (let i = 0; i < 3; i++) spawnOrbRandom(w, h);
+    }
+  },
+  {
+    id: "stormFront",
+    label: "🌩️ Storm Front",
+    desc: "Start with an Orb Storm already triggered",
+    requiredLevel: 10,
+    apply: () => {
+      const w = window.innerWidth, h = window.innerHeight;
+      for (let i = 0; i < ORB_STORM_COUNT; i++) spawnOrbRandom(w, h);
+    }
+  },
+  {
+    id: "shieldedStart",
+    label: "🛡️ Shielded Start",
+    desc: "Frogs are shielded for the first 20 seconds",
+    requiredLevel: 13,
+    apply: () => { frogShieldTime = 20 * buffDurationFactor; }
+  },
+  {
+    id: "evolved",
+    label: "⚗️ Evolved",
+    desc: "Start with one random Champion, Aura, or Magnet frog",
+    requiredLevel: 16,
+    apply: () => {
+      const roles = ["champion", "aura", "magnet"];
+      spawnRoleFrog(roles[Math.floor(Math.random() * roles.length)]);
+    }
+  },
+  {
+    id: "dynasty",
+    label: "👑 Dynasty",
+    desc: "Start with 30 extra frogs and 10% deathrattle",
+    requiredLevel: 20,
+    apply: () => {
+      spawnExtraFrogs(30);
+      frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + 0.10);
+    }
+  }
+];
+
+function getSelectedStartingUpgrade() {
+  try {
+    const saved = localStorage.getItem(STARTING_UPGRADE_KEY);
+    if (saved) {
+      const match = STARTING_UPGRADES.find(u => u.id === saved);
+      if (match) {
+        const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
+        if (levelData.level >= match.requiredLevel) return match;
+      }
+    }
+  } catch (e) {}
+  return STARTING_UPGRADES[0]; // default: Head Start
+}
+
+function saveSelectedStartingUpgrade(id) {
+  try { localStorage.setItem(STARTING_UPGRADE_KEY, id); } catch (e) {}
+}
+
 function getDefaultDashboardCosmetics() {
   return {
     lastProcessedLevel: 1,
@@ -6500,7 +6594,13 @@ function getDashboardPfp() {
   }
 
   function openFirstUpgradeSelection() {
-    openUpgradeOverlay("normal", { context: "start" });
+    const upgrade = getSelectedStartingUpgrade();
+    initialUpgradeDone = true;
+    nextPermanentChoiceTime = elapsedTime + 60;
+    if (typeof upgrade.apply === "function") {
+      try { upgrade.apply(); } catch(e) {}
+    }
+    showStartingUpgradeToast(upgrade.label);
   }
 
 function startNewRun() {
