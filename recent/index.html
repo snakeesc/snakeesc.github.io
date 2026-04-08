@@ -80,6 +80,11 @@
 
     <div class="rr-meta" id="metaLine">Global · newest first · loading…</div>
 
+    <div class="frog-panel" style="margin-bottom:14px;">
+      <div class="frog-panel-section-label" style="margin-top:0;">Global Stats</div>
+      <div id="statsContent"><div class="leaderboard-loading">Loading…</div></div>
+    </div>
+
     <div class="frog-panel">
       <div class="frog-panel-section-label" style="margin-top:0;">Recent Runs</div>
       <div id="runsContent">
@@ -110,6 +115,7 @@
     })();
 
     const RECENT_RUNS_URL = "https://lucky-king-0d37.danielssouthworth.workers.dev/recent-runs";
+    const SUMMARY_URL     = "https://lucky-king-0d37.danielssouthworth.workers.dev/updates-summary";
     const PAGE_SIZE = 25;
     let allRuns = [], currentPage = 0;
 
@@ -126,6 +132,27 @@
     }
     function esc(s) {
       return s == null ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    function fmtDuration(seconds) {
+      const s = Math.max(0, Math.floor(Number(seconds) || 0));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (h > 0) return `${h}h ${m}m`;
+      if (m > 0) return `${m}m ${s % 60}s`;
+      return `${s}s`;
+    }
+
+    async function loadStats() {
+      const el = document.getElementById("statsContent");
+      try {
+        const data = await (await fetch(SUMMARY_URL)).json();
+        el.innerHTML = `<ul class="frog-panel-list">
+          <li>${(data.totalUsers || 0).toLocaleString()} players · ${(data.totalRuns || 0).toLocaleString()} total runs · ${fmtDuration(data.totalPlaytime)} played</li>
+          <li>${(data.totalFrogsEaten || 0).toLocaleString()} frogs eaten · ${(data.totalScore || 0).toLocaleString()} total score</li>
+        </ul>`;
+      } catch {
+        el.innerHTML = '<div class="leaderboard-loading">Could not load stats.</div>';
+      }
     }
 
     function renderPage(pageIndex) {
@@ -173,7 +200,8 @@
 
     document.getElementById("prevBtn").addEventListener("click", () => renderPage(currentPage - 1));
     document.getElementById("nextBtn").addEventListener("click", () => renderPage(currentPage + 1));
-    document.getElementById("refreshBtn").addEventListener("click", loadRuns);
+    document.getElementById("refreshBtn").addEventListener("click", () => { loadStats(); loadRuns(); });
+    loadStats();
     loadRuns();
   </script>
 </body>
