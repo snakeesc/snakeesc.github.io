@@ -545,18 +545,8 @@ function generateLocalTag() {
   }
 
   function getSavedDashboardTag() {
-    try {
-      if (typeof localStorage === "undefined") return null;
-      const tag = localStorage.getItem(TAG_STORAGE_KEY);
-      if (tag && String(tag).trim() !== "") return String(tag).trim();
-
-      // First visit — generate and persist a random tag
-      const newTag = generateLocalTag();
-      localStorage.setItem(TAG_STORAGE_KEY, newTag);
-      return newTag;
-    } catch (e) {
-      return null;
-    }
+    // Delegate to the single canonical getter so there is one source of truth.
+    return getSavedPlayerTag();
   }
 
   function recordRunToDashboard() {
@@ -837,17 +827,26 @@ function rollFrogCosmetics() {
   // PLAYER TAG STORAGE (client-side only)
   // --------------------------------------------------
 
+  /**
+   * Always returns a tag string.
+   * On first visit a random tag is generated and persisted so the player
+   * always has an identity before they choose a custom one.
+   * Existing saved tags are never modified.
+   */
   function getSavedPlayerTag() {
     try {
-      if (typeof localStorage === "undefined") return null;
+      if (typeof localStorage === "undefined") return generateLocalTag();
       const val = localStorage.getItem(TAG_STORAGE_KEY);
       if (val && String(val).trim() !== "") {
         return String(val).trim();
       }
+      // First visit — generate and persist a random tag
+      const newTag = generateLocalTag();
+      localStorage.setItem(TAG_STORAGE_KEY, newTag);
+      return newTag;
     } catch (e) {
-      // ignore
+      return generateLocalTag();
     }
-    return null;
   }
 
   const container = document.getElementById("frog-game");
@@ -1406,7 +1405,9 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     sheds: Number(snakeShedCount) || 0
   };
 
-  const playerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
+  // Use a mutable variable so the tag-save handler can update it without
+  // the overlay needing to close/reopen (fixes a stale-closure bug).
+  let activePlayerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
   const localStats = loadDashboardStats();
   const currentTag = getSavedDashboardTag() || "";
 
@@ -1421,10 +1422,10 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   if (myEntry && myEntry.userId) {
     rankIdx = list.findIndex(e => e && e.userId === myEntry.userId);
   }
-  if (rankIdx === -1 && playerTag) {
+  if (rankIdx === -1 && activePlayerTag) {
     rankIdx = list.findIndex(e =>
       typeof e?.tag === "string" &&
-      e.tag.trim().toLowerCase() === playerTag.trim().toLowerCase()
+      e.tag.trim().toLowerCase() === activePlayerTag.trim().toLowerCase()
     );
   }
   if (rankIdx !== -1) {
@@ -1534,7 +1535,10 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         }
 
         await saveDashboardTag(newTag);
-        if (tagMsg) { tagMsg.textContent = "Tag saved."; tagMsg.style.color = "#bef264"; }
+        // Update the live mutable reference so entryMatchesUser stays correct
+        activePlayerTag = newTag;
+        if (myEntry) myEntry.tag = newTag;
+        if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#bef264"; }
 
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
@@ -1558,9 +1562,14 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   }
 
   function entryMatchesUser(entry) {
-    if (!entry || !playerTag) return false;
-    return normalizeTag(entry.tag) === normalizeTag(playerTag) ||
-           normalizeTag(entry.name) === normalizeTag(playerTag);
+    if (!entry) return false;
+    // Prefer userId — stable even after a tag rename
+    if (myEntry && myEntry.userId && entry.userId) {
+      return entry.userId === myEntry.userId;
+    }
+    if (!activePlayerTag) return false;
+    return normalizeTag(entry.tag) === normalizeTag(activePlayerTag) ||
+           normalizeTag(entry.name) === normalizeTag(activePlayerTag);
   }
 
   function getScore(entry) {
@@ -5947,9 +5956,17 @@ async function showDashboardOverlay(cachedLeaderboard) {
   const leaderboardEntries = cachedLeaderboard || await fetchLeaderboard();
   const normalizedCurrentTag = typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
   const leaderboardBest = (() => {
-    const match = leaderboardEntries.find(e =>
-      typeof e?.tag === "string" && e.tag.trim().toLowerCase() === normalizedCurrentTag
-    );
+    // Prefer userId match (stable across renames), fall back to tag-string match
+    const lastMe = window.FrogGameLeaderboard && window.FrogGameLeaderboard._lastMyEntry;
+    let match = null;
+    if (lastMe && lastMe.userId) {
+      match = leaderboardEntries.find(e => e && e.userId === lastMe.userId);
+    }
+    if (!match && normalizedCurrentTag) {
+      match = leaderboardEntries.find(e =>
+        typeof e?.tag === "string" && e.tag.trim().toLowerCase() === normalizedCurrentTag
+      );
+    }
     if (!match) return { bestRun: 0, bestTime: 0, found: false };
     return {
       bestRun: Math.floor(Number(match.bestScore ?? match.score ?? 0)),
