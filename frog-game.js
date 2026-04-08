@@ -5812,6 +5812,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </button>
     </div>
     <div class="frog-panel-section-label">Stats</div>
+
     <div class="dashboard-stats-inline">
       <div class="dashboard-stats-row">
         <span>Total Orbs</span>
@@ -5829,35 +5830,44 @@ async function showDashboardOverlay(cachedLeaderboard) {
         <span>Frogs Lost</span>
         <strong>${localStats.totalFrogsLost ?? 0}</strong>
       </div>
-      <div class="dashboard-stats-row">
-        <span>Best Record</span>
-        <strong>${
-          leaderboardBest.found
-            ? `${bestRecordPrefix}${Math.floor(leaderboardBest.bestRun)}`
-            : "—"
-        }</strong>
-      </div>
-      <div class="dashboard-stats-row">
-        <span>Last Run</span>
-        <strong>${
-          savedLatestRun
-            ? `${Math.floor(savedLatestRun.score)}`
-            : "—"
-        }</strong>
-      </div>
     </div>
 
-    <div class="dashboard-stats-meta">
-      ${
-        leaderboardBest.found
-          ? `<span>Best time: ${formatDashboardDuration(leaderboardBest.bestTime)}</span>`
-          : `<span>Best time: —</span>`
-      }
-      ${
-        savedLatestRun
-          ? `<span>Last run: ${formatDashboardDuration(savedLatestRun.time)} · ${savedLatestRun.orbs} orbs</span>`
-          : `<span>Last run: —</span>`
-      }
+    <div class="dashboard-stats-featured">
+      <div class="dashboard-stats-featured-row">
+        <span class="dashboard-stats-featured-label">Best Record</span>
+        <strong class="dashboard-stats-featured-value">
+          ${
+            leaderboardBest.found
+              ? `${bestRecordPrefix}${Math.floor(leaderboardBest.bestRun)} score`
+              : "—"
+          }
+        </strong>
+        <span class="dashboard-stats-featured-sub">
+          ${
+            leaderboardBest.found
+              ? `${formatDashboardDuration(leaderboardBest.bestTime)}`
+              : "No best run yet"
+          }
+        </span>
+      </div>
+
+      <div class="dashboard-stats-featured-row">
+        <span class="dashboard-stats-featured-label">Last Run</span>
+        <strong class="dashboard-stats-featured-value">
+          ${
+            savedLatestRun
+              ? `${Math.floor(savedLatestRun.score)} score`
+              : "—"
+          }
+        </strong>
+        <span class="dashboard-stats-featured-sub">
+          ${
+            savedLatestRun
+              ? `${formatDashboardDuration(savedLatestRun.time)} · ${savedLatestRun.orbs} orbs`
+              : "No run yet"
+          }
+        </span>
+      </div>
     </div>
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
