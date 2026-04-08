@@ -5956,8 +5956,20 @@ async function showDashboardOverlay(cachedLeaderboard) {
         </strong>
       </div>
     </div>
+
+    <div class="frog-panel-section-label">Run Summary</div>
+    <div class="dashboard-stats-inline">
+      <div class="dashboard-stats-row">
+        <span>Orbs Collected</span>
+        <strong>${savedLatestRun ? savedLatestRun.orbs : "—"}</strong>
+      </div>
+      <div class="dashboard-stats-row">
+        <span>Frogs Lost</span>
+        <strong>${savedLatestRun ? savedLatestRun.frogsLost : "—"}</strong>
+      </div>
+    </div>
     
-  `; //
+  `; 
 
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
