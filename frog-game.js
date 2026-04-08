@@ -1298,6 +1298,123 @@ const MAX_LUCK = 30;
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
+function initEndGameSummaryOverlay() {
+  if (endGameSummaryOverlay) return;
+
+  endGameSummaryOverlay = document.createElement("div");
+  endGameSummaryOverlay.id = "endGameSummaryOverlay";
+  endGameSummaryOverlay.className = "frog-overlay";
+  endGameSummaryOverlay.innerHTML = `
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Run Summary
+        <span class="emoji">📋</span>
+      </div>
+
+      <div class="frog-panel-sub">
+        A quick look at how that run went.
+      </div>
+
+      <div id="endGameSummaryContent"></div>
+
+      <div class="frog-panel-footer">
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+          <button id="endSummaryDashboardBtn" class="frog-btn frog-btn-primary" style="width:auto; min-width:140px; margin-bottom:0;">
+            Open Dashboard
+          </button>
+          <button id="endSummaryPlayAgainBtn" class="frog-btn frog-btn-secondary" style="width:auto; min-width:140px; margin-bottom:0;">
+            Play Again
+          </button>
+          <button id="endSummaryMenuBtn" class="frog-btn frog-btn-secondary" style="width:auto; min-width:140px; margin-bottom:0;">
+            Main Menu
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(endGameSummaryOverlay);
+
+  endGameSummaryOverlay.addEventListener("click", (e) => {
+    if (e.target === endGameSummaryOverlay) {
+      hideEndGameSummaryOverlay();
+      showDashboardOverlay();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (
+      endGameSummaryOverlay &&
+      endGameSummaryOverlay.style.display === "flex" &&
+      e.key === "Escape"
+    ) {
+      hideEndGameSummaryOverlay();
+      showDashboardOverlay();
+    }
+  });
+
+  const dashboardBtn = document.getElementById("endSummaryDashboardBtn");
+  const playAgainBtn = document.getElementById("endSummaryPlayAgainBtn");
+  const menuBtn = document.getElementById("endSummaryMenuBtn");
+
+  if (dashboardBtn) {
+    dashboardBtn.addEventListener("click", () => {
+      hideEndGameSummaryOverlay();
+      showDashboardOverlay();
+    });
+  }
+
+  if (playAgainBtn) {
+    playAgainBtn.addEventListener("click", () => {
+      hideEndGameSummaryOverlay();
+      startNewRun();
+    });
+  }
+
+  if (menuBtn) {
+    menuBtn.addEventListener("click", () => {
+      hideEndGameSummaryOverlay();
+      showMainMenu();
+    });
+  }
+}
+
+function hideEndGameSummaryOverlay() {
+  if (endGameSummaryOverlay) {
+    closeAnimatedOverlay(endGameSummaryOverlay);
+  }
+}
+
+function showEndGameSummaryOverlay() {
+  if (!endGameSummaryOverlay) initEndGameSummaryOverlay();
+  if (!endGameSummaryOverlay) return;
+
+  const content = document.getElementById("endGameSummaryContent");
+  if (!content) return;
+
+  const run = latestCompletedRun || {
+    score: Math.floor(Number(lastRunScore) || 0),
+    time: Number(lastRunTime) || 0,
+    orbs: Number(totalOrbsCollected) || 0,
+    frogsLost: Math.max(0, Number(totalFrogsSpawned) || 0)
+  };
+
+  content.innerHTML = `
+    <div class="frog-panel-section-label">Overview</div>
+    <ul class="frog-panel-list" style="margin-bottom:10px;">
+      <li><strong>Score:</strong> <span class="stat-highlight">${Math.floor(run.score || 0)}</span></li>
+      <li><strong>Time:</strong> <span class="stat-highlight">${formatDashboardDuration(run.time || 0)}</span></li>
+    </ul>
+
+    <div class="frog-panel-section-label">Run Stats</div>
+    <ul class="frog-panel-list">
+      <li><strong>Orbs Collected:</strong> <span class="stat-highlight">${run.orbs || 0}</span></li>
+      <li><strong>Frogs Lost:</strong> <span class="stat-highlight">${run.frogsLost || 0}</span></li>
+    </ul>
+  `;
+
+  openAnimatedOverlay(endGameSummaryOverlay);
+}
 function clampLuck(value) {
   return Math.max(0, Math.min(MAX_LUCK, Math.floor(value || 0)));
 }
@@ -4227,6 +4344,7 @@ function samplePathAtDistance(path, startIdx, dist) {
   // Leaderboard overlay (UI shell)
   let leaderboardOverlay = null;
   let dashboardOverlay = null;
+  let endGameSummaryOverlay = null;
 
   function getUpgradeChoices() {
     const neon = "#4defff";
@@ -6928,7 +7046,7 @@ function startRunFromMenu() {
       updateMiniLeaderboard(topList);
       hideGameOver();
 
-      showDashboardOverlay(topList);
+      showEndGameSummaryOverlay();
     })();
 
     showGameOver();
