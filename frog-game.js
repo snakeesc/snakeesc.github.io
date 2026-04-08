@@ -306,27 +306,31 @@ function buildStartingBuffSelectorHtml() {
 
   return `
     <div class="frog-panel-section-label">Starting Buff</div>
-    <button
-      id="dashboardStartingBuffBtn"
-      class="frog-btn frog-btn-secondary"
-      style="
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        padding:6px 10px;
-        margin-bottom:10px;
-        font-size:12px;
-        line-height:1;
-        background:#1c1917;
-        border:1px solid #44403c;
-        color:#f5f5f4;
-        width:auto;
-        min-width:0;
-      "
-    >
-      <span style="font-size:16px; line-height:1;">${selected.emoji}</span>
-      <span style="font-weight:700;">${selected.name}</span>
-    </button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <button
+        id="dashboardStartingBuffBtn"
+        class="frog-btn frog-btn-secondary"
+        style="
+          display:inline-flex;
+          align-items:center;
+          gap:8px;
+          padding:6px 10px;
+          font-size:12px;
+          line-height:1;
+          background:#1c1917;
+          border:1px solid #44403c;
+          color:#f5f5f4;
+          width:auto;
+          min-width:0;
+          flex-shrink:0;
+          margin-bottom:0;
+        "
+      >
+        <span style="font-size:16px; line-height:1;">${selected.emoji}</span>
+        <span style="font-weight:700;">${selected.name}</span>
+      </button>
+      <span style="font-size:12px; color:#a8a29e; line-height:1.4;">${selected.desc}</span>
+    </div>
   `;
 }
 
