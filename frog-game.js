@@ -25,6 +25,8 @@
   const updateMiniLeaderboard  = LMod.updateMiniLeaderboard  || function(){};
   const openScoreboardOverlay  = LMod.openScoreboardOverlay  || function(){};
   const hideScoreboardOverlay  = LMod.hideScoreboardOverlay  || function(){};
+  const fetchRecentRuns        = LMod.fetchRecentRuns        || (async () => []);
+  const submitRecentRun        = LMod.submitRecentRun        || (async () => null);
 
   const Config = window.FrogGameConfig;
   const Utils = window.FrogGameUtils || {};
@@ -588,6 +590,16 @@ function generateLocalTag() {
     stats.recentRuns = stats.recentRuns.slice(0, 5);
 
     saveDashboardStats(stats);
+
+    // Also push to global recent-runs feed on the server
+    submitRecentRun({
+      tag:       getSavedPlayerTag ? getSavedPlayerTag() : null,
+      score:     runScore,
+      time:      runTime,
+      orbs:      runOrbs,
+      frogsLost: frogsLostThisRun,
+      sheds:     snakeShedCount,
+    });
   }
 
   function getLeaderboardEntryScore(entry) {
@@ -4977,6 +4989,13 @@ function closeAnimatedOverlay(overlayEl) {
       });
     }
 
+    const btnRecentRuns = document.getElementById("btnRecentRuns");
+    if (btnRecentRuns) {
+      btnRecentRuns.addEventListener("click", () => {
+        showRecentRunsOverlay();
+      });
+    }
+
     document.addEventListener("keydown", (e) => {
       if (mainMenuOverlay && mainMenuOverlay.style.display === "flex" && e.key === "Enter") {
         startRunFromMenu();
@@ -5627,6 +5646,100 @@ function closeAnimatedOverlay(overlayEl) {
   function hideLeaderboardOverlay() {
     if (leaderboardOverlay) {
       closeAnimatedOverlay(leaderboardOverlay);
+    }
+  }
+
+  // --------------------------------------------------
+  // RECENT RUNS OVERLAY
+  // --------------------------------------------------
+  let recentRunsOverlay = null;
+
+  function initRecentRunsOverlay() {
+    if (recentRunsOverlay) return;
+    recentRunsOverlay = document.getElementById("recentRunsOverlay");
+    if (!recentRunsOverlay) return;
+
+    const closeBtn = document.getElementById("recentRunsCloseBtn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => closeAnimatedOverlay(recentRunsOverlay));
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (recentRunsOverlay && recentRunsOverlay.style.display === "flex" && e.key === "Escape") {
+        closeAnimatedOverlay(recentRunsOverlay);
+      }
+    });
+  }
+
+  function pad2RR(n) { return n < 10 ? "0" + n : String(n); }
+  function fmtTimeRR(s) {
+    if (!s || !isFinite(s) || s <= 0) return "00:00.0";
+    const m = Math.floor(s / 60);
+    const sec = (s - m * 60).toFixed(1);
+    return pad2RR(m) + ":" + sec.padStart(4, "0");
+  }
+  function fmtTsRR(ts) {
+    if (!ts) return "";
+    const d = new Date(ts);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
+           " · " + d.toLocaleDateString([], { month: "short", day: "numeric" });
+  }
+  function escHtml(str) {
+    if (str == null) return "";
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  async function showRecentRunsOverlay() {
+    if (!recentRunsOverlay) initRecentRunsOverlay();
+    if (!recentRunsOverlay) return;
+
+    const content = document.getElementById("recentRunsContent");
+    if (!content) return;
+
+    content.innerHTML = '<div class="leaderboard-loading">Loading recent runs…</div>';
+    openAnimatedOverlay(recentRunsOverlay);
+
+    try {
+      const runs = await fetchRecentRuns();
+
+      if (!runs || runs.length === 0) {
+        content.innerHTML = '<div class="leaderboard-loading">No runs yet — be the first!</div>';
+        return;
+      }
+
+      const rows = runs.map((r, i) => `
+        <tr class="scoreboard-row">
+          <td class="scoreboard-td scoreboard-rank">${i + 1}</td>
+          <td class="scoreboard-td scoreboard-name">${escHtml(r.tag || "Frog")}</td>
+          <td class="scoreboard-td scoreboard-score">${Math.floor(r.score || 0)}</td>
+          <td class="scoreboard-td">${fmtTimeRR(r.time)}</td>
+          <td class="scoreboard-td">${r.orbs || 0}</td>
+          <td class="scoreboard-td">${r.sheds || 0}</td>
+          <td class="scoreboard-td" style="font-size:10px;color:#888;white-space:nowrap;">${fmtTsRR(r.at)}</td>
+        </tr>
+      `).join("");
+
+      content.innerHTML = `
+        <div style="overflow-x:auto;max-height:420px;overflow-y:auto;">
+          <table class="scoreboard-table" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th class="scoreboard-th">#</th>
+                <th class="scoreboard-th">Player</th>
+                <th class="scoreboard-th">Score</th>
+                <th class="scoreboard-th">Time</th>
+                <th class="scoreboard-th">Orbs</th>
+                <th class="scoreboard-th">Sheds</th>
+                <th class="scoreboard-th">When</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    } catch (err) {
+      console.error("showRecentRunsOverlay error:", err);
+      content.innerHTML = '<div class="leaderboard-loading">Failed to load recent runs.</div>';
     }
   }
 function buildSnakeSkinSelectorHtml() {
