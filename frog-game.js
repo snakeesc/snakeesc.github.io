@@ -5813,25 +5813,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
     </div>
     <div class="frog-panel-section-label">Stats</div>
 
-    <div class="dashboard-stats-inline">
-      <div class="dashboard-stats-row">
-        <span>Total Orbs</span>
-        <strong>${localStats.totalOrbsCollected ?? 0}</strong>
-      </div>
-      <div class="dashboard-stats-row">
-        <span>Total Runs</span>
-        <strong>${localStats.totalRuns ?? 0}</strong>
-      </div>
-      <div class="dashboard-stats-row">
-        <span>Play Time</span>
-        <strong>${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</strong>
-      </div>
-      <div class="dashboard-stats-row">
-        <span>Frogs Lost</span>
-        <strong>${localStats.totalFrogsLost ?? 0}</strong>
-      </div>
-    </div>
-
     <div class="dashboard-stats-featured">
       <div class="dashboard-stats-featured-row">
         <span class="dashboard-stats-featured-label">Best Record</span>
