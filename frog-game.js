@@ -132,100 +132,6 @@
   const DASHBOARD_PFP_EYES_CHANCE = 0.12; // 12% chance
   const LEADERBOARD_RESET_NOTE = "";
 
-// --------------------------------------------------
-// STARTING UPGRADE SYSTEM
-// --------------------------------------------------
-const STARTING_UPGRADE_KEY = "frogSnake_startingUpgrade";
-
-const STARTING_UPGRADES = [
-  {
-    id: "headStart",
-    label: "🐸 Head Start",
-    desc: "Spawn 10 extra frogs at the start",
-    requiredLevel: 1,
-    apply: () => { spawnExtraFrogs(10); }
-  },
-  {
-    id: "quickReflexes",
-    label: "⚡ Quick Reflexes",
-    desc: "Frogs start 10% faster",
-    requiredLevel: 3,
-    apply: () => { frogPermanentSpeedFactor *= 0.90; }
-  },
-  {
-    id: "insurance",
-    label: "💀 Insurance",
-    desc: "Start with 10% deathrattle chance",
-    requiredLevel: 5,
-    apply: () => { frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + 0.10); }
-  },
-  {
-    id: "orbSense",
-    label: "🧲 Orb Sense",
-    desc: "3 orbs spawn immediately at run start",
-    requiredLevel: 7,
-    apply: () => {
-      const w = window.innerWidth, h = window.innerHeight;
-      for (let i = 0; i < 3; i++) spawnOrbRandom(w, h);
-    }
-  },
-  {
-    id: "stormFront",
-    label: "🌩️ Storm Front",
-    desc: "Start with an Orb Storm already triggered",
-    requiredLevel: 10,
-    apply: () => {
-      const w = window.innerWidth, h = window.innerHeight;
-      for (let i = 0; i < ORB_STORM_COUNT; i++) spawnOrbRandom(w, h);
-    }
-  },
-  {
-    id: "shieldedStart",
-    label: "🛡️ Shielded Start",
-    desc: "Frogs are shielded for the first 20 seconds",
-    requiredLevel: 13,
-    apply: () => { frogShieldTime = 20 * buffDurationFactor; }
-  },
-  {
-    id: "evolved",
-    label: "⚗️ Evolved",
-    desc: "Start with one random Champion, Aura, or Magnet frog",
-    requiredLevel: 16,
-    apply: () => {
-      const roles = ["champion", "aura", "magnet"];
-      spawnRoleFrog(roles[Math.floor(Math.random() * roles.length)]);
-    }
-  },
-  {
-    id: "dynasty",
-    label: "👑 Dynasty",
-    desc: "Start with 30 extra frogs and 10% deathrattle",
-    requiredLevel: 20,
-    apply: () => {
-      spawnExtraFrogs(30);
-      frogDeathRattleChance = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance + 0.10);
-    }
-  }
-];
-
-function getSelectedStartingUpgrade() {
-  try {
-    const saved = localStorage.getItem(STARTING_UPGRADE_KEY);
-    if (saved) {
-      const match = STARTING_UPGRADES.find(u => u.id === saved);
-      if (match) {
-        const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-        if (levelData.level >= match.requiredLevel) return match;
-      }
-    }
-  } catch (e) {}
-  return STARTING_UPGRADES[0]; // default: Head Start
-}
-
-function saveSelectedStartingUpgrade(id) {
-  try { localStorage.setItem(STARTING_UPGRADE_KEY, id); } catch (e) {}
-}
-
 function getDefaultDashboardCosmetics() {
   return {
     lastProcessedLevel: 1,
@@ -910,173 +816,112 @@ const MAX_LUCK = 30;
     mouse.follow = true;
   });
 
-// --------------------------------------------------
+  // --------------------------------------------------
   // HUD
   // --------------------------------------------------
   let inGameUIVisible = true;
 
-  // Top center — timer / frogs / score / shed countdown
   const hud = document.createElement("div");
-  hud.style.cssText = `
-    position:absolute; top:10px; left:50%; transform:translateX(-50%);
-    display:flex; gap:0; align-items:stretch;
-    background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.08);
-    border-radius:10px; overflow:hidden; z-index:100; pointer-events:none;
-    font-family:monospace; font-size:13px; color:#fff;
-  `;
+  hud.style.position = "absolute";
+  hud.style.top = "10px";
+  hud.style.left = "50%";
+  hud.style.transform = "translateX(-50%)";
+  hud.style.padding = "6px 12px";
+  hud.style.borderRadius = "8px";
+  hud.style.background = "rgba(0,0,0,0.55)";
+  hud.style.color = "#fff";
+  hud.style.fontFamily = "monospace";
+  hud.style.fontSize = "14px";
+  hud.style.zIndex = "100";
+  hud.style.pointerEvents = "none";
 
-  function makeHudCell(id) {
-    const cell = document.createElement("div");
-    cell.id = id;
-    cell.style.cssText = `
-      padding:5px 14px; display:flex; flex-direction:column;
-      align-items:center; justify-content:center; gap:1px;
-      border-right:1px solid rgba(255,255,255,0.08);
-    `;
-    return cell;
-  }
-
-  const timerCell  = makeHudCell("hud-timer");
-  const frogsCell  = makeHudCell("hud-frogs");
-  const scoreCell  = makeHudCell("hud-score");
-  const shedCell   = makeHudCell("hud-shed");
-  shedCell.style.borderRight = "none";
-
-  // reuse old variable names so the rest of the code still works
   const timerLabel = document.createElement("span");
   const frogsLabel = document.createElement("span");
   const scoreLabel = document.createElement("span");
-  const shedLabel  = document.createElement("span");
+  frogsLabel.style.marginLeft = "12px";
+  scoreLabel.style.marginLeft = "12px";
 
-  function makeHudSubLabel(text) {
-    const s = document.createElement("span");
-    s.textContent = text;
-    s.style.cssText = "font-size:9px; opacity:0.5; text-transform:uppercase; letter-spacing:0.5px;";
-    return s;
-  }
-
-  timerCell.appendChild(makeHudSubLabel("time"));
-  timerCell.appendChild(timerLabel);
-  frogsCell.appendChild(makeHudSubLabel("frogs"));
-  frogsCell.appendChild(frogsLabel);
-  scoreCell.appendChild(makeHudSubLabel("score"));
-  scoreCell.appendChild(scoreLabel);
-  shedCell.appendChild(makeHudSubLabel("next shed"));
-  shedCell.appendChild(shedLabel);
-
-  hud.appendChild(timerCell);
-  hud.appendChild(frogsCell);
-  hud.appendChild(scoreCell);
-  hud.appendChild(shedCell);
+  hud.appendChild(timerLabel);
+  hud.appendChild(frogsLabel);
+  hud.appendChild(scoreLabel);
   container.appendChild(hud);
 
-  // Top right — mini leaderboard
+  // mini leaderboard
   const miniBoard = document.createElement("div");
   miniBoard.id = "frog-mini-leaderboard";
-  miniBoard.style.cssText = `
-    position:absolute; top:10px; right:10px;
-    padding:8px 12px; border-radius:10px;
-    background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.08);
-    color:#fff; font-family:monospace; font-size:11px;
-    z-index:100; max-width:200px; pointer-events:none; line-height:1.6;
-  `;
-  miniBoard.textContent = "Loading…";
+  miniBoard.style.position = "absolute";
+  miniBoard.style.top = "10px";
+  miniBoard.style.right = "10px";
+  miniBoard.style.padding = "6px 10px";
+  miniBoard.style.borderRadius = "8px";
+  miniBoard.style.background = "rgba(0,0,0,0.55)";
+  miniBoard.style.color = "#fff";
+  miniBoard.style.fontFamily = "monospace";
+  miniBoard.style.fontSize = "11px";
+  miniBoard.style.zIndex = "100";
+  miniBoard.style.maxWidth = "220px";
+  miniBoard.style.pointerEvents = "none";
+  miniBoard.textContent = "Loading leaderboard…";
   container.appendChild(miniBoard);
 
-  // Bottom — active buff strip
-  const buffStrip = document.createElement("div");
-  buffStrip.id = "frog-buff-strip";
-  buffStrip.style.cssText = `
-    position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
-    display:flex; gap:8px; align-items:flex-end;
-    z-index:100; pointer-events:none; min-height:54px;
-  `;
-  container.appendChild(buffStrip);
-
-  // Bottom left — permanent upgrade pills
-  const permStrip = document.createElement("div");
-  permStrip.id = "frog-perm-strip";
-  permStrip.style.cssText = `
-    position:absolute; bottom:10px; left:10px;
-    display:flex; flex-wrap:wrap; gap:4px; max-width:300px;
-    z-index:100; pointer-events:none;
-  `;
-  container.appendChild(permStrip);
-
-  // stats panel kept for toggle (hidden by default)
+  // detailed stats panel (bottom-left)
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";
-  statsPanel.style.cssText = `
-    position:absolute; bottom:10px; left:10px;
-    padding:8px 12px; border-radius:10px;
-    background:rgba(0,0,0,0.75); border:1px solid #444;
-    color:#fff; font-family:monospace; font-size:11px;
-    z-index:101; max-width:260px; pointer-events:none;
-    line-height:1.4; display:none;
-  `;
+  statsPanel.style.position = "absolute";
+  statsPanel.style.bottom = "10px";
+  statsPanel.style.left = "10px";
+  statsPanel.style.padding = "8px 12px";
+  statsPanel.style.borderRadius = "10px";
+  statsPanel.style.background = "rgba(0,0,0,0.75)";
+  statsPanel.style.border = "1px solid #444";
+  statsPanel.style.color = "#fff";
+  statsPanel.style.fontFamily = "monospace";
+  statsPanel.style.fontSize = "11px";
+  statsPanel.style.zIndex = "100";
+  statsPanel.style.maxWidth = "260px";
+  statsPanel.style.pointerEvents = "none";
+  statsPanel.style.lineHeight = "1.4";
+  statsPanel.style.display = "none";
   container.appendChild(statsPanel);
 
-  // Top left — gear button that opens a small menu
+  // Small control buttons (top-left)
   const controlsBar = document.createElement("div");
-  controlsBar.style.cssText = `
-    position:absolute; top:10px; left:10px;
-    z-index:120; pointer-events:auto;
-  `;
-
-  const gearBtn = document.createElement("button");
-  gearBtn.textContent = "⚙️";
-  gearBtn.style.cssText = `
-    font-size:18px; background:rgba(0,0,0,0.65);
-    border:1px solid rgba(255,255,255,0.08); border-radius:8px;
-    width:36px; height:36px; cursor:pointer; color:#fff;
-    display:flex; align-items:center; justify-content:center;
-    padding:0; outline:none;
-  `;
-
-  const gearMenu = document.createElement("div");
-  gearMenu.style.cssText = `
-    display:none; flex-direction:column; gap:4px;
-    position:absolute; top:40px; left:0;
-    background:rgba(0,0,0,0.85); border:1px solid #444;
-    border-radius:8px; padding:6px; min-width:110px;
-  `;
+  controlsBar.style.position = "absolute";
+  controlsBar.style.top = "10px";
+  controlsBar.style.left = "10px";
+  controlsBar.style.display = "flex";
+  controlsBar.style.flexDirection = "column";
+  controlsBar.style.gap = "4px";
+  controlsBar.style.zIndex = "120";
+  controlsBar.style.pointerEvents = "auto";
 
   function makeControlButton(label) {
     const btn = document.createElement("button");
     btn.textContent = label;
-    btn.style.cssText = `
-      font-family:monospace; font-size:11px; padding:4px 8px;
-      border-radius:6px; border:1px solid #444;
-      background:rgba(255,255,255,0.05); color:#fff;
-      cursor:pointer; outline:none; text-align:left; width:100%;
-    `;
+    btn.style.fontFamily = "monospace";
+    btn.style.fontSize = "11px";
+    btn.style.padding = "3px 6px";
+    btn.style.borderRadius = "6px";
+    btn.style.border = "1px solid #444";
+    btn.style.background = "rgba(0,0,0,0.8)";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
+    btn.style.outline = "none";
     btn.onmouseenter = () => { btn.style.background = "#222"; };
-    btn.onmouseleave = () => { btn.style.background = "rgba(255,255,255,0.05)"; };
+    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.8)"; };
     return btn;
   }
 
+  //const btnHowTo = makeControlButton("How to play");
   const btnStats = makeControlButton("Toggle stats");
   const btnSound = makeControlButton("Sound: ON");
   const btnEnd   = makeControlButton("End run");
 
-  gearMenu.appendChild(btnStats);
-  gearMenu.appendChild(btnSound);
-  gearMenu.appendChild(btnEnd);
-  controlsBar.appendChild(gearBtn);
-  controlsBar.appendChild(gearMenu);
+  //controlsBar.appendChild(btnHowTo);
+  controlsBar.appendChild(btnStats);
+  controlsBar.appendChild(btnSound);
+  controlsBar.appendChild(btnEnd);
   container.appendChild(controlsBar);
-
-  let gearMenuOpen = false;
-  gearBtn.addEventListener("click", () => {
-    gearMenuOpen = !gearMenuOpen;
-    gearMenu.style.display = gearMenuOpen ? "flex" : "none";
-  });
-  document.addEventListener("click", (e) => {
-    if (gearMenuOpen && !controlsBar.contains(e.target)) {
-      gearMenuOpen = false;
-      gearMenu.style.display = "none";
-    }
-  });
 
   const gameOverBanner = document.createElement("div");
   gameOverBanner.style.position = "absolute";
@@ -1098,12 +943,18 @@ const MAX_LUCK = 30;
 
   function setInGameUIVisible(show) {
     inGameUIVisible = show;
-    if (hud)        hud.style.display        = show ? "flex"  : "none";
-    if (miniBoard)  miniBoard.style.display   = show ? "block" : "none";
-    if (controlsBar) controlsBar.style.display = show ? "block" : "none";
-    if (buffStrip)  buffStrip.style.display   = show ? "flex"  : "none";
-    if (permStrip)  permStrip.style.display   = show ? "flex"  : "none";
-    if (statsPanel) statsPanel.style.display  = (show && statsPanelVisible) ? "block" : "none";
+
+    if (hud) hud.style.display = show ? "block" : "none";
+    if (miniBoard) miniBoard.style.display = show ? "block" : "none";
+    if (controlsBar) controlsBar.style.display = show ? "flex" : "none";
+
+    if (statsPanel) {
+      if (show && statsPanelVisible) {
+        statsPanel.style.display = "block";
+      } else {
+        statsPanel.style.display = "none";
+      }
+    }
   }
 
   setInGameUIVisible(false);
@@ -1115,88 +966,12 @@ const MAX_LUCK = 30;
     return `${String(m).padStart(2, "0")}:${s.toFixed(1).padStart(4, "0")}`;
   }
 
-function updateHUD() {
+  function updateHUD() {
     if (!inGameUIVisible) return;
 
-    timerLabel.textContent = formatTime(elapsedTime);
-    frogsLabel.textContent = frogs.length;
-    scoreLabel.textContent = Math.floor(score);
-
-    // Shed countdown
-    const shedIn = Math.max(0, nextShedTime - elapsedTime);
-    shedLabel.textContent = formatTime(shedIn);
-    shedLabel.style.color = shedIn < 30 ? "#f87171" : shedIn < 60 ? "#fbbf24" : "#bef264";
-
-    updateBuffStrip();
-    updatePermStrip();
-  }
-
-  function updateBuffStrip() {
-    if (!buffStrip) return;
-    buffStrip.innerHTML = "";
-
-    const activeBuff = [
-      { label: "⚡", name: "Speed",   time: speedBuffTime,    max: SPEED_BUFF_DURATION },
-      { label: "🦘", name: "Jump",    time: jumpBuffTime,     max: JUMP_BUFF_DURATION },
-      { label: "🧊", name: "Slow",    time: snakeSlowTime,    max: SNAKE_SLOW_DURATION },
-      { label: "🤪", name: "Confuse", time: snakeConfuseTime, max: SNAKE_CONFUSE_DURATION },
-      { label: "📏", name: "Shrink",  time: snakeShrinkTime,  max: SNAKE_SHRINK_DURATION },
-      { label: "🛡️", name: "Shield",  time: frogShieldTime,   max: FROG_SHIELD_DURATION },
-      { label: "⏱️", name: "T.Slow",  time: timeSlowTime,     max: TIME_SLOW_DURATION },
-      { label: "🧲", name: "Magnet",  time: orbMagnetTime,    max: ORB_MAGNET_DURATION },
-      { label: "💰", name: "×2 Score",time: scoreMultiTime,   max: SCORE_MULTI_DURATION },
-      { label: "😱", name: "Panic",   time: panicHopTime,     max: PANIC_HOP_DURATION },
-      { label: "🩺", name: "Lifeline",time: lifeStealTime,    max: LIFE_STEAL_DURATION },
-    ].filter(b => b.time > 0);
-
-    for (const b of activeBuff) {
-      const pct = Math.min(1, b.time / (b.max * (buffDurationFactor || 1)));
-      const card = document.createElement("div");
-      card.style.cssText = `
-        display:flex; flex-direction:column; align-items:center; gap:2px;
-        background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.12);
-        border-radius:8px; padding:4px 6px; min-width:44px;
-      `;
-      card.innerHTML = `
-        <span style="font-size:16px;line-height:1;">${b.label}</span>
-        <span style="font-size:9px;color:#d6d3d1;font-family:monospace;">${b.name}</span>
-        <span style="font-size:9px;color:#bef264;font-family:monospace;">${b.time.toFixed(1)}s</span>
-        <div style="width:100%;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;">
-          <div style="width:${Math.round(pct*100)}%;height:100%;background:#bef264;border-radius:2px;transition:width 0.1s;"></div>
-        </div>
-      `;
-      buffStrip.appendChild(card);
-    }
-  }
-
-  function updatePermStrip() {
-    if (!permStrip) return;
-    permStrip.innerHTML = "";
-
-    const perms = [
-      { label: "💀 Deathrattle",  active: frogDeathRattleChance > 0, value: `${Math.round(frogDeathRattleChance*100)}%` },
-      { label: "🏹 Last Stand",   active: lastStandActive },
-      { label: "👻 Grave Wave",   active: graveWaveActive },
-      { label: "🧪 Orb Spec.",    active: orbSpecialistActive },
-      { label: "🌀 Orb Whisp.",   active: orbLingerBonusUsed },
-      { label: "⚱️ Ouroboros",    active: ouroborosPactUsed },
-      { label: "🧪 Toxic",        active: toxicBloodActive },
-      { label: "💨 2nd Wind",     active: secondWindActive },
-      { label: "⚡ Surv. Inst.",  active: survivalInstinctActive },
-      { label: "🌙 Night Bloom",  active: nightBloomActive },
-      { label: "⚡ Chain React.", active: chainReactionActive },
-    ].filter(p => p.active);
-
-    for (const p of perms) {
-      const pill = document.createElement("div");
-      pill.style.cssText = `
-        font-family:monospace; font-size:9px; color:#bef264;
-        background:rgba(0,0,0,0.65); border:1px solid rgba(190,242,100,0.3);
-        border-radius:999px; padding:2px 7px; white-space:nowrap;
-      `;
-      pill.textContent = p.value ? `${p.label} ${p.value}` : p.label;
-      permStrip.appendChild(pill);
-    }
+    timerLabel.textContent = `Time: ${formatTime(elapsedTime)}`;
+    frogsLabel.textContent = `Frogs left: ${frogs.length}`;
+    scoreLabel.textContent = `Score: ${Math.floor(score)}`;
   }
 
   function updateStatsPanel() {
@@ -5529,127 +5304,82 @@ function closeAnimatedOverlay(overlayEl) {
       closeAnimatedOverlay(leaderboardOverlay);
     }
   }
-  function buildSnakeSkinSelectorHtml() {
-    const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-    const currentLevel = levelData.level;
-    const selectedId = getSelectedSnakeSkinId();
-
-    const items = SNAKE_SKINS.map(skin => {
-      const unlocked = currentLevel >= skin.requiredLevel;
-      const isSelected = skin.id === selectedId;
-
-      return `
-        <div
-          class="snake-skin-option${isSelected ? " is-selected" : ""}${!unlocked ? " is-locked" : ""}"
-          data-skin-id="${skin.id}"
-          style="
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            cursor: ${unlocked ? "pointer" : "default"};
-            opacity: ${unlocked ? "1" : "0.4"};
-          "
-        >
-          <div style="
-            width: 56px;
-            height: 56px;
-            border-radius: 999px;
-            border: 2px solid ${isSelected ? "#84cc16" : "#44403c"};
-            background: #0f172a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: ${isSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none"};
-            transition: border-color 0.15s, box-shadow 0.15s;
-            position: relative;
-          ">
-            <img
-              src="${skin.head}"
-              alt="${skin.label}"
-              style="
-                width: 44px;
-                height: 44px;
-                image-rendering: pixelated;
-                ${!unlocked ? "filter: grayscale(1);" : ""}
-              "
-            />
-            ${!unlocked ? `
-              <div style="
-                position: absolute;
-                inset: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 18px;
-              ">🔒</div>
-            ` : ""}
-          </div>
-          <div style="font-size: 11px; color: ${isSelected ? "#bef264" : "#a8a29e"}; font-weight: ${isSelected ? "700" : "400"};">
-            ${unlocked ? skin.label : `Lv ${skin.requiredLevel}`}
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    return `
-      <div class="frog-panel-section-label">Snake Skin</div>
-      <div
-        id="snakeSkinSelector"
-        style="
-          display: flex;
-          gap: 16px;
-          align-items: flex-start;
-          margin-bottom: 8px;
-        "
-      >
-        ${items}
-      </div>
-    `;
-  }
-function buildStartingUpgradeSelectorHtml() {
+function buildSnakeSkinSelectorHtml() {
   const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
   const currentLevel = levelData.level;
-  const selectedId = getSelectedStartingUpgrade().id;
+  const selectedId = getSelectedSnakeSkinId();
 
-  const items = STARTING_UPGRADES.map(upgrade => {
-    const unlocked = currentLevel >= upgrade.requiredLevel;
-    const isSelected = upgrade.id === selectedId;
+  const items = SNAKE_SKINS.map(skin => {
+    const unlocked = currentLevel >= skin.requiredLevel;
+    const isSelected = skin.id === selectedId;
 
     return `
       <div
-        data-starting-upgrade-id="${upgrade.id}"
+        class="snake-skin-option${isSelected ? " is-selected" : ""}${!unlocked ? " is-locked" : ""}"
+        data-skin-id="${skin.id}"
         style="
-          display:flex; flex-direction:column; align-items:center; gap:4px;
-          cursor:${unlocked ? "pointer" : "default"};
-          opacity:${unlocked ? "1" : "0.4"};
+          display: inline-flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          cursor: ${unlocked ? "pointer" : "default"};
+          opacity: ${unlocked ? "1" : "0.4"};
         "
       >
         <div style="
-          width:48px; height:48px; border-radius:999px;
-          border:2px solid ${isSelected ? "#84cc16" : "#44403c"};
-          background:#0f172a; display:flex; align-items:center;
-          justify-content:center; font-size:20px; position:relative;
-          box-shadow:${isSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none"};
+          width: 56px;
+          height: 56px;
+          border-radius: 999px;
+          border: 2px solid ${isSelected ? "#84cc16" : "#44403c"};
+          background: #0f172a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          box-shadow: ${isSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none"};
+          transition: border-color 0.15s, box-shadow 0.15s;
+          position: relative;
         ">
-          ${upgrade.label.split(" ")[0]}
-          ${!unlocked ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;background:rgba(0,0,0,0.5);border-radius:999px;">🔒</div>` : ""}
+          <img
+            src="${skin.head}"
+            alt="${skin.label}"
+            style="
+              width: 44px;
+              height: 44px;
+              image-rendering: pixelated;
+              ${!unlocked ? "filter: grayscale(1);" : ""}
+            "
+          />
+          ${!unlocked ? `
+            <div style="
+              position: absolute;
+              inset: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 18px;
+            ">🔒</div>
+          ` : ""}
         </div>
-        <div style="font-size:10px; text-align:center; max-width:56px; color:${isSelected ? "#bef264" : "#a8a29e"}; font-weight:${isSelected ? "700" : "400"}; line-height:1.2;">
-          ${unlocked ? upgrade.label.split(" ").slice(1).join(" ") : `Lv ${upgrade.requiredLevel}`}
+        <div style="font-size: 11px; color: ${isSelected ? "#bef264" : "#a8a29e"}; font-weight: ${isSelected ? "700" : "400"};">
+          ${unlocked ? skin.label : `Lv ${skin.requiredLevel}`}
         </div>
       </div>
     `;
   }).join("");
 
   return `
-    <div class="frog-panel-section-label">Starting Upgrade</div>
-    <div id="startingUpgradeSelector" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-start; margin-bottom:8px;">
+    <div class="frog-panel-section-label">Snake Skin</div>
+    <div
+      id="snakeSkinSelector"
+      style="
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      "
+    >
       ${items}
-    </div>
-    <div id="startingUpgradeDesc" style="font-size:11px; color:#a8a29e; margin-bottom:10px; min-height:14px;">
-      ${STARTING_UPGRADES.find(u => u.id === selectedId)?.desc || ""}
     </div>
   `;
 }
@@ -5893,7 +5623,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
     </div>
 
     ${buildSnakeSkinSelectorHtml()}
-    ${buildStartingUpgradeSelectorHtml()}
 
     <div style="margin-bottom:12px;">
       <input
@@ -6034,40 +5763,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
       });
     });
   }
-  function wireStartingUpgradeSelector() {
-    const sel = document.getElementById("startingUpgradeSelector");
-    const desc = document.getElementById("startingUpgradeDesc");
-    if (!sel) return;
-    sel.addEventListener("click", (e) => {
-      const option = e.target.closest("[data-starting-upgrade-id]");
-      if (!option) return;
-      const id = option.dataset.startingUpgradeId;
-      const upgrade = STARTING_UPGRADES.find(u => u.id === id);
-      if (!upgrade) return;
-      const levelData = getDashboardLevelData(loadDashboardStats().totalOrbsCollected || 0);
-      if (levelData.level < upgrade.requiredLevel) return;
-
-      saveSelectedStartingUpgrade(id);
-
-      // Update visuals
-      sel.querySelectorAll("[data-starting-upgrade-id]").forEach(el => {
-        const isNow = el.dataset.startingUpgradeId === id;
-        const circle = el.querySelector("div");
-        const label = el.querySelector("div + div");
-        if (circle) {
-          circle.style.borderColor = isNow ? "#84cc16" : "#44403c";
-          circle.style.boxShadow = isNow ? "0 0 0 2px rgba(132,204,22,0.4)" : "none";
-        }
-        if (label) {
-          label.style.color = isNow ? "#bef264" : "#a8a29e";
-          label.style.fontWeight = isNow ? "700" : "400";
-        }
-      });
-
-      if (desc) desc.textContent = upgrade.desc;
-    });
-  }
-  wireStartingUpgradeSelector();
   wireSkinSelector();
 }
 function formatDuration(seconds) {
@@ -6804,28 +6499,8 @@ function getDashboardPfp() {
     }
   }
 
-  function showStartingUpgradeToast(label) {
-    const toast = document.createElement("div");
-    toast.textContent = `Started with: ${label}`;
-    toast.style.cssText = `
-      position:absolute; top:60px; left:50%; transform:translateX(-50%);
-      background:rgba(0,0,0,0.85); color:#bef264; font-family:monospace;
-      font-size:13px; padding:6px 16px; border-radius:8px;
-      border:1px solid rgba(190,242,100,0.4); z-index:200;
-      pointer-events:none; opacity:1; transition:opacity 0.6s;
-      white-space:nowrap;
-    `;
-    container.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = "0"; }, 2200);
-    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 2900);
-  }
-
   function openFirstUpgradeSelection() {
-    const upgrade = getSelectedStartingUpgrade();
-    initialUpgradeDone = true;
-    nextPermanentChoiceTime = elapsedTime + 60;
-    try { upgrade.apply(); } catch(e) { console.warn("Starting upgrade failed:", e); }
-    showStartingUpgradeToast(upgrade.label);
+    openUpgradeOverlay("normal", { context: "start" });
   }
 
 function startNewRun() {
