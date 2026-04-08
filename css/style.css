@@ -2239,12 +2239,13 @@ background: #65a30d;
 }
 
 .dashboard-stats-featured-row {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px 10px;
+  display: flex;
+  justify-content: space-between;
   align-items: baseline;
+  gap: 10px;
   font-size: 12px;
   line-height: 1.35;
+  flex-wrap: wrap;
 }
 
 .dashboard-stats-featured-label {
@@ -2255,7 +2256,7 @@ background: #65a30d;
   color: #bef264;
   font-size: 13px;
   font-weight: 700;
-  justify-self: end;
+  text-align: right;
 }
 
 .dashboard-stats-featured-sub {

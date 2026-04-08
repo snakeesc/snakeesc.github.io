@@ -5838,17 +5838,10 @@ async function showDashboardOverlay(cachedLeaderboard) {
         <strong class="dashboard-stats-featured-value">
           ${
             leaderboardBest.found
-              ? `${bestRecordPrefix}${Math.floor(leaderboardBest.bestRun)} score`
+              ? `${bestRecordPrefix}${currentTag || "You"} · ${Math.floor(leaderboardBest.bestRun)} score · ${formatDashboardDuration(leaderboardBest.bestTime)}`
               : "—"
           }
         </strong>
-        <span class="dashboard-stats-featured-sub">
-          ${
-            leaderboardBest.found
-              ? `${formatDashboardDuration(leaderboardBest.bestTime)}`
-              : "No best run yet"
-          }
-        </span>
       </div>
 
       <div class="dashboard-stats-featured-row">
