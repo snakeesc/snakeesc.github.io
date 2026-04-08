@@ -7,30 +7,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      background: #0e1a0e;
-      font-family: monospace;
-      color: white;
-    }
-
-    .rr-page {
-      max-width: 700px;
+    html, body { margin: 0; padding: 0; min-height: 100vh; }
+    .rr-wrap {
+      max-width: 720px;
       margin: 0 auto;
-      padding: 32px 16px 48px;
+      padding: 28px 16px 56px;
+      position: relative;
+      z-index: 1;
     }
-
     .rr-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 24px;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
+      margin-bottom: 18px;
     }
-
     .rr-title {
       font-size: 20px;
       font-weight: bold;
@@ -39,83 +31,33 @@
       align-items: center;
       gap: 8px;
       margin: 0;
+      text-shadow: 1px 1px gray;
     }
-
-    .rr-back {
+    .rr-nav {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .rr-nav a {
       font-size: 12px;
       color: #a3e635;
       text-decoration: none;
     }
-
-    .rr-back:hover {
-      text-decoration: underline;
-    }
-
+    .rr-nav a:hover { text-decoration: underline; }
     .rr-meta {
-      font-size: 12px;
+      font-size: 11px;
       color: #78716c;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
-
-    .rr-panel {
-      background: #1c1917;
-      border-radius: 14px;
-      padding: 18px 22px;
-    }
-
     .rr-pager {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-top: 14px;
-      font-size: 11px;
-      color: #a8a29e;
-    }
-
-    .rr-pager-btns {
-      display: flex;
+      flex-wrap: wrap;
       gap: 8px;
     }
-
-    .rr-btn {
-      background: #292524;
-      color: white;
-      border: 1px solid #44403c;
-      border-radius: 8px;
-      padding: 6px 14px;
-      font-size: 12px;
-      font-family: monospace;
-      cursor: pointer;
-      font-weight: 700;
-      transition: filter 0.1s;
-    }
-
-    .rr-btn:hover:not(:disabled) {
-      filter: brightness(1.1);
-    }
-
-    .rr-btn:disabled {
-      opacity: 0.35;
-      cursor: default;
-    }
-
-    .rr-refresh {
-      background: transparent;
-      color: #a3e635;
-      border: 1px solid #3f6212;
-      border-radius: 8px;
-      padding: 6px 14px;
-      font-size: 12px;
-      font-family: monospace;
-      cursor: pointer;
-      font-weight: 700;
-      transition: filter 0.1s;
-    }
-
-    .rr-refresh:hover {
-      filter: brightness(1.1);
-    }
-
     .rr-ts {
       font-size: 10px;
       color: #78716c;
@@ -124,136 +66,114 @@
   </style>
 </head>
 <body>
-  <div class="rr-page">
 
+  <div id="frog-bg"><div class="grass-field" id="grassField"></div></div>
+
+  <div class="rr-wrap">
     <div class="rr-header">
       <h1 class="rr-title">🐍 Recent Runs</h1>
-      <div style="display:flex; align-items:center; gap:14px;">
-        <button class="rr-refresh" id="refreshBtn">↺ Refresh</button>
-        <a class="rr-back" href="/">← Back to game</a>
+      <div class="rr-nav">
+        <button id="refreshBtn" class="frog-btn frog-btn-secondary" style="width:auto;padding:6px 14px;font-size:12px;margin-bottom:0;">↺ Refresh</button>
+        <a href="/">← Back to game</a>
       </div>
     </div>
 
     <div class="rr-meta" id="metaLine">Global · newest first · loading…</div>
 
-    <div class="rr-panel">
+    <div class="frog-panel">
       <div class="frog-panel-section-label" style="margin-top:0;">Recent Runs</div>
       <div id="runsContent">
         <div class="leaderboard-loading">Loading…</div>
       </div>
-
       <div class="rr-pager" id="pager" style="display:none;">
-        <span id="pageInfo"></span>
-        <div class="rr-pager-btns">
-          <button class="rr-btn" id="prevBtn" disabled>Prev</button>
-          <button class="rr-btn" id="nextBtn">Next</button>
+        <span style="font-size:11px;color:#a8a29e;" id="pageInfo"></span>
+        <div style="display:flex;gap:8px;">
+          <button class="frog-btn frog-btn-secondary" id="prevBtn" style="width:auto;padding:6px 16px;font-size:12px;margin-bottom:0;" disabled>Prev</button>
+          <button class="frog-btn frog-btn-secondary" id="nextBtn" style="width:auto;padding:6px 16px;font-size:12px;margin-bottom:0;">Next</button>
         </div>
       </div>
     </div>
-
   </div>
 
   <script>
-    const RECENT_RUNS_URL = "https://lucky-king-0d37.danielssouthworth.workers.dev/recent-runs";
-    const PAGE_SIZE = 10;
-    const MAX_RUNS  = 50;
+    (function() {
+      const field = document.getElementById("grassField");
+      if (!field) return;
+      const count = Math.floor((window.innerWidth * window.innerHeight) / 24000);
+      for (let i = 0; i < count; i++) {
+        const tuft = document.createElement("div");
+        tuft.className = `grass variant-${1 + Math.floor(Math.random() * 4)}`;
+        tuft.style.cssText = `left:${Math.random()*window.innerWidth}px;top:${Math.random()*window.innerHeight}px;transform:scale(${0.8+Math.random()*0.55});animation-duration:${2.5+Math.random()*2.5}s`;
+        ["b1","b2","b3","b4"].forEach(c => { const b = document.createElement("div"); b.className = "blade "+c; tuft.appendChild(b); });
+        field.appendChild(tuft);
+      }
+    })();
 
-    let allRuns    = [];
-    let currentPage = 0;
+    const RECENT_RUNS_URL = "https://lucky-king-0d37.danielssouthworth.workers.dev/recent-runs";
+    const PAGE_SIZE = 25;
+    let allRuns = [], currentPage = 0;
 
     function pad2(n) { return n < 10 ? "0" + n : String(n); }
-
     function fmtTime(s) {
       if (!s || !isFinite(s) || s <= 0) return "00:00.0";
-      const m   = Math.floor(s / 60);
-      const sec = (s - m * 60).toFixed(1);
+      const m = Math.floor(s / 60), sec = (s - m * 60).toFixed(1);
       return pad2(m) + ":" + sec.padStart(4, "0");
     }
-
     function fmtTs(ts) {
       if (!ts) return "";
       const d = new Date(ts);
-      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
-             " · " + d.toLocaleDateString([], { month: "short", day: "numeric" });
+      return d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) + " · " + d.toLocaleDateString([], {month:"short",day:"numeric"});
     }
-
-    function esc(str) {
-      if (str == null) return "";
-      return String(str)
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    function esc(s) {
+      return s == null ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
     function renderPage(pageIndex) {
-      currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(allRuns.length / PAGE_SIZE) - 1));
+      const totalPages = Math.max(1, Math.ceil(allRuns.length / PAGE_SIZE));
+      currentPage = Math.max(0, Math.min(pageIndex, totalPages - 1));
       const start = currentPage * PAGE_SIZE;
       const end   = Math.min(start + PAGE_SIZE, allRuns.length);
       const slice = allRuns.slice(start, end);
+      const el    = document.getElementById("runsContent");
+      const pager = document.getElementById("pager");
 
-      const runsContent = document.getElementById("runsContent");
-      const pager       = document.getElementById("pager");
-      const pageInfo    = document.getElementById("pageInfo");
-      const prevBtn     = document.getElementById("prevBtn");
-      const nextBtn     = document.getElementById("nextBtn");
-
-      if (slice.length === 0) {
-        runsContent.innerHTML = '<div class="leaderboard-loading">No runs yet.</div>';
+      if (!slice.length) {
+        el.innerHTML = '<div class="leaderboard-loading">No runs yet — be the first!</div>';
         pager.style.display = "none";
         return;
       }
 
-      const items = slice.map(r => {
-        const tag   = esc(r.tag || "Frog");
-        const score = Math.floor(r.score || 0);
-        const time  = fmtTime(r.time);
-        const orbs  = r.orbs || 0;
-        const sheds = r.sheds || 0;
-        const when  = fmtTs(r.at);
-        return `
-          <li>
-            <strong>${tag}</strong>
-            · ${time} · ${score} score · ${orbs} orbs · ${sheds} sheds
-            <span class="rr-ts">${when}</span>
-          </li>
-        `;
-      }).join("");
+      el.innerHTML = `<ul class="frog-panel-list">${slice.map(r => `
+        <li>
+          <strong>${esc(r.tag || "Frog")}</strong>
+          · ${fmtTime(r.time)} · ${Math.floor(r.score||0)} score · ${r.orbs||0} orbs · ${r.sheds||0} sheds
+          <span class="rr-ts">${fmtTs(r.at)}</span>
+        </li>`).join("")}</ul>`;
 
-      runsContent.innerHTML = `<ul class="frog-panel-list">${items}</ul>`;
-
-      pager.style.display   = "flex";
-      pageInfo.textContent  = `Showing ${start + 1}–${end} of ${allRuns.length}`;
-      prevBtn.disabled      = currentPage === 0;
-      nextBtn.disabled      = end >= allRuns.length;
+      pager.style.display = "flex";
+      document.getElementById("pageInfo").textContent = `Showing ${start+1}–${end} of ${allRuns.length}`;
+      document.getElementById("prevBtn").disabled = currentPage === 0;
+      document.getElementById("nextBtn").disabled = end >= allRuns.length;
     }
 
     async function loadRuns() {
-      const runsContent = document.getElementById("runsContent");
-      const metaLine    = document.getElementById("metaLine");
-      const pager       = document.getElementById("pager");
-
-      runsContent.innerHTML = '<div class="leaderboard-loading">Loading…</div>';
-      pager.style.display   = "none";
-
+      document.getElementById("runsContent").innerHTML = '<div class="leaderboard-loading">Loading…</div>';
+      document.getElementById("pager").style.display = "none";
       try {
-        const res  = await fetch(RECENT_RUNS_URL);
-        const data = await res.json();
-        allRuns    = Array.isArray(data.runs) ? data.runs.slice(0, MAX_RUNS) : [];
-
-        const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        metaLine.textContent = `Global · newest first · ${allRuns.length} runs · updated ${now}`;
-
+        const data = await (await fetch(RECENT_RUNS_URL)).json();
+        allRuns = Array.isArray(data.runs) ? data.runs : [];
+        const now = new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+        document.getElementById("metaLine").textContent = `Global · newest first · ${allRuns.length} runs · updated ${now}`;
         currentPage = 0;
         renderPage(0);
-      } catch (err) {
-        runsContent.innerHTML = '<div class="leaderboard-loading">Failed to load runs.</div>';
-        metaLine.textContent  = "Global · newest first";
+      } catch {
+        document.getElementById("runsContent").innerHTML = '<div class="leaderboard-loading">Failed to load runs.</div>';
       }
     }
 
     document.getElementById("prevBtn").addEventListener("click", () => renderPage(currentPage - 1));
     document.getElementById("nextBtn").addEventListener("click", () => renderPage(currentPage + 1));
     document.getElementById("refreshBtn").addEventListener("click", loadRuns);
-
     loadRuns();
   </script>
 </body>
