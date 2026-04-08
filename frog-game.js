@@ -583,6 +583,7 @@ function generateLocalTag() {
       time: runTime,
       orbs: runOrbs,
       frogsLost: frogsLostThisRun,
+      sheds: Number(snakeShedCount) || 0,
       at: Date.now(),
       isLatest: true
     });
@@ -6145,7 +6146,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
         >
           Save Tag
         </button>
-        ${latestCompletedRun ? `
+        ${localStats.recentRuns && localStats.recentRuns.length ? `
           <button
             id="dashboardLastRunBtn"
             class="frog-btn frog-btn-secondary"
@@ -6206,6 +6207,20 @@ async function showDashboardOverlay(cachedLeaderboard) {
   const lastRunBtn = document.getElementById("dashboardLastRunBtn");
   if (lastRunBtn) {
     lastRunBtn.addEventListener("click", () => {
+      // Use in-memory run if available, otherwise reconstruct from saved stats
+      if (!latestCompletedRun) {
+        const saved = loadDashboardStats().recentRuns;
+        if (saved && saved.length) {
+          const r = saved[0];
+          latestCompletedRun = {
+            score:     r.score     || 0,
+            time:      r.time      || 0,
+            orbs:      r.orbs      || 0,
+            frogsLost: r.frogsLost || 0,
+            sheds:     r.sheds     || 0
+          };
+        }
+      }
       closeAnimatedOverlay(dashboardOverlay);
       showEndGameSummaryOverlay(Array.isArray(leaderboardEntries) ? leaderboardEntries : []);
     });
