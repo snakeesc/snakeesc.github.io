@@ -4045,7 +4045,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     upgrades.push({
       id: "luckyRoll",
-      label: `🎲 Lucky Roll<br>Trigger a random orb buff at <span style="color:${neon};">1.5x</span> duration for free`,
+      label: `🎲 Lucky Roll<br>Trigger a random orb buff at <span style="color:${neon};">1.5x</span> duration`,
       apply: () => { triggerLuckyRoll(); }
     });
 
