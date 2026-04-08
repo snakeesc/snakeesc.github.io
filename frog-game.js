@@ -6238,8 +6238,13 @@ async function showDashboardOverlay(cachedLeaderboard) {
           };
         }
       }
-      // Hide dashboard silently — don't use hideDashboardOverlay which chains to showMainMenu
-      if (dashboardOverlay) dashboardOverlay.style.display = "none";
+      // Close dashboard without chaining to showMainMenu.
+      // Force-clear all animation classes before hiding so no pending
+      // animationend listener can fire and call showMainMenu afterward.
+      if (dashboardOverlay) {
+        dashboardOverlay.classList.remove("is-animating-out", "is-open", "is-animating-in");
+        dashboardOverlay.style.display = "none";
+      }
       showEndGameSummaryOverlay(Array.isArray(leaderboardEntries) ? leaderboardEntries : []);
     });
   }
