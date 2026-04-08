@@ -5812,59 +5812,53 @@ async function showDashboardOverlay(cachedLeaderboard) {
       </button>
     </div>
     <div class="frog-panel-section-label">Stats</div>
-      <div class="dashboard-stats-compact">
-        <div class="dashboard-stat-card">
-          <div class="dashboard-stat-label">Total Orbs</div>
-          <div class="dashboard-stat-value">${localStats.totalOrbsCollected ?? 0}</div>
-        </div>
-
-        <div class="dashboard-stat-card">
-          <div class="dashboard-stat-label">Total Runs</div>
-          <div class="dashboard-stat-value">${localStats.totalRuns ?? 0}</div>
-        </div>
-
-        <div class="dashboard-stat-card">
-          <div class="dashboard-stat-label">Play Time</div>
-          <div class="dashboard-stat-value">${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</div>
-        </div>
-
-        <div class="dashboard-stat-card">
-          <div class="dashboard-stat-label">Frogs Lost</div>
-          <div class="dashboard-stat-value">${localStats.totalFrogsLost ?? 0}</div>
-        </div>
-
-        <div class="dashboard-stat-card">
-          <div class="dashboard-stat-label">Best Record</div>
-          <div class="dashboard-stat-value">
-            ${
-              leaderboardBest.found
-                ? `${bestRecordPrefix}${Math.floor(leaderboardBest.bestRun)}`
-                : "—"
-            }
-          </div>
-          <div class="dashboard-stat-sub">
-            ${
-              leaderboardBest.found
-                ? `${formatDashboardDuration(leaderboardBest.bestTime)}`
-                : "No best run"
-            }
-          </div>
-        </div>
-
-        <div class="dashboard-stat-card">
-          <div class="dashboard-stat-label">Last Run</div>
-          <div class="dashboard-stat-value">
-            ${savedLatestRun ? Math.floor(savedLatestRun.score) : "—"}
-          </div>
-          <div class="dashboard-stat-sub">
-            ${
-              savedLatestRun
-                ? `${formatDashboardDuration(savedLatestRun.time)} · ${savedLatestRun.orbs} orbs`
-                : "No run yet"
-            }
-          </div>
-        </div>
+    <div class="dashboard-stats-inline">
+      <div class="dashboard-stats-row">
+        <span>Total Orbs</span>
+        <strong>${localStats.totalOrbsCollected ?? 0}</strong>
       </div>
+      <div class="dashboard-stats-row">
+        <span>Total Runs</span>
+        <strong>${localStats.totalRuns ?? 0}</strong>
+      </div>
+      <div class="dashboard-stats-row">
+        <span>Play Time</span>
+        <strong>${formatDashboardDuration(localStats.totalPlayTime ?? 0)}</strong>
+      </div>
+      <div class="dashboard-stats-row">
+        <span>Frogs Lost</span>
+        <strong>${localStats.totalFrogsLost ?? 0}</strong>
+      </div>
+      <div class="dashboard-stats-row">
+        <span>Best Record</span>
+        <strong>${
+          leaderboardBest.found
+            ? `${bestRecordPrefix}${Math.floor(leaderboardBest.bestRun)}`
+            : "—"
+        }</strong>
+      </div>
+      <div class="dashboard-stats-row">
+        <span>Last Run</span>
+        <strong>${
+          savedLatestRun
+            ? `${Math.floor(savedLatestRun.score)}`
+            : "—"
+        }</strong>
+      </div>
+    </div>
+
+    <div class="dashboard-stats-meta">
+      ${
+        leaderboardBest.found
+          ? `<span>Best time: ${formatDashboardDuration(leaderboardBest.bestTime)}</span>`
+          : `<span>Best time: —</span>`
+      }
+      ${
+        savedLatestRun
+          ? `<span>Last run: ${formatDashboardDuration(savedLatestRun.time)} · ${savedLatestRun.orbs} orbs</span>`
+          : `<span>Last run: —</span>`
+      }
+    </div>
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
   `;
