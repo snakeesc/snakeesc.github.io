@@ -7107,7 +7107,7 @@ function startRunFromMenu() {
 
   function closeUpgradeOverlay() {
     const shouldOpenEpicNow =
-      epicChainPending && currentUpgradeOverlayMode === "normal";
+      !gameOver && epicChainPending && currentUpgradeOverlayMode === "normal";
 
     // If we're chaining straight into epic, do NOT animate-close first.
     // Just clear and reopen immediately so the delayed animationend
@@ -7159,6 +7159,13 @@ function startRunFromMenu() {
   function endGame() {
     clearScissorsAndOldSnakeState();
     gameOver = true;
+
+    // Force-close any open upgrade overlay immediately so it can't chain
+    epicChainPending = false;
+    gamePaused = false;
+    if (upgradeOverlay && upgradeOverlay.style.display !== "none") {
+      closeAnimatedOverlay(upgradeOverlay);
+    }
 
     lastRunTime  = elapsedTime;
     lastRunScore = score;
