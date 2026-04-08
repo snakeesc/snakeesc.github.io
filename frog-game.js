@@ -593,7 +593,7 @@ function generateLocalTag() {
 
     // Also push to global recent-runs feed on the server
     submitRecentRun({
-      tag:       getSavedPlayerTag ? getSavedPlayerTag() : null,
+      tag:       getSavedDashboardTag(),
       score:     runScore,
       time:      runTime,
       orbs:      runOrbs,
@@ -1518,9 +1518,14 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       await saveDashboardTag(newTag);
       if (tagMsg) { tagMsg.textContent = "Tag saved."; tagMsg.style.color = "#bef264"; }
       try {
-        if (leaderboardBest.found && (leaderboardBest.bestRun > 0 || leaderboardBest.bestTime > 0)) {
-          await submitScoreToServer(leaderboardBest.bestRun, leaderboardBest.bestTime, null, newTag);
-        }
+        // Always submit with new tag — use current run score, worker will keep
+        // whichever is higher between this and any existing entry
+        await submitScoreToServer(
+          Math.floor(run.score || 0),
+          run.time || 0,
+          null,
+          newTag
+        );
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
       } catch (e) {}
@@ -7291,7 +7296,7 @@ function startRunFromMenu() {
 
     const finalStats = { frogsEaten: totalFrogsSpawned };
 
-    const playerTag = getSavedPlayerTag();
+    const playerTag = getSavedDashboardTag();
     summaryPending = true;
 
     (async () => {
