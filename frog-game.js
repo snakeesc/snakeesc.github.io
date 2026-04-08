@@ -5345,7 +5345,7 @@ function closeAnimatedOverlay(overlayEl) {
     return pad2(m) + ":" + sStr.padStart(4, "0");
   }
 
-  async function showLeaderboardOverlay(cachedLeaderboard, fromRunEnd = false) {
+  async function showLeaderboardOverlay() {
     if (!leaderboardOverlay) initLeaderboardOverlay();
     if (!leaderboardOverlay) return;
 
@@ -5355,10 +5355,7 @@ function closeAnimatedOverlay(overlayEl) {
     content.innerHTML = '<div class="leaderboard-loading">Loading leaderboard…</div>';
 
     try {
-      const entries = Array.isArray(cachedLeaderboard)
-        ? cachedLeaderboard
-        : await fetchLeaderboard();
-
+      const entries = await fetchLeaderboard();
       const list = Array.isArray(entries) ? entries.slice(0, 50) : [];
 
       if (list.length === 0) {
@@ -5367,32 +5364,27 @@ function closeAnimatedOverlay(overlayEl) {
           <ul class="frog-panel-list">
             <li>No runs yet.</li>
           </ul>
-          ${
-            fromRunEnd
-              ? `
-                <div style="margin-top:10px; text-align:center;">
-                  <button
-                    id="leaderboardDashboardBtn"
-                    class="frog-btn frog-btn-secondary"
-                    style="width:auto; min-width:180px; margin-bottom:0;"
-                  >
-                    Change player tag
-                  </button>
-                </div>
-              `
-              : ""
-          }
+
+          <div style="margin-top:8px; text-align:center;">
+            <button
+              id="leaderboardDashboardBtn"
+              class="frog-btn frog-btn-secondary"
+              style="width:auto; margin-bottom:0;"
+            >
+              Change player tag
+            </button>
+          </div>
         `;
 
         const dashboardBtn = document.getElementById("leaderboardDashboardBtn");
         if (dashboardBtn) {
-          dashboardBtn.onclick = () => {
+          dashboardBtn.addEventListener("click", () => {
             hideLeaderboardOverlay();
-            showDashboardOverlay(cachedLeaderboard);
-          };
+            showDashboardOverlay();
+          });
         }
 
-        openAnimatedOverlay(leaderboardOverlay);
+        leaderboardOverlay.style.display = "flex";
         return;
       }
 
@@ -5467,76 +5459,56 @@ function closeAnimatedOverlay(overlayEl) {
           const isMe = entryMatchesUser(entry);
 
           return `
-            <tr class="leaderboard-row ${isMe ? "is-me" : ""}">
-              <td class="leaderboard-cell">${rank}</td>
-              <td class="leaderboard-cell leaderboard-name">${name}</td>
-              <td class="leaderboard-cell">${score}</td>
-              <td class="leaderboard-cell">${time}</td>
-            </tr>
+            <li${isMe ? ' style="color:#bef264;"' : ""}>
+              <strong>#${rank}</strong>
+              ${isMe ? "⭐ " : ""}
+              ${name} · ${time} · ${score} score
+            </li>
           `;
         }).join("");
 
         content.innerHTML = `
-          <div class="leaderboard-header">
-            <div class="leaderboard-title">Top Frogs</div>
-            <div class="leaderboard-subtitle">Best score first · best time as tie breaker</div>
+          <div class="frog-panel-section-label">Global Leaderboard</div>
+          <div style="font-size:12px; color:#d6d3d1; margin-bottom:8px;">
+            ${LEADERBOARD_RESET_NOTE}
           </div>
+          <ul class="frog-panel-list">
+            ${itemsHtml}
+          </ul>
 
-          <table class="leaderboard-table">
-            <thead>
-              <tr>
-                <th class="leaderboard-head-cell">#</th>
-                <th class="leaderboard-head-cell">Player</th>
-                <th class="leaderboard-head-cell">Score</th>
-                <th class="leaderboard-head-cell">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
-
-          <div class="leaderboard-pager">
-            <button
-              class="frog-btn frog-btn-secondary leaderboard-page-btn"
-              id="leaderboardPrevBtn"
-              ${currentPage <= 0 ? "disabled" : ""}
-            >
-              Prev
-            </button>
-
-            <div class="leaderboard-page-info">
-              Page ${currentPage + 1} / ${Math.max(1, Math.ceil(list.length / pageSize))}
+          <div class="frog-panel-footer">
+            <div style="margin-bottom:8px;">
+              Showing ${start + 1}-${end} of ${list.length}
+            </div>
+            <div style="display:flex; gap:8px; justify-content:center;">
+              <button
+                id="leaderboardPrevBtn"
+                class="frog-btn frog-btn-secondary"
+                style="width:auto; margin-bottom:0;"
+                ${currentPage === 0 ? "disabled" : ""}
+              >
+                Prev
+              </button>
+              <button
+                id="leaderboardNextBtn"
+                class="frog-btn frog-btn-secondary"
+                style="width:auto; margin-bottom:0;"
+                ${end >= list.length ? "disabled" : ""}
+              >
+                Next
+              </button>
             </div>
 
-            <button
-              class="frog-btn frog-btn-secondary leaderboard-page-btn"
-              id="leaderboardNextBtn"
-              ${currentPage >= Math.ceil(list.length / pageSize) - 1 ? "disabled" : ""}
-            >
-              Next
-            </button>
+            <div style="margin-top:8px; text-align:center;">
+              <button
+                id="leaderboardDashboardBtn"
+                class="frog-btn frog-btn-secondary"
+                style="width:auto; margin-bottom:0;"
+              >
+                Change player tag
+              </button>
+            </div>
           </div>
-
-          <div class="leaderboard-legend">
-            Your row is highlighted when your saved tag matches the leaderboard.
-          </div>
-
-          ${
-            fromRunEnd
-              ? `
-                <div style="margin-top:10px; text-align:center;">
-                  <button
-                    id="leaderboardDashboardBtn"
-                    class="frog-btn frog-btn-secondary"
-                    style="width:auto; min-width:180px; margin-bottom:0;"
-                  >
-                    Change player tag
-                  </button>
-                </div>
-              `
-              : ""
-          }
         `;
 
         const prevBtn = document.getElementById("leaderboardPrevBtn");
@@ -5544,55 +5516,49 @@ function closeAnimatedOverlay(overlayEl) {
         const dashboardBtn = document.getElementById("leaderboardDashboardBtn");
 
         if (prevBtn) {
-          prevBtn.onclick = () => renderPage(currentPage - 1);
+          prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
         }
-
         if (nextBtn) {
-          nextBtn.onclick = () => renderPage(currentPage + 1);
+          nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
         }
-
         if (dashboardBtn) {
-          dashboardBtn.onclick = () => {
+          dashboardBtn.addEventListener("click", () => {
             hideLeaderboardOverlay();
-            showDashboardOverlay(cachedLeaderboard);
-          };
+            showDashboardOverlay();
+          });
         }
       }
 
       renderPage(currentPage);
-      openAnimatedOverlay(leaderboardOverlay);
     } catch (err) {
+      console.error("Failed to load leaderboard:", err);
       content.innerHTML = `
-        <div class="leaderboard-error">
-          Failed to load leaderboard.
+        <div class="frog-panel-section-label">Leaderboard</div>
+        <ul class="frog-panel-list">
+          <li>Failed to load leaderboard.</li>
+        </ul>
+
+        <div style="margin-top:8px; text-align:center;">
+          <button
+            id="leaderboardDashboardBtn"
+            class="frog-btn frog-btn-secondary"
+            style="width:auto; margin-bottom:0;"
+          >
+            Change player tag
+          </button>
         </div>
-        ${
-          fromRunEnd
-            ? `
-              <div style="margin-top:10px; text-align:center;">
-                <button
-                  id="leaderboardDashboardBtn"
-                  class="frog-btn frog-btn-secondary"
-                  style="width:auto; min-width:180px; margin-bottom:0;"
-                >
-                  Change player tag
-                </button>
-              </div>
-            `
-            : ""
-        }
       `;
 
       const dashboardBtn = document.getElementById("leaderboardDashboardBtn");
       if (dashboardBtn) {
-        dashboardBtn.onclick = () => {
+        dashboardBtn.addEventListener("click", () => {
           hideLeaderboardOverlay();
-          showDashboardOverlay(cachedLeaderboard);
-        };
+          showDashboardOverlay();
+        });
       }
-
-      openAnimatedOverlay(leaderboardOverlay);
     }
+
+    openAnimatedOverlay(leaderboardOverlay);
   }
 
   function hideLeaderboardOverlay() {
