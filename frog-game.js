@@ -6927,7 +6927,7 @@ function startRunFromMenu() {
       updateMiniLeaderboard(topList);
       hideGameOver();
 
-      showLeaderboardOverlay(topList, true);
+      showDashboardOverlay(topList);
     })();
 
     showGameOver();
