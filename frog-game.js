@@ -5830,17 +5830,10 @@ async function showDashboardOverlay(cachedLeaderboard) {
         <strong class="dashboard-stats-featured-value">
           ${
             savedLatestRun
-              ? `${Math.floor(savedLatestRun.score)} score`
+              ? `${currentTag || "You"} · ${Math.floor(savedLatestRun.score)} score · ${formatDashboardDuration(savedLatestRun.time)}`
               : "—"
           }
         </strong>
-        <span class="dashboard-stats-featured-sub">
-          ${
-            savedLatestRun
-              ? `${formatDashboardDuration(savedLatestRun.time)} · ${savedLatestRun.orbs} orbs`
-              : "No run yet"
-          }
-        </span>
       </div>
     </div>
     ${buildStartingBuffSelectorHtml()}

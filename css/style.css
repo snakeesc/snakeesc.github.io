@@ -2259,14 +2259,14 @@ background: #65a30d;
   text-align: right;
 }
 
-.dashboard-stats-featured-sub {
-  grid-column: 1 / -1;
-  color: #a8a29e;
-  font-size: 11px;
-}
-
 @media (max-width: 640px) {
-  .dashboard-stats-inline {
-    grid-template-columns: 1fr;
+  .dashboard-stats-featured-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .dashboard-stats-featured-value {
+    text-align: left;
   }
 }
