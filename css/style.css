@@ -2180,12 +2180,3 @@ background: #65a30d;
   gap: 15px;
   text-align: left;
 }
-.buff-guide-nav {
-  display: flex;
-  gap: 8px;
-}
-
-.buff-guide-nav .buff-page-btn {
-  flex: 1 1 0;
-  margin-bottom: 0;
-}
