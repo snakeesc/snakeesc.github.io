@@ -2255,7 +2255,7 @@ background: #65a30d;
 .dashboard-stats-featured-value {
   color: #bef264;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: normal;
   text-align: right;
 }
 
