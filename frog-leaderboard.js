@@ -8,6 +8,9 @@
   const LEADERBOARD_URL =
     "https://lucky-king-0d37.danielssouthworth.workers.dev/leaderboard";
 
+  const RECENT_RUNS_URL =
+    "https://lucky-king-0d37.danielssouthworth.workers.dev/recent-runs";
+
   let containerEl = null;
   let scoreboardOverlay = null;
   let scoreboardOverlayInner = null;
@@ -966,6 +969,40 @@
   }
 
   // --------------------------------------------------
+  // RECENT RUNS: FETCH & SUBMIT
+  // --------------------------------------------------
+  async function fetchRecentRuns() {
+    try {
+      const res = await fetch(RECENT_RUNS_URL, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) {
+        console.warn("fetchRecentRuns non-OK:", res.status);
+        return [];
+      }
+      const data = await res.json();
+      return Array.isArray(data.runs) ? data.runs : [];
+    } catch (err) {
+      console.error("fetchRecentRuns error", err);
+      return [];
+    }
+  }
+
+  async function submitRecentRun(run) {
+    try {
+      const res = await fetch(RECENT_RUNS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(run),
+      });
+      if (!res.ok) console.warn("submitRecentRun non-OK:", res.status);
+    } catch (err) {
+      console.error("submitRecentRun error", err);
+    }
+  }
+
+  // --------------------------------------------------
   // EXPORT
   // --------------------------------------------------
   window.FrogGameLeaderboard = {
@@ -977,5 +1014,7 @@
     hideScoreboardOverlay,
     getCurrentUserLabel: getCurrentUserLabelFromLeaderboard,
     isProfaneTag,
+    fetchRecentRuns,
+    submitRecentRun,
   };
 })();
