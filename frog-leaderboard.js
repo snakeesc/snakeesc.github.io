@@ -1016,5 +1016,6 @@
     isProfaneTag,
     fetchRecentRuns,
     submitRecentRun,
+    get _lastMyEntry() { return lastMyEntry; },
   };
 })();

@@ -1412,15 +1412,29 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     sheds: Number(snakeShedCount) || 0
   };
 
-  // Check if this is a personal best from cached leaderboard
-  const playerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
+  // Check rank from cached leaderboard - use myEntry from lastMyEntry if available
   let rankHtml = "";
-  if (cachedLeaderboard && Array.isArray(cachedLeaderboard) && playerTag) {
-    const idx = cachedLeaderboard.findIndex(e =>
-      typeof e?.tag === "string" && e.tag.trim().toLowerCase() === playerTag.trim().toLowerCase()
-    );
-    if (idx !== -1) {
-      rankHtml = `<li><strong>Leaderboard Rank:</strong> <span class="stat-highlight">#${idx + 1}</span></li>`;
+  if (cachedLeaderboard && Array.isArray(cachedLeaderboard)) {
+    let rankIdx = -1;
+
+    // Prefer matching by userId via lastMyEntry
+    const myEntry = window.FrogGameLeaderboard && window.FrogGameLeaderboard._lastMyEntry
+      ? window.FrogGameLeaderboard._lastMyEntry
+      : null;
+
+    if (myEntry && myEntry.userId) {
+      rankIdx = cachedLeaderboard.findIndex(e => e && e.userId === myEntry.userId);
+    }
+
+    // Fallback: match by tag
+    if (rankIdx === -1 && playerTag) {
+      rankIdx = cachedLeaderboard.findIndex(e =>
+        typeof e?.tag === "string" && e.tag.trim().toLowerCase() === playerTag.trim().toLowerCase()
+      );
+    }
+
+    if (rankIdx !== -1) {
+      rankHtml = `<li><strong>Leaderboard Rank:</strong> <span class="stat-highlight">#${rankIdx + 1}</span></li>`;
     }
   }
 
