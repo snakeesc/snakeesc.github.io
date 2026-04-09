@@ -1049,29 +1049,42 @@ const MAX_LUCK = 30;
   // --------------------------------------------------
   let inGameUIVisible = true;
 
+  // HUD — three stat chips top-center
   const hud = document.createElement("div");
-  hud.style.position = "absolute";
-  hud.style.top = "10px";
-  hud.style.left = "50%";
-  hud.style.transform = "translateX(-50%)";
-  hud.style.padding = "6px 12px";
-  hud.style.borderRadius = "8px";
-  hud.style.background = "rgba(0,0,0,0.55)";
-  hud.style.color = "#fff";
-  hud.style.fontFamily = "monospace";
-  hud.style.fontSize = "14px";
-  hud.style.zIndex = "100";
-  hud.style.pointerEvents = "none";
+  hud.style.cssText = `
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    display:flex; gap:6px; align-items:center;
+    z-index:100; pointer-events:none; font-family:monospace;
+  `;
 
-  const timerLabel = document.createElement("span");
-  const frogsLabel = document.createElement("span");
-  const scoreLabel = document.createElement("span");
-  frogsLabel.style.marginLeft = "12px";
-  scoreLabel.style.marginLeft = "12px";
+  function makeHudChip(icon) {
+    const chip = document.createElement("div");
+    chip.style.cssText = `
+      display:flex; align-items:center; gap:5px;
+      padding:5px 10px; border-radius:8px;
+      background:rgba(0,0,0,0.62); border:1px solid rgba(255,255,255,0.08);
+      color:#e8e5e0; font-size:13px; font-weight:700; white-space:nowrap;
+    `;
+    const iconEl = document.createElement("span");
+    iconEl.textContent = icon;
+    iconEl.style.cssText = "font-size:11px; opacity:0.7;";
+    const valEl = document.createElement("span");
+    chip.appendChild(iconEl);
+    chip.appendChild(valEl);
+    return { chip, valEl };
+  }
 
-  hud.appendChild(timerLabel);
-  hud.appendChild(frogsLabel);
-  hud.appendChild(scoreLabel);
+  const timerChip = makeHudChip("⏱");
+  const frogsChip = makeHudChip("🐸");
+  const scoreChip = makeHudChip("★");
+
+  const timerLabel = timerChip.valEl;
+  const frogsLabel = frogsChip.valEl;
+  const scoreLabel = scoreChip.valEl;
+
+  hud.appendChild(timerChip.chip);
+  hud.appendChild(frogsChip.chip);
+  hud.appendChild(scoreChip.chip);
   container.appendChild(hud);
 
   // mini leaderboard
@@ -1095,57 +1108,45 @@ const MAX_LUCK = 30;
   // detailed stats panel (bottom-left)
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";
-  statsPanel.style.position = "absolute";
-  statsPanel.style.bottom = "10px";
-  statsPanel.style.left = "10px";
-  statsPanel.style.padding = "8px 12px";
-  statsPanel.style.borderRadius = "10px";
-  statsPanel.style.background = "rgba(0,0,0,0.75)";
-  statsPanel.style.border = "1px solid #444";
-  statsPanel.style.color = "#fff";
-  statsPanel.style.fontFamily = "monospace";
-  statsPanel.style.fontSize = "11px";
-  statsPanel.style.zIndex = "100";
-  statsPanel.style.maxWidth = "260px";
-  statsPanel.style.pointerEvents = "none";
-  statsPanel.style.lineHeight = "1.4";
-  statsPanel.style.display = "none";
+  statsPanel.style.cssText = `
+    position:absolute; bottom:10px; left:10px;
+    padding:10px 12px; border-radius:10px;
+    background:rgba(15,13,11,0.88); border:1px solid rgba(255,255,255,0.1);
+    color:#e8e5e0; font-family:monospace; font-size:11px;
+    z-index:100; max-width:220px; pointer-events:none; line-height:1.4;
+    display:none;
+  `;
   container.appendChild(statsPanel);
 
-  // Small control buttons (top-left)
+  // Controls bar — horizontal row, top-left
   const controlsBar = document.createElement("div");
-  controlsBar.style.position = "absolute";
-  controlsBar.style.top = "10px";
-  controlsBar.style.left = "10px";
-  controlsBar.style.display = "flex";
-  controlsBar.style.flexDirection = "column";
-  controlsBar.style.gap = "4px";
-  controlsBar.style.zIndex = "120";
-  controlsBar.style.pointerEvents = "auto";
+  controlsBar.style.cssText = `
+    position:absolute; top:10px; left:10px;
+    display:flex; flex-direction:row; gap:5px;
+    z-index:120; pointer-events:auto;
+  `;
 
-  function makeControlButton(label) {
+  function makeControlButton(icon, label) {
     const btn = document.createElement("button");
-    btn.textContent = label;
-    btn.style.fontFamily = "monospace";
-    btn.style.fontSize = "11px";
-    btn.style.padding = "3px 6px";
-    btn.style.borderRadius = "6px";
-    btn.style.border = "1px solid #444";
-    btn.style.background = "rgba(0,0,0,0.8)";
-    btn.style.color = "#fff";
-    btn.style.cursor = "pointer";
-    btn.style.outline = "none";
-    btn.onmouseenter = () => { btn.style.background = "#222"; };
-    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.8)"; };
+    btn.title = label;
+    btn.style.cssText = `
+      font-family:monospace; font-size:12px; font-weight:700;
+      padding:5px 9px; border-radius:7px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(0,0,0,0.65); color:#e8e5e0;
+      cursor:pointer; outline:none; white-space:nowrap;
+      transition:background 0.1s;
+    `;
+    btn.textContent = icon + " " + label;
+    btn.onmouseenter = () => { btn.style.background = "rgba(255,255,255,0.12)"; };
+    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.65)"; };
     return btn;
   }
 
-  //const btnHowTo = makeControlButton("How to play");
-  const btnStats = makeControlButton("Toggle stats");
-  const btnSound = makeControlButton("Sound: ON");
-  const btnEnd   = makeControlButton("End run");
+  const btnStats = makeControlButton("📊", "Stats");
+  const btnSound = makeControlButton("🔊", "Sound");
+  const btnEnd   = makeControlButton("✕", "End Run");
 
-  //controlsBar.appendChild(btnHowTo);
   controlsBar.appendChild(btnStats);
   controlsBar.appendChild(btnSound);
   controlsBar.appendChild(btnEnd);
@@ -1196,64 +1197,49 @@ const MAX_LUCK = 30;
 
   function updateHUD() {
     if (!inGameUIVisible) return;
-
-    timerLabel.textContent = `Time: ${formatTime(elapsedTime)}`;
-    frogsLabel.textContent = `Frogs left: ${frogs.length}`;
-    scoreLabel.textContent = `Score: ${Math.floor(score)}`;
+    timerLabel.textContent = formatTime(elapsedTime);
+    frogsLabel.textContent = frogs.length;
+    scoreLabel.textContent = Math.floor(score).toLocaleString();
   }
 
   function updateStatsPanel() {
-    const neon = "#4defff";
     if (!statsPanel || !statsPanelVisible || !inGameUIVisible) return;
 
-    const frogsAlive = frogs.length;
-    const snakesAlive =
-      (snake ? 1 : 0) + (Array.isArray(extraSnakes) ? extraSnakes.length : 0);
-
-    const scoreNow = Math.floor(score);
-    const timeNow  = formatTime(elapsedTime);
-
-    // Permanent buff percentages
-    const hopSpeedBonus =
-      frogPermanentSpeedFactor < 1
-        ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100)
-        : 0;
-
+    const hopSpeedBonus = frogPermanentSpeedFactor < 1
+      ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100) : 0;
     const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
-
-    const orbRateBonus =
-      orbSpawnIntervalFactor < 1
-        ? Math.round((1 - orbSpawnIntervalFactor) * 100)
-        : 0;
-
+    const orbRateBonus      = orbSpawnIntervalFactor < 1
+      ? Math.round((1 - orbSpawnIntervalFactor) * 100) : 0;
     const deathrattlePct  = Math.round(frogDeathRattleChance * 100);
     const orbCollectorPct = Math.round(orbCollectorChance * 100);
 
-    const snakeSpeedBonus =
-      snakePermanentSpeedFactor > 1
-        ? Math.round((snakePermanentSpeedFactor - 1) * 100)
-        : 0;
-
-    const totalOrbsText =
-      totalOrbsSpawned > 0
-        ? `${totalOrbsCollected}/${totalOrbsSpawned}`
-        : `${totalOrbsCollected}`;
+    // Only show rows that are non-zero or active
+    const rows = [
+      ["🐸 Hop speed",     hopSpeedBonus > 0,     `+${hopSpeedBonus}%`],
+      ["↑ Jump height",   jumpBonus > 0,          `+${jumpBonus}%`],
+      ["⏳ Buff duration", buffDurationBonus > 0,  `+${buffDurationBonus}%`],
+      ["🔮 Orb rate",      orbRateBonus > 0,       `+${orbRateBonus}%`],
+      ["💀 Deathrattle",  deathrattlePct > 0,     `${deathrattlePct}%`],
+      ["🧲 Orb collector",orbCollectorPct > 0,    `${orbCollectorPct}%`],
+      ["🏹 Last Stand",   lastStandActive,         "ON"],
+      ["👻 Grave Wave",   graveWaveActive,         "ON"],
+      ["🧪 Orb Spec.",    orbSpecialistActive,     "ON"],
+    ].filter(([, show]) => show);
 
     statsPanel.style.display = "block";
-    statsPanel.innerHTML =
-      `<div style="font-weight:bold; margin-bottom:4px;">Upgrade stats</div>` +
-      `<div>Hop speed: <span style="color: ${neon};">${hopSpeedBonus}%</span></div>` +
-      `<div>Jump height: <span style="color: ${neon};">${jumpBonus}%</span></div>` +
-      `<div>Buff duration: <span style="color: ${neon};">${buffDurationBonus}%</span></div>` +
-      `<div>Orb spawn rate: <span style="color: ${neon};">${orbRateBonus}%</span></div>` +
-      `<div>Deathrattle: <span style="color: ${neon};">${deathrattlePct}%</span></div>` +
-      `<div>Orb Collector: <span style="color: ${neon};">${orbCollectorPct}%</span></div>` +
-      `<div>Snake speed bonus: <span style="color: ${neon};">${snakeSpeedBonus}%</span></div>` +
-      `<div>Last Stand: <span style="color: ${neon};">${lastStandActive ? "ON" : "off"}</span></div>` +
-      `<div>Grave Wave: <span style="color: ${neon};">${graveWaveActive ? "ON" : "off"}</span></div>` +
-      `<div>Orb Specialist: <span style="color: ${neon};">${orbSpecialistActive ? "ON" : "off"}</span></div>` +
-      `<div>Cannibal frogs: <span style="color: ${neon};">${frogEatFrogActive ? "ON" : "off"}</span></div>`;
+    statsPanel.innerHTML = `
+      <div style="font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#84cc16; margin-bottom:6px;">
+        Upgrades
+      </div>
+      <div style="display:grid; grid-template-columns:auto auto; gap:2px 12px; align-items:center;">
+        ${rows.map(([label, , val]) => `
+          <span style="color:#9a948c; font-size:10px;">${label}</span>
+          <span style="color:#d9f99d; font-size:11px; font-weight:700; text-align:right;">${val}</span>
+        `).join("")}
+      </div>
+      ${rows.length === 0 ? '<div style="color:#9a948c; font-size:11px;">No upgrades yet</div>' : ""}
+    `;
   }
 
     function toggleStatsPanel() {
@@ -1412,13 +1398,10 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     sheds: Number(snakeShedCount) || 0
   };
 
-  // Use a mutable variable so the tag-save handler can update it without
-  // the overlay needing to close/reopen (fixes a stale-closure bug).
   let activePlayerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
   const localStats = loadDashboardStats();
   const currentTag = getSavedDashboardTag() || "";
 
-  // Find rank and best run from cached leaderboard
   let rankIdx = -1;
   let leaderboardBest = { bestRun: 0, bestTime: 0, found: false };
   const list = Array.isArray(cachedLeaderboard) ? cachedLeaderboard : [];
@@ -1426,9 +1409,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   const myEntry = window.FrogGameLeaderboard && window.FrogGameLeaderboard._lastMyEntry
     ? window.FrogGameLeaderboard._lastMyEntry : null;
 
-  if (myEntry && myEntry.userId) {
-    rankIdx = list.findIndex(e => e && e.userId === myEntry.userId);
-  }
+  if (myEntry && myEntry.userId) rankIdx = list.findIndex(e => e && e.userId === myEntry.userId);
   if (rankIdx === -1 && activePlayerTag) {
     rankIdx = list.findIndex(e =>
       typeof e?.tag === "string" &&
@@ -1444,69 +1425,66 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     };
   }
 
-  const rankHtml = rankIdx !== -1 ? ` · <span class="stat-highlight">#${rankIdx + 1}</span> ranked` : "";
-  const bestRunHtml = leaderboardBest.found
-    ? `<li><strong>${leaderboardBest.bestRun}</strong> score · ${formatLeaderboardTime(leaderboardBest.bestTime)}${rankHtml}</li>`
-    : `<li>No leaderboard entry yet.</li>`;
-
   const totalRuns  = localStats.totalRuns || 0;
   const totalTime  = formatDashboardDuration(localStats.totalPlayTime || 0);
   const totalOrbs  = localStats.totalOrbsCollected || 0;
-  const totalFrogs = localStats.totalFrogsLost || 0;
+
+  const rankHtml = rankIdx !== -1
+    ? `<span style="color:#84cc16; font-weight:800;">#${rankIdx + 1}</span> on leaderboard`
+    : `<span style="color:#9a948c;">Not yet ranked</span>`;
 
   content.innerHTML = `
-    <div class="frog-panel-section-label" style="margin-top:10px;">Player Tag</div>
-    <div style="margin-bottom:10px;">
-      <input
-        id="endSummaryTagInput"
-        type="text"
-        maxlength="20"
-        value="${String(currentTag).replace(/"/g, "&quot;")}"
-        placeholder="Enter player tag"
-        style="
-          width:100%;
-          box-sizing:border-box;
-          padding:5px 8px;
-          border-radius:6px;
-          border:1px solid #44403c;
-          background:#292524;
-          color:white;
-          font-family:inherit;
-          font-size:12px;
-          margin-bottom:6px;
-        "
-      />
-      <button
-        id="endSummaryTagSaveBtn"
-        class="frog-btn frog-btn-secondary"
-        style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:4px;"
-      >Save Tag</button>
-      <span id="endSummaryTagMsg" style="font-size:11px; margin-left:8px;"></span>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:14px;">
+      <div style="background:#151412; border:1px solid #3a3632; border-radius:9px; padding:10px 12px; text-align:center;">
+        <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:5px;">Score</div>
+        <div style="font-size:22px; font-weight:800; color:#f5f5f0;">${Math.floor(run.score || 0).toLocaleString()}</div>
+      </div>
+      <div style="background:#151412; border:1px solid #3a3632; border-radius:9px; padding:10px 12px; text-align:center;">
+        <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:5px;">Time</div>
+        <div style="font-size:22px; font-weight:800; color:#f5f5f0;">${formatLeaderboardTime(run.time || 0)}</div>
+      </div>
+      <div style="background:#151412; border:1px solid #3a3632; border-radius:9px; padding:10px 12px; text-align:center;">
+        <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:5px;">Orbs</div>
+        <div style="font-size:22px; font-weight:800; color:#f5f5f0;">${run.orbs || 0}</div>
+      </div>
     </div>
 
-    <div class="frog-panel-section-label">This Run</div>
-    <ul class="frog-panel-list">
-      <li style="color:#bef264;">
-        <strong>${Math.floor(run.score || 0)}</strong> score
-        · ${formatLeaderboardTime(run.time || 0)}
-        · ${run.orbs || 0} orbs
-        · ${run.frogsLost || 0} frogs lost
-        · ${run.sheds || 0} sheds
-      </li>
-    </ul>
+    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#9a948c; margin-bottom:14px; padding:8px 10px; background:#151412; border:1px solid #3a3632; border-radius:8px;">
+      <span>${run.frogsLost || 0} frogs lost · ${run.sheds || 0} sheds</span>
+      <span>${rankHtml}</span>
+    </div>
 
-    <div class="frog-panel-section-label" style="margin-top:8px;">Best Run</div>
-    <ul class="frog-panel-list">${bestRunHtml}</ul>
+    ${leaderboardBest.found ? `
+    <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:6px; font-weight:700;">Your Best</div>
+    <div style="font-size:12px; color:#d6d2cc; margin-bottom:14px; padding:8px 10px; background:#151412; border:1px solid #3a3632; border-radius:8px;">
+      ${leaderboardBest.bestRun.toLocaleString()} score · ${formatLeaderboardTime(leaderboardBest.bestTime)}
+    </div>
+    ` : ""}
 
-    <div class="frog-panel-section-label" style="margin-top:8px;">Lifetime</div>
-    <ul class="frog-panel-list">
-      <li>${totalRuns} runs · ${totalTime} played · ${totalOrbs} orbs · ${totalFrogs} frogs lost</li>
-    </ul>
+    <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:6px; font-weight:700;">Player Tag</div>
+    <div style="display:flex; gap:7px; margin-bottom:4px;">
+      <input
+        id="endSummaryTagInput"
+        type="text" maxlength="20"
+        value="${String(currentTag).replace(/"/g, "&quot;")}"
+        placeholder="Enter tag for leaderboard"
+        style="flex:1; padding:7px 9px; border-radius:7px; border:1px solid #3a3632; background:#151412; color:#e8e5e0; font-family:inherit; font-size:12px;"
+      />
+      <button id="endSummaryTagSaveBtn" class="frog-btn frog-btn-secondary" style="width:auto; padding:7px 12px; margin:0; font-size:12px; white-space:nowrap;">
+        Save
+      </button>
+    </div>
+    <div id="endSummaryTagMsg" style="font-size:11px; min-height:16px; margin-bottom:10px; color:#9a948c;"></div>
+
+    <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:4px; font-weight:700;">All Time</div>
+    <div style="font-size:11px; color:#9a948c;">
+      ${totalRuns} runs · ${totalTime} played · ${totalOrbs} orbs collected
+    </div>
   `;
 
   openAnimatedOverlay(endGameSummaryOverlay);
 
-  // Wire up tag input
+  // Wire up tag input (keep your existing logic here unchanged)
   const tagInput = document.getElementById("endSummaryTagInput");
   const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
   const tagMsg = document.getElementById("endSummaryTagMsg");
@@ -1519,15 +1497,10 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         return;
       }
       const newTag = validation.tag;
-
       try {
         const result = await submitScoreToServer(
-          Math.floor(run.score || 0),
-          run.time || 0,
-          null,
-          newTag
+          Math.floor(run.score || 0), run.time || 0, null, newTag
         );
-
         if (result && result._error) {
           const msg = result.error === "tag_taken"
             ? "That tag is already taken — try another."
@@ -1535,17 +1508,14 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
           if (tagMsg) { tagMsg.textContent = msg; tagMsg.style.color = "#fca5a5"; }
           return;
         }
-
         await saveDashboardTag(newTag);
-        // Update the live mutable reference so entryMatchesUser stays correct
         activePlayerTag = newTag;
         if (myEntry) myEntry.tag = newTag;
-        if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#bef264"; }
-
+        if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#84cc16"; }
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
       } catch (e) {
-        if (tagMsg) { tagMsg.textContent = "Connection error. Try again."; tagMsg.style.color = "#fca5a5"; }
+        if (tagMsg) { tagMsg.textContent = "Connection error."; tagMsg.style.color = "#fca5a5"; }
       }
     });
   }
@@ -5936,164 +5906,87 @@ async function showDashboardOverlay(cachedLeaderboard) {
     : "";
 
   content.innerHTML = `
-    <div class="frog-panel-section-label">Player Profile</div>
-    <div
-      style="
-        display:flex;
-        align-items:center;
-        gap:10px;
-        margin-bottom:10px;
-        padding:8px 10px;
-        border:1px solid #44403c;
-        border-radius:12px;
-        background:#1c1917;
-      "
-    >
-      <div
-        style="
-          position:relative;
-          width:48px;
-          height:48px;
-          min-width:48px;
-          border-radius:999px;
-          overflow:hidden;
-          border:0px solid #57534e;
-          background:${dashboardPfp.bgColor};
-        "
-      >
-        <img
-          src="${dashboardPfp.spriteSrc}"
-          alt=""
-          style="
-            position:absolute;
-            inset:0;
-            width:100%;
-            height:100%;
-            image-rendering:pixelated;
-            z-index:1;
-          "
-        />
-        <img
-          src="${dashboardPfp.skinSrc}"
-          alt=""
-          style="
-            position:absolute;
-            inset:0;
-            width:100%;
-            height:100%;
-            image-rendering:pixelated;
-            z-index:2;
-          "
-        />
-        ${dashboardPfp.eyesSrc ? `
-          <img
-            src="${dashboardPfp.eyesSrc}"
-            alt=""
-            style="
-              position:absolute;
-              inset:0;
-              width:100%;
-              height:100%;
-              image-rendering:pixelated;
-              z-index:3;
-            "
-          />
-        ` : ""}
-        ${dashboardPfp.hatSrc ? `
-          <img
-            src="${dashboardPfp.hatSrc}"
-            alt=""
-            style="
-              position:absolute;
-              inset:0;
-              width:100%;
-              height:100%;
-              image-rendering:pixelated;
-              z-index:4;
-            "
-          />
-        ` : ""}
+    <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#151412; border:1px solid #3a3632; border-radius:10px; margin-bottom:14px;">
+      <div style="position:relative; width:52px; height:52px; min-width:52px; border-radius:999px; overflow:hidden; border:2px solid #3a3632; background:#0a0908;">
+        <img src="${dashboardPfp.spriteSrc}" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:1;" />
+        <img src="${dashboardPfp.skinSrc}"   style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:2;" />
+        ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:3;" />` : ""}
+        ${dashboardPfp.hatSrc  ? `<img src="${dashboardPfp.hatSrc}"  style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:4;" />` : ""}
       </div>
-
-      <div style="display:flex; flex-direction:column; gap:2px;">
-        <div>
-          <strong>Tag:</strong>
-          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag}</span>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:800; font-size:14px; color:#e8e5e0; margin-bottom:2px;">
+          ${currentTag || '<span style="color:#9a948c;">No tag set</span>'}
         </div>
-        <div>
-          <strong>Level:</strong>
-          <span class="stat-highlight">${levelData.level}</span>
+        <div style="font-size:11px; color:#84cc16; font-weight:700; margin-bottom:6px;">Level ${levelData.level}</div>
+        <div style="width:100%; height:5px; background:#252220; border-radius:999px; overflow:hidden;">
+          <div style="width:${levelData.progressPercent}%; height:100%; background:#65a30d; border-radius:999px;"></div>
         </div>
+        <div style="font-size:10px; color:#9a948c; margin-top:3px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
       </div>
     </div>
 
-    <div style="margin-bottom:12px;">
-      <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
-        ${levelData.orbsNeededForNextLevel} orbs until level ${levelData.nextLevel}
-      </div>
-      <div
-        style="
-          width:100%;
-          height:8px;
-          background:#292524;
-          border:1px solid #44403c;
-          border-radius:999px;
-          overflow:hidden;
-        "
-      >
-        <div
-          style="
-            width:${levelData.progressPercent}%;
-            height:100%;
-            background:#65a30d;
-            border-radius:999px;
-          "
-        ></div>
-      </div>
-    </div>
-
-    <div style="margin-bottom:12px;">
+    <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:6px; font-weight:700;">Player Tag</div>
+    <div style="display:flex; gap:7px; margin-bottom:4px;">
       <input
-        id="dashboardTagInput"
-        type="text"
-        maxlength="20"
+        id="dashboardTagInput" type="text" maxlength="20"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
-        placeholder="Enter player tag"
-        style="
-          width:100%;
-          box-sizing:border-box;
-          padding:5px 8px;
-          border-radius:6px;
-          border:1px solid #44403c;
-          background:#292524;
-          color:white;
-          font-family:inherit;
-          font-size:12px;
-          margin-bottom:6px;
-        "
+        placeholder="Set your leaderboard tag"
+        style="flex:1; padding:7px 9px; border-radius:7px; border:1px solid #3a3632; background:#151412; color:#e8e5e0; font-family:inherit; font-size:12px;"
       />
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <button
-          id="dashboardSaveTagBtn"
-          class="frog-btn frog-btn-secondary"
-          style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
-        >
-          Save Tag
-        </button>
-        ${localStats.recentRuns && localStats.recentRuns.length ? `
-          <button
-            id="dashboardLastRunBtn"
-            class="frog-btn frog-btn-secondary"
-            style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
-          >
-            📋 Last Run
-          </button>
-        ` : ""}
+      <button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary" style="width:auto; padding:7px 12px; margin:0; font-size:12px; white-space:nowrap;">
+        Save
+      </button>
+    </div>
+    <div id="dashboardTagMessage" style="font-size:11px; min-height:16px; margin-bottom:14px; color:#9a948c;"></div>
+
+    ${leaderboardBest.found ? `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px;">
+      <div style="background:#151412; border:1px solid #3a3632; border-radius:9px; padding:10px 12px;">
+        <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:4px;">Best Score</div>
+        <div style="font-size:18px; font-weight:800; color:#e8e5e0;">${leaderboardBest.bestRun.toLocaleString()}</div>
+      </div>
+      <div style="background:#151412; border:1px solid #3a3632; border-radius:9px; padding:10px 12px;">
+        <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:4px;">Best Time</div>
+        <div style="font-size:18px; font-weight:800; color:#e8e5e0;">${formatLeaderboardTime(leaderboardBest.bestTime)}</div>
       </div>
     </div>
+    ` : ""}
+
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:14px;">
+      <div style="background:#151412; border:1px solid #3a3632; border-radius:9px; padding:10px 12px; text-align:center;">
+        <div style="font-size:10px; color:#9a948c; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em;">Runs</div>
+        <div style="font-size:17px; font-weight:800; color:#e8e5e0;">${localStats.totalRuns || 0}</div>
+      </div>
+      <div style="background:#151412; border:1px solid #3a3632; border-radius:9px; padding:10px 12px; text-align:center;">
+        <div style="font-size:10px; color:#9a948c; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em;">Orbs</div>
+        <div style="font-size:17px; font-weight:800; color:#e8e5e0;">${localStats.totalOrbsCollected || 0}</div>
+      </div>
+      <div style="background:#151412; border:1px solid #3a3632; border-radius:9px; padding:10px 12px; text-align:center;">
+        <div style="font-size:10px; color:#9a948c; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em;">Time</div>
+        <div style="font-size:17px; font-weight:800; color:#e8e5e0;">${formatDashboardDuration(localStats.totalPlayTime || 0)}</div>
+      </div>
+    </div>
+
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
-  `; 
+
+    ${localStats.recentRuns && localStats.recentRuns.length ? `
+      <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#9a948c; margin-bottom:6px; font-weight:700; margin-top:2px;">Recent Runs</div>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        ${localStats.recentRuns.slice(0, 3).map((r, i) => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; background:#151412; border:1px solid #3a3632; border-radius:7px; font-size:11px; ${r.isLatest ? "border-color:rgba(132,204,22,0.35);" : ""}">
+            <span style="color:${r.isLatest ? "#d9f99d" : "#d6d2cc"}; font-weight:${r.isLatest ? "700" : "400"};">
+              ${r.isLatest ? "★ " : ""}${Math.floor(r.score).toLocaleString()} pts
+            </span>
+            <span style="color:#9a948c;">${formatLeaderboardTime(r.time)} · ${r.orbs} orbs</span>
+          </div>
+        `).join("")}
+      </div>
+      <button id="dashboardLastRunBtn" class="frog-btn frog-btn-secondary" style="margin-top:8px; font-size:12px;">
+        📋 Full Last Run Details
+      </button>
+    ` : ""}
+  `;
 
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");

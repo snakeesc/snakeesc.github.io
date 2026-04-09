@@ -54,35 +54,23 @@
 
   <!-- MAIN MENU OVERLAY -->
   <div id="mainMenuOverlay" class="frog-overlay">
-    <div class="frog-panel" style="background: transparent !important;">
-      <div class="frog-panel-title">
-        Escape the Snake
-        <span class="emoji">🐍</span>
+    <div class="frog-panel" style="background:transparent !important; border:none; box-shadow:none; min-width:300px; max-width:360px; text-align:center;">
+      <div class="frog-panel-title" style="font-size:24px; margin-bottom:4px;">
+        🐍 Escape the Snake
+      </div>
+      <div class="frog-panel-sub" style="margin-bottom:20px;">
+        Keep your frogs alive as long as you can
       </div>
 
-      <div class="frog-panel-sub">
-        Keep your frogs alive as long as you can.<br />
-        Mouse to move · Frogs follow your cursor.
-      </div>
+      <button id="btnStartRun" class="frog-btn frog-btn-primary" style="font-size:15px; padding:12px; margin-bottom:12px;">
+        ▶ Start Run
+      </button>
 
-      <div style="margin-bottom: 8px;">
-        <button id="btnStartRun" class="frog-btn frog-btn-primary">
-          Start Run
-        </button>
-      </div>
-      <div>
-        <button id="btnHowTo" class="frog-btn frog-btn-secondary">
-          How to Play
-        </button>
-        <button id="btnBuffGuide" class="frog-btn frog-btn-secondary">
-          Upgrades
-        </button>
-        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">
-          Leaderboard
-        </button>
-        <button id="btnDashboard" class="frog-btn frog-btn-secondary">
-          Dashboard
-        </button>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px;">
+        <button id="btnHowTo"      class="frog-btn frog-btn-secondary" style="margin:0;">❓ How to Play</button>
+        <button id="btnBuffGuide"  class="frog-btn frog-btn-secondary" style="margin:0;">⚡ Upgrades</button>
+        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary" style="margin:0;">🏆 Leaderboard</button>
+        <button id="btnDashboard"  class="frog-btn frog-btn-secondary" style="margin:0;">👤 Dashboard</button>
       </div>
     </div>
   </div>
@@ -110,130 +98,45 @@
 
   <!-- HOW TO PLAY OVERLAY -->
   <div id="howToOverlay" class="frog-overlay">
-    <div class="frog-panel">
-      <div class="frog-panel-title">
-        How to Play
-        <span class="emoji">❓</span>
-      </div>
-
-      <div class="frog-panel-sub">
-        Escape the Snake is a survival game. Keep your frogs alive as long as possible.
-      </div>
-
-      <div class="frog-panel-section-label">Controls</div>
-      <ul class="frog-panel-list">
-        <li><strong>Mouse:</strong> move your cursor – your frogs try to follow.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Goal</div>
-      <ul class="frog-panel-list">
-        <li>Avoid letting the snake eat your frogs!</li>
-        <li>The goal is to stay alive for as long as possible.</li>
-        <li>Collect orbs and upgrade buffs to survive longer.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Tips</div>
-      <ul class="frog-panel-list">
-        <li>Plan your path early when the snake sheds (it gets faster).</li>
-        <li>Don’t chase every orb; staying alive is more important.</li>
-        <li>Some buffs make the snake slower, some make frogs safer – learn which is which.</li>
-      </ul>
-
+    <div class="frog-panel" style="max-width:420px;">
+      <div class="frog-panel-title">❓ How to Play</div>
+      <div class="frog-panel-sub">Survive as long as possible. Don't let the snake eat all your frogs.</div>
+      <!-- content injected by JS showHowToOverlay() -->
       <div class="frog-panel-footer">
-        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
-          Close
-        </button>
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
       </div>
     </div>
   </div>
 
   <!-- BUFF / UPGRADE GUIDE OVERLAY -->
   <div id="buffGuideOverlay" class="frog-overlay">
-    <div class="frog-panel">
-      <div class="frog-panel-title">
-        Upgrades
-        <span class="emoji"></span>
-      </div>
-
-      <div class="frog-panel-sub">
-        A quick reference for the regular and epic upgrades in the current build.
-      </div>
-
-      <div class="frog-panel-section-label">Regular Upgrades</div>
-      <ul class="frog-panel-list">
-        <li><strong>Spawn Frogs</strong> — spawn frogs instantly.</li>
-        <li><strong>Orb Whisperer</strong> — orbs linger longer before fading.</li>
-        <li><strong>Ouroboros Pact</strong> — dead frogs have a chance to drop an orb.</li>
-        <li><strong>Mutation</strong> — +10% jump speed and +10% jump height.</li>
-        <li><strong>Buffs Last Longer</strong> — increases buff duration.</li>
-        <li><strong>More Orbs Over Time</strong> — faster orb spawns.</li>
-        <li><strong>Deathrattle</strong> — dead frogs can respawn.</li>
-        <li><strong>Orb Collector</strong> — collected orbs can spawn extra frogs.</li>
-        <li><strong>Last Stand</strong> — your last frog gets a strong revive chance.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Epic Upgrades</div>
-      <ul class="frog-panel-list">
-        <li><strong>Spawn Frogs</strong> — spawn a large frog wave instantly.</li>
-        <li><strong>Deathrattle</strong> — big boost to revive chance.</li>
-        <li><strong>Buffs Extended</strong> — larger buff duration increase.</li>
-        <li><strong>Orb Storm</strong> — drops a burst of random orbs immediately.</li>
-        <li><strong>Snake Egg</strong> — weakens the speed gain on the next shed.</li>
-        <li><strong>Grave Wave</strong> — each shed summons ghost frogs.</li>
-        <li><strong>Orb Specialist</strong> — orbs always spawn 1 frog, with Orb Collector able to add more.</li>
-        <li><strong>Frog Scatter</strong> — kill and respawn all current frogs.</li>
-        <li><strong>Pair of Scissors</strong> — splits the snake into two slower snakes.</li>
-      </ul>
-
-      <div class="frog-panel-footer">
-        <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
-          Close
-        </button>
-      </div>
+    <div class="frog-panel" style="max-width:560px; width:min(560px,92vw);">
+      <!-- fully injected by showBuffGuideOverlay() -->
     </div>
   </div>
 
   <!-- LEADERBOARD OVERLAY -->
   <div id="leaderboardOverlay" class="frog-overlay">
-    <div class="frog-panel">
-      <div class="frog-panel-title" style="color: white !important;">
-        Leaderboard
-        <span class="emoji">🏆</span>
-      </div>
-
-      <div class="frog-panel-sub" style="color: white !important;">
-        Top runs from all players.
-      </div>
-
-      <div id="leaderboardContent">
-        <!-- Your existing leaderboard table / list goes here -->
-      </div>
-
+    <div class="frog-panel" style="max-width:480px; width:min(480px,92vw);">
+      <div class="frog-panel-title">🏆 Leaderboard</div>
+      <div id="leaderboardContent"></div>
       <div class="frog-panel-footer">
-        <button id="leaderboardCloseBtn" class="frog-btn frog-btn-secondary">
-          Close
-        </button>
+        <button id="leaderboardCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
       </div>
     </div>
   </div>
-    <!-- DASHBOARD OVERLAY -->
+
+  <!-- DASHBOARD OVERLAY -->
   <div id="dashboardOverlay" class="frog-overlay">
-    <div class="frog-panel">
-
-      <div class="frog-panel-sub">
-      </div>
-
-      <div id="dashboardContent">
-        <div class="leaderboard-loading">Loading dashboard…</div>
-      </div>
-
+    <div class="frog-panel" style="max-width:500px; width:min(500px,92vw);">
+      <div class="frog-panel-title">👤 Dashboard</div>
+      <div id="dashboardContent"><div class="leaderboard-loading">Loading…</div></div>
       <div class="frog-panel-footer">
-        <button id="dashboardCloseBtn" class="frog-btn frog-btn-secondary">
-          Close
-        </button>
+        <button id="dashboardCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
       </div>
     </div>
   </div>
+
   <script src="frog-game-config.js"></script>
   <script src="frog-game-utils.js"></script>
   <script src="frog-audio.js"></script>
