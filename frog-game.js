@@ -4447,39 +4447,24 @@ function samplePathAtDistance(path, startIdx, dist) {
     }
 
     // 4. COLLISIONS
-    let prevX = head.x;
-    let prevY = head.y;
-    let searchIdx = 0;
+    const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
+    const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
+    const eatR2 = Math.pow(getSnakeEatRadius(), 2);
 
-    for (let i = 0; i < snakeObj.segments.length; i++) {
-      const result = samplePathAtDistance(
-        snakeObj.path,
-        searchIdx,
-        SEGMENT_VISUAL_SPACING
-      );
-      searchIdx = result.nextStart;
-
-      const seg = snakeObj.segments[i];
-      seg.x = result.x;
-      seg.y = result.y;
-
-      // Use actual sampled positions to get direction.
-      // This stays stable even when snake slow packs the path with tiny steps.
-      const dx = prevX - seg.x;
-      const dy = prevY - seg.y;
-      let angle = Math.atan2(dy, dx);
-
-      // Tail sprite faces the opposite direction from body segments
-      const isTail = i === snakeObj.segments.length - 1;
-      if (isTail) {
-        angle += Math.PI;
+    for (let i = frogList.length - 1; i >= 0; i--) {
+      const f = frogList[i];
+      const dx = (f.x + FROG_SIZE / 2) - headCx;
+      const dy = (f.baseY + FROG_SIZE / 2) - headCy;
+      if (dx * dx + dy * dy <= eatR2) {
+        if (isMainMenu) {
+          frogList.splice(i, 1);
+          if (f.el.parentNode) f.el.parentNode.removeChild(f.el);
+        } else if (tryKillFrogAtIndex(i, "snake")) {
+          frogsEatenCount++;
+          score += (1 * permanentScoreMultiplier * (scoreMultiTime > 0 ? SCORE_MULTI_FACTOR : 1));
+          if (frogsEatenCount % 2 === 0) growSnakeForSnake(snakeObj, 1);
+        }
       }
-
-      seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
-
-      prevX = seg.x;
-      prevY = seg.y;
     }
 
     if (snakeEatingOldBody && snakeObj === snake && scissorsRemnantSegments.length > 0) {
