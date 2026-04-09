@@ -680,40 +680,83 @@
       renderSummary(summaryName);
       scoreboardOverlayInner.appendChild(summary);
 
-      function finish(tagValue) {
-        try {
-          if (tagValue && typeof localStorage !== "undefined") {
-            localStorage.setItem(TAG_STORAGE_KEY, tagValue);
-          }
-        } catch (e) {}
-
-        if (tagValue) {
-          if (myEntry) myEntry.tag = tagValue;
-          if (lastMyEntry) lastMyEntry.tag = tagValue;
-          renderSummary(getDisplayName(myEntry, "You"));
-          // Tag will be picked up automatically on the next run's POST — no extra request needed
+      async function finish(tagValue) {
+        const cleanTag = String(tagValue || "").trim();
+        if (!cleanTag) {
+          tagBox.style.display = "none";
+          return;
         }
 
-        tagBox.style.display = "none";
+        const scoreToUse = Math.floor(
+          typeof lastScore === "number" ? lastScore : getEntryScore(myEntry)
+        );
+        const timeToUse =
+          typeof lastTime === "number" ? lastTime : getEntryTime(myEntry);
+
+        try {
+          const result = await submitScoreToServer(scoreToUse, timeToUse, finalStats || null, cleanTag);
+
+          if (result && result._error) {
+            const msg =
+              result.error === "tag_taken"
+                ? "That tag is already taken. Try another."
+                : (result.message || "Could not save tag. Try again.");
+            error.textContent = msg;
+            return;
+          }
+
+          if (typeof localStorage !== "undefined") {
+            localStorage.setItem(TAG_STORAGE_KEY, cleanTag);
+          }
+
+          if (myEntry) myEntry.tag = cleanTag;
+          if (lastMyEntry) lastMyEntry.tag = cleanTag;
+
+          renderSummary(getDisplayName(myEntry, cleanTag));
+
+          if (Array.isArray(result)) {
+            // Re-render the mini leaderboard immediately with fresh worker data
+            updateMiniLeaderboard(result);
+          } else {
+            const refreshed = await fetchLeaderboard();
+            updateMiniLeaderboard(refreshed);
+          }
+
+          error.textContent = "";
+          tagBox.style.display = "none";
+        } catch (e) {
+          error.textContent = "Connection error. Try again.";
+        }
       }
 
-      saveBtn.addEventListener("click", () => {
+      saveBtn.addEventListener("click", async () => {
         const raw = (tagInput.value || "").trim();
+
         if (!raw) {
           error.textContent = "Enter at least 2 characters, or click Skip.";
           return;
         }
+
         if (raw.length < TAG_MIN_LENGTH || raw.length > TAG_MAX_LENGTH) {
           error.textContent = `Tag must be ${TAG_MIN_LENGTH}-${TAG_MAX_LENGTH} characters.`;
           return;
         }
+
         if (isProfaneTag(raw)) {
-          error.textContent =
-            "That tag isn't allowed. Please choose something cleaner.";
+          error.textContent = "That tag isn't allowed. Please choose something cleaner.";
           return;
         }
+
         error.textContent = "";
-        finish(raw);
+        saveBtn.disabled = true;
+        skipBtn.disabled = true;
+
+        try {
+          await finish(raw);
+        } finally {
+          saveBtn.disabled = false;
+          skipBtn.disabled = false;
+        }
       });
 
       // Skip: just hide for this run; will show again next run
