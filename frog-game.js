@@ -1049,139 +1049,92 @@ const MAX_LUCK = 30;
   // --------------------------------------------------
   let inGameUIVisible = true;
 
+  // Top center — time / frogs / score
   const hud = document.createElement("div");
-  hud.style.position = "absolute";
-  hud.style.top = "10px";
-  hud.style.left = "50%";
-  hud.style.transform = "translateX(-50%)";
-  hud.style.padding = "6px 12px";
-  hud.style.borderRadius = "8px";
-  hud.style.background = "rgba(0,0,0,0.55)";
-  hud.style.color = "#fff";
-  hud.style.fontFamily = "monospace";
-  hud.style.fontSize = "14px";
-  hud.style.zIndex = "100";
-  hud.style.pointerEvents = "none";
-
+  hud.style.cssText = "position:absolute;top:10px;left:50%;transform:translateX(-50%);padding:5px 12px;border-radius:7px;background:rgba(0,0,0,0.55);color:#fff;font-family:monospace;font-size:12px;z-index:100;pointer-events:none;white-space:nowrap;";
   const timerLabel = document.createElement("span");
   const frogsLabel = document.createElement("span");
   const scoreLabel = document.createElement("span");
-  frogsLabel.style.marginLeft = "12px";
-  scoreLabel.style.marginLeft = "12px";
-
+  frogsLabel.style.marginLeft = "10px";
+  scoreLabel.style.marginLeft = "10px";
   hud.appendChild(timerLabel);
   hud.appendChild(frogsLabel);
   hud.appendChild(scoreLabel);
   container.appendChild(hud);
 
-  // mini leaderboard
+  // Active buffs — just below HUD
+  const buffsBar = document.createElement("div");
+  buffsBar.id = "frog-buffs-bar";
+  buffsBar.style.cssText = "position:absolute;top:44px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:100;pointer-events:none;flex-wrap:wrap;justify-content:center;max-width:500px;";
+  container.appendChild(buffsBar);
+
+  // Mini leaderboard — top right
   const miniBoard = document.createElement("div");
   miniBoard.id = "frog-mini-leaderboard";
-  miniBoard.style.position = "absolute";
-  miniBoard.style.top = "10px";
-  miniBoard.style.right = "10px";
-  miniBoard.style.padding = "6px 10px";
-  miniBoard.style.borderRadius = "8px";
-  miniBoard.style.background = "rgba(0,0,0,0.55)";
-  miniBoard.style.color = "#fff";
-  miniBoard.style.fontFamily = "monospace";
-  miniBoard.style.fontSize = "11px";
-  miniBoard.style.zIndex = "100";
-  miniBoard.style.maxWidth = "220px";
-  miniBoard.style.pointerEvents = "none";
+  miniBoard.style.cssText = "position:absolute;top:10px;right:10px;padding:6px 10px;border-radius:7px;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.75);font-family:monospace;font-size:11px;z-index:100;max-width:220px;pointer-events:none;line-height:1.7;";
   miniBoard.textContent = "Loading leaderboard…";
   container.appendChild(miniBoard);
 
-  // detailed stats panel (bottom-left)
+  // Upgrades panel — left side vertical, toggleable
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";
-  statsPanel.style.position = "absolute";
-  statsPanel.style.bottom = "10px";
-  statsPanel.style.left = "10px";
-  statsPanel.style.padding = "8px 12px";
-  statsPanel.style.borderRadius = "10px";
-  statsPanel.style.background = "rgba(0,0,0,0.75)";
-  statsPanel.style.border = "1px solid #444";
-  statsPanel.style.color = "#fff";
-  statsPanel.style.fontFamily = "monospace";
-  statsPanel.style.fontSize = "11px";
-  statsPanel.style.zIndex = "100";
-  statsPanel.style.maxWidth = "260px";
-  statsPanel.style.pointerEvents = "none";
-  statsPanel.style.lineHeight = "1.4";
-  statsPanel.style.display = "none";
+  statsPanel.style.cssText = "position:absolute;top:50%;transform:translateY(-50%);left:10px;display:flex;flex-direction:column;gap:4px;z-index:100;pointer-events:none;";
   container.appendChild(statsPanel);
 
-  // Small control buttons (top-left)
+  // Controls — top left: gear + expanded buttons
   const controlsBar = document.createElement("div");
-  controlsBar.style.position = "absolute";
-  controlsBar.style.top = "10px";
-  controlsBar.style.left = "10px";
-  controlsBar.style.display = "flex";
-  controlsBar.style.flexDirection = "column";
-  controlsBar.style.gap = "4px";
-  controlsBar.style.zIndex = "120";
-  controlsBar.style.pointerEvents = "auto";
+  controlsBar.style.cssText = "position:absolute;top:10px;left:10px;display:flex;gap:5px;align-items:center;z-index:120;pointer-events:auto;";
 
-  function makeControlButton(label) {
+  let controlsExpanded = false;
+
+  function makeBtn(label, color) {
     const btn = document.createElement("button");
     btn.textContent = label;
-    btn.style.fontFamily = "monospace";
-    btn.style.fontSize = "11px";
-    btn.style.padding = "3px 6px";
-    btn.style.borderRadius = "6px";
-    btn.style.border = "1px solid #444";
-    btn.style.background = "rgba(0,0,0,0.8)";
-    btn.style.color = "#fff";
-    btn.style.cursor = "pointer";
-    btn.style.outline = "none";
-    btn.onmouseenter = () => { btn.style.background = "#222"; };
-    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.8)"; };
+    btn.style.cssText = `font-family:monospace;font-size:11px;padding:5px 9px;border-radius:7px;border:none;background:rgba(0,0,0,0.55);color:${color || "#fff"};cursor:pointer;height:28px;white-space:nowrap;outline:none;`;
+    btn.onmouseenter = () => { btn.style.background = "rgba(0,0,0,0.8)"; };
+    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.55)"; };
     return btn;
   }
 
-  //const btnHowTo = makeControlButton("How to play");
-  const btnStats = makeControlButton("Toggle stats");
-  const btnSound = makeControlButton("Sound: ON");
-  const btnEnd   = makeControlButton("End run");
+  const btnGear  = makeBtn("⚙️");
+  btnGear.style.width = "28px";
+  btnGear.style.padding = "0";
+  btnGear.style.fontSize = "14px";
 
-  //controlsBar.appendChild(btnHowTo);
+  const btnStats = makeBtn("📊");
+  const btnSound = makeBtn("🔊");
+  const btnEnd   = makeBtn("✕", "#f87171");
+
+  btnStats.style.display = "none";
+  btnSound.style.display = "none";
+  btnEnd.style.display   = "none";
+
+  btnGear.onclick = () => {
+    controlsExpanded = !controlsExpanded;
+    btnStats.style.display = controlsExpanded ? "" : "none";
+    btnSound.style.display = controlsExpanded ? "" : "none";
+    btnEnd.style.display   = controlsExpanded ? "" : "none";
+  };
+
+  controlsBar.appendChild(btnGear);
   controlsBar.appendChild(btnStats);
   controlsBar.appendChild(btnSound);
   controlsBar.appendChild(btnEnd);
   container.appendChild(controlsBar);
 
   const gameOverBanner = document.createElement("div");
-  gameOverBanner.style.position = "absolute";
-  gameOverBanner.style.top = "50%";
-  gameOverBanner.style.left = "50%";
-  gameOverBanner.style.transform = "translate(-50%, -50%)";
-  gameOverBanner.style.padding = "16px 24px";
-  gameOverBanner.style.borderRadius = "10px";
-  gameOverBanner.style.background = "rgba(0,0,0,0.8)";
-  gameOverBanner.style.color = "#fff";
-  gameOverBanner.style.fontFamily = "monospace";
-  gameOverBanner.style.fontSize = "18px";
-  gameOverBanner.style.textAlign = "center";
-  gameOverBanner.style.zIndex = "101";
-  gameOverBanner.style.pointerEvents = "none";
-  gameOverBanner.style.display = "none";
+  gameOverBanner.style.cssText = "position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:16px 24px;border-radius:10px;background:rgba(0,0,0,0.8);color:#fff;font-family:monospace;font-size:18px;text-align:center;z-index:101;pointer-events:none;display:none;";
   gameOverBanner.innerHTML = "Game Over<br/><small>Click to play again</small>";
   container.appendChild(gameOverBanner);
 
   function setInGameUIVisible(show) {
     inGameUIVisible = show;
-
-    if (hud) hud.style.display = show ? "block" : "none";
-    if (miniBoard) miniBoard.style.display = show ? "block" : "none";
-    if (controlsBar) controlsBar.style.display = show ? "flex" : "none";
-
+    hud.style.display          = show ? "" : "none";
+    buffsBar.style.display     = show ? "flex" : "none";
+    miniBoard.style.display    = show ? "" : "none";
+    controlsBar.style.display  = show ? "flex" : "none";
     if (statsPanel) {
-      if (show && statsPanelVisible) {
-        statsPanel.style.display = "block";
-      } else {
-        statsPanel.style.display = "none";
-      }
+      statsPanel.style.display = show && statsPanelVisible ? "flex" : "none";
     }
   }
 
@@ -1196,70 +1149,64 @@ const MAX_LUCK = 30;
 
   function updateHUD() {
     if (!inGameUIVisible) return;
+    timerLabel.textContent = formatTime(elapsedTime);
+    frogsLabel.textContent = ` · 🐸 ${frogs.length}`;
+    scoreLabel.textContent = ` · ${Math.floor(score)}`;
+  }
 
-    timerLabel.textContent = `Time: ${formatTime(elapsedTime)}`;
-    frogsLabel.textContent = `Frogs left: ${frogs.length}`;
-    scoreLabel.textContent = `Score: ${Math.floor(score)}`;
+  function updateBuffsBar() {
+    if (!buffsBar || !inGameUIVisible) return;
+    const pills = [];
+    if (speedBuffTime    > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#bef264;">⚡ Speed ${speedBuffTime.toFixed(1)}s</span>`);
+    if (jumpBuffTime     > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#bef264;">🦘 Jump ${jumpBuffTime.toFixed(1)}s</span>`);
+    if (snakeSlowTime    > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">🐍 Slow ${snakeSlowTime.toFixed(1)}s</span>`);
+    if (snakeConfuseTime > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">😵 Confuse ${snakeConfuseTime.toFixed(1)}s</span>`);
+    if (snakeShrinkTime  > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">🔻 Shrink ${snakeShrinkTime.toFixed(1)}s</span>`);
+    if (frogShieldTime   > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#bef264;">🛡 Shield ${frogShieldTime.toFixed(1)}s</span>`);
+    if (timeSlowTime     > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#a78bfa;">⏳ Slow ${timeSlowTime.toFixed(1)}s</span>`);
+    if (orbMagnetTime    > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#fb923c;">🔮 Magnet ${orbMagnetTime.toFixed(1)}s</span>`);
+    if (scoreMultiTime   > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#fbbf24;">★ x2 ${scoreMultiTime.toFixed(1)}s</span>`);
+    if (panicHopTime     > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#bef264;">😱 Panic ${panicHopTime.toFixed(1)}s</span>`);
+    if (lifeStealTime    > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">🩸 Steal ${lifeStealTime.toFixed(1)}s</span>`);
+    if (snakeFrenzyTime  > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">🔥 Frenzy ${snakeFrenzyTime.toFixed(1)}s</span>`);
+    buffsBar.innerHTML = pills.join("");
   }
 
   function updateStatsPanel() {
-    const neon = "#4defff";
     if (!statsPanel || !statsPanelVisible || !inGameUIVisible) return;
 
-    const frogsAlive = frogs.length;
-    const snakesAlive =
-      (snake ? 1 : 0) + (Array.isArray(extraSnakes) ? extraSnakes.length : 0);
-
-    const scoreNow = Math.floor(score);
-    const timeNow  = formatTime(elapsedTime);
-
-    // Permanent buff percentages
-    const hopSpeedBonus =
-      frogPermanentSpeedFactor < 1
-        ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100)
-        : 0;
-
+    const hopSpeedBonus = frogPermanentSpeedFactor < 1 ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100) : 0;
     const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
+    const orbRateBonus      = orbSpawnIntervalFactor < 1 ? Math.round((1 - orbSpawnIntervalFactor) * 100) : 0;
+    const deathrattlePct    = Math.round(frogDeathRattleChance * 100);
+    const orbCollectorPct   = Math.round(orbCollectorChance * 100);
+    const snakeSpeedBonus   = snakePermanentSpeedFactor > 1 ? Math.round((snakePermanentSpeedFactor - 1) * 100) : 0;
 
-    const orbRateBonus =
-      orbSpawnIntervalFactor < 1
-        ? Math.round((1 - orbSpawnIntervalFactor) * 100)
-        : 0;
+    const items = [];
+    const pill  = (icon, label, val) => `<div style="background:rgba(0,0,0,0.55);border-radius:6px;padding:4px 8px;font-family:monospace;font-size:11px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:5px;">${icon} ${label} <strong style="color:#bef264;">${val}</strong></div>`;
 
-    const deathrattlePct  = Math.round(frogDeathRattleChance * 100);
-    const orbCollectorPct = Math.round(orbCollectorChance * 100);
+    if (hopSpeedBonus    > 0) items.push(pill("🐸", "Speed",    `+${hopSpeedBonus}%`));
+    if (jumpBonus        > 0) items.push(pill("🦘", "Jump",     `+${jumpBonus}%`));
+    if (buffDurationBonus> 0) items.push(pill("⏱", "Buffs",    `+${buffDurationBonus}%`));
+    if (orbRateBonus     > 0) items.push(pill("🔮", "Orbs",     `+${orbRateBonus}%`));
+    if (deathrattlePct   > 0) items.push(pill("💀", "DR",       `${deathrattlePct}%`));
+    if (orbCollectorPct  > 0) items.push(pill("🧲", "Collector",`${orbCollectorPct}%`));
+    if (snakeSpeedBonus  > 0) items.push(pill("🐍", "Snake",    `+${snakeSpeedBonus}%`));
+    if (lastStandActive)      items.push(pill("🏹", "Last Stand","ON"));
+    if (graveWaveActive)      items.push(pill("👻", "Grave Wave","ON"));
+    if (orbSpecialistActive)  items.push(pill("🧪", "Specialist","ON"));
+    if (frogEatFrogActive)    items.push(pill("🍽", "Cannibal",  "ON"));
 
-    const snakeSpeedBonus =
-      snakePermanentSpeedFactor > 1
-        ? Math.round((snakePermanentSpeedFactor - 1) * 100)
-        : 0;
-
-    const totalOrbsText =
-      totalOrbsSpawned > 0
-        ? `${totalOrbsCollected}/${totalOrbsSpawned}`
-        : `${totalOrbsCollected}`;
-
-    statsPanel.style.display = "block";
-    statsPanel.innerHTML =
-      `<div style="font-weight:bold; margin-bottom:4px;">Upgrade stats</div>` +
-      `<div>Hop speed: <span style="color: ${neon};">${hopSpeedBonus}%</span></div>` +
-      `<div>Jump height: <span style="color: ${neon};">${jumpBonus}%</span></div>` +
-      `<div>Buff duration: <span style="color: ${neon};">${buffDurationBonus}%</span></div>` +
-      `<div>Orb spawn rate: <span style="color: ${neon};">${orbRateBonus}%</span></div>` +
-      `<div>Deathrattle: <span style="color: ${neon};">${deathrattlePct}%</span></div>` +
-      `<div>Orb Collector: <span style="color: ${neon};">${orbCollectorPct}%</span></div>` +
-      `<div>Snake speed bonus: <span style="color: ${neon};">${snakeSpeedBonus}%</span></div>` +
-      `<div>Last Stand: <span style="color: ${neon};">${lastStandActive ? "ON" : "off"}</span></div>` +
-      `<div>Grave Wave: <span style="color: ${neon};">${graveWaveActive ? "ON" : "off"}</span></div>` +
-      `<div>Orb Specialist: <span style="color: ${neon};">${orbSpecialistActive ? "ON" : "off"}</span></div>` +
-      `<div>Cannibal frogs: <span style="color: ${neon};">${frogEatFrogActive ? "ON" : "off"}</span></div>`;
+    statsPanel.innerHTML = items.join("");
+    statsPanel.style.display = items.length > 0 ? "flex" : "none";
   }
 
-    function toggleStatsPanel() {
+  function toggleStatsPanel() {
     statsPanelVisible = !statsPanelVisible;
     if (!statsPanel) return;
-    statsPanel.style.display = statsPanelVisible ? "block" : "none";
+    statsPanel.style.display = statsPanelVisible && inGameUIVisible ? "flex" : "none";
+    if (statsPanelVisible) updateStatsPanel();
   }
 
   function syncAudioMuteState() {
@@ -1270,48 +1217,17 @@ const MAX_LUCK = 30;
 
   function toggleSound() {
     soundEnabled = !soundEnabled;
-
     syncAudioMuteState();
-
-    if (btnSound) {
-      btnSound.textContent = soundEnabled ? "Sound: ON" : "Sound: OFF";
-    }
+    if (btnSound) btnSound.textContent = soundEnabled ? "🔊" : "🔇";
   }
 
-  /* Wire up control buttons
-  if (btnHowTo) {
-    btnHowTo.onclick = () => {
-      if (soundEnabled) playButtonClick();
-      // This already sets gamePaused = true internally
-      openHowToOverlay();
-    };
-  }
-  */
-
-  if (btnStats) {
-    btnStats.onclick = () => {
-      if (soundEnabled) playButtonClick();
-      toggleStatsPanel();
-    };
-  }
-
-  if (btnSound) {
-    btnSound.onclick = () => {
-      toggleSound();
-      // If we just turned sound ON, give feedback
-      if (soundEnabled) playButtonClick();
-    };
-  }
-
-  if (btnEnd) {
-    btnEnd.onclick = (ev) => {
-      ev.stopPropagation();
-      if (soundEnabled) playButtonClick();
-      if (!gameOver) {
-        endGame();
-      }
-    };
-  }
+  if (btnStats) btnStats.onclick = () => { if (soundEnabled) playButtonClick(); toggleStatsPanel(); };
+  if (btnSound) btnSound.onclick = () => { toggleSound(); if (soundEnabled) playButtonClick(); };
+  if (btnEnd)   btnEnd.onclick   = (ev) => {
+    ev.stopPropagation();
+    if (soundEnabled) playButtonClick();
+    if (!gameOver) endGame();
+  };
 
   function showGameOver() {
     gameOverBanner.style.display = "block";
