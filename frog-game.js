@@ -4416,8 +4416,10 @@ function samplePathAtDistance(path, startIdx, dist) {
         angle = head.angle;
       }
 
+      const isTail = i === snakeObj.segments.length - 1;
+      const renderAngle = isTail ? angle + Math.PI : angle;
       seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
     }
 
     // 4. COLLISIONS
