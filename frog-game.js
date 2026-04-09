@@ -6299,6 +6299,7 @@ function showStartingBuffSelector() {
 
   wireSkinSelector();
 }
+window.showDashboardOverlay = showDashboardOverlay;
 function formatDuration(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
   const h = Math.floor(s / 3600);
