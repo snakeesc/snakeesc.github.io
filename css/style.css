@@ -640,3 +640,33 @@ a { color: inherit; }
   #upgradeOverlay .frog-upgrade-title { font-size: 13px; text-align: left; }
   #upgradeOverlay .frog-upgrade-desc  { font-size: 11px; text-align: left; }
 }
+.main-menu-discord-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.main-menu-discord-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #5865f2;
+  color: white;
+  text-decoration: none;
+  box-shadow: 2px 2px darkslateblue;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.main-menu-discord-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.main-menu-discord-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
