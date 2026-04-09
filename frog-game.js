@@ -5240,40 +5240,32 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-title" style="color: white !important;">
-        How to Play
-        <span class="emoji">🐸</span>
-      </div>
-
-      <div class="frog-panel-sub" style="color: white !important;">
-        Stay alive, avoid the snake, and survive as long as you can.
-      </div>
+      <div class="frog-panel-title">How to Play 🐸</div>
+      <div class="frog-panel-sub">Stay alive. Don't let the snake eat all your frogs.</div>
 
       <div class="frog-panel-section-label">Basics</div>
       <ul class="frog-panel-list">
-        <li>Move your mouse or finger to lead the frogs.</li>
-        <li>Do not let the snake eat all of them.</li>
+        <li>Move your mouse or finger — frogs follow your cursor.</li>
         <li>When all frogs are gone, the run ends.</li>
+        <li>Collect orbs for temporary buffs and upgrade choices.</li>
       </ul>
 
-      <div class="frog-panel-section-label">During a Run</div>
+      <div class="frog-panel-section-label">The Snake</div>
       <ul class="frog-panel-list">
-        <li>Collect orbs for buffs and upgrades.</li>
-        <li>Pick upgrades that help your swarm survive longer.</li>
-        <li>The snake gets more dangerous as the run goes on.</li>
+        <li>It chases your frogs and speeds up every shed.</li>
+        <li>After 3 sheds a second snake spawns.</li>
+        <li>Plan your escape route before each shed hits.</li>
       </ul>
 
       <div class="frog-panel-section-label">Tips</div>
       <ul class="frog-panel-list">
-        <li>Do not bunch your frogs up too tightly.</li>
-        <li>More frogs help, but survival upgrades matter too.</li>
-        <li>Try to plan ahead before the snake corners you.</li>
+        <li>Don't bunch your frogs — clusters get eaten fast.</li>
+        <li>Survival upgrades often matter more than spawning more frogs.</li>
+        <li>Your score comes from frogs eaten — surviving longer scores more.</li>
       </ul>
 
       <div class="frog-panel-footer">
-        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
-          Close
-        </button>
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
       </div>
     `;
 
@@ -5538,47 +5530,39 @@ function closeAnimatedOverlay(overlayEl) {
       }
     }
 
-    function renderPage(pageIndex) {
-      currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
+    function renderPage() {
+      const start = currentPage * itemsPerPage;
+      const pageItems = upgrades.slice(start, start + itemsPerPage);
 
-      const start = currentPage * pageSize;
-      const end = Math.min(start + pageSize, list.length);
-      const pageEntries = list.slice(start, end);
+      panel.innerHTML = `
+        <div class="frog-panel-title">Upgrades ⚡</div>
+        <div class="frog-panel-sub">All upgrades in the current build.</div>
 
-      const itemsHtml = pageEntries.map((entry, idx) => {
-        const rank = start + idx + 1;
-        const name = getDisplayName(entry, `Player ${rank}`);
-        const score = Math.floor(getScore(entry)).toLocaleString();
-        const time = formatLeaderboardTime(getTime(entry));
-        const isMe = entryMatchesUser(entry);
-        return `
-          <li${isMe ? ' style="color:#bef264;"' : ""}>
-            <strong>#${rank}</strong>
-            ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} score
-          </li>
-        `;
-      }).join("");
-
-      const myRankText = myIndex >= 0 ? ` · You: #${myIndex + 1}` : "";
-
-      content.innerHTML = `
-        <div class="frog-panel-section-label" style="margin-top:0;">Global Leaderboard</div>
-        <ul class="frog-panel-list" style="margin-bottom:0;">
-          ${itemsHtml || '<li style="color:#a8a29e;">No entries.</li>'}
+        <ul class="frog-panel-list">
+          ${pageItems.map(item => `
+            <li class="${getTypeClass(item.type)}">
+              <strong>${item.label}</strong> — ${item.desc}
+            </li>
+          `).join("")}
         </ul>
+
         <div class="frog-panel-footer">
-          <div style="margin-bottom:8px;">Page ${currentPage + 1} of ${Math.ceil(list.length / pageSize)}${myRankText}</div>
-          <div style="display:flex;gap:8px;justify-content:center;">
-            <button id="leaderboardPrevBtn" class="frog-btn frog-btn-secondary" style="width:auto;margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
-            <button id="leaderboardNextBtn" class="frog-btn frog-btn-secondary" style="width:auto;margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+            <button id="buffGuidePrevBtn" class="frog-btn frog-btn-secondary" style="width:auto;min-width:88px;margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
+            <div style="min-width:70px;text-align:center;font-size:12px;">${currentPage + 1} / ${totalPages}</div>
+            <button id="buffGuideNextBtn" class="frog-btn frog-btn-secondary" style="width:auto;min-width:88px;margin-bottom:0;" ${currentPage === totalPages - 1 ? "disabled" : ""}>Next</button>
           </div>
+          <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
         </div>
       `;
 
-      const prevBtn = document.getElementById("leaderboardPrevBtn");
-      const nextBtn = document.getElementById("leaderboardNextBtn");
-      if (prevBtn) prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
-      if (nextBtn) nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
+      const closeBtn = document.getElementById("buffGuideCloseBtn");
+      const prevBtn  = document.getElementById("buffGuidePrevBtn");
+      const nextBtn  = document.getElementById("buffGuideNextBtn");
+
+      if (closeBtn) closeBtn.onclick = hideBuffGuideOverlay;
+      if (prevBtn)  prevBtn.onclick  = () => { if (currentPage > 0) { currentPage--; renderPage(); } };
+      if (nextBtn)  nextBtn.onclick  = () => { if (currentPage < totalPages - 1) { currentPage++; renderPage(); } };
     }
 
     renderPage();
