@@ -670,21 +670,30 @@ function generateLocalTag() {
     }
   }
 
-    function validateDashboardTag(rawTag) {
+  function validateDashboardTag(rawTag) {
     const tag = String(rawTag || "").trim();
 
     if (!tag) {
       return { ok: false, message: "Enter a tag." };
     }
 
-    if (tag.length < 2 || tag.length > 12) {
-      return { ok: false, message: "Tag must be 2-12 characters." };
+    if (tag.length < 2 || tag.length > 20) {
+      return { ok: false, message: "Tag must be 2-20 characters." };
     }
 
-    if (window.FrogGameLeaderboard && typeof window.FrogGameLeaderboard.isProfaneTag === "function") {
-      if (window.FrogGameLeaderboard.isProfaneTag(tag)) {
-        return { ok: false, message: "That tag is not allowed." };
-      }
+    if (!/^[a-zA-Z0-9 _-]{2,20}$/.test(tag)) {
+      return {
+        ok: false,
+        message: "Use letters, numbers, spaces, _ or - only."
+      };
+    }
+
+    if (
+      window.FrogGameLeaderboard &&
+      typeof window.FrogGameLeaderboard.isProfaneTag === "function" &&
+      window.FrogGameLeaderboard.isProfaneTag(tag)
+    ) {
+      return { ok: false, message: "That tag is not allowed." };
     }
 
     return { ok: true, tag };
@@ -1461,7 +1470,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       <input
         id="endSummaryTagInput"
         type="text"
-        maxlength="12"
+        maxlength="20"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
         style="
@@ -6147,7 +6156,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
       <input
         id="dashboardTagInput"
         type="text"
-        maxlength="12"
+        maxlength="20"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
         style="

@@ -23,7 +23,7 @@
   // --------------------------------------------------
   const TAG_STORAGE_KEY   = "frogSnake_username";
   const TAG_MIN_LENGTH    = 2;
-  const TAG_MAX_LENGTH    = 12;
+  const TAG_MAX_LENGTH    = 20;
 
   // Root patterns we want to block after normalization.
   // (Avoid very short generic roots like "ass" to prevent false positives.)
