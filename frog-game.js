@@ -1504,18 +1504,22 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
   content.innerHTML = `
-    <div class="frog-panel-section-label" style="margin-top:0;">This Run</div>
-    <ul class="frog-panel-list">
-      <li style="color:#bef264;font-weight:bold;">${Math.floor(run.score || 0).toLocaleString()} score · ${formatLeaderboardTime(run.time || 0)} · ${run.orbs || 0} orbs</li>
-      <li>${run.frogsLost || 0} frogs lost · ${run.sheds || 0} sheds</li>
-    </ul>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #292524;margin-bottom:14px;">
+      <div style="padding:0 14px 14px 0;border-right:1px solid #292524;display:flex;flex-direction:column;justify-content:center;text-align:center;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#a3e635;margin-bottom:6px;">Score</div>
+        <div style="font-size:34px;font-weight:bold;color:white;line-height:1;">${Math.floor(run.score || 0).toLocaleString()}</div>
+      </div>
+      <div style="padding:0 0 14px 14px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
+        <div style="font-size:12px;color:#f5f5f4;">Time <strong>${formatLeaderboardTime(run.time || 0)}</strong></div>
+        <div style="font-size:12px;color:#f5f5f4;">Orbs <strong>${run.orbs || 0}</strong></div>
+        <div style="font-size:12px;color:#f5f5f4;">Frogs lost <strong>${run.frogsLost || 0}</strong></div>
+        <div style="font-size:12px;color:#f5f5f4;">Sheds <strong>${run.sheds || 0}</strong></div>
+      </div>
+    </div>
 
-    <div class="frog-panel-section-label">Personal Best</div>
-    <ul class="frog-panel-list">${bestHtml}</ul>
-
-    <div class="frog-panel-section-label">Leaderboard</div>
+    <div class="frog-panel-section-label" style="margin-top:0;">Leaderboard</div>
     <ul class="frog-panel-list" style="margin-bottom:0;">
-      ${lbRowsHtml.length
+      ${list.length
         ? previewList.map((entry, i) => {
             const rank = rankIdx >= previewCount && i === previewCount - 1 ? rankIdx + 1 : i + 1;
             const name = (typeof entry?.tag === "string" && entry.tag) || (typeof entry?.name === "string" && entry.name) || `Player ${rank}`;
@@ -5889,40 +5893,37 @@ async function showDashboardOverlay(cachedLeaderboard) {
     : "";
 
   content.innerHTML = `
-    <div class="frog-panel-title">Dashboard</div>
-
-    <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;margin-bottom:14px;align-items:center;border-bottom:1px solid #292524;padding-bottom:14px;">
+    <div style="text-align:center;padding-bottom:14px;border-bottom:1px solid #292524;margin-bottom:2px;">
       <div style="
         position:relative;
-        width:80px;
-        height:80px;
-        min-width:80px;
+        width:72px;
+        height:72px;
         border-radius:999px;
         overflow:hidden;
         background:${dashboardPfp.bgColor || "#292524"};
         border:2px solid #44403c;
+        margin:0 auto 8px;
       ">
         <img src="${dashboardPfp.spriteSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:1;" />
         <img src="${dashboardPfp.skinSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:2;" />
         ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:3;" />` : ""}
         ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:4;" />` : ""}
       </div>
-      <div>
-        <div style="font-size:15px;font-weight:bold;color:#bef264;margin-bottom:2px;" id="dashboardCurrentTag">${currentTag || "No tag set"}</div>
-        <div style="font-size:11px;color:#a3e635;margin-bottom:6px;">Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a8a29e;">#${bestRecordRank + 1} ranked</span>` : ""}</div>
-        <div style="width:100%;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin-bottom:3px;">
-          <div style="width:${levelData.progressPercent}%;height:100%;background:#65a30d;border-radius:999px;"></div>
-        </div>
-        <div style="font-size:10px;color:#a8a29e;margin-bottom:6px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
-        <div style="font-size:12px;color:#f5f5f4;">
-          <strong style="color:#bef264;">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong> best
-          · <strong style="color:#bef264;">${localStats.totalRuns || 0}</strong> runs
-          · <strong style="color:#bef264;">${localStats.totalOrbsCollected || 0}</strong> orbs
-        </div>
+      <div style="font-size:15px;font-weight:bold;color:#bef264;margin-bottom:2px;" id="dashboardCurrentTag">${currentTag || "No tag set"}</div>
+      <div style="font-size:11px;color:#a3e635;margin-bottom:6px;">Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a8a29e;">#${bestRecordRank + 1} ranked</span>` : ""}</div>
+      <div style="width:120px;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin:0 auto 3px;">
+        <div style="width:${levelData.progressPercent}%;height:100%;background:#65a30d;border-radius:999px;"></div>
+      </div>
+      <div style="font-size:10px;color:#a8a29e;margin-bottom:6px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
+      <div style="font-size:12px;color:#f5f5f4;">
+        <strong style="color:#bef264;">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong> best
+        · <strong style="color:#bef264;">${localStats.totalRuns || 0}</strong> runs
+        · <strong style="color:#bef264;">${localStats.totalOrbsCollected || 0}</strong> orbs
+        · <strong style="color:#bef264;">${formatDashboardDuration(localStats.totalPlayTime || 0)}</strong>
       </div>
     </div>
 
-    <div class="frog-panel-section-label" style="margin-top:0;">Leaderboard Tag</div>
+    <div class="frog-panel-section-label" style="margin-top:14px;">Leaderboard Tag</div>
     <div style="display:flex;gap:6px;margin-bottom:4px;">
       <input
         id="dashboardTagInput"
