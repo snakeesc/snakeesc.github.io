@@ -2767,7 +2767,7 @@ function showRoleDraftOverlayChoices() {
 
   roleDraftChoices.forEach((role, index) => {
     const btn = document.createElement("button");
-    btn.className = "frog-btn frog-upgrade-choice is-spawning upgrade-type-role";
+    btn.className = "frog-upgrade-choice is-spawning upgrade-type-role";
     btn.style.animationDelay = `${index * 70}ms`;
 
     btn.innerHTML = `
