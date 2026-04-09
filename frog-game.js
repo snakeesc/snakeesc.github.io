@@ -1053,7 +1053,7 @@ const MAX_LUCK = 30;
   const hud = document.createElement("div");
   hud.style.cssText = "position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);border-radius:7px;padding:6px 14px;font-family:monospace;font-size:13px;color:white;z-index:100;pointer-events:none;white-space:nowrap;display:flex;gap:12px;align-items:center;";
   const timerLabel = document.createElement("span");
-  timerLabel.style.cssText = "color:rgba(255,255,255,0.5);font-size:11px;";
+  timerLabel.style.cssText = "color:white;";
   const frogsLabel = document.createElement("span");
   const scoreLabel = document.createElement("span");
   const scoreSep = document.createElement("span");
@@ -1069,14 +1069,14 @@ const MAX_LUCK = 30;
   // Mini leaderboard — top right
   const miniBoard = document.createElement("div");
   miniBoard.id = "frog-mini-leaderboard";
-  miniBoard.style.cssText = "position:absolute;top:10px;right:10px;padding:6px 10px;border-radius:7px;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.65);font-family:monospace;font-size:11px;z-index:100;max-width:220px;pointer-events:none;line-height:1.7;";
+  miniBoard.style.cssText = "position:absolute;top:10px;right:10px;padding:6px 10px;border-radius:7px;background:rgba(0,0,0,0.55);color:white;font-family:monospace;font-size:11px;z-index:100;max-width:220px;pointer-events:none;line-height:1.7;";
   miniBoard.textContent = "Loading leaderboard…";
   container.appendChild(miniBoard);
 
   // Upgrade icons — bottom left
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";
-  statsPanel.style.cssText = "position:absolute;bottom:10px;left:10px;display:flex;flex-wrap:wrap;gap:8px;max-width:160px;z-index:100;pointer-events:none;";
+  statsPanel.style.cssText = "position:absolute;bottom:10px;left:10px;display:flex;flex-direction:column;gap:4px;z-index:100;pointer-events:none;max-width:160px;";
   container.appendChild(statsPanel);
 
   // Controls — top left
@@ -1086,9 +1086,9 @@ const MAX_LUCK = 30;
   function makeControlButton(label) {
     const btn = document.createElement("button");
     btn.textContent = label;
-    btn.style.cssText = "font-family:monospace;font-size:11px;padding:4px 8px;border-radius:6px;border:none;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.7);cursor:pointer;outline:none;white-space:nowrap;";
-    btn.onmouseenter = () => { btn.style.background = "rgba(0,0,0,0.8)"; btn.style.color = "white"; };
-    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.55)"; btn.style.color = "rgba(255,255,255,0.7)"; };
+    btn.style.cssText = "font-family:monospace;font-size:11px;padding:4px 8px;border-radius:6px;border:none;background:rgba(0,0,0,0.55);color:white;cursor:pointer;outline:none;white-space:nowrap;";
+    btn.onmouseenter = () => { btn.style.background = "rgba(0,0,0,0.8)"; };
+    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.55)"; };
     return btn;
   }
 
@@ -1145,24 +1145,24 @@ const MAX_LUCK = 30;
     const orbCollectorPct  = Math.round(orbCollectorChance * 100);
     const snakeSpeedBonus  = snakePermanentSpeedFactor > 1 ? Math.round((snakePermanentSpeedFactor - 1) * 100) : 0;
 
-    const icon = (emoji, val, color) => `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-        <span style="font-size:14px;filter:drop-shadow(0 0 3px ${color});">${emoji}</span>
-        <span style="font-size:8px;color:${color};font-family:monospace;">${val}</span>
+    const icon = (emoji, label, val, color) => `
+      <div style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 6px;display:flex;align-items:center;gap:4px;">
+        <span style="font-size:12px;">${emoji}</span>
+        <span style="font-size:10px;color:white;font-family:monospace;">${label} <strong style="color:${color};">${val}</strong></span>
       </div>`;
 
     const items = [];
-    if (hopSpeedBonus     > 0) items.push(icon("🐸", `+${hopSpeedBonus}%`,    "rgba(163,230,53,0.9)"));
-    if (jumpBonus         > 0) items.push(icon("🦘", `+${jumpBonus}%`,        "rgba(163,230,53,0.9)"));
-    if (buffDurationBonus > 0) items.push(icon("⏱",  `+${buffDurationBonus}%`,"rgba(251,146,60,0.9)"));
-    if (orbRateBonus      > 0) items.push(icon("🔮", `+${orbRateBonus}%`,     "rgba(251,146,60,0.9)"));
-    if (deathrattlePct    > 0) items.push(icon("💀", `${deathrattlePct}%`,    "rgba(248,113,113,0.9)"));
-    if (orbCollectorPct   > 0) items.push(icon("🧲", `${orbCollectorPct}%`,   "rgba(251,146,60,0.9)"));
-    if (snakeSpeedBonus   > 0) items.push(icon("🐍", `+${snakeSpeedBonus}%`,  "rgba(248,113,113,0.9)"));
-    if (lastStandActive)       items.push(icon("🏹", "ON",                    "rgba(248,113,113,0.9)"));
-    if (graveWaveActive)       items.push(icon("👻", "ON",                    "rgba(248,113,113,0.9)"));
-    if (orbSpecialistActive)   items.push(icon("🧪", "ON",                    "rgba(251,146,60,0.9)"));
-    if (frogEatFrogActive)     items.push(icon("🍽",  "ON",                   "rgba(163,230,53,0.9)"));
+    if (hopSpeedBonus     > 0) items.push(icon("🐸", "Speed",    `+${hopSpeedBonus}%`,    "rgba(163,230,53,0.9)"));
+    if (jumpBonus         > 0) items.push(icon("🦘", "Jump",     `+${jumpBonus}%`,        "rgba(163,230,53,0.9)"));
+    if (buffDurationBonus > 0) items.push(icon("⏱",  "Buffs",    `+${buffDurationBonus}%`,"rgba(251,146,60,0.9)"));
+    if (orbRateBonus      > 0) items.push(icon("🔮", "Orbs",     `+${orbRateBonus}%`,     "rgba(251,146,60,0.9)"));
+    if (deathrattlePct    > 0) items.push(icon("💀", "DR",       `${deathrattlePct}%`,    "rgba(248,113,113,0.9)"));
+    if (orbCollectorPct   > 0) items.push(icon("🧲", "Collector",`${orbCollectorPct}%`,   "rgba(251,146,60,0.9)"));
+    if (snakeSpeedBonus   > 0) items.push(icon("🐍", "Snake",    `+${snakeSpeedBonus}%`,  "rgba(248,113,113,0.9)"));
+    if (lastStandActive)       items.push(icon("🏹", "Last Stand","ON",                   "rgba(248,113,113,0.9)"));
+    if (graveWaveActive)       items.push(icon("👻", "Grave Wave","ON",                   "rgba(248,113,113,0.9)"));
+    if (orbSpecialistActive)   items.push(icon("🧪", "Specialist","ON",                   "rgba(251,146,60,0.9)"));
+    if (frogEatFrogActive)     items.push(icon("🍽",  "Cannibal", "ON",                   "rgba(163,230,53,0.9)"));
 
     statsPanel.innerHTML = items.join("");
     statsPanel.style.display = items.length > 0 && inGameUIVisible ? "flex" : "none";
