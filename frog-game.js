@@ -1049,100 +1049,52 @@ const MAX_LUCK = 30;
   // --------------------------------------------------
   let inGameUIVisible = true;
 
+  // Top center — single bar
   const hud = document.createElement("div");
-  hud.style.position = "absolute";
-  hud.style.top = "10px";
-  hud.style.left = "50%";
-  hud.style.transform = "translateX(-50%)";
-  hud.style.padding = "6px 12px";
-  hud.style.borderRadius = "8px";
-  hud.style.background = "rgba(0,0,0,0.55)";
-  hud.style.color = "#fff";
-  hud.style.fontFamily = "monospace";
-  hud.style.fontSize = "14px";
-  hud.style.zIndex = "100";
-  hud.style.pointerEvents = "none";
-
+  hud.style.cssText = "position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);border-radius:7px;padding:6px 14px;font-family:monospace;font-size:13px;color:white;z-index:100;pointer-events:none;white-space:nowrap;display:flex;gap:12px;align-items:center;";
   const timerLabel = document.createElement("span");
+  timerLabel.style.cssText = "color:rgba(255,255,255,0.5);font-size:11px;";
   const frogsLabel = document.createElement("span");
   const scoreLabel = document.createElement("span");
-  frogsLabel.style.marginLeft = "12px";
-  scoreLabel.style.marginLeft = "12px";
-
+  const scoreSep = document.createElement("span");
+  scoreSep.style.cssText = "color:rgba(255,255,255,0.3);";
+  scoreSep.textContent = "·";
+  scoreLabel.style.fontWeight = "bold";
   hud.appendChild(timerLabel);
   hud.appendChild(frogsLabel);
+  hud.appendChild(scoreSep);
   hud.appendChild(scoreLabel);
   container.appendChild(hud);
 
-  // mini leaderboard
+  // Mini leaderboard — top right
   const miniBoard = document.createElement("div");
   miniBoard.id = "frog-mini-leaderboard";
-  miniBoard.style.position = "absolute";
-  miniBoard.style.top = "10px";
-  miniBoard.style.right = "10px";
-  miniBoard.style.padding = "6px 10px";
-  miniBoard.style.borderRadius = "8px";
-  miniBoard.style.background = "rgba(0,0,0,0.55)";
-  miniBoard.style.color = "#fff";
-  miniBoard.style.fontFamily = "monospace";
-  miniBoard.style.fontSize = "11px";
-  miniBoard.style.zIndex = "100";
-  miniBoard.style.maxWidth = "220px";
-  miniBoard.style.pointerEvents = "none";
+  miniBoard.style.cssText = "position:absolute;top:10px;right:10px;padding:6px 10px;border-radius:7px;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.65);font-family:monospace;font-size:11px;z-index:100;max-width:220px;pointer-events:none;line-height:1.7;";
   miniBoard.textContent = "Loading leaderboard…";
   container.appendChild(miniBoard);
 
-  // detailed stats panel (bottom-left)
+  // Upgrade icons — bottom left
   const statsPanel = document.createElement("div");
   statsPanel.id = "frog-stats-panel";
-  statsPanel.style.position = "absolute";
-  statsPanel.style.bottom = "10px";
-  statsPanel.style.left = "10px";
-  statsPanel.style.padding = "8px 12px";
-  statsPanel.style.borderRadius = "10px";
-  statsPanel.style.background = "rgba(0,0,0,0.75)";
-  statsPanel.style.border = "1px solid #444";
-  statsPanel.style.color = "#fff";
-  statsPanel.style.fontFamily = "monospace";
-  statsPanel.style.fontSize = "11px";
-  statsPanel.style.zIndex = "100";
-  statsPanel.style.maxWidth = "260px";
-  statsPanel.style.pointerEvents = "none";
-  statsPanel.style.lineHeight = "1.4";
-  statsPanel.style.display = "none";
+  statsPanel.style.cssText = "position:absolute;bottom:10px;left:10px;display:flex;flex-wrap:wrap;gap:8px;max-width:160px;z-index:100;pointer-events:none;";
   container.appendChild(statsPanel);
 
-  // Small control buttons (top-left)
+  // Controls — top left
   const controlsBar = document.createElement("div");
-  controlsBar.style.position = "absolute";
-  controlsBar.style.top = "10px";
-  controlsBar.style.left = "10px";
-  controlsBar.style.display = "flex";
-  controlsBar.style.flexDirection = "column";
-  controlsBar.style.gap = "4px";
-  controlsBar.style.zIndex = "120";
-  controlsBar.style.pointerEvents = "auto";
+  controlsBar.style.cssText = "position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;z-index:120;pointer-events:auto;";
 
   function makeControlButton(label) {
     const btn = document.createElement("button");
     btn.textContent = label;
-    btn.style.fontFamily = "monospace";
-    btn.style.fontSize = "11px";
-    btn.style.padding = "3px 6px";
-    btn.style.borderRadius = "6px";
-    btn.style.border = "1px solid #444";
-    btn.style.background = "rgba(0,0,0,0.8)";
-    btn.style.color = "#fff";
-    btn.style.cursor = "pointer";
-    btn.style.outline = "none";
-    btn.onmouseenter = () => { btn.style.background = "#222"; };
-    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.8)"; };
+    btn.style.cssText = "font-family:monospace;font-size:11px;padding:4px 8px;border-radius:6px;border:none;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.7);cursor:pointer;outline:none;white-space:nowrap;";
+    btn.onmouseenter = () => { btn.style.background = "rgba(0,0,0,0.8)"; btn.style.color = "white"; };
+    btn.onmouseleave = () => { btn.style.background = "rgba(0,0,0,0.55)"; btn.style.color = "rgba(255,255,255,0.7)"; };
     return btn;
   }
 
-  const btnStats = makeControlButton("Toggle stats");
-  const btnSound = makeControlButton("Sound: ON");
-  const btnEnd   = makeControlButton("End Game");
+  const btnStats = makeControlButton("stats");
+  const btnSound = makeControlButton("sound");
+  const btnEnd   = makeControlButton("🛑");
 
   controlsBar.appendChild(btnStats);
   controlsBar.appendChild(btnSound);
@@ -1150,34 +1102,17 @@ const MAX_LUCK = 30;
   container.appendChild(controlsBar);
 
   const gameOverBanner = document.createElement("div");
-  gameOverBanner.style.position = "absolute";
-  gameOverBanner.style.top = "50%";
-  gameOverBanner.style.left = "50%";
-  gameOverBanner.style.transform = "translate(-50%, -50%)";
-  gameOverBanner.style.padding = "16px 24px";
-  gameOverBanner.style.borderRadius = "10px";
-  gameOverBanner.style.background = "rgba(0,0,0,0.8)";
-  gameOverBanner.style.color = "#fff";
-  gameOverBanner.style.fontFamily = "monospace";
-  gameOverBanner.style.fontSize = "18px";
-  gameOverBanner.style.textAlign = "center";
-  gameOverBanner.style.zIndex = "101";
-  gameOverBanner.style.pointerEvents = "none";
-  gameOverBanner.style.display = "none";
+  gameOverBanner.style.cssText = "position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:16px 24px;border-radius:10px;background:rgba(0,0,0,0.8);color:#fff;font-family:monospace;font-size:18px;text-align:center;z-index:101;pointer-events:none;display:none;";
   gameOverBanner.innerHTML = "Game Over<br/><small>Click to play again</small>";
   container.appendChild(gameOverBanner);
 
   function setInGameUIVisible(show) {
     inGameUIVisible = show;
-    if (hud) hud.style.display = show ? "block" : "none";
-    if (miniBoard) miniBoard.style.display = show ? "block" : "none";
-    if (controlsBar) controlsBar.style.display = show ? "flex" : "none";
+    hud.style.display         = show ? "flex" : "none";
+    miniBoard.style.display   = show ? "block" : "none";
+    controlsBar.style.display = show ? "flex" : "none";
     if (statsPanel) {
-      if (show && statsPanelVisible) {
-        statsPanel.style.display = "block";
-      } else {
-        statsPanel.style.display = "none";
-      }
+      statsPanel.style.display = show && statsPanelVisible ? "flex" : "none";
     }
   }
 
@@ -1192,48 +1127,55 @@ const MAX_LUCK = 30;
 
   function updateHUD() {
     if (!inGameUIVisible) return;
-    timerLabel.textContent = `Time: ${formatTime(elapsedTime)}`;
-    frogsLabel.textContent = `Frogs left: ${frogs.length}`;
-    scoreLabel.textContent = `Score: ${Math.floor(score)}`;
+    timerLabel.textContent = formatTime(elapsedTime);
+    frogsLabel.textContent = `🐸 ${frogs.length}`;
+    scoreLabel.textContent = Math.floor(score).toLocaleString();
   }
 
   function updateBuffsBar() {}
 
   function updateStatsPanel() {
-    const neon = "#4defff";
     if (!statsPanel || !statsPanelVisible || !inGameUIVisible) return;
 
-    const hopSpeedBonus = frogPermanentSpeedFactor < 1
-      ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100) : 0;
-    const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
+    const hopSpeedBonus    = frogPermanentSpeedFactor < 1 ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100) : 0;
+    const jumpBonus        = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
-    const orbRateBonus      = orbSpawnIntervalFactor < 1
-      ? Math.round((1 - orbSpawnIntervalFactor) * 100) : 0;
-    const deathrattlePct    = Math.round(frogDeathRattleChance * 100);
-    const orbCollectorPct   = Math.round(orbCollectorChance * 100);
-    const snakeSpeedBonus   = snakePermanentSpeedFactor > 1
-      ? Math.round((snakePermanentSpeedFactor - 1) * 100) : 0;
+    const orbRateBonus     = orbSpawnIntervalFactor < 1 ? Math.round((1 - orbSpawnIntervalFactor) * 100) : 0;
+    const deathrattlePct   = Math.round(frogDeathRattleChance * 100);
+    const orbCollectorPct  = Math.round(orbCollectorChance * 100);
+    const snakeSpeedBonus  = snakePermanentSpeedFactor > 1 ? Math.round((snakePermanentSpeedFactor - 1) * 100) : 0;
 
-    statsPanel.style.display = "block";
-    statsPanel.innerHTML =
-      `<div style="font-weight:bold; margin-bottom:4px;">Upgrade stats</div>` +
-      `<div>Hop speed: <span style="color:${neon};">${hopSpeedBonus}%</span></div>` +
-      `<div>Jump height: <span style="color:${neon};">${jumpBonus}%</span></div>` +
-      `<div>Buff duration: <span style="color:${neon};">${buffDurationBonus}%</span></div>` +
-      `<div>Orb spawn rate: <span style="color:${neon};">${orbRateBonus}%</span></div>` +
-      `<div>Deathrattle: <span style="color:${neon};">${deathrattlePct}%</span></div>` +
-      `<div>Orb Collector: <span style="color:${neon};">${orbCollectorPct}%</span></div>` +
-      `<div>Snake speed bonus: <span style="color:${neon};">${snakeSpeedBonus}%</span></div>` +
-      `<div>Last Stand: <span style="color:${neon};">${lastStandActive ? "ON" : "off"}</span></div>` +
-      `<div>Grave Wave: <span style="color:${neon};">${graveWaveActive ? "ON" : "off"}</span></div>` +
-      `<div>Orb Specialist: <span style="color:${neon};">${orbSpecialistActive ? "ON" : "off"}</span></div>` +
-      `<div>Cannibal frogs: <span style="color:${neon};">${frogEatFrogActive ? "ON" : "off"}</span></div>`;
+    const icon = (emoji, val, color) => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+        <span style="font-size:14px;filter:drop-shadow(0 0 3px ${color});">${emoji}</span>
+        <span style="font-size:8px;color:${color};font-family:monospace;">${val}</span>
+      </div>`;
+
+    const items = [];
+    if (hopSpeedBonus     > 0) items.push(icon("🐸", `+${hopSpeedBonus}%`,    "rgba(163,230,53,0.9)"));
+    if (jumpBonus         > 0) items.push(icon("🦘", `+${jumpBonus}%`,        "rgba(163,230,53,0.9)"));
+    if (buffDurationBonus > 0) items.push(icon("⏱",  `+${buffDurationBonus}%`,"rgba(251,146,60,0.9)"));
+    if (orbRateBonus      > 0) items.push(icon("🔮", `+${orbRateBonus}%`,     "rgba(251,146,60,0.9)"));
+    if (deathrattlePct    > 0) items.push(icon("💀", `${deathrattlePct}%`,    "rgba(248,113,113,0.9)"));
+    if (orbCollectorPct   > 0) items.push(icon("🧲", `${orbCollectorPct}%`,   "rgba(251,146,60,0.9)"));
+    if (snakeSpeedBonus   > 0) items.push(icon("🐍", `+${snakeSpeedBonus}%`,  "rgba(248,113,113,0.9)"));
+    if (lastStandActive)       items.push(icon("🏹", "ON",                    "rgba(248,113,113,0.9)"));
+    if (graveWaveActive)       items.push(icon("👻", "ON",                    "rgba(248,113,113,0.9)"));
+    if (orbSpecialistActive)   items.push(icon("🧪", "ON",                    "rgba(251,146,60,0.9)"));
+    if (frogEatFrogActive)     items.push(icon("🍽",  "ON",                   "rgba(163,230,53,0.9)"));
+
+    statsPanel.innerHTML = items.join("");
+    statsPanel.style.display = items.length > 0 && inGameUIVisible ? "flex" : "none";
   }
 
   function toggleStatsPanel() {
     statsPanelVisible = !statsPanelVisible;
     if (!statsPanel) return;
-    statsPanel.style.display = statsPanelVisible ? "block" : "none";
+    if (statsPanelVisible) {
+      updateStatsPanel();
+    } else {
+      statsPanel.style.display = "none";
+    }
   }
 
   function syncAudioMuteState() {
@@ -1245,7 +1187,7 @@ const MAX_LUCK = 30;
   function toggleSound() {
     soundEnabled = !soundEnabled;
     syncAudioMuteState();
-    if (btnSound) btnSound.textContent = soundEnabled ? "Sound: ON" : "Sound: OFF";
+    if (btnSound) btnSound.textContent = soundEnabled ? "sound" : "muted";
   }
 
   if (btnStats) btnStats.onclick = () => { if (soundEnabled) playButtonClick(); toggleStatsPanel(); };
@@ -1255,14 +1197,6 @@ const MAX_LUCK = 30;
     if (soundEnabled) playButtonClick();
     if (!gameOver) endGame();
   };
-
-  function showGameOver() {
-    gameOverBanner.style.display = "block";
-  }
-
-  function hideGameOver() {
-    gameOverBanner.style.display = "none";
-  }
 
   function showGameOver() {
     gameOverBanner.style.display = "block";
