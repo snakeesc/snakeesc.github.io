@@ -2270,3 +2270,11 @@ background: #65a30d;
     text-align: left;
   }
 }
+#endGameSummaryOverlay .frog-panel {
+  max-width: 360px;
+  width: 90%;
+}
+#buffGuideOverlay .frog-panel {
+  max-width: 360px;
+  width: 90%;
+}
