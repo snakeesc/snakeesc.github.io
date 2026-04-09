@@ -47,6 +47,7 @@
     ORB_SPAWN_INTERVAL_MIN,
     ORB_SPAWN_INTERVAL_MAX,
     SNAKE_SEGMENT_SIZE,
+    SNAKE_EGG_HATCH_CHANCE,
     SNAKE_BASE_SPEED,
     SNAKE_TURN_RATE,
     SNAKE_SEGMENT_GAP,
@@ -1019,7 +1020,6 @@ const MAX_LUCK = 30;
   let snakeEggActive = false;
   let snakeEggTimer = 0;         // counts up to hatch interval
   let snakeEggHatchInterval = 60; // check every 60 seconds
-  const SNAKE_EGG_HATCH_CHANCE = 0.5; // 50% chance each minute
   let babySnakes = [];           // tracks the two baby snakes
   // --------------------------------------------------
   // MOUSE
@@ -3023,6 +3023,7 @@ function activateSnakeEgg() {
         baby.isBabySnake  = true;
         baby.babySnakeAge = 0;
         baby.noShed       = true;
+        baby.canGrow      = false;
         extraSnakes.push(baby);
         babySnakes.push(baby);
       }
@@ -4189,7 +4190,8 @@ function computeDeathRattleChanceForFrog(frog) {
       segments,
       path,
       isFrenzyVisual: false,
-      speedFactor: 1.0
+      speedFactor: typeof opts.speedFactor === "number" ? opts.speedFactor : 1.0,
+      canGrow: typeof opts.canGrow === "boolean" ? opts.canGrow : true
     };
 
     if (colorFilter) {
@@ -4268,7 +4270,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
   function growSnakeForSnake(snakeObj, extraSegments) {
     if (!snakeObj) return;
-    if (scissorsGrowthLocked && snakeObj && snakeObj.canGrow === false) {
+    if (snakeObj.canGrow === false || snakeObj.isBabySnake) {
       return;
     }
     extraSegments = extraSegments || 1;
