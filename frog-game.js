@@ -5214,8 +5214,9 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     if (btnLeaderboard) {
-      btnLeaderboard.addEventListener("click", () => {
-        showLeaderboardOverlay();
+      btnLeaderboard.addEventListener("click", async () => {
+        const entries = await fetchLeaderboard();
+        showEndGameSummaryOverlay(entries);
       });
     }
 
