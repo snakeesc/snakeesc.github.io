@@ -908,8 +908,25 @@ a {
   z-index: 2;
 }
 
-/* FLAT THEME 6 – Coffee & Moss */
+/* =====================================================
+   GAME UI – Unified Design System
+   Palette:
+     bg-deep:    #151412   (darkest, modals)
+     bg-panel:   #1c1917   (panels, cards)
+     bg-raised:  #252220   (inputs, hover)
+     border:     #3a3632   (default border)
+     border-lit: #52524e   (lighter border)
+     text-base:  #e8e5e0   (main text)
+     text-muted: #9a948c   (secondary text)
+     accent:     #84cc16   (lime green — primary)
+     accent-dim: #4d7a0c   (darker lime)
+     gold:       #f0b429   (score/highlight)
+     red:        #dc2626   (danger)
+===================================================== */
 
+/* --------------------------------------------------
+   OVERLAY WRAPPER
+-------------------------------------------------- */
 .frog-overlay {
   position: absolute;
   inset: 0;
@@ -919,80 +936,118 @@ a {
   justify-content: center;
   z-index: 200;
   pointer-events: auto;
+  padding: 16px;
 }
 
+/* --------------------------------------------------
+   PANEL – base card
+-------------------------------------------------- */
 .frog-panel {
-    background: #1c1917;
-    padding: 18px 22px 16px 22px;
-    border-radius: 14px;
-    border: 0px solid #84cc16;
-    color: white;
-    font-family: monospace;
-    min-width: 400px;
-    max-width: 960px;
-    max-height: 82vh;
-    overflow: auto;
-    box-shadow: none;
+  background: #1c1917;
+  border: 1px solid #3a3632;
+  border-radius: 16px;
+  padding: 22px 24px 20px;
+  color: #e8e5e0;
+  font-family: monospace;
+  min-width: 360px;
+  max-width: 880px;
+  max-height: 85vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 24px 56px rgba(0,0,0,0.7);
+  scrollbar-width: thin;
+  scrollbar-color: #3a3632 transparent;
 }
 
+.frog-panel::-webkit-scrollbar { width: 5px; }
+.frog-panel::-webkit-scrollbar-track { background: transparent; }
+.frog-panel::-webkit-scrollbar-thumb { background: #3a3632; border-radius: 99px; }
+
+/* --------------------------------------------------
+   PANEL TYPOGRAPHY
+-------------------------------------------------- */
 .frog-panel-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 6px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    color: white;
-    text-shadow: 1px 1px gray;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  margin-bottom: 4px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #f5f5f0;
 }
 
 .frog-panel-title .emoji {
-  font-size: 22px;
+  font-size: 20px;
+  line-height: 1;
 }
 
 .frog-panel-sub {
-  font-size: 13px;
-  color: white;
-  text-shadow: 1px 1px gray;
+  font-size: 12px;
+  color: #9a948c;
   text-align: center;
-  margin-bottom: 14px;
-  line-height: 1.5;
+  margin-bottom: 16px;
+  line-height: 1.55;
+}
+
+/* Thin lime rule beneath titles */
+.frog-panel-divider {
+  height: 1px;
+  background: #3a3632;
+  margin: 10px 0 14px;
 }
 
 .frog-panel-section-label {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #a3e635;
-  margin-top: 12px;
+  letter-spacing: 0.1em;
+  color: #84cc16;
+  margin-top: 14px;
   margin-bottom: 6px;
+  font-weight: 700;
 }
 
 .frog-panel-footer {
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 12px;
-  color: #a8a29e;
+  color: #9a948c;
   text-align: center;
   line-height: 1.5;
+  border-top: 1px solid #2e2b28;
+  padding-top: 12px;
 }
 
 .frog-panel-list {
   list-style: none;
   padding-left: 0;
-  margin: 0 0 6px 0;
+  margin: 0 0 8px;
 }
 
 .frog-panel-list li {
-  font-size: 13px;
-  margin-bottom: 6px;
-  line-height: 1.5;
-  color: #f5f5f4;
+  font-size: 12.5px;
+  margin-bottom: 5px;
+  line-height: 1.55;
+  color: #d6d2cc;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #252220;
+  border: 1px solid #2e2b28;
 }
 
-/* leaderboard table styling */
+/* highlight variant */
+.frog-panel-list li.is-highlight {
+  border-color: rgba(132, 204, 22, 0.3);
+  background: rgba(132, 204, 22, 0.07);
+  color: #d9f99d;
+}
 
+/* --------------------------------------------------
+   LEADERBOARD TABLE
+-------------------------------------------------- */
 #leaderboardContent {
   width: 100%;
 }
@@ -1001,67 +1056,63 @@ a {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .leaderboard-title {
   font-weight: 800;
-  color: #bef264;
-  font-size: 15px;
+  color: #84cc16;
+  font-size: 14px;
+  letter-spacing: 0.04em;
 }
 
 .leaderboard-subtitle {
-  font-size: 12px;
-  color: #a8a29e;
+  font-size: 11px;
+  color: #9a948c;
 }
 
 .leaderboard-table {
   width: 100%;
   border-collapse: collapse;
-  background: #0f172a;
-  border: 1px solid #334155;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  background: #151412;
+  border: 1px solid #3a3632;
   border-radius: 10px;
   overflow: hidden;
   font-size: 12px;
 }
 
 .leaderboard-table thead {
-  background: linear-gradient(90deg, #166534, #0f766e);
+  background: #252220;
 }
 
 .leaderboard-head-cell {
   padding: 8px 10px;
   text-align: left;
-  color: #f8fafc;
-  letter-spacing: 0.04em;
+  color: #9a948c;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 700;
+  border-bottom: 1px solid #3a3632;
 }
 
-.leaderboard-row:nth-child(odd) {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.leaderboard-row:nth-child(even) {
-  background: rgba(255, 255, 255, 0.04);
-}
+.leaderboard-row:nth-child(odd)  { background: rgba(255,255,255,0.01); }
+.leaderboard-row:nth-child(even) { background: rgba(255,255,255,0.025); }
 
 .leaderboard-row.is-me {
-  outline: 1px solid #84cc16;
   background: rgba(132, 204, 22, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  outline: 1px solid rgba(132, 204, 22, 0.3);
 }
 
 .leaderboard-cell {
   padding: 7px 10px;
-  color: #e5e7eb;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  color: #d6d2cc;
+  border-bottom: 1px solid rgba(58, 54, 50, 0.6);
 }
 
 .leaderboard-name {
   font-weight: 700;
-  color: #e7e5e4;
+  color: #e8e5e0;
 }
 
 .leaderboard-pager {
@@ -1073,21 +1124,21 @@ a {
 
 .leaderboard-page-btn {
   width: auto;
-  padding: 8px 12px;
+  padding: 7px 12px;
   margin-bottom: 0;
 }
 
 .leaderboard-page-info {
   flex: 1;
   text-align: center;
-  font-size: 12px;
-  color: #cbd5e1;
+  font-size: 11px;
+  color: #9a948c;
 }
 
 .leaderboard-legend {
   margin-top: 8px;
   font-size: 11px;
-  color: #a8a29e;
+  color: #9a948c;
   text-align: center;
 }
 
@@ -1095,93 +1146,127 @@ a {
 .leaderboard-error,
 .leaderboard-empty {
   text-align: center;
-  color: #e5e7eb;
-  font-size: 13px;
-  padding: 16px 0 8px;
+  color: #9a948c;
+  font-size: 12px;
+  padding: 18px 0 8px;
 }
 
-/* frog UI buttons */
-
+/* --------------------------------------------------
+   BUTTONS
+-------------------------------------------------- */
 .frog-btn {
+  display: inline-block;
   width: 100%;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 13px;
+  border-radius: 9px;
+  padding: 9px 14px;
+  font-size: 12.5px;
   font-family: inherit;
+  font-weight: 700;
   cursor: pointer;
   text-align: center;
-  margin-bottom: 8px;
-  border: 0px solid transparent;
-  transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  box-shadow: none;
+  margin-bottom: 7px;
+  border: 1px solid transparent;
+  letter-spacing: 0.02em;
+  transition: transform 0.08s ease, filter 0.1s ease, box-shadow 0.1s ease;
+  line-height: 1.3;
 }
 
+.frog-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Primary – lime green */
 .frog-btn-primary {
   background: #65a30d;
-  color: white;
-  font-weight: 800;
+  color: #fefce8;
+  border-color: #84cc16;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset;
 }
 
-.frog-btn-primary:hover {
-  filter: brightness(1.05);
+.frog-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(101, 163, 13, 0.35);
+}
+
+/* Secondary – dark stone */
+.frog-btn-secondary {
+  background: #252220;
+  color: #e8e5e0;
+  border-color: #3a3632;
+}
+
+.frog-btn-secondary:hover:not(:disabled) {
+  background: #2e2b28;
+  border-color: #52524e;
   transform: translateY(-1px);
 }
 
-.frog-btn-secondary {
-  background: #292524;
-  color: white;
-  border-color: #44403c;
-  font-weight: 700;
+/* Danger */
+.frog-btn-danger {
+  background: #7f1d1d;
+  color: #fee2e2;
+  border-color: #dc2626;
+  font-size: 12px;
 }
 
-.frog-btn-secondary:hover {
+.frog-btn-danger:hover:not(:disabled) {
   filter: brightness(1.08);
   transform: translateY(-1px);
 }
 
-.frog-btn-danger {
-  background: #b91c1c;
-  color: #fee2e2;
-  border-color: #ef4444;
-  font-size: 12px;
-}
-
-/* Upgrade choices – match main menu buttons */
+/* --------------------------------------------------
+   UPGRADE CHOICE CARDS
+-------------------------------------------------- */
 .frog-upgrade-choice {
   text-align: left;
-  background: #292524;
-  border: 1px solid #44403c;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+  background: #1c1917;
+  border: 1px solid #3a3632;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease, filter 0.1s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .frog-upgrade-choice:hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
+  filter: brightness(1.07);
+  transform: translateY(-2px);
+  border-color: #84cc16;
+  box-shadow: 0 0 16px rgba(132,204,22,0.18), 0 8px 20px rgba(0,0,0,0.55);
 }
 
 .frog-upgrade-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   color: #d9f99d;
+  line-height: 1.25;
 }
 
 .frog-upgrade-desc {
-  font-size: 12px;
-  color: white;
+  font-size: 11.5px;
+  color: #c4c0b8;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
 .upgrade-column {
   background: #1c1917;
-  border: 1px solid #44403c;
+  border: 1px solid #3a3632;
   border-radius: 12px;
   padding: 10px;
 }
 
 .upgrade-column-title {
   font-weight: 800;
-  color: #f5f5f4;
-  margin-bottom: 6px;
+  color: #e8e5e0;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .upgrade-choices {
@@ -1190,100 +1275,107 @@ a {
   gap: 8px;
 }
 
-/* Summary column – same dark panel color, no green wash */
 .upgrade-column--summary {
-  background: #1c1917;           /* match main panel */
+  background: #151412;
 }
 
-/* Summary rows – flat, neutral border */
 .upgrade-summary-list li {
   font-size: 12px;
   line-height: 1.45;
-  color: #f5f5f4;
+  color: #d6d2cc;
   padding: 6px 8px;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #1c1917;
-  border: 1px solid #44403c;     /* no neon, no dashed outline */
+  border: 1px solid #3a3632;
 }
-
 
 .upgrade-summary-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 6px;
+  gap: 5px;
 }
 
 .stat-highlight {
   color: #a3e635;
+  font-weight: 700;
 }
 
-/* Buff guide cards */
-
+/* --------------------------------------------------
+   BUFF GUIDE
+-------------------------------------------------- */
 .buff-guide-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
 }
 
 .buff-card {
-  background: #1c1917;
+  background: #151412;
   border-radius: 10px;
-  padding: 10px 12px;
-  border: 1px solid #44403c;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9);
+  padding: 11px 13px;
+  border: 1px solid #3a3632;
 }
 
 .buff-card h4 {
-  margin: 0 0 6px;
-  font-size: 14px;
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 800;
   color: #d9f99d;
+  letter-spacing: 0.02em;
 }
 
 .buff-card ul {
   margin: 0;
-  padding-left: 16px;
-  color: #f5f5f4;
+  padding-left: 0;
+  list-style: none;
 }
 
 .buff-card li {
-  margin-bottom: 6px;
-  line-height: 1.4;
-  font-size: 12px;
+  margin-bottom: 5px;
+  line-height: 1.45;
+  font-size: 11.5px;
+  color: #c4c0b8;
+  padding-left: 10px;
+  position: relative;
 }
 
-/* Buff guide pagination tabs */
+.buff-card li::before {
+  content: "·";
+  position: absolute;
+  left: 1px;
+  color: #52524e;
+}
 
 .buff-guide-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 8px 0 10px;
+  margin: 8px 0 12px;
 }
 
 .buff-guide-nav .buff-page-btn {
   flex: 1 1 auto;
-  font-size: 12px;
-  padding: 6px 8px;
+  font-size: 11px;
+  padding: 6px 10px;
+  margin-bottom: 0;
 }
 
-/* active tab matches your primary moss color */
 .buff-guide-nav .buff-page-btn.is-active {
-  background: #65a30d;   /* same as frog-btn-primary */
+  background: #65a30d;
   color: #fefce8;
-  border-color: #a3e635;
+  border-color: #84cc16;
 }
-/* =========================================
-   UPGRADE OVERLAY – FLOATING CARD LAYOUT
-========================================= */
-
+/* --------------------------------------------------
+   UPGRADE OVERLAY – floating card spread
+-------------------------------------------------- */
 #upgradeOverlay {
   background: radial-gradient(
     circle at center,
-    rgba(0, 0, 0, 0.18) 0%,
-    rgba(0, 0, 0, 0.3) 45%,
-    rgba(0, 0, 0, 0.42) 100%
+    rgba(0, 0, 0, 0.16) 0%,
+    rgba(0, 0, 0, 0.34) 50%,
+    rgba(0, 0, 0, 0.48) 100%
   );
 }
 
@@ -1302,17 +1394,19 @@ a {
 }
 
 #upgradeOverlay .frog-panel-sub {
-  margin: 0 0 18px;
+  margin: 0 0 20px;
   text-align: center;
   font-size: 13px;
-  color: #f5f5f4;
-  text-shadow: 1px 1px darkslateblue;
+  color: #e8e5e0;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 
 #upgradeOverlay .upgrade-layout {
   position: relative;
   width: 100%;
-  min-height: 360px;
+  min-height: 340px;
 }
 
 #upgradeOverlay .upgrade-column {
@@ -1324,73 +1418,54 @@ a {
 #upgradeOverlay .upgrade-choices {
   position: relative;
   width: 100%;
-  min-height: 360px;
+  min-height: 340px;
 }
 
 /* floating choice cards */
 #upgradeOverlay .frog-upgrade-choice {
   position: absolute;
-  width: 220px;
-  min-height: 96px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(28, 25, 23, 0.96);
-  color: white;
-  border: 1px solid #44403c;
+  width: 224px;
+  min-height: 100px;
+  padding: 14px 16px;
+  border-radius: 13px;
+  background: rgba(21, 20, 18, 0.97);
+  color: #e8e5e0;
+  border: 1px solid #3a3632;
   text-align: left;
   cursor: pointer;
   font-family: inherit;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    border-color 140ms ease,
-    filter 140ms ease;
-  backdrop-filter: blur(2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  transition: transform 130ms ease, box-shadow 130ms ease, border-color 130ms ease, filter 130ms ease;
+  backdrop-filter: blur(4px);
 }
 
 /* desktop 3-card spread */
-#upgradeOverlay .frog-upgrade-choice:nth-child(1) {
-  left: 6%;
-  top: 138px;
-}
+#upgradeOverlay .frog-upgrade-choice:nth-child(1) { left: 6%; top: 128px; }
+#upgradeOverlay .frog-upgrade-choice:nth-child(2) { left: 50%; top: 28px; transform: translateX(-50%); }
+#upgradeOverlay .frog-upgrade-choice:nth-child(3) { right: 6%; top: 128px; }
 
-#upgradeOverlay .frog-upgrade-choice:nth-child(2) {
-  left: 50%;
-  top: 36px;
-  transform: translateX(-50%);
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(3) {
-  right: 6%;
-  top: 138px;
-}
-
-/* hover */
 #upgradeOverlay .frog-upgrade-choice:hover {
-  filter: brightness(1.06);
+  filter: brightness(1.07);
   border-color: #84cc16;
-  box-shadow: 0 0 18px rgba(163, 230, 53, 0.22), 0 14px 30px rgba(0, 0, 0, 0.52);
+  box-shadow: 0 0 20px rgba(132,204,22,0.2), 0 16px 36px rgba(0,0,0,0.6);
 }
 
-/* keep middle card centered on hover */
 #upgradeOverlay .frog-upgrade-choice:nth-child(2):hover {
-  transform: translateX(-50%) scale(1.08) translateY(-6px);
+  transform: translateX(-50%) scale(1.07) translateY(-5px);
 }
 
 #upgradeOverlay .frog-upgrade-choice:nth-child(1):hover,
 #upgradeOverlay .frog-upgrade-choice:nth-child(3):hover {
-  transform: scale(1.08) translateY(-6px);
+  transform: scale(1.07) translateY(-5px);
 }
 
-/* title / desc */
 #upgradeOverlay .frog-upgrade-title {
   display: block;
-  font-size: 14px;
-  line-height: 1.2;
+  font-size: 13.5px;
+  line-height: 1.25;
   font-weight: 800;
   color: #d9f99d;
   margin-bottom: 6px;
@@ -1398,60 +1473,47 @@ a {
 
 #upgradeOverlay .frog-upgrade-desc {
   display: block;
-  font-size: 12px;
-  line-height: 1.35;
-  color: #f5f5f4;
-  font-weight: 600;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #c4c0b8;
+  font-weight: 500;
 }
 
-/* colored left accent by upgrade type */
+/* colored left accent by type */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
-  border-color: #65a30d;
-  box-shadow: inset 5px 0 0 #65a30d, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border-color: #4d7c0f;
+  box-shadow: inset 4px 0 0 #65a30d, 0 12px 32px rgba(0,0,0,0.55);
 }
-
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
-  border-color: #eab308;
-  box-shadow: inset 5px 0 0 #eab308, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border-color: #854d0e;
+  box-shadow: inset 4px 0 0 #d97706, 0 12px 32px rgba(0,0,0,0.55);
 }
-
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival {
-  border-color: #ef4444;
-  box-shadow: inset 5px 0 0 #ef4444, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border-color: #991b1b;
+  box-shadow: inset 4px 0 0 #dc2626, 0 12px 32px rgba(0,0,0,0.55);
 }
-
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
-  border-color: #fb923c;
-  box-shadow: inset 5px 0 0 #fb923c, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border-color: #9a3412;
+  box-shadow: inset 4px 0 0 #ea580c, 0 12px 32px rgba(0,0,0,0.55);
 }
-
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
-  border-color: #a855f7;
-  box-shadow: inset 5px 0 0 #a855f7, 0 10px 28px rgba(0, 0, 0, 0.45);
+  border-color: #6b21a8;
+  box-shadow: inset 4px 0 0 #9333ea, 0 12px 32px rgba(0,0,0,0.55);
 }
 
 /* spawn animation */
 #upgradeOverlay .frog-upgrade-choice.is-spawning {
-  animation: upgradeCardSpawn 260ms ease-out both;
+  animation: upgradeCardSpawn 240ms ease-out both;
 }
 
 @keyframes upgradeCardSpawn {
-  0% {
-    opacity: 0;
-    transform: scale(0.72);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0%   { opacity: 0; transform: scale(0.78); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
-/* mobile / narrow screens */
 @media (max-width: 900px) {
   #upgradeOverlay .upgrade-layout,
-  #upgradeOverlay .upgrade-choices {
-    min-height: auto;
-  }
+  #upgradeOverlay .upgrade-choices { min-height: auto; }
 
   #upgradeOverlay .upgrade-choices {
     display: flex;
@@ -1471,11 +1533,13 @@ a {
   }
 
   #upgradeOverlay .frog-upgrade-choice:hover {
-    transform: translateY(-3px) !important;
+    transform: translateY(-2px) !important;
   }
 }
 
-/* End-game summary / leaderboard overlay */
+/* --------------------------------------------------
+   END-GAME SCOREBOARD OVERLAY
+-------------------------------------------------- */
 .scoreboard-overlay {
   position: fixed;
   inset: 0;
@@ -1488,84 +1552,85 @@ a {
 }
 
 .scoreboard-card {
-  width: min(540px, 92vw);
-  background: linear-gradient(145deg, #0c0f0d, #111616);
-  border: 1px solid #3f6212;
-  border-radius: 14px;
-  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.65);
-  color: #e2e8f0;
-  font-family: "DM Mono", "Roboto Mono", monospace;
-  padding: 18px;
+  width: min(520px, 92vw);
+  background: #151412;
+  border: 1px solid #3a3632;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.75);
+  color: #e8e5e0;
+  font-family: monospace;
+  padding: 20px 22px;
 }
 
 .scoreboard-header {
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #2e2b28;
 }
 
 .scoreboard-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
-  color: #fefce8;
-  letter-spacing: 0.04em;
+  color: #f5f5f0;
+  letter-spacing: 0.03em;
 }
 
 .scoreboard-subtitle {
-  font-size: 12px;
-  color: #a3e635;
-  opacity: 0.9;
-  margin-top: 2px;
+  font-size: 11px;
+  color: #84cc16;
+  margin-top: 3px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .scoreboard-summary {
-  background: transparent;
-  border: 0px solid #334155;
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: none;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .summary-heading {
-  color: #fefce8;
-  font-weight: 800;
-  margin-bottom: 8px;
+  color: #9a948c;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
 }
 
 .summary-metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 7px;
 }
 
 .summary-pill {
-  background: transparent;
-  border: 1px solid darkseagreen;
-  border-radius: 10px;
+  background: #1c1917;
+  border: 1px solid #3a3632;
+  border-radius: 9px;
   padding: 10px 12px;
-  box-shadow: none;
 }
 
 .pill-label {
-  font-size: 11px;
-  letter-spacing: 0.05em;
+  font-size: 10px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #bbf7d0;
-  margin-bottom: 4px;
+  color: #9a948c;
+  margin-bottom: 5px;
+  font-weight: 700;
 }
 
 .pill-value {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
-  color: #fefce8;
+  color: #f5f5f0;
+  line-height: 1;
 }
 
 .scoreboard-table-wrapper {
-  background: #0b0f12;
-  border: 1px solid #334155;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  background: #151412;
+  border: 1px solid #3a3632;
+  border-radius: 9px;
+  overflow: hidden;
   margin-bottom: 10px;
 }
 
@@ -1577,334 +1642,235 @@ a {
 
 .scoreboard-th {
   text-align: left;
-  padding: 6px 8px;
-  color: #cbd5e1;
-  border-bottom: 1px solid #1f2937;
-  letter-spacing: 0.02em;
+  padding: 7px 10px;
+  color: #9a948c;
+  border-bottom: 1px solid #2e2b28;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  background: #1c1917;
 }
 
 .scoreboard-row {
-  border-bottom: 1px solid #1f2937;
+  border-bottom: 1px solid #2e2b28;
 }
 
 .scoreboard-row--me {
-  background: rgba(163, 230, 53, 0.08);
+  background: rgba(132, 204, 22, 0.08);
   color: #d9f99d;
-  font-weight: 800;
-}
-
-.scoreboard-td {
-  padding: 6px 8px;
-  color: #e2e8f0;
-}
-
-.scoreboard-name {
   font-weight: 700;
 }
 
-.scoreboard-rank {
-  color: #a3e635;
-  font-weight: 800;
-  width: 42px;
+.scoreboard-td {
+  padding: 7px 10px;
+  color: #d6d2cc;
 }
 
-.scoreboard-score {
-  text-align: right;
+.scoreboard-name { font-weight: 700; }
+
+.scoreboard-rank {
+  color: #84cc16;
+  font-weight: 800;
+  width: 40px;
 }
+
+.scoreboard-score { text-align: right; }
 
 .scoreboard-pager {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   justify-content: space-between;
-  margin-top: 10px;
+  margin-top: 8px;
   font-size: 11px;
 }
 
 .scoreboard-page-info {
   flex: 1;
   text-align: center;
-  color: #cbd5e1;
+  color: #9a948c;
 }
 
 .scoreboard-actions {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #2e2b28;
 }
 
 .scoreboard-btn {
-  padding: 8px 12px;
-  background: #111827;
-  border: 0px solid #334155;
-  color: #e2e8f0;
+  flex: 1;
+  padding: 9px 14px;
+  background: #252220;
+  border: 1px solid #3a3632;
+  color: #e8e5e0;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
-  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+  font-family: inherit;
+  font-size: 12px;
+  transition: transform 0.08s ease, filter 0.1s ease;
 }
 
 .scoreboard-btn:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.3);
 }
 
 .scoreboard-btn--primary {
-background: #65a30d;
-  color: white;
-  box-shadow: none;
+  background: #65a30d;
+  border-color: #84cc16;
+  color: #fefce8;
 }
 
 .scoreboard-btn--ghost {
-  background: #0b0f12;
-  border-color: #1f2937;
-  color: #e2e8f0;
-  padding: 6px 10px;
+  background: transparent;
+  border-color: #3a3632;
+  color: #9a948c;
 }
 
 .scoreboard-hint {
   margin-top: 8px;
   font-size: 11px;
-  opacity: 0.85;
   text-align: center;
-  color: #cbd5e1;
+  color: #9a948c;
 }
+/* --------------------------------------------------
+   DASHBOARD STAT GRID
+-------------------------------------------------- */
 .dashboard-stat-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 10px 0 4px;
+  gap: 8px;
+  margin: 10px 0 6px;
 }
 
 .dashboard-stat {
-  background: #1c1917;
-  border: 1px solid #44403c;
-  border-radius: 12px;
+  background: #151412;
+  border: 1px solid #3a3632;
+  border-radius: 10px;
   padding: 10px 12px;
 }
 
 .dashboard-stat-label {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #a3e635;
-  margin-bottom: 8px;
+  letter-spacing: 0.1em;
+  color: #84cc16;
+  margin-bottom: 7px;
+  font-weight: 700;
 }
 
 .dashboard-stat-value {
   display: block;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
-  color: #f5f5f4;
+  color: #e8e5e0;
   line-height: 1.1;
 }
 
 @media (max-width: 640px) {
-  .dashboard-stat-grid {
-    grid-template-columns: 1fr;
-  }
+  .dashboard-stat-grid { grid-template-columns: 1fr; }
 }
+/* --------------------------------------------------
+   RESPONSIVE – mobile
+-------------------------------------------------- */
 @media (max-width: 768px) {
-  /* main menu / dashboard / leaderboard / how to play / buff guide / upgrade overlay */
   .frog-panel {
     min-width: 0;
-    width: min(94vw, 640px);
+    width: min(94vw, 620px);
     max-width: 94vw;
     max-height: 88vh;
+    padding: 20px 18px 18px;
+    border-radius: 14px;
+  }
+
+  .frog-panel-title  { font-size: 17px; margin-bottom: 8px; }
+  .frog-panel-sub    { font-size: 12px; }
+  .frog-panel-list li { font-size: 12px; }
+
+  .frog-btn {
+    padding: 12px 14px;
+    font-size: 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+
+  .frog-upgrade-title { font-size: 14px; }
+  .frog-upgrade-desc  { font-size: 12px; }
+
+  .leaderboard-head-cell { font-size: 10px; padding: 8px; }
+  .leaderboard-cell      { font-size: 12px; padding: 8px; }
+  .leaderboard-page-btn  { padding: 8px 10px; font-size: 12px; }
+
+  .scoreboard-card   { width: min(96vw, 600px); padding: 18px 16px; }
+  .scoreboard-title  { font-size: 16px; }
+  .pill-value        { font-size: 17px; }
+  .scoreboard-th, .scoreboard-td { padding: 6px 8px; font-size: 11px; }
+}
+
+@media (max-device-width: 768px), (pointer: coarse) and (max-width: 1024px) {
+  .frog-overlay { padding: 12px; }
+
+  .frog-panel {
+    min-width: 0;
+    width: min(96vw, 720px);
+    max-width: 96vw;
+    max-height: 90vh;
     padding: 24px 20px 20px;
     border-radius: 16px;
   }
 
-  .frog-panel-title {
-    font-size: 28px;
-    line-height: 1.15;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .frog-panel-title .emoji {
-    font-size: 30px;
-  }
-
-  .frog-panel-sub {
-    font-size: 16px;
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-
-  .frog-panel-section-label {
-    font-size: 13px;
-    margin-top: 16px;
-    margin-bottom: 8px;
-  }
-
-  .frog-panel-list li {
-    font-size: 16px;
-    line-height: 1.6;
-    margin-bottom: 8px;
-  }
-
-  .frog-panel-footer {
-    font-size: 14px;
-    line-height: 1.5;
-  }
+  .frog-panel-title  { font-size: 20px; gap: 8px; margin-bottom: 10px; }
+  .frog-panel-sub    { font-size: 14px; margin-bottom: 14px; }
+  .frog-panel-section-label { font-size: 11px; margin-top: 14px; }
+  .frog-panel-list li { font-size: 14px; margin-bottom: 7px; }
+  .frog-panel-footer { font-size: 13px; }
 
   .frog-btn {
     padding: 14px 16px;
-    font-size: 17px;
+    font-size: 16px;
     border-radius: 12px;
     margin-bottom: 10px;
   }
 
-  .frog-btn-danger {
-    font-size: 15px;
+  #upgradeOverlay .frog-panel {
+    width: min(96vw, 720px);
+    max-width: 96vw;
+    padding: 0;
   }
 
-  .frog-upgrade-choice {
-    padding: 14px 14px;
+  #upgradeOverlay .frog-upgrade-choice {
+    position: relative;
+    width: 100%;
+    min-height: 0;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    padding: 14px 15px;
     border-radius: 12px;
   }
 
-  .frog-upgrade-title,
-  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-title {
-    font-size: 18px;
-    margin-bottom: 4px;
+  #upgradeOverlay .frog-upgrade-choice:hover {
+    transform: translateY(-2px) !important;
   }
 
-  .frog-upgrade-desc,
-  #upgradeOverlay .frog-upgrade-choice .frog-upgrade-desc {
-    font-size: 14px;
-    line-height: 1.5;
-  }
+  #upgradeOverlay .frog-upgrade-title { font-size: 17px; }
+  #upgradeOverlay .frog-upgrade-desc  { font-size: 13px; }
 
-  .upgrade-column-title {
-    font-size: 16px;
-  }
+  .leaderboard-head-cell { font-size: 11px; padding: 9px 7px; }
+  .leaderboard-cell      { font-size: 13px; padding: 9px 7px; }
+  .leaderboard-page-btn  { padding: 10px 12px; font-size: 13px; }
 
-  .upgrade-summary-list li {
-    font-size: 14px;
-    line-height: 1.5;
-    padding: 8px 10px;
-  }
-
-  .leaderboard-title {
-    font-size: 20px;
-  }
-
-  .leaderboard-subtitle,
-  .leaderboard-page-info,
-  .leaderboard-legend,
-  .leaderboard-loading,
-  .leaderboard-error,
-  .leaderboard-empty {
-    font-size: 14px;
-  }
-
-  .leaderboard-head-cell {
-    font-size: 12px;
-    padding: 10px 8px;
-  }
-
-  .leaderboard-cell {
-    font-size: 14px;
-    padding: 10px 8px;
-  }
-
-  .leaderboard-page-btn {
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-
-  .scoreboard-card {
-    width: min(96vw, 640px);
-    padding: 22px 18px;
-    border-radius: 16px;
-  }
-
-  .scoreboard-title {
-    font-size: 22px;
-  }
-
-  .scoreboard-subtitle {
-    font-size: 14px;
-  }
-
-  .summary-heading {
-    font-size: 15px;
-  }
-
-  .pill-label {
-    font-size: 12px;
-  }
-
-  .pill-value {
-    font-size: 22px;
-  }
-
-  .scoreboard-th,
-  .scoreboard-td {
-    font-size: 14px;
-    padding: 8px 6px;
-  }
-
-  .scoreboard-btn {
-    font-size: 15px;
-    padding: 10px 12px;
-  }
-
-  .scoreboard-hint {
-    font-size: 13px;
-  }
-}
-.frog-overlay.is-open {
-  display: flex;
-}
-
-.frog-panel {
-  transform-origin: top center;
-  backface-visibility: hidden;
-}
-
-.frog-overlay.is-animating-in .frog-panel {
-  animation: frogPanelFoldIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.frog-overlay.is-animating-out .frog-panel {
-  animation: frogPanelFoldOut 180ms ease-in forwards;
-}
-
-@keyframes frogPanelFoldIn {
-  0% {
-    opacity: 0;
-    transform: perspective(900px) rotateX(-65deg) scaleY(0.55) scaleX(0.96);
-    filter: brightness(0.8);
-  }
-  60% {
-    opacity: 1;
-    transform: perspective(900px) rotateX(8deg) scaleY(1.04) scaleX(1.01);
-    filter: brightness(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: perspective(900px) rotateX(0deg) scaleY(1) scaleX(1);
-    filter: brightness(1);
-  }
-}
-
-@keyframes frogPanelFoldOut {
-  0% {
-    opacity: 1;
-    transform: perspective(900px) rotateX(0deg) scaleY(1) scaleX(1);
-    filter: brightness(1);
-  }
-  100% {
-    opacity: 0;
-    transform: perspective(900px) rotateX(-55deg) scaleY(0.6) scaleX(0.97);
-    filter: brightness(0.8);
-  }
+  .scoreboard-card   { width: min(96vw, 640px); padding: 20px 16px; border-radius: 14px; }
+  .scoreboard-title  { font-size: 18px; }
+  .pill-value        { font-size: 19px; }
+  .scoreboard-btn    { font-size: 14px; padding: 11px 14px; }
 }
 .upgrade-guide-list {
   list-style: none;
