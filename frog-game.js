@@ -1273,12 +1273,6 @@ function initEndGameSummaryOverlay() {
     </div>
   `;
 
-  endGameSummaryOverlay.addEventListener("click", (e) => {
-    if (e.target === endGameSummaryOverlay) {
-      hideEndGameSummaryOverlay();
-    }
-  });
-
   container.appendChild(endGameSummaryOverlay);
 
   document.addEventListener("keydown", (e) => {
@@ -5371,13 +5365,6 @@ function closeAnimatedOverlay(overlayEl) {
     if (buffGuideOverlay) return;
     buffGuideOverlay = document.getElementById("buffGuideOverlay");
     if (!buffGuideOverlay) return;
-
-    // Click outside panel closes it
-    buffGuideOverlay.addEventListener("click", (e) => {
-      if (e.target === buffGuideOverlay) {
-        hideBuffGuideOverlay();
-      }
-    });
 
     // Escape closes it
     document.addEventListener("keydown", (e) => {
