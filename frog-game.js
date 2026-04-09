@@ -1094,7 +1094,7 @@ const MAX_LUCK = 30;
 
   const btnStats = makeControlButton("stats");
   const btnSound = makeControlButton("sound");
-  const btnEnd   = makeControlButton("end game");
+  const btnEnd   = makeControlButton("end run");
 
   controlsBar.appendChild(btnStats);
   controlsBar.appendChild(btnSound);
