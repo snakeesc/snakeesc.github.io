@@ -1146,7 +1146,7 @@ const MAX_LUCK = 30;
 
     const icon = (emoji, label, val, color) => `
       <div style="background:rgba(0,0,0,0.55);border-radius:6px;padding:4px 8px;display:flex;align-items:center;gap:5px;">
-        <span style="font-size:15px;">${emoji}</span>
+        <span style="font-size:12px;">${emoji}</span>
         <span style="font-size:12px;color:white;font-family:monospace;">${label} <strong style="color:${color};">${val}</strong></span>
       </div>`;
 
