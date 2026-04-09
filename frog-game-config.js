@@ -44,7 +44,7 @@
     // Lowered to keep body segments tighter across devices.
     SNAKE_SEGMENT_GAP: 32,
     SNAKE_INITIAL_SEGMENTS: 12,
-    SNAKE_EAT_RADIUS_BASE: 48,
+    SNAKE_EAT_RADIUS_BASE: 38,
     SNAKE_EGG_BUFF_PCT: 1.15,
     SNAKE_TURN_RATE_BASE: Math.PI * 0.75,
     SNAKE_TURN_RATE_CAP: Math.PI * 1.75,
