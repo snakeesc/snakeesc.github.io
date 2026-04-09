@@ -54,33 +54,32 @@
 
   <!-- MAIN MENU OVERLAY -->
   <div id="mainMenuOverlay" class="frog-overlay">
-    <div class="frog-panel" style="background: transparent !important;">
-      <div class="frog-panel-title">
+    <div class="frog-panel" style="background: transparent !important; min-width: 300px; max-width: 360px; padding: 28px 24px 22px;">
+      <div class="frog-panel-title" style="font-size:26px; margin-bottom:8px;">
         Escape the Snake
         <span class="emoji">🐍</span>
       </div>
 
-      <div class="frog-panel-sub">
+      <div class="frog-panel-sub" style="margin-bottom:20px;">
         Keep your frogs alive as long as you can.<br />
-        Mouse to move · Frogs follow your cursor.
+        Move your mouse · frogs follow your cursor.
       </div>
 
-      <div style="margin-bottom: 8px;">
-        <button id="btnStartRun" class="frog-btn frog-btn-primary">
-          Start Run
-        </button>
-      </div>
-      <div>
-        <button id="btnHowTo" class="frog-btn frog-btn-secondary">
+      <button id="btnStartRun" class="frog-btn frog-btn-primary" style="font-size:15px; padding:13px 16px; margin-bottom:12px;">
+        ▶ Start Run
+      </button>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px; margin:0;">
+        <button id="btnHowTo" class="frog-btn frog-btn-secondary" style="margin-bottom:0; font-size:12px; padding:9px 8px;">
           How to Play
         </button>
-        <button id="btnBuffGuide" class="frog-btn frog-btn-secondary">
+        <button id="btnBuffGuide" class="frog-btn frog-btn-secondary" style="margin-bottom:0; font-size:12px; padding:9px 8px;">
           Upgrades
         </button>
-        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">
+        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary" style="margin-bottom:0; font-size:12px; padding:9px 8px;">
           Leaderboard
         </button>
-        <button id="btnDashboard" class="frog-btn frog-btn-secondary">
+        <button id="btnDashboard" class="frog-btn frog-btn-secondary" style="margin-bottom:0; font-size:12px; padding:9px 8px;">
           Dashboard
         </button>
       </div>
@@ -196,17 +195,17 @@
   <!-- LEADERBOARD OVERLAY -->
   <div id="leaderboardOverlay" class="frog-overlay">
     <div class="frog-panel">
-      <div class="frog-panel-title" style="color: white !important;">
+      <div class="frog-panel-title">
         Leaderboard
         <span class="emoji">🏆</span>
       </div>
 
-      <div class="frog-panel-sub" style="color: white !important;">
+      <div class="frog-panel-sub">
         Top runs from all players.
       </div>
 
       <div id="leaderboardContent">
-        <!-- Your existing leaderboard table / list goes here -->
+        <!-- populated by JS -->
       </div>
 
       <div class="frog-panel-footer">
