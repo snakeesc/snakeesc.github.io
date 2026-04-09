@@ -1183,7 +1183,7 @@ const MAX_LUCK = 30;
     if (frogDeathOrbChance> 0) items.push(icon("⚱️", "Ouroboros",    "",                      r));
 
     // Role
-    if (extraUpgradeOptionActive) items.push(icon("🔷", "Loaded Hand", "",                     p));
+    if (extraUpgradeOptionActive) items.push(icon("🃏", "Loaded Hand", "",                     p));
     if (frogEatFrogActive)        items.push(icon("🍽",  "Cannibal",   "",                     g));
 
     statsPanel.innerHTML = items.join("");
@@ -2291,13 +2291,9 @@ function createFrogAt(x, y, tokenId) {
 
     const extraSegments = Math.max(0, totalSegments - SNAKE_INITIAL_SEGMENTS);
 
-    // stronger scaling than before
-    const RESIST_PER_SEGMENT = 0.07;
-
-    // small flat bonus per shed
-    const shedBonus = snakeShedCount * 0.08;
-
-    const maxResist = 1.35;
+    const RESIST_PER_SEGMENT = 0.03;
+    const shedBonus = snakeShedCount * 0.04;
+    const maxResist = 0.75;
 
     return Math.max(
       0,
@@ -4611,7 +4607,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!extraUpgradeOptionActive) {
       upgrades.push({
         id: "extraUpgradeOption",
-        label: `🔷 Loaded Hand<br>Future upgrade screens show <span style="color:${epicTitleColor};">4</span> choices instead of 3`,
+        label: `🃏 Loaded Hand<br>Future upgrade screens show <span style="color:${epicTitleColor};">4</span> choices instead of 3`,
         apply: () => { extraUpgradeOptionActive = true; }
       });
     }
@@ -5418,7 +5414,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "role", label: "🎭 Role Draft", desc: "Choose between 2 random frog roles." },
       { type: "role", label: "🥇 Promotion", desc: "All current frogs gain +1 star immediately." },
       { type: "role", label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
-      { type: "role", label: "🔷 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
+      { type: "role", label: "🃏 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
     ];
 
     const itemsPerPage = 14;
