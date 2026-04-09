@@ -6653,7 +6653,7 @@ function initUpgradeOverlay() {
 
     choices.forEach((choice, index) => {
       const btn = document.createElement("button");
-      btn.className = `frog-btn frog-upgrade-choice ${getUpgradeColorClass(choice.id)}`;
+      btn.className = `frog-upgrade-choice is-spawning ${getUpgradeColorClass(choice.id)}`;
       btn.style.animationDelay = `${index * 70}ms`;
 
       const rawLabel = String(choice.label || "").trim();
