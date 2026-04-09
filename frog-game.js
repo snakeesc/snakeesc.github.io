@@ -146,63 +146,63 @@ const STARTING_BUFFS = [
   },
   {
     id: "quickReflexes",
-    levelRequired: 3,
+    levelRequired: 2,
     emoji: "🐇",
     name: "Quick Reflexes",
     desc: "Frogs start 10% faster"
   },
   {
     id: "insurance",
-    levelRequired: 5,
+    levelRequired: 3,
     emoji: "💀",
     name: "Insurance",
     desc: "Start with 5% deathrattle chance"
   },
   {
     id: "stormFront",
-    levelRequired: 7,
+    levelRequired: 4,
     emoji: "🌩️",
     name: "Storm Front",
     desc: "Start with Orb Storm already triggered"
   },
   {
     id: "evolved",
-    levelRequired: 10,
+    levelRequired: 5,
     emoji: "⚗️",
     name: "Evolved",
     desc: "Start with 1–5 frogs of one random role"
   },
   {
     id: "luckyStart",
-    levelRequired: 10,
+    levelRequired: 6,
     emoji: "🍀",
     name: "Lucky Start",
     desc: "Start with +5 luck"
   },
   {
     id: "orbSpecialistStart",
-    levelRequired: 12,
+    levelRequired: 7,
     emoji: "🧪",
     name: "Orb Specialist",
     desc: "First 15 collected orbs each spawn 1 extra frog"
   },
   {
     id: "lastStandStart",
-    levelRequired: 14,
+    levelRequired: 8,
     emoji: "🏹",
     name: "Last Stand",
     desc: "Start with Last Stand already active"
   },
   {
     id: "doubleYolkerStart",
-    levelRequired: 16,
+    levelRequired: 9,
     emoji: "🥚",
     name: "Double Yolker",
     desc: "Start the run with Double Yolker active"
   },
   {
     id: "loadedHandStart",
-    levelRequired: 18,
+    levelRequired: 10,
     emoji: "🃏",
     name: "Loaded Hand",
     desc: "Start with 4 upgrade choices instead of 3"
