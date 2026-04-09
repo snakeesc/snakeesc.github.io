@@ -1219,11 +1219,6 @@ function initEndGameSummaryOverlay() {
   endGameSummaryOverlay.style.background = "rgba(0,0,0,0.18)";
   endGameSummaryOverlay.innerHTML = `
     <div class="frog-panel">
-      <div class="frog-panel-title">
-        Run Summary
-        <span class="emoji">📋</span>
-      </div>
-
       <div id="endGameSummaryContent"></div>
 
       <div class="frog-panel-footer">
