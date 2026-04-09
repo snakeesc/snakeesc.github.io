@@ -929,10 +929,13 @@ a {
     color: white;
     font-family: monospace;
     min-width: 0;
-    max-width: 960px;
-    max-height: 82vh;
-    overflow: auto;
+    width: min(480px, 92vw);
+    max-width: 92vw;
+    max-height: 86vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: none;
+    box-sizing: border-box;
 }
 
 .frog-panel-title {
@@ -1711,11 +1714,12 @@ background: #65a30d;
   /* main menu / dashboard / leaderboard / how to play / buff guide / upgrade overlay */
   .frog-panel {
     min-width: 0;
-    width: min(94vw, 640px);
-    max-width: 94vw;
+    width: min(92vw, 480px);
+    max-width: 92vw;
     max-height: 88vh;
-    padding: 24px 20px 20px;
-    border-radius: 16px;
+    padding: 16px 18px 16px;
+    border-radius: 14px;
+    font-size: 13px;
   }
 
   .frog-panel-title {
@@ -2271,10 +2275,27 @@ background: #65a30d;
   }
 }
 #endGameSummaryOverlay .frog-panel {
-  max-width: 400px;
-  width: 90%;
+  width: min(400px, 92vw);
+  max-width: 92vw;
 }
 #buffGuideOverlay .frog-panel {
-  max-width: 550px;
-  width: 90%;
+  width: min(550px, 92vw);
+  max-width: 92vw;
+}
+@media (max-width: 400px) {
+  .frog-panel {
+    width: 96vw;
+    max-width: 96vw;
+    padding: 14px 14px 14px;
+    font-size: 12px;
+  }
+
+  .frog-btn {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  .frog-panel-title {
+    font-size: 18px;
+  }
 }
