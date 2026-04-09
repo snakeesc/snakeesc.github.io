@@ -1316,7 +1316,7 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: stretch;
-  gap: 14px;
+  gap: 10%;
 }
 
 #upgradeOverlay .frog-upgrade-choice {
@@ -1957,7 +1957,7 @@ background: #65a30d;
   #upgradeOverlay .upgrade-choices {
     display: flex;
     flex-direction: column;
-    gap: 109px;
+    gap: 12px;
   }
 
   #upgradeOverlay .frog-upgrade-choice {
