@@ -5914,8 +5914,8 @@ async function showDashboardOverlay(cachedLeaderboard) {
       <div style="width:120px;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin:0 auto 3px;">
         <div style="width:${levelData.progressPercent}%;height:100%;background:#65a30d;border-radius:999px;"></div>
       </div>
-      <div style="font-size:10px;color:#a8a29e;margin-bottom:6px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
-      <div style="font-size:12px;color:#f5f5f4;">
+      <div style="color:#a8a29e;margin-bottom:6px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
+      <div style="color:#f5f5f4;">
         <strong style="color:#bef264;">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong> best
         · <strong style="color:#bef264;">${localStats.totalRuns || 0}</strong> runs
         · <strong style="color:#bef264;">${localStats.totalOrbsCollected || 0}</strong> orbs
