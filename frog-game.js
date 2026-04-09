@@ -5896,12 +5896,12 @@ async function showDashboardOverlay(cachedLeaderboard) {
     <div style="text-align:center;padding-bottom:14px;border-bottom:1px solid #292524;margin-bottom:2px;">
       <div style="
         position:relative;
-        width:72px;
-        height:72px;
+        width:96px;
+        height:96px;
         border-radius:999px;
         overflow:hidden;
         background:${dashboardPfp.bgColor || "#292524"};
-        border:2px solid #44403c;
+        border:0px solid #44403c;
         margin:0 auto 8px;
       ">
         <img src="${dashboardPfp.spriteSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:1;" />
@@ -5940,7 +5940,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
   `;
-  
+
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
   const msgEl = document.getElementById("dashboardTagMessage");
