@@ -922,7 +922,7 @@ a {
 }
 
 .frog-panel {
-    background: #252220;
+    background: #1c1917;
     padding: 18px 22px 16px 22px;
     border-radius: 14px;
     border: 0px solid #84cc16;
@@ -944,7 +944,8 @@ a {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    color: #f5f2ee;
+    color: white;
+    text-shadow: 1px 1px gray;
 }
 
 .frog-panel-title .emoji {
@@ -953,10 +954,11 @@ a {
 
 .frog-panel-sub {
   font-size: 13px;
-  color: #b8b0a6;
+  color: white;
+  text-shadow: 1px 1px gray;
   text-align: center;
   margin-bottom: 14px;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .frog-panel-section-label {
@@ -985,8 +987,8 @@ a {
 .frog-panel-list li {
   font-size: 13px;
   margin-bottom: 6px;
-  line-height: 1.55;
-  color: #e8e4df;
+  line-height: 1.5;
+  color: #f5f5f4;
 }
 
 /* leaderboard table styling */
@@ -1126,22 +1128,15 @@ a {
 }
 
 .frog-btn-secondary {
-  background: #3a3530;
-  color: #f0ece8;
-  border: 1px solid #56504a;
+  background: #292524;
+  color: white;
+  border-color: #44403c;
   font-weight: 700;
 }
 
 .frog-btn-secondary:hover {
-  background: #454038;
-  filter: brightness(1.05);
+  filter: brightness(1.08);
   transform: translateY(-1px);
-}
-
-.frog-btn-secondary:disabled {
-  opacity: 0.4;
-  cursor: default;
-  transform: none;
 }
 
 .frog-btn-danger {
@@ -1154,9 +1149,9 @@ a {
 /* Upgrade choices – match main menu buttons */
 .frog-upgrade-choice {
   text-align: left;
-  background: #2e2a26;
-  border: 1px solid #56504a;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+  background: #292524;
+  border: 1px solid #44403c;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 .frog-upgrade-choice:hover {
@@ -1173,13 +1168,12 @@ a {
 
 .frog-upgrade-desc {
   font-size: 12px;
-  color: #b8b0a6;
-  line-height: 1.45;
+  color: white;
 }
 
 .upgrade-column {
-  background: #252220;
-  border: 1px solid #56504a;
+  background: #1c1917;
+  border: 1px solid #44403c;
   border-radius: 12px;
   padding: 10px;
 }
@@ -1208,8 +1202,8 @@ a {
   color: #f5f5f4;
   padding: 6px 8px;
   border-radius: 8px;
-  background: #252220;
-  border: 1px solid #56504a;     /* no neon, no dashed outline */
+  background: #1c1917;
+  border: 1px solid #44403c;     /* no neon, no dashed outline */
 }
 
 
@@ -1234,11 +1228,11 @@ a {
 }
 
 .buff-card {
-  background: #252220;
+  background: #1c1917;
   border-radius: 10px;
   padding: 10px 12px;
-  border: 1px solid #56504a;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid #44403c;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9);
 }
 
 .buff-card h4 {
@@ -1340,9 +1334,9 @@ a {
   min-height: 96px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(38, 34, 30, 0.97);
+  background: rgba(28, 25, 23, 0.96);
   color: white;
-  border: 1px solid #56504a;
+  border: 1px solid #44403c;
   text-align: left;
   cursor: pointer;
   font-family: inherit;
@@ -1684,8 +1678,8 @@ background: #65a30d;
 }
 
 .dashboard-stat {
-  background: #252220;
-  border: 1px solid #56504a;
+  background: #1c1917;
+  border: 1px solid #44403c;
   border-radius: 12px;
   padding: 10px 12px;
 }
@@ -2275,275 +2269,4 @@ background: #65a30d;
   .dashboard-stats-featured-value {
     text-align: left;
   }
-}
-
-/* ─── NEW LAYOUT COMPONENTS (dashboard / end-game) ──────────
-   These add structure for the cleaned-up JS layouts.
-   All colors match the original palette exactly.
-────────────────────────────────────────────────────────────── */
-
-/* ui-input — replaces scattered inline input styles */
-.ui-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 1px solid #56504a;
-  background: #2e2a26;
-  color: #e8e4df;
-  font-family: inherit;
-  font-size: 12px;
-  margin-bottom: 6px;
-  outline: none;
-}
-.ui-input:focus { border-color: #65a30d; }
-
-/* catch-all: any input inside a panel gets dark styling */
-.frog-panel input[type="text"] {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 1px solid #56504a;
-  background: #2e2a26;
-  color: #e8e4df;
-  font-family: monospace;
-  font-size: 12px;
-  margin-bottom: 6px;
-  outline: none;
-}
-.frog-panel input[type="text"]:focus { border-color: #65a30d; }
-
-/* db-profile — player profile card in dashboard */
-.db-profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  padding: 8px 10px;
-  border: 1px solid #56504a;
-  border-radius: 12px;
-  background: #252220;
-}
-
-.db-pfp {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.db-profile-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-}
-
-.db-tag-row,
-.db-level-row {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 13px;
-}
-
-.db-tag-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #a8a29e;
-  min-width: 34px;
-}
-
-.db-xp-bar-wrap {
-  width: 100%;
-  height: 5px;
-  background: #2e2a26;
-  border: 1px solid #56504a;
-  border-radius: 999px;
-  overflow: hidden;
-  margin-top: 3px;
-}
-
-.db-xp-bar {
-  height: 100%;
-  background: #65a30d;
-  border-radius: 999px;
-}
-
-.db-xp-label {
-  font-size: 11px;
-  color: #a8a29e;
-  margin-top: 2px;
-}
-
-/* db-tag-editor — tag input + buttons row */
-.db-tag-editor {
-  margin-bottom: 12px;
-}
-
-.db-tag-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.db-tag-msg {
-  font-size: 11px;
-  color: #a8a29e;
-  line-height: 1.4;
-}
-
-/* db-btn-sm — compact inline button */
-.db-btn-sm {
-  width: auto !important;
-  padding: 6px 10px !important;
-  font-size: 12px !important;
-  margin-bottom: 0 !important;
-}
-
-/* db-starting-buff-row */
-.db-starting-buff-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-.db-starting-buff-row .db-tag-msg {
-  font-size: 12px;
-  color: #a8a29e;
-}
-
-/* db-buff-selector-header */
-.db-buff-selector-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-/* db-buff-options */
-.db-buff-options {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-/* active buff selection */
-.frog-btn.is-active-buff {
-  background: rgba(132, 204, 22, 0.12);
-  border: 1px solid #84cc16;
-}
-
-/* snake-skin-selector */
-.snake-skin-selector {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.snake-skin-option {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.snake-skin-option.is-locked {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.snake-skin-circle {
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  border: 2px solid #44403c;
-  background: #0f172a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  position: relative;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.snake-skin-circle img { width: 44px; height: 44px; image-rendering: pixelated; }
-
-.snake-skin-circle.is-selected {
-  border-color: #84cc16;
-  box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.4);
-}
-
-.snake-skin-lock {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-.snake-skin-label {
-  font-size: 11px;
-  color: #a8a29e;
-  font-weight: 400;
-}
-
-.snake-skin-label.is-selected {
-  color: #bef264;
-  font-weight: 700;
-}
-
-/* run-summary-grid — 4-pill stat grid in end-game summary */
-.run-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.run-summary-pill {
-  background: #252220;
-  border: 1px solid #56504a;
-  border-radius: 10px;
-  padding: 8px 10px;
-  text-align: center;
-}
-
-@media (max-width: 480px) {
-  .run-summary-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* leaderboard list helpers */
-.lb-me { color: #bef264 !important; font-weight: 700; }
-
-.lb-page-info {
-  font-size: 11px;
-  color: #a8a29e;
-  margin-bottom: 6px;
-  text-align: center;
-}
-
-.lb-pager {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.lb-page-btn {
-  width: auto !important;
-  margin-bottom: 0 !important;
-  padding: 5px 10px !important;
-  font-size: 11px !important;
 }
