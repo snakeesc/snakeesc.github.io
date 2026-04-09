@@ -2271,10 +2271,10 @@ background: #65a30d;
   }
 }
 #endGameSummaryOverlay .frog-panel {
-  max-width: 360px;
+  max-width: 500px;
   width: 90%;
 }
 #buffGuideOverlay .frog-panel {
-  max-width: 360px;
+  max-width: 500px;
   width: 90%;
 }
