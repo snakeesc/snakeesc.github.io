@@ -1334,6 +1334,10 @@ function initEndGameSummaryOverlay() {
   endGameSummaryOverlay.style.background = "rgba(0,0,0,0.18)";
   endGameSummaryOverlay.innerHTML = `
     <div class="frog-panel">
+      <div class="frog-panel-title">
+        Run Summary
+        <span class="emoji">📋</span>
+      </div>
 
       <div id="endGameSummaryContent"></div>
 
@@ -1352,6 +1356,12 @@ function initEndGameSummaryOverlay() {
       </div>
     </div>
   `;
+
+  endGameSummaryOverlay.addEventListener("click", (e) => {
+    if (e.target === endGameSummaryOverlay) {
+      hideEndGameSummaryOverlay();
+    }
+  });
 
   container.appendChild(endGameSummaryOverlay);
 
@@ -1412,10 +1422,13 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     sheds: Number(snakeShedCount) || 0
   };
 
+  // Use a mutable variable so the tag-save handler can update it without
+  // the overlay needing to close/reopen (fixes a stale-closure bug).
   let activePlayerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
   const localStats = loadDashboardStats();
   const currentTag = getSavedDashboardTag() || "";
 
+  // Find rank and best run from cached leaderboard
   let rankIdx = -1;
   let leaderboardBest = { bestRun: 0, bestTime: 0, found: false };
   const list = Array.isArray(cachedLeaderboard) ? cachedLeaderboard : [];
@@ -1441,60 +1454,74 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     };
   }
 
-  const totalRuns = localStats.totalRuns || 0;
-  const totalTime = formatDashboardDuration(localStats.totalPlayTime || 0);
-  const totalOrbs = localStats.totalOrbsCollected || 0;
+  const rankHtml = rankIdx !== -1 ? ` · <span class="stat-highlight">#${rankIdx + 1}</span> ranked` : "";
+  const bestRunHtml = leaderboardBest.found
+    ? `<li><strong>${leaderboardBest.bestRun}</strong> score · ${formatLeaderboardTime(leaderboardBest.bestTime)}${rankHtml}</li>`
+    : `<li>No leaderboard entry yet.</li>`;
 
-  const rankHtml = rankIdx !== -1
-    ? `<span style="font-size:10px;font-weight:700;color:#84cc16;background:#84cc1615;border:1px solid #84cc1630;border-radius:4px;padding:2px 7px;">#${rankIdx + 1} ranked</span>`
-    : "";
+  const totalRuns  = localStats.totalRuns || 0;
+  const totalTime  = formatDashboardDuration(localStats.totalPlayTime || 0);
+  const totalOrbs  = localStats.totalOrbsCollected || 0;
+  const totalFrogs = localStats.totalFrogsLost || 0;
 
   content.innerHTML = `
-    <div style="text-align:center;padding:14px 0 12px;">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#9a948c;font-weight:700;margin-bottom:5px;">Score</div>
-      <div style="font-size:38px;font-weight:800;color:#f5f5f0;line-height:1;margin-bottom:6px;">${Math.floor(run.score || 0).toLocaleString()}</div>
-      <div style="font-size:12px;color:#9a948c;">${formatLeaderboardTime(run.time || 0)} &nbsp;·&nbsp; ${run.orbs || 0} orbs &nbsp;·&nbsp; ${run.frogsLost || 0} frogs lost &nbsp;·&nbsp; ${run.sheds || 0} sheds</div>
-      ${rankHtml ? `<div style="margin-top:8px;">${rankHtml}</div>` : ""}
-    </div>
-
-    <div style="height:1px;background:#2e2b28;margin:0 0 12px;"></div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px;">
-      <div style="background:#151412;border:1px solid #3a3632;border-radius:9px;padding:10px 12px;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#9a948c;font-weight:700;margin-bottom:5px;">Personal best</div>
-        <div style="font-size:16px;font-weight:800;color:${leaderboardBest.found ? "#e8e5e0" : "#9a948c"};">
-          ${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() + " pts" : "No entry yet"}
-        </div>
-        ${leaderboardBest.found ? `<div style="font-size:10px;color:#9a948c;margin-top:2px;">${formatLeaderboardTime(leaderboardBest.bestTime)}</div>` : ""}
-      </div>
-      <div style="background:#151412;border:1px solid #3a3632;border-radius:9px;padding:10px 12px;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#9a948c;font-weight:700;margin-bottom:5px;">All time</div>
-        <div style="font-size:13px;font-weight:700;color:#e8e5e0;">${totalRuns} runs</div>
-        <div style="font-size:10px;color:#9a948c;margin-top:2px;">${totalOrbs} orbs &nbsp;·&nbsp; ${totalTime}</div>
-      </div>
-    </div>
-
-    <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#9a948c;font-weight:700;margin-bottom:5px;">Player tag</div>
-    <div style="display:flex;gap:6px;margin-bottom:4px;">
+    <div class="frog-panel-section-label">Player Tag</div>
+    <div style="margin-bottom:10px;">
       <input
         id="endSummaryTagInput"
         type="text"
         maxlength="20"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
-        placeholder="Enter tag for leaderboard"
-        style="flex:1;padding:7px 9px;border-radius:7px;border:1px solid #44403c;background:#292524;color:#e8e5e0;font-family:inherit;font-size:12px;box-sizing:border-box;"
+        placeholder="Enter player tag"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:5px 8px;
+          border-radius:6px;
+          border:1px solid #44403c;
+          background:#292524;
+          color:white;
+          font-family:inherit;
+          font-size:12px;
+          margin-bottom:6px;
+        "
       />
       <button
         id="endSummaryTagSaveBtn"
         class="frog-btn frog-btn-secondary"
-        style="width:auto;padding:7px 14px;margin:0;font-size:12px;white-space:nowrap;"
-      >Save</button>
+        style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:4px;"
+      >Save Tag</button>
+      <span id="endSummaryTagMsg" style="font-size:11px; margin-left:8px;"></span>
     </div>
-    <div id="endSummaryTagMsg" style="font-size:11px;min-height:16px;margin-bottom:2px;color:#9a948c;"></div>
+
+    <div class="frog-panel-section-label">This Run</div>
+    <ul class="frog-panel-list">
+      <li style="color:#bef264;">
+        <strong>${Math.floor(run.score || 0)}</strong> score
+        · ${formatLeaderboardTime(run.time || 0)}
+        · ${run.orbs || 0} orbs
+        · ${run.frogsLost || 0} frogs lost
+        · ${run.sheds || 0} sheds
+      </li>
+    </ul>
+
+    <div class="frog-panel-section-label" style="margin-top:8px;">Best Run</div>
+    <ul class="frog-panel-list">${bestRunHtml}</ul>
+
+    <div class="frog-panel-section-label" style="margin-top:8px;">Lifetime</div>
+    <ul class="frog-panel-list">
+      <li>${totalRuns} runs · ${totalTime} played · ${totalOrbs} orbs · ${totalFrogs} frogs lost</li>
+    </ul>
+
+    <div class="frog-panel-section-label" style="margin-top:8px;">Global Leaderboard</div>
+    <div id="endGameLeaderboardContent">
+      <div class="leaderboard-loading">Loading…</div>
+    </div>
   `;
 
   openAnimatedOverlay(endGameSummaryOverlay);
 
+  // Wire up tag input
   const tagInput = document.getElementById("endSummaryTagInput");
   const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
   const tagMsg = document.getElementById("endSummaryTagMsg");
@@ -1525,6 +1552,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         }
 
         await saveDashboardTag(newTag);
+        // Update the live mutable reference so entryMatchesUser stays correct
         activePlayerTag = newTag;
         if (myEntry) myEntry.tag = newTag;
         if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#bef264"; }
@@ -1536,6 +1564,104 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       }
     });
   }
+
+  // Render leaderboard using already-fetched list, jump to user's page
+  const lbEl = document.getElementById("endGameLeaderboardContent");
+  if (!lbEl) return;
+
+  if (list.length === 0) {
+    lbEl.innerHTML = '<ul class="frog-panel-list"><li>No entries yet.</li></ul>';
+    return;
+  }
+
+  function normalizeTag(tag) {
+    return typeof tag === "string" ? tag.trim().toLowerCase() : "";
+  }
+
+  function entryMatchesUser(entry) {
+    if (!entry) return false;
+    // Prefer userId — stable even after a tag rename
+    if (myEntry && myEntry.userId && entry.userId) {
+      return entry.userId === myEntry.userId;
+    }
+    if (!activePlayerTag) return false;
+    return normalizeTag(entry.tag) === normalizeTag(activePlayerTag) ||
+           normalizeTag(entry.name) === normalizeTag(activePlayerTag);
+  }
+
+  function getScore(entry) {
+    if (!entry) return 0;
+    for (const k of ["bestScore", "score", "maxScore", "points", "value"]) {
+      if (!(k in entry)) continue;
+      let v = entry[k];
+      if (typeof v === "string") v = parseFloat(v);
+      if (typeof v === "number" && isFinite(v)) return v;
+    }
+    return 0;
+  }
+
+  function getTime(entry) {
+    if (!entry) return 0;
+    for (const k of ["bestTime", "time", "maxTime", "seconds", "duration"]) {
+      if (!(k in entry)) continue;
+      let v = entry[k];
+      if (typeof v === "string") v = parseFloat(v);
+      if (typeof v === "number" && isFinite(v) && v >= 0) return v;
+    }
+    return 0;
+  }
+
+  function getDisplayName(entry, fallback) {
+    if (entry && typeof entry.tag === "string" && entry.tag.trim()) return entry.tag;
+    if (entry && typeof entry.name === "string" && entry.name.trim()) return entry.name;
+    return fallback;
+  }
+
+  const pageSize = 10;
+  const myPageStart = rankIdx >= 0 ? Math.floor(rankIdx / pageSize) : 0;
+  let currentPage = myPageStart;
+
+  function renderLbPage(pageIndex) {
+    currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
+    const start = currentPage * pageSize;
+    const end = Math.min(start + pageSize, list.length);
+
+    const itemsHtml = list.slice(start, end).map((entry, idx) => {
+      const rank  = start + idx + 1;
+      const name  = getDisplayName(entry, `Player ${rank}`);
+      const score = Math.floor(getScore(entry));
+      const time  = formatLeaderboardTime(getTime(entry));
+      const isMe  = entryMatchesUser(entry);
+      return `
+        <li${isMe ? ' style="color:#bef264;"' : ""}>
+          <strong>#${rank}</strong>
+          ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} score
+        </li>
+      `;
+    }).join("");
+
+    lbEl.innerHTML = `
+      <ul class="frog-panel-list">${itemsHtml}</ul>
+      <div class="frog-panel-footer">
+        <div style="margin-bottom:6px; font-size:11px; color:#a8a29e;">
+          Showing ${start + 1}–${end} of ${list.length}
+        </div>
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <button id="endLbPrevBtn" class="frog-btn frog-btn-secondary"
+            style="width:auto; margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
+          <button id="endLbNextBtn" class="frog-btn frog-btn-secondary"
+            style="width:auto; margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
+        </div>
+      </div>
+    `;
+
+    const prevBtn = document.getElementById("endLbPrevBtn");
+    const nextBtn = document.getElementById("endLbNextBtn");
+    if (prevBtn) prevBtn.addEventListener("click", () => renderLbPage(currentPage - 1));
+    if (nextBtn) nextBtn.addEventListener("click", () => renderLbPage(currentPage + 1));
+  }
+
+  renderLbPage(currentPage);
 }
 function clampLuck(value) {
   return Math.max(0, Math.min(MAX_LUCK, Math.floor(value || 0)));
@@ -2941,8 +3067,7 @@ function createSnakeFromExistingSegments(segmentData, angle, speedFactor) {
   headEl.style.backgroundRepeat = "no-repeat";
   headEl.style.pointerEvents = "none";
   headEl.style.zIndex = "30";
-  const snakeSprites = getPlayerSnakeSpriteSet();
-  headEl.style.backgroundImage = `url(${snakeSprites.head})`;
+  headEl.style.backgroundImage = "url(./images/head.png)";
   container.appendChild(headEl);
 
   const segments = [];
@@ -4349,9 +4474,10 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (head.y < marginY) { head.y = marginY; head.angle = -head.angle; }
     else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) { head.y = height - marginY - SNAKE_SEGMENT_SIZE; head.angle = -head.angle; }
 
-    // 3. PATH & BODY POSITIONING
+    // 3. PATH & BODY POSITIONING (distance-based — fixes stretching at high speed)
     snakeObj.path.unshift({ x: head.x, y: head.y });
 
+    // Keep enough path history for all segments at the visual spacing
     const minPathPoints = snakeObj.segments.length * SEGMENT_VISUAL_SPACING * 2 + 64;
     if (snakeObj.path.length > minPathPoints) {
       snakeObj.path.length = minPathPoints;
@@ -4359,45 +4485,26 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     head.el.style.transform = `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
-    const sprites = getPlayerSnakeSpriteSet();
+    // Place each segment exactly SEGMENT_VISUAL_SPACING px further along the path
+    // than the previous one, regardless of snake speed.
     let searchIdx = 0;
     for (let i = 0; i < snakeObj.segments.length; i++) {
-      const result = samplePathAtDistance(
-        snakeObj.path,
-        searchIdx,
-        SEGMENT_VISUAL_SPACING
-      );
+      const result = samplePathAtDistance(snakeObj.path, searchIdx, SEGMENT_VISUAL_SPACING);
 
       const seg = snakeObj.segments[i];
       seg.x = result.x;
       seg.y = result.y;
-      searchIdx = result.nextStart + 1;
+      searchIdx = result.nextStart;
 
+      // Angle: direction along the path at this point
       let angle = 0;
       if (result.nextStart + 1 < snakeObj.path.length) {
-        const px = snakeObj.path[result.nextStart + 1].x;
-        const py = snakeObj.path[result.nextStart + 1].y;
-        const nx = snakeObj.path[result.nextStart].x;
-        const ny = snakeObj.path[result.nextStart].y;
-        angle = Math.atan2(ny - py, nx - px);
-      } else if (result.nextStart > 0) {
         const px = snakeObj.path[result.nextStart].x;
         const py = snakeObj.path[result.nextStart].y;
-        const nx = snakeObj.path[result.nextStart - 1].x;
-        const ny = snakeObj.path[result.nextStart - 1].y;
+        const nx = snakeObj.path[result.nextStart + 1].x;
+        const ny = snakeObj.path[result.nextStart + 1].y;
         angle = Math.atan2(ny - py, nx - px);
       }
-
-      const isTail = i === snakeObj.segments.length - 1;
-
-      seg.el.className = isTail ? "snake-tail" : "snake-body";
-      seg.el.style.backgroundImage = isTail ? `url(${sprites.tail})` : `url(${sprites.body})`;
-      seg.el.style.backgroundRepeat = "no-repeat";
-      seg.el.style.backgroundPosition = "center";
-      seg.el.style.backgroundSize = "contain";
-      seg.el.style.pointerEvents = "none";
-      // Decrement z-index per segment so tail always renders beneath the body in front of it
-      seg.el.style.zIndex = String(29 - i);
 
       seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
@@ -5192,6 +5299,11 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
+      <div class="frog-panel-title" style="color: white !important;">
+        How to Play
+        <span class="emoji">🐸</span>
+      </div>
+
       <div class="frog-panel-sub" style="color: white !important;">
         Stay alive, avoid the snake, and survive as long as you can.
       </div>
@@ -5409,6 +5521,13 @@ function closeAnimatedOverlay(overlayEl) {
     buffGuideOverlay = document.getElementById("buffGuideOverlay");
     if (!buffGuideOverlay) return;
 
+    // Click outside panel closes it
+    buffGuideOverlay.addEventListener("click", (e) => {
+      if (e.target === buffGuideOverlay) {
+        hideBuffGuideOverlay();
+      }
+    });
+
     // Escape closes it
     document.addEventListener("keydown", (e) => {
       if (buffGuideOverlay && buffGuideOverlay.style.display === "flex" && e.key === "Escape") {
@@ -5483,8 +5602,13 @@ function closeAnimatedOverlay(overlayEl) {
       const pageItems = upgrades.slice(start, start + itemsPerPage);
 
       panel.innerHTML = `
+        <div class="frog-panel-title">
+          Upgrades
+          <span class="emoji">⚡</span>
+        </div>
+
         <div class="frog-panel-sub">
-          All active upgrades. Starting buffs not included
+          All upgrades in one list, grouped by type color.
         </div>
 
         <ul class="upgrade-guide-list">
@@ -6305,7 +6429,6 @@ function showStartingBuffSelector() {
 
   wireSkinSelector();
 }
-window.showDashboardOverlay = showDashboardOverlay;
 function formatDuration(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
   const h = Math.floor(s / 3600);
