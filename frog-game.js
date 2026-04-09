@@ -1103,7 +1103,7 @@ const MAX_LUCK = 30;
 
   const btnStats = makeBtn("📊");
   const btnSound = makeBtn("🔊");
-  const btnEnd   = makeBtn("✕", "#f87171");
+  const btnEnd   = makeBtn("🛑", "#f87171");
 
   btnStats.style.display = "none";
   btnSound.style.display = "none";
