@@ -4277,7 +4277,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     }
 
     const last = path[path.length - 1];
-    return { x: last.x, y: last.y, nextStart: path.length - 1 };
+    const secondLast = path.length >= 2 ? path[path.length - 2] : null;
+    return { x: last.x, y: last.y, nextStart: path.length - 1, exhausted: true, secondLast };
   }
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
@@ -4370,7 +4371,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     // 3. PATH & BODY POSITIONING
     snakeObj.path.unshift({ x: head.x, y: head.y });
 
-    const minPathPoints = snakeObj.segments.length * SEGMENT_VISUAL_SPACING * 2 + 64;
+    const minPathPoints = snakeObj.segments.length * SEGMENT_VISUAL_SPACING * 4 + 128;
     if (snakeObj.path.length > minPathPoints) {
       snakeObj.path.length = minPathPoints;
     }
@@ -4403,7 +4404,17 @@ function samplePathAtDistance(path, startIdx, dist) {
       const dx = ptAhead.x - ptBehind.x;
       const dy = ptAhead.y - ptBehind.y;
 
-      const angle = (dx !== 0 || dy !== 0) ? Math.atan2(dy, dx) : head.angle;
+      // If path was exhausted, compute angle from last two path points instead of defaulting to head
+      let angle;
+      if (dx !== 0 || dy !== 0) {
+        angle = Math.atan2(dy, dx);
+      } else if (result.exhausted && result.secondLast) {
+        const ex = result.x - result.secondLast.x;
+        const ey = result.y - result.secondLast.y;
+        angle = (ex !== 0 || ey !== 0) ? Math.atan2(ey, ex) : head.angle;
+      } else {
+        angle = head.angle;
+      }
 
       seg.el.style.transform =
         `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
