@@ -742,6 +742,11 @@
           return;
         }
 
+        if (!/^[a-zA-Z0-9 _-]{2,20}$/.test(raw)) {
+          error.textContent = "Use letters, numbers, spaces, _ or - only.";
+          return;
+        }
+
         if (isProfaneTag(raw)) {
           error.textContent = "That tag isn't allowed. Please choose something cleaner.";
           return;
