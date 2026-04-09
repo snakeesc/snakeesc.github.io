@@ -1335,7 +1335,7 @@ function initEndGameSummaryOverlay() {
   endGameSummaryOverlay.innerHTML = `
     <div class="frog-panel">
       <div class="frog-panel-title">
-        Run Summary
+        Leaderboard & Run Stats
         <span class="emoji">📋</span>
       </div>
 
