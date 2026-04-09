@@ -1506,9 +1506,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   content.innerHTML = `
     <div class="frog-panel-section-label" style="margin-top:0;">This Run</div>
     <ul class="frog-panel-list">
-      <li style="color:#bef264;font-weight:bold;">
-        ${Math.floor(run.score || 0).toLocaleString()} score · ${formatLeaderboardTime(run.time || 0)} · ${run.orbs || 0} orbs
-      </li>
+      <li style="color:#bef264;font-weight:bold;">${Math.floor(run.score || 0).toLocaleString()} score · ${formatLeaderboardTime(run.time || 0)} · ${run.orbs || 0} orbs</li>
       <li>${run.frogsLost || 0} frogs lost · ${run.sheds || 0} sheds</li>
     </ul>
 
@@ -1517,7 +1515,19 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
 
     <div class="frog-panel-section-label">Leaderboard</div>
     <ul class="frog-panel-list" style="margin-bottom:0;">
-      ${lbRowsHtml.length ? lbRowsHtml : '<li style="color:#a8a29e;font-size:13px;">No entries yet.</li>'}
+      ${lbRowsHtml.length
+        ? previewList.map((entry, i) => {
+            const rank = rankIdx >= previewCount && i === previewCount - 1 ? rankIdx + 1 : i + 1;
+            const name = (typeof entry?.tag === "string" && entry.tag) || (typeof entry?.name === "string" && entry.name) || `Player ${rank}`;
+            const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0)).toLocaleString();
+            const entryTime = formatLeaderboardTime(Number(entry?.bestTime ?? entry?.time ?? 0));
+            const isMe = myEntry && entry && myEntry.userId && entry.userId === myEntry.userId
+              ? true
+              : activePlayerTag && typeof entry?.tag === "string" && entry.tag.trim().toLowerCase() === activePlayerTag.trim().toLowerCase();
+            return `<li${isMe ? ' style="color:#bef264;"' : ""}><strong>#${rank}</strong> ${isMe ? "⭐ " : ""}${name} · ${entryTime} · ${entryScore} score</li>`;
+          }).join("")
+        : '<li style="color:#a8a29e;">No entries yet.</li>'
+      }
     </ul>
 
     <div class="frog-panel-section-label" style="margin-top:14px;">Leaderboard Tag</div>
@@ -1530,13 +1540,9 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         placeholder="Enter player tag"
         style="flex:1;padding:6px 9px;border-radius:8px;border:1px solid #44403c;background:#292524;color:white;font-family:inherit;font-size:12px;"
       />
-      <button
-        id="endSummaryTagSaveBtn"
-        class="frog-btn frog-btn-secondary"
-        style="width:auto;padding:6px 14px;margin:0;font-size:12px;white-space:nowrap;"
-      >Save</button>
+      <button id="endSummaryTagSaveBtn" class="frog-btn frog-btn-secondary" style="width:auto;padding:6px 14px;margin:0;font-size:12px;white-space:nowrap;">Save</button>
     </div>
-    <div id="endSummaryTagMsg" style="font-size:11px;min-height:16px;margin-bottom:12px;"></div>
+    <div id="endSummaryTagMsg" style="font-size:11px;min-height:16px;margin-bottom:2px;"></div>
   `;
 
   openAnimatedOverlay(endGameSummaryOverlay);
@@ -5532,82 +5538,47 @@ function closeAnimatedOverlay(overlayEl) {
       }
     }
 
-    function renderPage() {
-      const start = currentPage * itemsPerPage;
-      const pageItems = upgrades.slice(start, start + itemsPerPage);
+    function renderPage(pageIndex) {
+      currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
 
-      panel.innerHTML = `
-        <div class="frog-panel-title">
-          Upgrades
-          <span class="emoji">⚡</span>
-        </div>
+      const start = currentPage * pageSize;
+      const end = Math.min(start + pageSize, list.length);
+      const pageEntries = list.slice(start, end);
 
-        <div class="frog-panel-sub">
-          All upgrades in one list, grouped by type color.
-        </div>
+      const itemsHtml = pageEntries.map((entry, idx) => {
+        const rank = start + idx + 1;
+        const name = getDisplayName(entry, `Player ${rank}`);
+        const score = Math.floor(getScore(entry)).toLocaleString();
+        const time = formatLeaderboardTime(getTime(entry));
+        const isMe = entryMatchesUser(entry);
+        return `
+          <li${isMe ? ' style="color:#bef264;"' : ""}>
+            <strong>#${rank}</strong>
+            ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} score
+          </li>
+        `;
+      }).join("");
 
-        <ul class="upgrade-guide-list">
-          ${pageItems.map((item) => `
-            <li class="upgrade-guide-item ${getTypeClass(item.type)}">
-              <strong>${item.label}</strong> — ${item.desc}
-            </li>
-          `).join("")}
+      const myRankText = myIndex >= 0 ? ` · You: #${myIndex + 1}` : "";
+
+      content.innerHTML = `
+        <div class="frog-panel-section-label" style="margin-top:0;">Global Leaderboard</div>
+        <ul class="frog-panel-list" style="margin-bottom:0;">
+          ${itemsHtml || '<li style="color:#a8a29e;">No entries.</li>'}
         </ul>
-
         <div class="frog-panel-footer">
-          <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px;">
-            <button
-              id="buffGuidePrevBtn"
-              class="frog-btn frog-btn-secondary"
-              style="width:auto; min-width:88px; margin-bottom:0;"
-              ${currentPage === 0 ? "disabled" : ""}
-            >
-              Prev
-            </button>
-
-            <div style="min-width:70px; text-align:center; font-size:12px;">
-              ${currentPage + 1} / ${totalPages}
-            </div>
-
-            <button
-              id="buffGuideNextBtn"
-              class="frog-btn frog-btn-secondary"
-              style="width:auto; min-width:88px; margin-bottom:0;"
-              ${currentPage === totalPages - 1 ? "disabled" : ""}
-            >
-              Next
-            </button>
+          <div style="margin-bottom:8px;">Page ${currentPage + 1} of ${Math.ceil(list.length / pageSize)}${myRankText}</div>
+          <div style="display:flex;gap:8px;justify-content:center;">
+            <button id="leaderboardPrevBtn" class="frog-btn frog-btn-secondary" style="width:auto;margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
+            <button id="leaderboardNextBtn" class="frog-btn frog-btn-secondary" style="width:auto;margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
           </div>
-
-          <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
-            Close
-          </button>
         </div>
       `;
 
-      const closeBtn = document.getElementById("buffGuideCloseBtn");
-      const prevBtn = document.getElementById("buffGuidePrevBtn");
-      const nextBtn = document.getElementById("buffGuideNextBtn");
-
-      if (closeBtn) closeBtn.onclick = hideBuffGuideOverlay;
-
-      if (prevBtn) {
-        prevBtn.onclick = () => {
-          if (currentPage > 0) {
-            currentPage--;
-            renderPage();
-          }
-        };
-      }
-
-      if (nextBtn) {
-        nextBtn.onclick = () => {
-          if (currentPage < totalPages - 1) {
-            currentPage++;
-            renderPage();
-          }
-        };
-      }
+      const prevBtn = document.getElementById("leaderboardPrevBtn");
+      const nextBtn = document.getElementById("leaderboardNextBtn");
+      if (prevBtn) prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
+      if (nextBtn) nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
     }
 
     renderPage();
@@ -5984,164 +5955,38 @@ async function showDashboardOverlay(cachedLeaderboard) {
     : "";
 
   content.innerHTML = `
-    <div class="frog-panel-section-label">Player Profile</div>
-    <div
-      style="
-        display:flex;
-        align-items:center;
-        gap:10px;
-        margin-bottom:10px;
-        padding:8px 10px;
-        border:1px solid #44403c;
-        border-radius:12px;
-        background:#1c1917;
-      "
-    >
-      <div
-        style="
-          position:relative;
-          width:48px;
-          height:48px;
-          min-width:48px;
-          border-radius:999px;
-          overflow:hidden;
-          border:0px solid #57534e;
-          background:${dashboardPfp.bgColor};
-        "
-      >
-        <img
-          src="${dashboardPfp.spriteSrc}"
-          alt=""
-          style="
-            position:absolute;
-            inset:0;
-            width:100%;
-            height:100%;
-            image-rendering:pixelated;
-            z-index:1;
-          "
-        />
-        <img
-          src="${dashboardPfp.skinSrc}"
-          alt=""
-          style="
-            position:absolute;
-            inset:0;
-            width:100%;
-            height:100%;
-            image-rendering:pixelated;
-            z-index:2;
-          "
-        />
-        ${dashboardPfp.eyesSrc ? `
-          <img
-            src="${dashboardPfp.eyesSrc}"
-            alt=""
-            style="
-              position:absolute;
-              inset:0;
-              width:100%;
-              height:100%;
-              image-rendering:pixelated;
-              z-index:3;
-            "
-          />
-        ` : ""}
-        ${dashboardPfp.hatSrc ? `
-          <img
-            src="${dashboardPfp.hatSrc}"
-            alt=""
-            style="
-              position:absolute;
-              inset:0;
-              width:100%;
-              height:100%;
-              image-rendering:pixelated;
-              z-index:4;
-            "
-          />
-        ` : ""}
-      </div>
+    <div class="frog-panel-title">Dashboard</div>
+    <div class="frog-panel-sub">${currentTag || "No tag set"} · Level ${levelData.level}</div>
 
-      <div style="display:flex; flex-direction:column; gap:2px;">
-        <div>
-          <strong>Tag:</strong>
-          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag}</span>
-        </div>
-        <div>
-          <strong>Level:</strong>
-          <span class="stat-highlight">${levelData.level}</span>
-        </div>
-      </div>
+    <div style="width:100%;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin-bottom:4px;">
+      <div style="width:${levelData.progressPercent}%;height:100%;background:#65a30d;border-radius:999px;"></div>
     </div>
+    <div style="font-size:12px;color:#a8a29e;margin-bottom:14px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
 
-    <div style="margin-bottom:12px;">
-      <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
-        ${levelData.orbsNeededForNextLevel} orbs until level ${levelData.nextLevel}
-      </div>
-      <div
-        style="
-          width:100%;
-          height:8px;
-          background:#292524;
-          border:1px solid #44403c;
-          border-radius:999px;
-          overflow:hidden;
-        "
-      >
-        <div
-          style="
-            width:${levelData.progressPercent}%;
-            height:100%;
-            background:#65a30d;
-            border-radius:999px;
-          "
-        ></div>
-      </div>
-    </div>
+    <div class="frog-panel-section-label" style="margin-top:0;">Stats</div>
+    <ul class="frog-panel-list">
+      <li><strong style="color:#bef264;">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong> best score · ${leaderboardBest.found ? formatLeaderboardTime(leaderboardBest.bestTime) : "—"}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a3e635;">#${bestRecordRank + 1} ranked</span>` : ""}</li>
+      <li><strong style="color:#bef264;">${localStats.totalRuns || 0}</strong> runs · <strong style="color:#bef264;">${formatDashboardDuration(localStats.totalPlayTime || 0)}</strong> played</li>
+      <li><strong style="color:#bef264;">${localStats.totalOrbsCollected || 0}</strong> orbs collected</li>
+    </ul>
 
-    <div style="margin-bottom:12px;">
+    <div class="frog-panel-section-label">Leaderboard Tag</div>
+    <div style="display:flex;gap:6px;margin-bottom:4px;">
       <input
         id="dashboardTagInput"
         type="text"
         maxlength="20"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
-        style="
-          width:100%;
-          box-sizing:border-box;
-          padding:5px 8px;
-          border-radius:6px;
-          border:1px solid #44403c;
-          background:#292524;
-          color:white;
-          font-family:inherit;
-          font-size:12px;
-          margin-bottom:6px;
-        "
+        style="flex:1;padding:6px 9px;border-radius:8px;border:1px solid #44403c;background:#292524;color:white;font-family:inherit;font-size:12px;"
       />
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <button
-          id="dashboardSaveTagBtn"
-          class="frog-btn frog-btn-secondary"
-          style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
-        >
-          Save Tag
-        </button>
-        ${localStats.recentRuns && localStats.recentRuns.length ? `
-          <button
-            id="dashboardLastRunBtn"
-            class="frog-btn frog-btn-secondary"
-            style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
-          >
-            📋 Last Run
-          </button>
-        ` : ""}
-      </div>
+      <button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary" style="width:auto;padding:6px 10px;font-size:12px;margin-bottom:0;">Save</button>
     </div>
+    <div id="dashboardTagMessage" style="font-size:11px;min-height:16px;margin-bottom:10px;color:#a8a29e;"></div>
+
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
-  `; 
+  `;
 
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
