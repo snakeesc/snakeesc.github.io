@@ -1129,7 +1129,7 @@ const MAX_LUCK = 30;
     if (!inGameUIVisible) return;
     timerLabel.textContent = formatTime(elapsedTime);
     frogsLabel.textContent = `🐸 ${frogs.length}`;
-    scoreLabel.textContent = Math.floor(score).toLocaleString();
+    scoreLabel.textContent = `Score: ${Math.floor(score).toLocaleString()}`;
   }
 
   function updateBuffsBar() {}
