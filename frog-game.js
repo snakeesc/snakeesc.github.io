@@ -5659,7 +5659,14 @@ function closeAnimatedOverlay(overlayEl) {
       }
 
       function entryMatchesUser(entry) {
-        if (!entry || !userLabel) return false;
+        if (!entry) return false;
+        // Prefer userId match — works even if user has no tag set
+        const lastMyEntry = window.FrogGameLeaderboard && window.FrogGameLeaderboard._lastMyEntry;
+        if (lastMyEntry && lastMyEntry.userId && entry.userId) {
+          if (lastMyEntry.userId === entry.userId) return true;
+        }
+        // Fall back to tag string match
+        if (!userLabel) return false;
         const tag = normalizeTag(entry.tag);
         const name = normalizeTag(entry.name);
         const target = normalizeTag(userLabel);
