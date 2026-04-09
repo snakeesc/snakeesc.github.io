@@ -4628,7 +4628,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!nightBloomActive) {
       upgrades.push({
         id: "nightBloom",
-        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${epicTitleColor};">25%</span> chance to spawn a frog at that spot`,
+        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${epicTitleColor};">50%</span> chance to spawn a frog at that spot`,
         apply: () => { nightBloomActive = true; }
       });
     }
