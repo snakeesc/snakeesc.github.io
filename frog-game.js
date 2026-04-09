@@ -145,13 +145,6 @@ const STARTING_BUFFS = [
     desc: "Spawn 10 extra frogs immediately"
   },
   {
-    id: "loadedHandStart",
-    levelRequired: 30,
-    emoji: "🃏",
-    name: "Loaded Hand",
-    desc: "Start with 4 upgrade choices instead of 3"
-  },
-  {
     id: "quickReflexes",
     levelRequired: 3,
     emoji: "🐇",
@@ -181,31 +174,38 @@ const STARTING_BUFFS = [
   },
   {
     id: "luckyStart",
-    levelRequired: 13,
+    levelRequired: 10,
     emoji: "🍀",
     name: "Lucky Start",
     desc: "Start with +5 luck"
   },
   {
     id: "orbSpecialistStart",
-    levelRequired: 16,
+    levelRequired: 12,
     emoji: "🧪",
     name: "Orb Specialist",
     desc: "First 15 collected orbs each spawn 1 extra frog"
   },
   {
     id: "lastStandStart",
-    levelRequired: 20,
+    levelRequired: 14,
     emoji: "🏹",
     name: "Last Stand",
     desc: "Start with Last Stand already active"
   },
   {
     id: "doubleYolkerStart",
-    levelRequired: 25,
+    levelRequired: 16,
     emoji: "🥚",
     name: "Double Yolker",
     desc: "Start the run with Double Yolker active"
+  },
+  {
+    id: "loadedHandStart",
+    levelRequired: 18,
+    emoji: "🃏",
+    name: "Loaded Hand",
+    desc: "Start with 4 upgrade choices instead of 3"
   }
 ];
 
