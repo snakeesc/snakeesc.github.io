@@ -4343,13 +4343,12 @@ function samplePathAtDistance(path, startIdx, dist) {
     let targetRemnant = null;
     let bestRemnantDist2 = Infinity;
 
-    // Scissors logic
     if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
       snakeOldBodyChaseTime += dt;
       for (const seg of scissorsRemnantSegments) {
-        const dx = (seg.x + SNAKE_SEGMENT_SIZE/2) - head.x;
-        const dy = (seg.y + SNAKE_SEGMENT_SIZE/2) - head.y;
-        const d2 = dx*dx + dy*dy;
+        const dx = (seg.x + SNAKE_SEGMENT_SIZE / 2) - head.x;
+        const dy = (seg.y + SNAKE_SEGMENT_SIZE / 2) - head.y;
+        const d2 = dx * dx + dy * dy;
         if (d2 < bestRemnantDist2) {
           bestRemnantDist2 = d2;
           targetRemnant = seg;
@@ -4362,9 +4361,9 @@ function samplePathAtDistance(path, startIdx, dist) {
     }
 
     for (const frog of frogList) {
-      const dx = (frog.x + FROG_SIZE/2) - head.x;
-      const dy = (frog.baseY + FROG_SIZE/2) - head.y;
-      const d2 = dx*dx + dy*dy;
+      const dx = (frog.x + FROG_SIZE / 2) - head.x;
+      const dy = (frog.baseY + FROG_SIZE / 2) - head.y;
+      const d2 = dx * dx + dy * dy;
       if (d2 < bestDist2) {
         bestDist2 = d2;
         targetFrog = frog;
@@ -4376,9 +4375,15 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (snakeConfuseTime > 0) {
       desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
     } else if (targetRemnant) {
-      desiredAngle = Math.atan2((targetRemnant.y + SNAKE_SEGMENT_SIZE/2) - head.y, (targetRemnant.x + SNAKE_SEGMENT_SIZE/2) - head.x);
+      desiredAngle = Math.atan2(
+        (targetRemnant.y + SNAKE_SEGMENT_SIZE / 2) - head.y,
+        (targetRemnant.x + SNAKE_SEGMENT_SIZE / 2) - head.x
+      );
     } else if (targetFrog) {
-      desiredAngle = Math.atan2((targetFrog.baseY + FROG_SIZE/2) - head.y, (targetFrog.x + FROG_SIZE/2) - head.x);
+      desiredAngle = Math.atan2(
+        (targetFrog.baseY + FROG_SIZE / 2) - head.y,
+        (targetFrog.x + FROG_SIZE / 2) - head.x
+      );
     }
 
     let angleDiff = ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
@@ -4390,35 +4395,44 @@ function samplePathAtDistance(path, startIdx, dist) {
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
 
-    // Boundary Bounce
-    if (head.x < marginX) { head.x = marginX; head.angle = Math.PI - head.angle; }
-    else if (head.x > width - marginX - SNAKE_SEGMENT_SIZE) { head.x = width - marginX - SNAKE_SEGMENT_SIZE; head.angle = Math.PI - head.angle; }
-    if (head.y < marginY) { head.y = marginY; head.angle = -head.angle; }
-    else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) { head.y = height - marginY - SNAKE_SEGMENT_SIZE; head.angle = -head.angle; }
+    // Boundary bounce
+    if (head.x < marginX) {
+      head.x = marginX;
+      head.angle = Math.PI - head.angle;
+    } else if (head.x > width - marginX - SNAKE_SEGMENT_SIZE) {
+      head.x = width - marginX - SNAKE_SEGMENT_SIZE;
+      head.angle = Math.PI - head.angle;
+    }
 
-    // 3. PATH & BODY POSITIONING (distance-based — fixes stretching at high speed)
+    if (head.y < marginY) {
+      head.y = marginY;
+      head.angle = -head.angle;
+    } else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) {
+      head.y = height - marginY - SNAKE_SEGMENT_SIZE;
+      head.angle = -head.angle;
+    }
+
+    // 3. PATH & BODY POSITIONING
     snakeObj.path.unshift({ x: head.x, y: head.y });
 
-    // Keep enough path history for all segments at the visual spacing
     const minPathPoints = snakeObj.segments.length * SEGMENT_VISUAL_SPACING * 2 + 64;
     if (snakeObj.path.length > minPathPoints) {
       snakeObj.path.length = minPathPoints;
     }
 
-    head.el.style.transform = `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
+    head.el.style.transform =
+      `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
-    // Place each segment exactly SEGMENT_VISUAL_SPACING px further along the path
-    // than the previous one, regardless of snake speed.
-    let searchIdx = 0;
+    // IMPORTANT FIX:
+    // each segment uses cumulative distance from head, not the broken nextStart reuse
     for (let i = 0; i < snakeObj.segments.length; i++) {
-      const result = samplePathAtDistance(snakeObj.path, searchIdx, SEGMENT_VISUAL_SPACING);
+      const targetDist = SEGMENT_VISUAL_SPACING * (i + 1);
+      const result = samplePathAtDistance(snakeObj.path, 0, targetDist);
 
       const seg = snakeObj.segments[i];
       seg.x = result.x;
       seg.y = result.y;
-      searchIdx = result.nextStart;
 
-      // Angle: direction along the path at this point
       let angle = 0;
       if (result.nextStart + 1 < snakeObj.path.length) {
         const px = snakeObj.path[result.nextStart].x;
@@ -4428,11 +4442,8 @@ function samplePathAtDistance(path, startIdx, dist) {
         angle = Math.atan2(ny - py, nx - px);
       }
 
-      const isTail = i === snakeObj.segments.length - 1;
-      const renderAngle = isTail ? angle + Math.PI : angle;
-
       seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
 
     // 4. COLLISIONS
@@ -4440,12 +4451,11 @@ function samplePathAtDistance(path, startIdx, dist) {
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
     const eatR2 = Math.pow(getSnakeEatRadius(), 2);
 
-    // Eating Frogs
     for (let i = frogList.length - 1; i >= 0; i--) {
       const f = frogList[i];
-      const dx = (f.x + FROG_SIZE/2) - headCx;
-      const dy = (f.baseY + FROG_SIZE/2) - headCy;
-      if (dx*dx + dy*dy <= eatR2) {
+      const dx = (f.x + FROG_SIZE / 2) - headCx;
+      const dy = (f.baseY + FROG_SIZE / 2) - headCy;
+      if (dx * dx + dy * dy <= eatR2) {
         if (isMainMenu) {
           frogList.splice(i, 1);
           if (f.el.parentNode) f.el.parentNode.removeChild(f.el);
@@ -4457,14 +4467,13 @@ function samplePathAtDistance(path, startIdx, dist) {
       }
     }
 
-    // Eating Old Body (Scissors Remnants)
     if (snakeEatingOldBody && snakeObj === snake && scissorsRemnantSegments.length > 0) {
       const remR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.8, 2);
       for (let i = scissorsRemnantSegments.length - 1; i >= 0; i--) {
         const s = scissorsRemnantSegments[i];
-        const dx = (s.x + SNAKE_SEGMENT_SIZE/2) - headCx;
-        const dy = (s.y + SNAKE_SEGMENT_SIZE/2) - headCy;
-        if (dx*dx + dy*dy <= remR2) {
+        const dx = (s.x + SNAKE_SEGMENT_SIZE / 2) - headCx;
+        const dy = (s.y + SNAKE_SEGMENT_SIZE / 2) - headCy;
+        if (dx * dx + dy * dy <= remR2) {
           if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
           scissorsRemnantSegments.splice(i, 1);
           growSnakeForSnake(snakeObj, 1);
