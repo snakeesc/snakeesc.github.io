@@ -1016,7 +1016,10 @@ const MAX_LUCK = 30;
 
   let graveWaveActive   = false;
   let frogEatFrogActive = false;
-
+  let snakeEggActive = false;
+  let snakeEggTimer = 0;         // counts up to hatch interval
+  let snakeEggHatchInterval = 0; // randomised 60-120s per egg
+  let babySnakes = [];           // tracks the two baby snakes
   // --------------------------------------------------
   // MOUSE
   // --------------------------------------------------
@@ -1196,6 +1199,16 @@ const MAX_LUCK = 30;
     // Role
     if (extraUpgradeOptionActive) items.push(icon("🃏", "Loaded Hand", "",                     p));
     if (frogEatFrogActive)        items.push(icon("🍽",  "Cannibal",   "",                     g));
+
+    if (snakeEggActive) {
+      const remaining = Math.max(0, snakeEggHatchInterval - snakeEggTimer);
+      items.push(icon("🥚", "Egg hatches", `${remaining.toFixed(0)}s`, "rgba(251,146,60,0.9)"));
+    }
+    if (babySnakes.length > 0) {
+      const oldest = babySnakes.reduce((a, b) => a.babySnakeAge > b.babySnakeAge ? a : b);
+      const remaining = Math.max(0, 180 - oldest.babySnakeAge);
+      items.push(icon("🐍", "Baby snakes", `${remaining.toFixed(0)}s`, "rgba(248,113,113,0.9)"));
+    }
 
     statsPanel.innerHTML = items.join("");
     statsPanel.style.display = items.length > 0 && inGameUIVisible ? "flex" : "none";
@@ -2267,6 +2280,14 @@ function createFrogAt(x, y, tokenId) {
     if (timeSlowTime > 0)    factor *= TIME_SLOW_FACTOR;
     if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR; // Frenzy speeds all snakes
 
+    if (snakeObj && snakeObj.isBabySnake) {
+      // Baby snakes locked at base speed — ignore shed bonuses and frenzy
+      let babyFactor = 1.0;
+      if (snakeSlowTime > 0) babyFactor *= SNAKE_SLOW_FACTOR;
+      if (timeSlowTime > 0)  babyFactor *= TIME_SLOW_FACTOR;
+      return babyFactor;
+    }
+
     return factor;
   }
 
@@ -2953,6 +2974,84 @@ function queueSeveredRemnantsForNextShed() {
 
   severedSnakeRemnants = [];
 }
+function activateSnakeEgg() {
+    snakeEggActive = true;
+    snakeEggTimer = 0;
+    snakeEggHatchInterval = 60 + Math.random() * 60; // 60–120 seconds
+
+    // +10% to all tracked stats
+    frogPermanentSpeedFactor    *= 0.909; // ~+10% speed (lower = faster)
+    frogPermanentJumpFactor     *= 1.10;
+    buffDurationFactor          *= 1.10;
+    orbSpawnIntervalFactor      *= 0.909;
+    frogDeathRattleChance        = Math.min(MAX_DEATHRATTLE_CHANCE, frogDeathRattleChance * 1.10);
+    addLuck(Math.round(luckStat * 0.10));
+  }
+
+  function deactivateSnakeEgg() {
+    snakeEggActive = false;
+
+    // Remove the +10% buff
+    frogPermanentSpeedFactor    /= 0.909;
+    frogPermanentJumpFactor     /= 1.10;
+    buffDurationFactor          /= 1.10;
+    orbSpawnIntervalFactor      /= 0.909;
+  }
+
+  function hatchSnakeEgg() {
+    deactivateSnakeEgg();
+
+    const width  = window.innerWidth;
+    const height = window.innerHeight;
+
+    for (let i = 0; i < 2; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const sx = width  * (0.2 + Math.random() * 0.6);
+      const sy = height * (0.2 + Math.random() * 0.6);
+
+      const baby = spawnAdditionalSnake(width, height, {
+        startX: sx,
+        startY: sy,
+        angle,
+        segmentCount: 4,               // tiny — same as shrink scale
+        colorFilter: "hue-rotate(60deg) brightness(1.3)",
+        speedFactor: 1.0               // locked at base
+      });
+
+      if (baby) {
+        baby.isBabySnake  = true;
+        baby.babySnakeAge = 0;
+        baby.noShed       = true;
+        extraSnakes.push(baby);
+        babySnakes.push(baby);
+      }
+    }
+  }
+
+  function updateBabySnakes(dt) {
+    if (babySnakes.length === 0) return;
+
+    const width  = window.innerWidth;
+    const height = window.innerHeight;
+
+    for (let i = babySnakes.length - 1; i >= 0; i--) {
+      const baby = babySnakes[i];
+      baby.babySnakeAge += dt;
+
+      if (baby.babySnakeAge >= 180) { // 3 minutes
+        // Drop 1–3 orbs
+        const orbCount = 1 + Math.floor(Math.random() * 3);
+        const bx = baby.head ? baby.head.x : width  * 0.5;
+        const by = baby.head ? baby.head.y : height * 0.5;
+        for (let j = 0; j < orbCount; j++) {
+          spawnOrb(null, bx + randRange(-30, 30), by + randRange(-30, 30));
+        }
+
+        removeSnakeInstance(baby);
+        babySnakes.splice(i, 1);
+      }
+    }
+  }
 function applyPairOfScissors() {
   if (!snake || !Array.isArray(snake.segments) || snake.segments.length < 8) return;
 
@@ -3448,6 +3547,20 @@ function computeDeathRattleChanceForFrog(frog) {
     if (snakeConfuseTime > 0) snakeConfuseTime = Math.max(0, snakeConfuseTime - dt * debuffTickMultiplier);
     if (snakeShrinkTime  > 0) snakeShrinkTime  = Math.max(0, snakeShrinkTime  - dt * debuffTickMultiplier);
     if (timeSlowTime     > 0) timeSlowTime     = Math.max(0, timeSlowTime     - dt * debuffTickMultiplier);
+
+    // Snake egg timer
+    if (snakeEggActive) {
+      snakeEggTimer += dt;
+      if (snakeEggTimer >= snakeEggHatchInterval) {
+        snakeEggTimer = 0;
+        if (Math.random() < SNAKE_EGG_HATCH_CHANCE) {
+          hatchSnakeEgg();
+        }
+      }
+    }
+
+    // Baby snake age
+    updateBabySnakes(dt);
   }
 
   // --------------------------------------------------
@@ -4614,6 +4727,14 @@ function samplePathAtDistance(path, startIdx, dist) {
         id: "chainReaction",
         label: `⚡ Chain Reaction<br>Orb collection has a <span style="color:${epicTitleColor};">25%</span> chance to trigger a second free orb buff`,
         apply: () => { chainReactionActive = true; }
+      });
+    }
+
+    if (!snakeEggActive && babySnakes.length === 0) {
+      upgrades.push({
+        id: "snakeEgg",
+        label: `🥚 Snake Egg<br>Hatches <span style="color:${epicTitleColor};">2 baby snakes</span> at a random 1-min interval. Gain <span style="color:${epicTitleColor};">+10%</span> to all stats while active.`,
+        apply: () => { activateSnakeEgg(); }
       });
     }
 
@@ -7165,7 +7286,10 @@ doubleYolkerActive = false;
     swarmDivideUsed = false;
     graveWaveActive = false;
     graveWaveUsed = false;
-
+    snakeEggActive = false;
+    snakeEggTimer = 0;
+    snakeEggHatchInterval = 0;
+    babySnakes = [];
     permanentScoreMultiplier = 1.0;
     quantumOrbsActive = false;
     moltFortuneActive = false;
