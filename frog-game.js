@@ -5890,21 +5890,39 @@ async function showDashboardOverlay(cachedLeaderboard) {
 
   content.innerHTML = `
     <div class="frog-panel-title">Dashboard</div>
-    <div class="frog-panel-sub">${currentTag || "No tag set"} · Level ${levelData.level}</div>
 
-    <div style="width:100%;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin-bottom:4px;">
-      <div style="width:${levelData.progressPercent}%;height:100%;background:#65a30d;border-radius:999px;"></div>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;margin-bottom:14px;align-items:center;border-bottom:1px solid #292524;padding-bottom:14px;">
+      <div style="
+        position:relative;
+        width:80px;
+        height:80px;
+        min-width:80px;
+        border-radius:999px;
+        overflow:hidden;
+        background:${dashboardPfp.bgColor || "#292524"};
+        border:2px solid #44403c;
+      ">
+        <img src="${dashboardPfp.spriteSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:1;" />
+        <img src="${dashboardPfp.skinSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:2;" />
+        ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:3;" />` : ""}
+        ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:4;" />` : ""}
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:bold;color:#bef264;margin-bottom:2px;" id="dashboardCurrentTag">${currentTag || "No tag set"}</div>
+        <div style="font-size:11px;color:#a3e635;margin-bottom:6px;">Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a8a29e;">#${bestRecordRank + 1} ranked</span>` : ""}</div>
+        <div style="width:100%;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin-bottom:3px;">
+          <div style="width:${levelData.progressPercent}%;height:100%;background:#65a30d;border-radius:999px;"></div>
+        </div>
+        <div style="font-size:10px;color:#a8a29e;margin-bottom:6px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
+        <div style="font-size:12px;color:#f5f5f4;">
+          <strong style="color:#bef264;">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong> best
+          · <strong style="color:#bef264;">${localStats.totalRuns || 0}</strong> runs
+          · <strong style="color:#bef264;">${localStats.totalOrbsCollected || 0}</strong> orbs
+        </div>
+      </div>
     </div>
-    <div style="font-size:12px;color:#a8a29e;margin-bottom:14px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
 
-    <div class="frog-panel-section-label" style="margin-top:0;">Stats</div>
-    <ul class="frog-panel-list">
-      <li><strong style="color:#bef264;">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong> best score · ${leaderboardBest.found ? formatLeaderboardTime(leaderboardBest.bestTime) : "—"}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a3e635;">#${bestRecordRank + 1} ranked</span>` : ""}</li>
-      <li><strong style="color:#bef264;">${localStats.totalRuns || 0}</strong> runs · <strong style="color:#bef264;">${formatDashboardDuration(localStats.totalPlayTime || 0)}</strong> played</li>
-      <li><strong style="color:#bef264;">${localStats.totalOrbsCollected || 0}</strong> orbs collected</li>
-    </ul>
-
-    <div class="frog-panel-section-label">Leaderboard Tag</div>
+    <div class="frog-panel-section-label" style="margin-top:0;">Leaderboard Tag</div>
     <div style="display:flex;gap:6px;margin-bottom:4px;">
       <input
         id="dashboardTagInput"
