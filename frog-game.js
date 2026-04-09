@@ -6661,8 +6661,14 @@ function initUpgradeOverlay() {
       const titleHtml = (parts.shift() || "").trim();
       const descHtml = parts.join("<br>").trim();
 
+      // Extract just the emoji from the title (first char cluster)
+      const emojiMatch = titleHtml.match(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F|[\u{1F300}-\u{1FFFF}][\u{1F3FB}-\u{1F3FF}]?|[\u{2600}-\u{27BF}])/u);
+      const emoji = emojiMatch ? emojiMatch[0] : "";
+      const nameOnly = titleHtml.replace(emoji, "").trim();
+
       btn.innerHTML = `
-        <div class="frog-upgrade-title">${titleHtml}</div>
+        <div class="frog-upgrade-emoji">${emoji}</div>
+        <div class="frog-upgrade-title">${nameOnly}</div>
         ${descHtml ? `<div class="frog-upgrade-desc">${descHtml}</div>` : ""}
       `;
 
