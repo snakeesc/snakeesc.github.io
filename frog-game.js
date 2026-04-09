@@ -1357,12 +1357,6 @@ function initEndGameSummaryOverlay() {
     </div>
   `;
 
-  endGameSummaryOverlay.addEventListener("click", (e) => {
-    if (e.target === endGameSummaryOverlay) {
-      hideEndGameSummaryOverlay();
-    }
-  });
-
   container.appendChild(endGameSummaryOverlay);
 
   document.addEventListener("keydown", (e) => {
@@ -1465,7 +1459,12 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   const totalFrogs = localStats.totalFrogsLost || 0;
 
   content.innerHTML = `
-    <div class="frog-panel-section-label">Player Tag</div>
+    <div class="frog-panel-section-label">Global Leaderboard</div>
+    <div id="endGameLeaderboardContent">
+      <div class="leaderboard-loading">Loading…</div>
+    </div>
+
+    <div class="frog-panel-section-label" style="margin-top:10px;">Player Tag</div>
     <div style="margin-bottom:10px;">
       <input
         id="endSummaryTagInput"
@@ -1512,11 +1511,6 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     <ul class="frog-panel-list">
       <li>${totalRuns} runs · ${totalTime} played · ${totalOrbs} orbs · ${totalFrogs} frogs lost</li>
     </ul>
-
-    <div class="frog-panel-section-label" style="margin-top:8px;">Global Leaderboard</div>
-    <div id="endGameLeaderboardContent">
-      <div class="leaderboard-loading">Loading…</div>
-    </div>
   `;
 
   openAnimatedOverlay(endGameSummaryOverlay);
