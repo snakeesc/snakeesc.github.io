@@ -308,12 +308,30 @@ function buildStartingBuffSelectorHtml() {
 
   return `
     <div class="frog-panel-section-label">Starting Buff</div>
-    <div class="db-starting-buff-row">
-      <button id="dashboardStartingBuffBtn" class="frog-btn frog-btn-secondary db-btn-sm" style="width:auto; margin-bottom:0;">
-        <span style="font-size:15px; line-height:1;">${selected.emoji}</span>
-        <span>${selected.name}</span>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <button
+        id="dashboardStartingBuffBtn"
+        class="frog-btn frog-btn-secondary"
+        style="
+          display:inline-flex;
+          align-items:center;
+          gap:8px;
+          padding:6px 10px;
+          font-size:12px;
+          line-height:1;
+          background:#1c1917;
+          border:1px solid #44403c;
+          color:#f5f5f4;
+          width:auto;
+          min-width:0;
+          flex-shrink:0;
+          margin-bottom:0;
+        "
+      >
+        <span style="font-size:16px; line-height:1;">${selected.emoji}</span>
+        <span style="font-weight:700;">${selected.name}</span>
       </button>
-      <span class="db-tag-msg">${selected.desc}</span>
+      <span style="font-size:12px; color:#a8a29e; line-height:1.4;">${selected.desc}</span>
     </div>
   `;
 }
@@ -1428,7 +1446,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
 
   const rankHtml = rankIdx !== -1 ? ` · <span class="stat-highlight">#${rankIdx + 1}</span> ranked` : "";
   const bestRunHtml = leaderboardBest.found
-    ? `<li><strong>${leaderboardBest.bestRun}</strong> pts · ${formatLeaderboardTime(leaderboardBest.bestTime)}${rankHtml}</li>`
+    ? `<li><strong>${leaderboardBest.bestRun}</strong> score · ${formatLeaderboardTime(leaderboardBest.bestTime)}${rankHtml}</li>`
     : `<li>No leaderboard entry yet.</li>`;
 
   const totalRuns  = localStats.totalRuns || 0;
@@ -1437,50 +1455,50 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   const totalFrogs = localStats.totalFrogsLost || 0;
 
   content.innerHTML = `
-    <div class="frog-panel-title" style="font-size:18px; margin-bottom:12px;">Run Complete 🐍</div>
-
-    <div class="run-summary-grid">
-      <div class="run-summary-pill">
-        <div class="pill-label">Score</div>
-        <div class="pill-value">${Math.floor(run.score || 0)}</div>
-      </div>
-      <div class="run-summary-pill">
-        <div class="pill-label">Time</div>
-        <div class="pill-value">${formatLeaderboardTime(run.time || 0)}</div>
-      </div>
-      <div class="run-summary-pill">
-        <div class="pill-label">Orbs</div>
-        <div class="pill-value">${run.orbs || 0}</div>
-      </div>
-      <div class="run-summary-pill">
-        <div class="pill-label">Sheds</div>
-        <div class="pill-value">${run.sheds || 0}</div>
-      </div>
-    </div>
-
-    <div class="frog-panel-section-label">Leaderboard</div>
-    <div id="endGameLeaderboardContent"><div class="leaderboard-loading">Loading…</div></div>
-
-    <div class="frog-panel-section-label">Player Tag</div>
-    <div class="db-tag-editor">
+    <div class="frog-panel-section-label" style="margin-top:10px;">Player Tag</div>
+    <div style="margin-bottom:10px;">
       <input
         id="endSummaryTagInput"
-        class="ui-input"
         type="text"
         maxlength="20"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:5px 8px;
+          border-radius:6px;
+          border:1px solid #44403c;
+          background:#292524;
+          color:white;
+          font-family:inherit;
+          font-size:12px;
+          margin-bottom:6px;
+        "
       />
-      <div class="db-tag-actions">
-        <button id="endSummaryTagSaveBtn" class="frog-btn frog-btn-secondary db-btn-sm" style="width:auto; margin-bottom:0;">Save Tag</button>
-        <span id="endSummaryTagMsg" class="db-tag-msg"></span>
-      </div>
+      <button
+        id="endSummaryTagSaveBtn"
+        class="frog-btn frog-btn-secondary"
+        style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:4px;"
+      >Save Tag</button>
+      <span id="endSummaryTagMsg" style="font-size:11px; margin-left:8px;"></span>
     </div>
 
-    <div class="frog-panel-section-label">Best Run</div>
+    <div class="frog-panel-section-label">This Run</div>
+    <ul class="frog-panel-list">
+      <li style="color:#bef264;">
+        <strong>${Math.floor(run.score || 0)}</strong> score
+        · ${formatLeaderboardTime(run.time || 0)}
+        · ${run.orbs || 0} orbs
+        · ${run.frogsLost || 0} frogs lost
+        · ${run.sheds || 0} sheds
+      </li>
+    </ul>
+
+    <div class="frog-panel-section-label" style="margin-top:8px;">Best Run</div>
     <ul class="frog-panel-list">${bestRunHtml}</ul>
 
-    <div class="frog-panel-section-label">Lifetime</div>
+    <div class="frog-panel-section-label" style="margin-top:8px;">Lifetime</div>
     <ul class="frog-panel-list">
       <li>${totalRuns} runs · ${totalTime} played · ${totalOrbs} orbs · ${totalFrogs} frogs lost</li>
     </ul>
@@ -1531,102 +1549,6 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       }
     });
   }
-
-  // Render leaderboard using already-fetched list, jump to user's page
-  const lbEl = document.getElementById("endGameLeaderboardContent");
-  if (!lbEl) return;
-
-  if (list.length === 0) {
-    lbEl.innerHTML = '<ul class="frog-panel-list"><li>No entries yet.</li></ul>';
-    return;
-  }
-
-  function normalizeTag(tag) {
-    return typeof tag === "string" ? tag.trim().toLowerCase() : "";
-  }
-
-  function entryMatchesUser(entry) {
-    if (!entry) return false;
-    // Prefer userId — stable even after a tag rename
-    if (myEntry && myEntry.userId && entry.userId) {
-      return entry.userId === myEntry.userId;
-    }
-    if (!activePlayerTag) return false;
-    return normalizeTag(entry.tag) === normalizeTag(activePlayerTag) ||
-           normalizeTag(entry.name) === normalizeTag(activePlayerTag);
-  }
-
-  function getScore(entry) {
-    if (!entry) return 0;
-    for (const k of ["bestScore", "score", "maxScore", "points", "value"]) {
-      if (!(k in entry)) continue;
-      let v = entry[k];
-      if (typeof v === "string") v = parseFloat(v);
-      if (typeof v === "number" && isFinite(v)) return v;
-    }
-    return 0;
-  }
-
-  function getTime(entry) {
-    if (!entry) return 0;
-    for (const k of ["bestTime", "time", "maxTime", "seconds", "duration"]) {
-      if (!(k in entry)) continue;
-      let v = entry[k];
-      if (typeof v === "string") v = parseFloat(v);
-      if (typeof v === "number" && isFinite(v) && v >= 0) return v;
-    }
-    return 0;
-  }
-
-  function getDisplayName(entry, fallback) {
-    if (entry && typeof entry.tag === "string" && entry.tag.trim()) return entry.tag;
-    if (entry && typeof entry.name === "string" && entry.name.trim()) return entry.name;
-    return fallback;
-  }
-
-  const pageSize = 10;
-  const myPageStart = rankIdx >= 0 ? Math.floor(rankIdx / pageSize) : 0;
-  let currentPage = myPageStart;
-
-  function renderLbPage(pageIndex) {
-    currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
-    const start = currentPage * pageSize;
-    const end = Math.min(start + pageSize, list.length);
-
-    const itemsHtml = list.slice(start, end).map((entry, idx) => {
-      const rank  = start + idx + 1;
-      const name  = getDisplayName(entry, `Player ${rank}`);
-      const score = Math.floor(getScore(entry));
-      const time  = formatLeaderboardTime(getTime(entry));
-      const isMe  = entryMatchesUser(entry);
-      return `
-        <li${isMe ? ' class="lb-me"' : ""}>
-          <strong>#${rank}</strong>
-          ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} pts
-        </li>
-      `;
-    }).join("");
-
-    lbEl.innerHTML = `
-      <ul class="frog-panel-list">
-        ${itemsHtml}
-      </ul>
-      <div class="frog-panel-footer">
-        <div class="lb-page-info">Showing ${start + 1}–${end} of ${list.length}</div>
-        <div class="lb-pager">
-          <button id="endLbPrevBtn" class="frog-btn frog-btn-secondary lb-page-btn" ${currentPage === 0 ? "disabled" : ""}>← Prev</button>
-          <button id="endLbNextBtn" class="frog-btn frog-btn-secondary lb-page-btn" ${end >= list.length ? "disabled" : ""}>Next →</button>
-        </div>
-      </div>
-    `;
-
-    const prevBtn = document.getElementById("endLbPrevBtn");
-    const nextBtn = document.getElementById("endLbNextBtn");
-    if (prevBtn) prevBtn.addEventListener("click", () => renderLbPage(currentPage - 1));
-    if (nextBtn) nextBtn.addEventListener("click", () => renderLbPage(currentPage + 1));
-  }
-
-  renderLbPage(currentPage);
 }
 function clampLuck(value) {
   return Math.max(0, Math.min(MAX_LUCK, Math.floor(value || 0)));
@@ -5179,9 +5101,8 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     if (btnLeaderboard) {
-      btnLeaderboard.addEventListener("click", async () => {
-        const entries = await fetchLeaderboard();
-        showEndGameSummaryOverlay(entries);
+      btnLeaderboard.addEventListener("click", () => {
+        showLeaderboardOverlay();
       });
     }
 
@@ -5265,8 +5186,7 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-title">How to Play <span class="emoji">❓</span></div>
-      <div class="frog-panel-sub">
+      <div class="frog-panel-sub" style="color: white !important;">
         Stay alive, avoid the snake, and survive as long as you can.
       </div>
 
@@ -5288,11 +5208,13 @@ function closeAnimatedOverlay(overlayEl) {
       <ul class="frog-panel-list">
         <li>Do not bunch your frogs up too tightly.</li>
         <li>More frogs help, but survival upgrades matter too.</li>
-        <li>Plan ahead before the snake corners you.</li>
+        <li>Try to plan ahead before the snake corners you.</li>
       </ul>
 
       <div class="frog-panel-footer">
-        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
+          Close
+        </button>
       </div>
     `;
 
@@ -5754,21 +5676,44 @@ function closeAnimatedOverlay(overlayEl) {
           const isMe = entryMatchesUser(entry);
 
           return `
-            <li${isMe ? ' class="lb-me"' : ""}>
+            <li${isMe ? ' style="color:#bef264;"' : ""}>
               <strong>#${rank}</strong>
-              ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} pts
+              ${isMe ? "⭐ " : ""}
+              ${name} · ${time} · ${score} score
             </li>
           `;
         }).join("");
 
         content.innerHTML = `
           <div class="frog-panel-section-label">Global Leaderboard</div>
-          <ul class="frog-panel-list">${itemsHtml}</ul>
+          <div style="font-size:12px; color:#d6d3d1; margin-bottom:8px;">
+            ${LEADERBOARD_RESET_NOTE}
+          </div>
+          <ul class="frog-panel-list">
+            ${itemsHtml}
+          </ul>
+
           <div class="frog-panel-footer">
-            <div class="lb-page-info">Showing ${start + 1}–${end} of ${list.length}</div>
-            <div class="lb-pager">
-              <button id="leaderboardPrevBtn" class="frog-btn frog-btn-secondary lb-page-btn" ${currentPage === 0 ? "disabled" : ""}>← Prev</button>
-              <button id="leaderboardNextBtn" class="frog-btn frog-btn-secondary lb-page-btn" ${end >= list.length ? "disabled" : ""}>Next →</button>
+            <div style="margin-bottom:8px;">
+              Showing ${start + 1}-${end} of ${list.length}
+            </div>
+            <div style="display:flex; gap:8px; justify-content:center;">
+              <button
+                id="leaderboardPrevBtn"
+                class="frog-btn frog-btn-secondary"
+                style="width:auto; margin-bottom:0;"
+                ${currentPage === 0 ? "disabled" : ""}
+              >
+                Prev
+              </button>
+              <button
+                id="leaderboardNextBtn"
+                class="frog-btn frog-btn-secondary"
+                style="width:auto; margin-bottom:0;"
+                ${end >= list.length ? "disabled" : ""}
+              >
+                Next
+              </button>
             </div>
           </div>
         `;
@@ -5810,20 +5755,75 @@ function buildSnakeSkinSelectorHtml() {
   const items = SNAKE_SKINS.map(skin => {
     const unlocked = currentLevel >= skin.requiredLevel;
     const isSelected = skin.id === selectedId;
+
     return `
-      <div class="snake-skin-option${isSelected ? " is-selected" : ""}${!unlocked ? " is-locked" : ""}" data-skin-id="${skin.id}">
-        <div class="snake-skin-circle${isSelected ? " is-selected" : ""}">
-          <img src="${skin.head}" alt="${skin.label}" style="image-rendering:pixelated;${!unlocked ? "filter:grayscale(1);" : ""}">
-          ${!unlocked ? `<div class="snake-skin-lock">🔒</div>` : ""}
+      <div
+        class="snake-skin-option${isSelected ? " is-selected" : ""}${!unlocked ? " is-locked" : ""}"
+        data-skin-id="${skin.id}"
+        style="
+          display: inline-flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          cursor: ${unlocked ? "pointer" : "default"};
+          opacity: ${unlocked ? "1" : "0.4"};
+        "
+      >
+        <div style="
+          width: 48px;
+          height: 48px;
+          border-radius: 999px;
+          border: 2px solid ${isSelected ? "#84cc16" : "#44403c"};
+          background: #0f172a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          box-shadow: ${isSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none"};
+          transition: border-color 0.15s, box-shadow 0.15s;
+          position: relative;
+        ">
+          <img
+            src="${skin.head}"
+            alt="${skin.label}"
+            style="
+              width: 44px;
+              height: 44px;
+              image-rendering: pixelated;
+              ${!unlocked ? "filter: grayscale(1);" : ""}
+            "
+          />
+          ${!unlocked ? `
+            <div style="
+              position: absolute;
+              inset: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 18px;
+            ">🔒</div>
+          ` : ""}
         </div>
-        <div class="snake-skin-label${isSelected ? " is-selected" : ""}">${unlocked ? skin.label : `Lv ${skin.requiredLevel}`}</div>
+        <div style="font-size: 11px; color: ${isSelected ? "#bef264" : "#a8a29e"}; font-weight: ${isSelected ? "700" : "400"};">
+          ${unlocked ? skin.label : `Lv ${skin.requiredLevel}`}
+        </div>
       </div>
     `;
   }).join("");
 
   return `
     <div class="frog-panel-section-label">Snake Skin</div>
-    <div id="snakeSkinSelector" class="snake-skin-selector">${items}</div>
+    <div
+      id="snakeSkinSelector"
+      style="
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      "
+    >
+      ${items}
+    </div>
   `;
 }
 async function showDashboardOverlay(cachedLeaderboard) {
@@ -5905,51 +5905,162 @@ async function showDashboardOverlay(cachedLeaderboard) {
     `
     : "";
 
-  const pfpLayerStyle = "position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;";
-
   content.innerHTML = `
-    <div class="db-profile">
-      <div class="db-pfp" style="background:${dashboardPfp.bgColor};">
-        <img src="${dashboardPfp.spriteSrc}" alt="" style="${pfpLayerStyle}z-index:1;">
-        <img src="${dashboardPfp.skinSrc}"   alt="" style="${pfpLayerStyle}z-index:2;">
-        ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" alt="" style="${pfpLayerStyle}z-index:3;">` : ""}
-        ${dashboardPfp.hatSrc  ? `<img src="${dashboardPfp.hatSrc}"  alt="" style="${pfpLayerStyle}z-index:4;">` : ""}
+    <div class="frog-panel-section-label">Player Profile</div>
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:10px;
+        padding:8px 10px;
+        border:1px solid #44403c;
+        border-radius:12px;
+        background:#1c1917;
+      "
+    >
+      <div
+        style="
+          position:relative;
+          width:48px;
+          height:48px;
+          min-width:48px;
+          border-radius:999px;
+          overflow:hidden;
+          border:0px solid #57534e;
+          background:${dashboardPfp.bgColor};
+        "
+      >
+        <img
+          src="${dashboardPfp.spriteSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:1;
+          "
+        />
+        <img
+          src="${dashboardPfp.skinSrc}"
+          alt=""
+          style="
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            image-rendering:pixelated;
+            z-index:2;
+          "
+        />
+        ${dashboardPfp.eyesSrc ? `
+          <img
+            src="${dashboardPfp.eyesSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:3;
+            "
+          />
+        ` : ""}
+        ${dashboardPfp.hatSrc ? `
+          <img
+            src="${dashboardPfp.hatSrc}"
+            alt=""
+            style="
+              position:absolute;
+              inset:0;
+              width:100%;
+              height:100%;
+              image-rendering:pixelated;
+              z-index:4;
+            "
+          />
+        ` : ""}
       </div>
-      <div class="db-profile-info">
-        <div class="db-tag-row">
-          <span class="db-tag-label">Tag</span>
-          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag || "—"}</span>
+
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <div>
+          <strong>Tag:</strong>
+          <span class="stat-highlight" id="dashboardCurrentTag">${currentTag}</span>
         </div>
-        <div class="db-level-row">
-          <span class="db-tag-label">Level</span>
+        <div>
+          <strong>Level:</strong>
           <span class="stat-highlight">${levelData.level}</span>
         </div>
-        <div class="db-xp-bar-wrap">
-          <div class="db-xp-bar" style="width:${levelData.progressPercent}%;"></div>
-        </div>
-        <div class="db-xp-label">${levelData.orbsNeededForNextLevel} orbs to Lv ${levelData.nextLevel}</div>
       </div>
     </div>
 
-    <div class="frog-panel-section-label" style="margin-top:14px;">Player Tag</div>
-    <div class="db-tag-editor">
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px; color:#d6d3d1; margin-bottom:4px;">
+        ${levelData.orbsNeededForNextLevel} orbs until level ${levelData.nextLevel}
+      </div>
+      <div
+        style="
+          width:100%;
+          height:8px;
+          background:#292524;
+          border:1px solid #44403c;
+          border-radius:999px;
+          overflow:hidden;
+        "
+      >
+        <div
+          style="
+            width:${levelData.progressPercent}%;
+            height:100%;
+            background:#65a30d;
+            border-radius:999px;
+          "
+        ></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
       <input
         id="dashboardTagInput"
-        class="ui-input"
         type="text"
         maxlength="20"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:5px 8px;
+          border-radius:6px;
+          border:1px solid #44403c;
+          background:#292524;
+          color:white;
+          font-family:inherit;
+          font-size:12px;
+          margin-bottom:6px;
+        "
       />
-      <div class="db-tag-actions">
-        <button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary db-btn-sm">Save Tag</button>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <button
+          id="dashboardSaveTagBtn"
+          class="frog-btn frog-btn-secondary"
+          style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
+        >
+          Save Tag
+        </button>
         ${localStats.recentRuns && localStats.recentRuns.length ? `
-          <button id="dashboardLastRunBtn" class="frog-btn frog-btn-secondary db-btn-sm">Last Run</button>
+          <button
+            id="dashboardLastRunBtn"
+            class="frog-btn frog-btn-secondary"
+            style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
+          >
+            📋 Last Run
+          </button>
         ` : ""}
-        <span id="dashboardTagMessage" class="db-tag-msg"></span>
       </div>
     </div>
-
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
   `; 
@@ -6043,10 +6154,19 @@ async function showDashboardOverlay(cachedLeaderboard) {
       saveSelectedSnakeSkinId(skinId);
 
       skinSelector.querySelectorAll("[data-skin-id]").forEach(el => {
-        const isNowSelected = el.dataset.skinId === skinId;
-        el.classList.toggle("is-selected", isNowSelected);
-        el.querySelector(".snake-skin-circle")?.classList.toggle("is-selected", isNowSelected);
-        el.querySelector(".snake-skin-label")?.classList.toggle("is-selected", isNowSelected);
+        const id = el.dataset.skinId;
+        const circle = el.querySelector("div");
+        const label = el.querySelector("div + div") || el.lastElementChild;
+        const isNowSelected = id === skinId;
+
+        if (circle) {
+          circle.style.borderColor = isNowSelected ? "#84cc16" : "#44403c";
+          circle.style.boxShadow = isNowSelected ? "0 0 0 2px rgba(132,204,22,0.4)" : "none";
+        }
+        if (label) {
+          label.style.color = isNowSelected ? "#bef264" : "#a8a29e";
+          label.style.fontWeight = isNowSelected ? "700" : "400";
+        }
       });
     });
   }
@@ -6059,20 +6179,56 @@ function showStartingBuffSelector() {
     overlay.id = "startingBuffOverlay";
     overlay.className = "frog-overlay";
     overlay.style.zIndex = "1200";
-    overlay.style.background = "rgba(0,0,0,0.35)";
+    overlay.style.background = "rgba(0,0,0,0.18)";
     overlay.innerHTML = `
-      <div class="frog-panel" style="width:min(340px,calc(100vw - 24px)); max-width:340px;">
-        <div class="db-buff-selector-header">
-          <span class="frog-panel-title" style="font-size:15px; margin:0; justify-content:flex-start;">Starting Buff</span>
-          <button id="startingBuffCloseBtn" class="frog-btn frog-btn-secondary db-btn-sm" style="width:auto; margin-bottom:0;">✕</button>
+      <div
+        class="frog-panel"
+        style="
+          width:min(320px, calc(100vw - 24px));
+          max-width:320px;
+          padding:10px 10px 8px;
+          border-radius:10px;
+          background:#1c1917;
+          border:1px solid #44403c;
+          box-shadow:0 10px 30px rgba(0,0,0,0.45);
+        "
+      >
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            margin-bottom:8px;
+          "
+        >
+          <div style="font-size:13px; font-weight:700; color:#f5f5f4;">
+            Starting Buff
+          </div>
+          <button
+            id="startingBuffCloseBtn"
+            class="frog-btn frog-btn-secondary"
+            style="
+              width:auto;
+              min-width:0;
+              padding:4px 8px;
+              font-size:11px;
+              line-height:1;
+            "
+          >
+            Close
+          </button>
         </div>
-        <div id="startingBuffOptions" class="db-buff-options"></div>
+
+        <div id="startingBuffOptions" style="display:flex; flex-direction:column; gap:6px;"></div>
       </div>
     `;
     container.appendChild(overlay);
 
     overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) closeAnimatedOverlay(overlay);
+      if (e.target === overlay) {
+        closeAnimatedOverlay(overlay);
+      }
     });
   }
 
@@ -6086,10 +6242,22 @@ function showStartingBuffSelector() {
 
     return `
       <button
-        class="frog-btn frog-btn-secondary starting-buff-option${isSelected ? " is-active-buff" : ""}"
+        class="frog-btn frog-btn-secondary starting-buff-option"
         data-buff-id="${buff.id}"
         ${unlocked ? "" : "disabled"}
-        style="text-align:left; margin-bottom:6px;"
+        style="
+          width:100%;
+          text-align:left;
+          padding:7px 9px;
+          margin:0;
+          font-size:12px;
+          line-height:1.2;
+          background:${isSelected ? "rgba(132,204,22,0.12)" : "#292524"};
+          border:1px solid ${isSelected ? "#84cc16" : "#44403c"};
+          color:${unlocked ? "#f5f5f4" : "#78716c"};
+          opacity:${unlocked ? "1" : "0.55"};
+          box-shadow:none;
+        "
       >
         <span style="display:inline-flex; align-items:center; gap:8px;">
           <span style="font-size:15px; line-height:1;">${buff.emoji}</span>
@@ -6131,6 +6299,7 @@ function showStartingBuffSelector() {
 
   wireSkinSelector();
 }
+window.showDashboardOverlay = showDashboardOverlay;
 function formatDuration(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
   const h = Math.floor(s / 3600);
