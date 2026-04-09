@@ -4373,18 +4373,19 @@ function samplePathAtDistance(path, startIdx, dist) {
     head.el.style.transform = `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
     // Place each segment exactly SEGMENT_VISUAL_SPACING px further along the path
-    // than the previous one, regardless of snake speed.
-    // Place each segment exactly SEGMENT_VISUAL_SPACING px further along the path
     let searchIdx = 0;
     for (let i = 0; i < snakeObj.segments.length; i++) {
-      const result = samplePathAtDistance(snakeObj.path, searchIdx, SEGMENT_VISUAL_SPACING);
+      const result = samplePathAtDistance(
+        snakeObj.path,
+        searchIdx,
+        SEGMENT_VISUAL_SPACING
+      );
+
       const seg = snakeObj.segments[i];
-      
       seg.x = result.x;
       seg.y = result.y;
       searchIdx = result.nextStart;
 
-      // Determine the correct angle based on the next point in the path
       let angle = 0;
       if (result.nextStart + 1 < snakeObj.path.length) {
         const px = snakeObj.path[result.nextStart].x;
@@ -4394,13 +4395,24 @@ function samplePathAtDistance(path, startIdx, dist) {
         angle = Math.atan2(ny - py, nx - px);
       }
 
-      // Ensure the last segment is actually rendered as a tail
-      const isTail = (i === snakeObj.segments.length - 1);
+      const isTail = i === snakeObj.segments.length - 1;
       const sprites = getPlayerSnakeSpriteSet();
-      seg.el.style.backgroundImage = isTail ? `url(${sprites.tail})` : `url(${sprites.body})`;
 
-      // Apply the transform with the corrected angle
-      seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
+      // Keep class + sprite in sync every frame
+      seg.el.className = isTail ? "snake-tail" : "snake-body";
+      seg.el.style.backgroundImage = isTail
+        ? `url(${sprites.tail})`
+        : `url(${sprites.body})`;
+      seg.el.style.backgroundRepeat = "no-repeat";
+      seg.el.style.backgroundSize = "contain";
+      seg.el.style.pointerEvents = "none";
+      seg.el.style.zIndex = "29";
+
+      // Tail should point the opposite direction from body travel
+      const renderAngle = isTail ? angle + Math.PI : angle;
+
+      seg.el.style.transform =
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
     }
     // 4. COLLISIONS
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
