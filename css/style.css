@@ -1322,9 +1322,9 @@ a {
 #upgradeOverlay .frog-upgrade-choice {
   all: unset;
   box-sizing: border-box;
-  flex: 1;
-  max-width: 200px;
-  min-height: 190px;
+  flex: 0 0 160px;
+  width: 160px;
+  min-height: 220px;
   padding: 20px 14px;
   border-radius: 12px;
   background: rgba(28, 25, 23, 0.96);
@@ -1361,7 +1361,7 @@ a {
 }
 
 #upgradeOverlay .frog-upgrade-desc {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
   color: #a8a29e;
   font-weight: 400;
@@ -1957,7 +1957,7 @@ background: #65a30d;
   #upgradeOverlay .upgrade-choices {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 109px;
   }
 
   #upgradeOverlay .frog-upgrade-choice {
