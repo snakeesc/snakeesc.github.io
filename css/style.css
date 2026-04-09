@@ -542,7 +542,7 @@ a { color: inherit; }
 
 #endGameSummaryOverlay .frog-panel { width: min(460px, 90vw); max-width: 90vw; }
 #dashboardOverlay .frog-panel      { width: min(400px, 90vw); max-width: 90vw; }
-#buffGuideOverlay .frog-panel      { width: min(460px, 90vw); max-width: 90vw; }
+#buffGuideOverlay .frog-panel      { width: min(500px, 90vw); max-width: 90vw; }
 
 /* ============================================
    MOBILE — max 768px
