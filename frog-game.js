@@ -1422,13 +1422,10 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     sheds: Number(snakeShedCount) || 0
   };
 
-  // Use a mutable variable so the tag-save handler can update it without
-  // the overlay needing to close/reopen (fixes a stale-closure bug).
   let activePlayerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
   const localStats = loadDashboardStats();
   const currentTag = getSavedDashboardTag() || "";
 
-  // Find rank and best run from cached leaderboard
   let rankIdx = -1;
   let leaderboardBest = { bestRun: 0, bestTime: 0, found: false };
   const list = Array.isArray(cachedLeaderboard) ? cachedLeaderboard : [];
@@ -1454,74 +1451,96 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     };
   }
 
-  const rankHtml = rankIdx !== -1 ? ` · <span class="stat-highlight">#${rankIdx + 1}</span> ranked` : "";
-  const bestRunHtml = leaderboardBest.found
-    ? `<li><strong>${leaderboardBest.bestRun}</strong> score · ${formatLeaderboardTime(leaderboardBest.bestTime)}${rankHtml}</li>`
-    : `<li>No leaderboard entry yet.</li>`;
+  // Build leaderboard preview — show up to 5 entries, always including the player's row
+  const previewCount = 5;
+  const previewList = list.slice(0, previewCount);
+  // If player is ranked but outside top 5, swap last entry for player's row
+  if (rankIdx >= previewCount) {
+    previewList[previewCount - 1] = list[rankIdx];
+  }
 
-  const totalRuns  = localStats.totalRuns || 0;
-  const totalTime  = formatDashboardDuration(localStats.totalPlayTime || 0);
-  const totalOrbs  = localStats.totalOrbsCollected || 0;
-  const totalFrogs = localStats.totalFrogsLost || 0;
+  const lbRowsHtml = previewList.map((entry, i) => {
+    const rank = rankIdx >= previewCount && i === previewCount - 1
+      ? rankIdx + 1
+      : i + 1;
+    const name = (typeof entry?.tag === "string" && entry.tag) ||
+                 (typeof entry?.name === "string" && entry.name) ||
+                 `Player ${rank}`;
+    const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
+    const entryTime = formatLeaderboardTime(Number(entry?.bestTime ?? entry?.time ?? 0));
+    const isMe = myEntry && entry && myEntry.userId && entry.userId === myEntry.userId
+      ? true
+      : activePlayerTag && typeof entry?.tag === "string" &&
+        entry.tag.trim().toLowerCase() === activePlayerTag.trim().toLowerCase();
+
+    return `
+      <li style="
+        font-size:13px;
+        margin-bottom:5px;
+        line-height:1.6;
+        color:${isMe ? "#bef264" : "#f5f5f4"};
+        display:flex;
+        gap:10px;
+        align-items:baseline;
+        border-bottom:1px solid #292524;
+        padding-bottom:5px;
+      ">
+        <span style="min-width:28px;font-size:12px;font-weight:bold;color:${isMe ? "#a3e635" : rank <= 3 ? "#a3e635" : "#a8a29e"};">#${rank}</span>
+        <span style="flex:1;font-weight:bold;">${isMe ? "⭐ " : ""}${name}</span>
+        <span style="color:#a8a29e;font-size:12px;">${entryTime}</span>
+        <span style="font-size:12px;min-width:60px;text-align:right;color:${isMe ? "#bef264" : "#f5f5f4"};">${entryScore.toLocaleString()}</span>
+      </li>
+    `;
+  }).join("");
+
+  const rankHtml = rankIdx !== -1
+    ? ` · <span style="color:#a3e635;">#${rankIdx + 1} ranked</span>`
+    : "";
+
+  const bestHtml = leaderboardBest.found
+    ? `<li style="font-size:13px;line-height:1.6;color:#bef264;font-weight:bold;">
+        ${leaderboardBest.bestRun.toLocaleString()} score · ${formatLeaderboardTime(leaderboardBest.bestTime)}${rankHtml}
+      </li>`
+    : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
   content.innerHTML = `
-    <div class="frog-panel-section-label">Player Tag</div>
-    <div style="margin-bottom:10px;">
+    <div class="frog-panel-section-label" style="margin-top:0;">This Run</div>
+    <ul class="frog-panel-list">
+      <li style="color:#bef264;font-weight:bold;">
+        ${Math.floor(run.score || 0).toLocaleString()} score · ${formatLeaderboardTime(run.time || 0)} · ${run.orbs || 0} orbs
+      </li>
+      <li>${run.frogsLost || 0} frogs lost · ${run.sheds || 0} sheds</li>
+    </ul>
+
+    <div class="frog-panel-section-label">Personal Best</div>
+    <ul class="frog-panel-list">${bestHtml}</ul>
+
+    <div class="frog-panel-section-label">Leaderboard</div>
+    <ul class="frog-panel-list" style="margin-bottom:0;">
+      ${lbRowsHtml.length ? lbRowsHtml : '<li style="color:#a8a29e;font-size:13px;">No entries yet.</li>'}
+    </ul>
+
+    <div class="frog-panel-section-label" style="margin-top:14px;">Leaderboard Tag</div>
+    <div style="display:flex;gap:6px;margin-bottom:5px;">
       <input
         id="endSummaryTagInput"
         type="text"
         maxlength="20"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
-        style="
-          width:100%;
-          box-sizing:border-box;
-          padding:5px 8px;
-          border-radius:6px;
-          border:1px solid #44403c;
-          background:#292524;
-          color:white;
-          font-family:inherit;
-          font-size:12px;
-          margin-bottom:6px;
-        "
+        style="flex:1;padding:6px 9px;border-radius:8px;border:1px solid #44403c;background:#292524;color:white;font-family:inherit;font-size:12px;"
       />
       <button
         id="endSummaryTagSaveBtn"
         class="frog-btn frog-btn-secondary"
-        style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:4px;"
-      >Save Tag</button>
-      <span id="endSummaryTagMsg" style="font-size:11px; margin-left:8px;"></span>
+        style="width:auto;padding:6px 14px;margin:0;font-size:12px;white-space:nowrap;"
+      >Save</button>
     </div>
-
-    <div class="frog-panel-section-label">This Run</div>
-    <ul class="frog-panel-list">
-      <li style="color:#bef264;">
-        <strong>${Math.floor(run.score || 0)}</strong> score
-        · ${formatLeaderboardTime(run.time || 0)}
-        · ${run.orbs || 0} orbs
-        · ${run.frogsLost || 0} frogs lost
-        · ${run.sheds || 0} sheds
-      </li>
-    </ul>
-
-    <div class="frog-panel-section-label" style="margin-top:8px;">Best Run</div>
-    <ul class="frog-panel-list">${bestRunHtml}</ul>
-
-    <div class="frog-panel-section-label" style="margin-top:8px;">Lifetime</div>
-    <ul class="frog-panel-list">
-      <li>${totalRuns} runs · ${totalTime} played · ${totalOrbs} orbs · ${totalFrogs} frogs lost</li>
-    </ul>
-
-    <div class="frog-panel-section-label" style="margin-top:8px;">Global Leaderboard</div>
-    <div id="endGameLeaderboardContent">
-      <div class="leaderboard-loading">Loading…</div>
-    </div>
+    <div id="endSummaryTagMsg" style="font-size:11px;min-height:16px;margin-bottom:12px;"></div>
   `;
 
   openAnimatedOverlay(endGameSummaryOverlay);
 
-  // Wire up tag input
   const tagInput = document.getElementById("endSummaryTagInput");
   const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
   const tagMsg = document.getElementById("endSummaryTagMsg");
@@ -1534,7 +1553,6 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         return;
       }
       const newTag = validation.tag;
-
       try {
         const result = await submitScoreToServer(
           Math.floor(run.score || 0),
@@ -1542,7 +1560,6 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
           null,
           newTag
         );
-
         if (result && result._error) {
           const msg = result.error === "tag_taken"
             ? "That tag is already taken — try another."
@@ -1550,13 +1567,10 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
           if (tagMsg) { tagMsg.textContent = msg; tagMsg.style.color = "#fca5a5"; }
           return;
         }
-
         await saveDashboardTag(newTag);
-        // Update the live mutable reference so entryMatchesUser stays correct
         activePlayerTag = newTag;
         if (myEntry) myEntry.tag = newTag;
-        if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#bef264"; }
-
+        if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#a3e635"; }
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
       } catch (e) {
@@ -1564,104 +1578,6 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       }
     });
   }
-
-  // Render leaderboard using already-fetched list, jump to user's page
-  const lbEl = document.getElementById("endGameLeaderboardContent");
-  if (!lbEl) return;
-
-  if (list.length === 0) {
-    lbEl.innerHTML = '<ul class="frog-panel-list"><li>No entries yet.</li></ul>';
-    return;
-  }
-
-  function normalizeTag(tag) {
-    return typeof tag === "string" ? tag.trim().toLowerCase() : "";
-  }
-
-  function entryMatchesUser(entry) {
-    if (!entry) return false;
-    // Prefer userId — stable even after a tag rename
-    if (myEntry && myEntry.userId && entry.userId) {
-      return entry.userId === myEntry.userId;
-    }
-    if (!activePlayerTag) return false;
-    return normalizeTag(entry.tag) === normalizeTag(activePlayerTag) ||
-           normalizeTag(entry.name) === normalizeTag(activePlayerTag);
-  }
-
-  function getScore(entry) {
-    if (!entry) return 0;
-    for (const k of ["bestScore", "score", "maxScore", "points", "value"]) {
-      if (!(k in entry)) continue;
-      let v = entry[k];
-      if (typeof v === "string") v = parseFloat(v);
-      if (typeof v === "number" && isFinite(v)) return v;
-    }
-    return 0;
-  }
-
-  function getTime(entry) {
-    if (!entry) return 0;
-    for (const k of ["bestTime", "time", "maxTime", "seconds", "duration"]) {
-      if (!(k in entry)) continue;
-      let v = entry[k];
-      if (typeof v === "string") v = parseFloat(v);
-      if (typeof v === "number" && isFinite(v) && v >= 0) return v;
-    }
-    return 0;
-  }
-
-  function getDisplayName(entry, fallback) {
-    if (entry && typeof entry.tag === "string" && entry.tag.trim()) return entry.tag;
-    if (entry && typeof entry.name === "string" && entry.name.trim()) return entry.name;
-    return fallback;
-  }
-
-  const pageSize = 10;
-  const myPageStart = rankIdx >= 0 ? Math.floor(rankIdx / pageSize) : 0;
-  let currentPage = myPageStart;
-
-  function renderLbPage(pageIndex) {
-    currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
-    const start = currentPage * pageSize;
-    const end = Math.min(start + pageSize, list.length);
-
-    const itemsHtml = list.slice(start, end).map((entry, idx) => {
-      const rank  = start + idx + 1;
-      const name  = getDisplayName(entry, `Player ${rank}`);
-      const score = Math.floor(getScore(entry));
-      const time  = formatLeaderboardTime(getTime(entry));
-      const isMe  = entryMatchesUser(entry);
-      return `
-        <li${isMe ? ' style="color:#bef264;"' : ""}>
-          <strong>#${rank}</strong>
-          ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} score
-        </li>
-      `;
-    }).join("");
-
-    lbEl.innerHTML = `
-      <ul class="frog-panel-list">${itemsHtml}</ul>
-      <div class="frog-panel-footer">
-        <div style="margin-bottom:6px; font-size:11px; color:#a8a29e;">
-          Showing ${start + 1}–${end} of ${list.length}
-        </div>
-        <div style="display:flex; gap:8px; justify-content:center;">
-          <button id="endLbPrevBtn" class="frog-btn frog-btn-secondary"
-            style="width:auto; margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
-          <button id="endLbNextBtn" class="frog-btn frog-btn-secondary"
-            style="width:auto; margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
-        </div>
-      </div>
-    `;
-
-    const prevBtn = document.getElementById("endLbPrevBtn");
-    const nextBtn = document.getElementById("endLbNextBtn");
-    if (prevBtn) prevBtn.addEventListener("click", () => renderLbPage(currentPage - 1));
-    if (nextBtn) nextBtn.addEventListener("click", () => renderLbPage(currentPage + 1));
-  }
-
-  renderLbPage(currentPage);
 }
 function clampLuck(value) {
   return Math.max(0, Math.min(MAX_LUCK, Math.floor(value || 0)));
