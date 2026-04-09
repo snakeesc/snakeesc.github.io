@@ -5910,7 +5910,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
         ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:4;" />` : ""}
       </div>
       <div style="font-size:15px;font-weight:bold;color:#bef264;margin-bottom:2px;" id="dashboardCurrentTag">${currentTag || "No tag set"}</div>
-      <div style="font-size:11px;color:#a3e635;margin-bottom:6px;">Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a8a29e;">#${bestRecordRank + 1} ranked</span>` : ""}</div>
+      <div style="color:#a3e635;margin-bottom:6px;">Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a8a29e;">#${bestRecordRank + 1} ranked</span>` : ""}</div>
       <div style="width:120px;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin:0 auto 3px;">
         <div style="width:${levelData.progressPercent}%;height:100%;background:#65a30d;border-radius:999px;"></div>
       </div>
