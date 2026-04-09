@@ -1172,6 +1172,7 @@ const MAX_LUCK = 30;
     if (moltFortuneActive)     items.push(icon("🔮",  "Molt Fortune", "",                      o));
     if (orbSpecialistActive)   items.push(icon("🧪",  "Orb Spec.",    "",                      o));
     if (orbCollectorActive)    items.push(icon("🧲",  "Orb Collector","",                      o));
+    if (luckStat > 0)          items.push(icon("🍀", "Luck",          `${luckStat}`,        g));
 
     // Survival
     if (deathrattlePct    > 0) items.push(icon("💀",  "Deathrattle",  `${deathrattlePct}%`,      r));
