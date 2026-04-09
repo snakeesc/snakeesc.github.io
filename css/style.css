@@ -1347,27 +1347,22 @@ a {
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility:hover {
   border-color: #65a30d;
-  box-shadow: 0 0 18px rgba(101,163,13,0.35), 0 14px 30px rgba(0,0,0,0.52);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff:hover {
   border-color: #eab308;
-  box-shadow: 0 0 18px rgba(234,179,8,0.35), 0 14px 30px rgba(0,0,0,0.52);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival:hover {
   border-color: #ef4444;
-  box-shadow: 0 0 18px rgba(239,68,68,0.35), 0 14px 30px rgba(0,0,0,0.52);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb:hover {
   border-color: #fb923c;
-  box-shadow: 0 0 18px rgba(251,146,60,0.35), 0 14px 30px rgba(0,0,0,0.52);
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role:hover {
   border-color: #a855f7;
-  box-shadow: 0 0 18px rgba(168,85,247,0.35), 0 14px 30px rgba(0,0,0,0.52);
 }
 
 #upgradeOverlay .frog-upgrade-emoji {
