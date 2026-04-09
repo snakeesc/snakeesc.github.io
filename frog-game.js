@@ -4343,23 +4343,31 @@ function samplePathAtDistance(path, startIdx, dist) {
     head.el.style.transform =
       `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
-    // IMPORTANT FIX:
-    // each segment uses cumulative distance from head, not the broken nextStart reuse
+    // Scale segment spacing to match visual size during shrink
+    const visualSpacing = SEGMENT_VISUAL_SPACING * shrinkScale;
+
     for (let i = 0; i < snakeObj.segments.length; i++) {
-      const targetDist = SEGMENT_VISUAL_SPACING * (i + 1);
+      const targetDist = visualSpacing * (i + 1);
       const result = samplePathAtDistance(snakeObj.path, 0, targetDist);
 
       const seg = snakeObj.segments[i];
       seg.x = result.x;
       seg.y = result.y;
 
-      let angle = 0;
-      if (result.nextStart + 1 < snakeObj.path.length) {
-        const px = snakeObj.path[result.nextStart].x;
-        const py = snakeObj.path[result.nextStart].y;
-        const nx = snakeObj.path[result.nextStart + 1].x;
-        const ny = snakeObj.path[result.nextStart + 1].y;
-        angle = Math.atan2(ny - py, nx - px);
+      // Angle: point from this segment toward the head (newer path = lower index)
+      // Use the sample point and the point just before it in the path (closer to head)
+      let angle = head.angle; // fallback to head angle
+      const ni = result.nextStart;
+      if (ni > 0) {
+        const px = snakeObj.path[ni].x;
+        const py = snakeObj.path[ni].y;
+        const nx = snakeObj.path[ni - 1].x;
+        const ny = snakeObj.path[ni - 1].y;
+        const dx = nx - px;
+        const dy = ny - py;
+        if (dx !== 0 || dy !== 0) {
+          angle = Math.atan2(dy, dx);
+        }
       }
 
       seg.el.style.transform =
