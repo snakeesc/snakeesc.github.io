@@ -1631,7 +1631,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     }).join("");
 
     lbEl.innerHTML = `
-      <ul class="frog-panel-list" style="text-align:center; list-style:none; padding-left:0;">
+      <ul class="frog-panel-list" style="max-width:340px; margin:0 auto; text-align:left;">
         ${itemsHtml}
       </ul>
       <div class="frog-panel-footer">
