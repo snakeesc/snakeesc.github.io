@@ -685,7 +685,4 @@ a { color: inherit; }
 
 /* Main menu buttons */
 #mainMenuOverlay .frog-btn {
-  box-shadow:
-    0 8px 18px rgba(0, 0, 0, 0.28),
-    0 0 0 1px rgba(255, 255, 255, 0.03);
 }
