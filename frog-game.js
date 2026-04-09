@@ -1159,10 +1159,11 @@ const MAX_LUCK = 30;
     if (deathrattlePct    > 0) items.push(icon("💀", "DR",       `${deathrattlePct}%`,    "rgba(248,113,113,0.9)"));
     if (orbCollectorPct   > 0) items.push(icon("🧲", "Collector",`${orbCollectorPct}%`,   "rgba(251,146,60,0.9)"));
     if (snakeSpeedBonus   > 0) items.push(icon("🐍", "Snake",    `+${snakeSpeedBonus}%`,  "rgba(248,113,113,0.9)"));
-    if (lastStandActive)       items.push(icon("🏹", "Last Stand","ON",                   "rgba(248,113,113,0.9)"));
-    if (graveWaveActive)       items.push(icon("👻", "Grave Wave","ON",                   "rgba(248,113,113,0.9)"));
-    if (orbSpecialistActive)   items.push(icon("🧪", "Specialist","ON",                   "rgba(251,146,60,0.9)"));
-    if (frogEatFrogActive)     items.push(icon("🍽",  "Cannibal", "ON",                   "rgba(163,230,53,0.9)"));
+    if (lastStandActive)       items.push(icon("🏹", "Last Stand","",                   "rgba(248,113,113,0.9)"));
+    if (graveWaveActive)       items.push(icon("👻", "Grave Wave","",                   "rgba(248,113,113,0.9)"));
+    if (orbSpecialistActive)   items.push(icon("🧪", "Specialist","",                   "rgba(251,146,60,0.9)"));
+    if (frogEatFrogActive)     items.push(icon("🍽",  "Cannibal", "",                   "rgba(163,230,53,0.9)"));
+    if (doubleYolkerActive)    items.push(icon("🥚", "Double Yolker", "", "rgba(251,146,60,0.9)"));
 
     statsPanel.innerHTML = items.join("");
     statsPanel.style.display = items.length > 0 && inGameUIVisible ? "flex" : "none";
