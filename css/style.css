@@ -1322,9 +1322,9 @@ a {
 #upgradeOverlay .frog-upgrade-choice {
   all: unset;
   box-sizing: border-box;
-  flex: 0 0 160px;
-  width: 160px;
-  min-height: 220px;
+  flex: 1;
+  max-width: 150px;
+  min-height: 190px;
   padding: 20px 14px;
   border-radius: 12px;
   background: rgba(28, 25, 23, 0.96);
