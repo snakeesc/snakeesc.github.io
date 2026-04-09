@@ -145,6 +145,13 @@ const STARTING_BUFFS = [
     desc: "Spawn 10 extra frogs immediately"
   },
   {
+    id: "loadedHandStart",
+    levelRequired: 30,
+    emoji: "🃏",
+    name: "Loaded Hand",
+    desc: "Start with 4 upgrade choices instead of 3"
+  },
+  {
     id: "quickReflexes",
     levelRequired: 3,
     emoji: "🐇",
