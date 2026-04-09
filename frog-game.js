@@ -307,6 +307,10 @@ function applySelectedStartingBuff() {
     case "doubleYolkerStart":
       doubleYolkerActive = true;
       break;
+
+    case "loadedHandStart":
+      extraUpgradeOptionActive = true;
+      break;
   }
 }
 function buildStartingBuffSelectorHtml() {
@@ -1222,10 +1226,12 @@ const MAX_LUCK = 30;
   if (btnStats) btnStats.onclick = () => { if (soundEnabled) playButtonClick(); toggleStatsPanel(); };
   if (btnSound) btnSound.onclick = () => { toggleSound(); if (soundEnabled) playButtonClick(); };
   if (btnEnd)   btnEnd.onclick   = (ev) => {
-    ev.stopPropagation();
-    if (soundEnabled) playButtonClick();
-    if (!gameOver) endGame();
-  };
+      ev.stopPropagation();
+      if (soundEnabled) playButtonClick();
+      if (!gameOver) {
+        if (confirm("End the current run?")) endGame();
+      }
+    };
 
   function showGameOver() {
     gameOverBanner.style.display = "block";
