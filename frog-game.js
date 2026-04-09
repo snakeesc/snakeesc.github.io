@@ -5290,11 +5290,6 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-title" style="color: white !important;">
-        How to Play
-        <span class="emoji">🐸</span>
-      </div>
-
       <div class="frog-panel-sub" style="color: white !important;">
         Stay alive, avoid the snake, and survive as long as you can.
       </div>
@@ -5586,13 +5581,8 @@ function closeAnimatedOverlay(overlayEl) {
       const pageItems = upgrades.slice(start, start + itemsPerPage);
 
       panel.innerHTML = `
-        <div class="frog-panel-title">
-          Upgrades
-          <span class="emoji">⚡</span>
-        </div>
-
         <div class="frog-panel-sub">
-          All upgrades in one list, grouped by type color.
+          All active upgrades. Starting buffs not included
         </div>
 
         <ul class="upgrade-guide-list">
