@@ -2954,7 +2954,8 @@ function createSnakeFromExistingSegments(segmentData, angle, speedFactor) {
   headEl.style.backgroundRepeat = "no-repeat";
   headEl.style.pointerEvents = "none";
   headEl.style.zIndex = "30";
-  headEl.style.backgroundImage = "url(./images/head.png)";
+  const snakeSprites = getPlayerSnakeSpriteSet();
+  headEl.style.backgroundImage = `url(${snakeSprites.head})`;
   container.appendChild(headEl);
 
   const segments = [];
