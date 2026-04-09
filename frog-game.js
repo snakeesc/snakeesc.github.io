@@ -1482,7 +1482,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         display:flex;
         gap:10px;
         align-items:baseline;
-        border-bottom:1px solid #292524;
+        border-bottom:0px solid #292524;
         padding-bottom:5px;
       ">
         <span style="min-width:28px;font-size:12px;font-weight:bold;color:${isMe ? "#a3e635" : rank <= 3 ? "#a3e635" : "#a8a29e"};">#${rank}</span>
@@ -5776,7 +5776,7 @@ function closeAnimatedOverlay(overlayEl) {
               display:flex;gap:8px;align-items:baseline;
               font-size:13px;margin-bottom:5px;line-height:1.6;
               color:${isMe ? "#bef264" : "#f5f5f4"};
-              border-bottom:1px solid #292524;padding-bottom:5px;
+              border-bottom:0px solid #292524;padding-bottom:5px;
             ">
               <span style="min-width:28px;font-size:12px;font-weight:bold;color:${isMe ? "#a3e635" : "#a8a29e"};">#${rank}</span>
               <span style="flex:1;font-weight:bold;">${isMe ? "⭐ " : ""}${name}</span>
