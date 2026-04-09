@@ -546,7 +546,6 @@
   // FULL SCOREBOARD OVERLAY (after a run)
   // --------------------------------------------------
   function openScoreboardOverlay(entries, lastScore, lastTime, finalStats, options) {
-
     if (!scoreboardOverlay || !scoreboardOverlayInner) return;
 
     const safeOptions = options || {};
@@ -566,212 +565,52 @@
 
     const { index: myIndex, entry: myEntry } =
       findMyIndexInList(safeList, lastScore, lastTime);
-    let summary = null;
+
+    const summary = document.createElement("div");
+    summary.className = "scoreboard-summary";
 
     const summaryName = getDisplayName(myEntry, "You");
+    const displayScore = Math.floor(
+      typeof lastScore === "number" ? lastScore : getEntryScore(myEntry)
+    );
+    const displayTime = formatTime(
+      typeof lastTime === "number" ? lastTime : getEntryTime(myEntry)
+    );
 
-    function renderSummary(name) {
-      if (!summary) return;
-
-      const safeName = escapeHtml(name || summaryName);
-      const displayScore = Math.floor(
-        typeof lastScore === "number" ? lastScore : getEntryScore(myEntry)
-      );
-      const displayTime = formatTime(
-        typeof lastTime === "number" ? lastTime : getEntryTime(myEntry)
-      );
-
-      summary.innerHTML = `
-        <div class="summary-heading">${safeName}</div>
-        <div class="summary-metrics">
-          <div class="summary-pill">
-            <div class="pill-label">Score</div>
-            <div class="pill-value">${displayScore}</div>
-          </div>
-          <div class="summary-pill">
-            <div class="pill-label">Time survived</div>
-            <div class="pill-value">${displayTime}</div>
-          </div>
+    summary.innerHTML = `
+      <div class="summary-heading">${escapeHtml(summaryName)}</div>
+      <div class="summary-metrics">
+        <div class="summary-pill">
+          <div class="pill-label">Score</div>
+          <div class="pill-value">${displayScore}</div>
         </div>
-      `;
-    }
+        <div class="summary-pill">
+          <div class="pill-label">Time survived</div>
+          <div class="pill-value">${displayTime}</div>
+        </div>
+      </div>
+    `;
+    scoreboardOverlayInner.appendChild(summary);
 
-    // ---- Player tag input (always shown in summary; pre-filled if saved) ----
-    (function setupTagInput() {
-      let storedTag = null;
+    const tagActions = document.createElement("div");
+    tagActions.style.marginBottom = "10px";
+    tagActions.style.display = "flex";
+    tagActions.style.justifyContent = "center";
 
-      try {
-        if (typeof localStorage !== "undefined") {
-          storedTag = localStorage.getItem(TAG_STORAGE_KEY);
-          if (storedTag) storedTag = storedTag.trim();
-        }
-      } catch (e) {
-        // ignore
+    const changeTagBtn = document.createElement("button");
+    changeTagBtn.textContent = "Change Tag";
+    changeTagBtn.className = "scoreboard-btn scoreboard-btn--ghost";
+
+    changeTagBtn.addEventListener("click", () => {
+      hideScoreboardOverlay();
+      if (typeof window.showDashboardOverlay === "function") {
+        window.showDashboardOverlay();
       }
+    });
 
-      const tagBox = document.createElement("div");
-      tagBox.style.marginBottom = "10px";
-      tagBox.style.fontSize = "12px";
+    tagActions.appendChild(changeTagBtn);
+    scoreboardOverlayInner.appendChild(tagActions);
 
-      const label = document.createElement("div");
-      label.textContent =
-        "Choose a player tag to show on the leaderboard (optional):";
-      label.style.marginBottom = "4px";
-      tagBox.appendChild(label);
-
-      const tagInput = document.createElement("input");
-      tagInput.type = "text";
-      tagInput.placeholder = "Example: SwampWizard";
-      tagInput.maxLength = TAG_MAX_LENGTH;
-      tagInput.style.width = "100%";
-      tagInput.style.padding = "4px 6px";
-      tagInput.style.borderRadius = "4px";
-      tagInput.style.border = "1px solid #444";
-      tagInput.style.background = "#000";
-      tagInput.style.color = "#eee";
-      tagInput.style.fontFamily = "inherit";
-      tagInput.style.fontSize = "12px";
-
-      // If we already have a saved tag, pre-fill the input with it
-      if (storedTag) {
-        tagInput.value = storedTag;
-      }
-
-      tagBox.appendChild(tagInput);
-
-      const buttonsRow = document.createElement("div");
-      buttonsRow.style.display = "flex";
-      buttonsRow.style.gap = "6px";
-      buttonsRow.style.marginTop = "6px";
-
-      const saveBtn = document.createElement("button");
-      saveBtn.textContent = "Save tag";
-      saveBtn.style.padding = "2px 6px";
-      saveBtn.style.background = "#222";
-      saveBtn.style.border = "1px solid #444";
-      saveBtn.style.color = "#eee";
-      saveBtn.style.borderRadius = "3px";
-      saveBtn.style.cursor = "pointer";
-
-      const skipBtn = document.createElement("button");
-      skipBtn.textContent = "Skip";
-      skipBtn.style.padding = "2px 6px";
-      skipBtn.style.background = "transparent";
-      skipBtn.style.border = "1px solid #444";
-      skipBtn.style.color = "#aaa";
-      skipBtn.style.borderRadius = "3px";
-      skipBtn.style.cursor = "pointer";
-
-      const error = document.createElement("div");
-      error.style.marginTop = "4px";
-      error.style.fontSize = "11px";
-      error.style.color = "#ff8080";
-      error.style.minHeight = "14px";
-
-      buttonsRow.appendChild(saveBtn);
-      buttonsRow.appendChild(skipBtn);
-      tagBox.appendChild(buttonsRow);
-      tagBox.appendChild(error);
-
-      scoreboardOverlayInner.appendChild(tagBox);
-
-      summary = document.createElement("div");
-      summary.className = "scoreboard-summary";
-      renderSummary(summaryName);
-      scoreboardOverlayInner.appendChild(summary);
-
-      async function finish(tagValue) {
-        const cleanTag = String(tagValue || "").trim();
-        if (!cleanTag) {
-          tagBox.style.display = "none";
-          return;
-        }
-
-        const scoreToUse = Math.floor(
-          typeof lastScore === "number" ? lastScore : getEntryScore(myEntry)
-        );
-        const timeToUse =
-          typeof lastTime === "number" ? lastTime : getEntryTime(myEntry);
-
-        try {
-          const result = await submitScoreToServer(scoreToUse, timeToUse, finalStats || null, cleanTag);
-
-          if (result && result._error) {
-            const msg =
-              result.error === "tag_taken"
-                ? "That tag is already taken. Try another."
-                : (result.message || "Could not save tag. Try again.");
-            error.textContent = msg;
-            return;
-          }
-
-          if (typeof localStorage !== "undefined") {
-            localStorage.setItem(TAG_STORAGE_KEY, cleanTag);
-          }
-
-          if (myEntry) myEntry.tag = cleanTag;
-          if (lastMyEntry) lastMyEntry.tag = cleanTag;
-
-          renderSummary(getDisplayName(myEntry, cleanTag));
-
-          if (Array.isArray(result)) {
-            // Re-render the mini leaderboard immediately with fresh worker data
-            updateMiniLeaderboard(result);
-          } else {
-            const refreshed = await fetchLeaderboard();
-            updateMiniLeaderboard(refreshed);
-          }
-
-          error.textContent = "";
-          tagBox.style.display = "none";
-        } catch (e) {
-          error.textContent = "Connection error. Try again.";
-        }
-      }
-
-      saveBtn.addEventListener("click", async () => {
-        const raw = (tagInput.value || "").trim();
-
-        if (!raw) {
-          error.textContent = "Enter at least 2 characters, or click Skip.";
-          return;
-        }
-
-        if (raw.length < TAG_MIN_LENGTH || raw.length > TAG_MAX_LENGTH) {
-          error.textContent = `Tag must be ${TAG_MIN_LENGTH}-${TAG_MAX_LENGTH} characters.`;
-          return;
-        }
-
-        if (!/^[a-zA-Z0-9 _-]{2,20}$/.test(raw)) {
-          error.textContent = "Use letters, numbers, spaces, _ or - only.";
-          return;
-        }
-
-        if (isProfaneTag(raw)) {
-          error.textContent = "That tag isn't allowed. Please choose something cleaner.";
-          return;
-        }
-
-        error.textContent = "";
-        saveBtn.disabled = true;
-        skipBtn.disabled = true;
-
-        try {
-          await finish(raw);
-        } finally {
-          saveBtn.disabled = false;
-          skipBtn.disabled = false;
-        }
-      });
-
-      // Skip: just hide for this run; will show again next run
-      skipBtn.addEventListener("click", () => {
-        error.textContent = "";
-        tagBox.style.display = "none";
-      });
-    })();
-
-    // ----- Leaderboard table with pagination (10 per page) -----
     const PAGE_SIZE = 10;
     let currentPage = 0;
     const totalEntries = safeList.length;
@@ -811,7 +650,6 @@
     table.appendChild(tbody);
     tableWrapper.appendChild(table);
 
-    // Pagination controls
     const pager = document.createElement("div");
     pager.className = "scoreboard-pager";
 
@@ -860,7 +698,7 @@
         const e = safeList[i];
         if (!e) continue;
 
-        const rank = i + 1; // global rank
+        const rank = i + 1;
         const name = getDisplayName(e, `Frog #${rank}`);
         const score = getEntryScore(e);
         const time = getEntryTime(e);
@@ -883,7 +721,6 @@
         timeCell.className = "scoreboard-td";
         scoreCell.className = "scoreboard-td scoreboard-score";
 
-        // Highlight "you" if this is your entry
         if (i === myIndex) {
           tr.classList.add("scoreboard-row--me");
         }
@@ -919,55 +756,12 @@
       }
     });
 
-    // Initial render
     renderPage();
-  
-    // ---- Run stats block (uses finalStats if provided) ----
-    if (finalStats && typeof finalStats === "object") {
-      const s = finalStats;
-  
-      const statsBox = document.createElement("div");
-      statsBox.style.marginTop = "10px";
-      statsBox.style.padding = "8px 10px";
-      statsBox.style.borderTop = "1px solid #333";
-      statsBox.style.fontSize = "11px";
-      statsBox.style.textAlign = "left";
-  
-      function fmtPct(val) {
-        return typeof val === "number" ? (val * 100).toFixed(1) + "%" : "—";
-      }
-  
-      function fmtMult(val) {
-        return typeof val === "number" ? "×" + val.toFixed(2) : "—";
-      }
-  
-      function fmtInt(val) {
-        return typeof val === "number" ? String(Math.floor(val)) : "—";
-      }
-  
-      const deathrattleChance =
-        typeof s.deathrattleChance === "number"
-          ? s.deathrattleChance
-          : (typeof s.frogDeathRattleChance === "number"
-              ? s.frogDeathRattleChance
-              : null);
-  
-      /*
-      statsBox.innerHTML = `
-        <div style="font-weight:bold; margin-bottom:4px;">Run stats</div>
-        <div>Deathrattle chance: ${fmtPct(deathrattleChance)}</div>
-        <div>Frog speed factor: ${fmtMult(s.frogSpeedFactor)}</div>
-        <div>Frog jump factor: ${fmtMult(s.frogJumpFactor)}</div>
-        <div>Buff duration: ${fmtMult(s.buffDurationFactor)}</div>
-        <div>Orb spawn interval factor: ${fmtMult(s.orbSpawnIntervalFactor)}</div>
-        <div>Total frogs spawned: ${fmtInt(s.totalFrogsSpawned)}</div>
-      `;
 
-  
-      scoreboardOverlayInner.appendChild(statsBox);
-      */
+    if (finalStats && typeof finalStats === "object") {
+      // intentionally left empty
     }
-  
+
     if (onPlayAgain || onReturnToMenu) {
       const actions = document.createElement("div");
       actions.className = "scoreboard-actions";
@@ -1001,9 +795,9 @@
     hint.textContent = "Click outside this panel to close.";
     hint.className = "scoreboard-hint";
     scoreboardOverlayInner.appendChild(hint);
-  
+
     scoreboardOverlay.style.display = "flex";
-  }  
+  } 
 
   function hideScoreboardOverlay() {
     if (!scoreboardOverlay) return;
