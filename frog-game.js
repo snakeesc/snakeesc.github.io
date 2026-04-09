@@ -1642,9 +1642,9 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         </div>
         <div style="display:flex; gap:8px; justify-content:center;">
           <button id="endLbPrevBtn" class="frog-btn frog-btn-secondary"
-            style="width:auto; margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
+            style="width:auto; margin-bottom:0; padding:4px 8px; font-size:11px; min-width:56px;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
           <button id="endLbNextBtn" class="frog-btn frog-btn-secondary"
-            style="width:auto; margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
+            style="width:auto; margin-bottom:0; padding:4px 8px; font-size:11px; min-width:56px;" ${end >= list.length ? "disabled" : ""}>Next</button>
         </div>
       </div>
     `;
