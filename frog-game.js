@@ -1455,11 +1455,6 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   const totalFrogs = localStats.totalFrogsLost || 0;
 
   content.innerHTML = `
-    <div class="frog-panel-section-label">Global Leaderboard</div>
-    <div id="endGameLeaderboardContent">
-      <div class="leaderboard-loading">Loading…</div>
-    </div>
-
     <div class="frog-panel-section-label" style="margin-top:10px;">Player Tag</div>
     <div style="margin-bottom:10px;">
       <input
@@ -1554,106 +1549,6 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       }
     });
   }
-
-  // Render leaderboard using already-fetched list, jump to user's page
-  const lbEl = document.getElementById("endGameLeaderboardContent");
-  if (!lbEl) return;
-
-  if (list.length === 0) {
-    lbEl.innerHTML = '<ul class="frog-panel-list"><li>No entries yet.</li></ul>';
-    return;
-  }
-
-  function normalizeTag(tag) {
-    return typeof tag === "string" ? tag.trim().toLowerCase() : "";
-  }
-
-  function entryMatchesUser(entry) {
-    if (!entry) return false;
-    // Prefer userId — stable even after a tag rename
-    if (myEntry && myEntry.userId && entry.userId) {
-      return entry.userId === myEntry.userId;
-    }
-    if (!activePlayerTag) return false;
-    return normalizeTag(entry.tag) === normalizeTag(activePlayerTag) ||
-           normalizeTag(entry.name) === normalizeTag(activePlayerTag);
-  }
-
-  function getScore(entry) {
-    if (!entry) return 0;
-    for (const k of ["bestScore", "score", "maxScore", "points", "value"]) {
-      if (!(k in entry)) continue;
-      let v = entry[k];
-      if (typeof v === "string") v = parseFloat(v);
-      if (typeof v === "number" && isFinite(v)) return v;
-    }
-    return 0;
-  }
-
-  function getTime(entry) {
-    if (!entry) return 0;
-    for (const k of ["bestTime", "time", "maxTime", "seconds", "duration"]) {
-      if (!(k in entry)) continue;
-      let v = entry[k];
-      if (typeof v === "string") v = parseFloat(v);
-      if (typeof v === "number" && isFinite(v) && v >= 0) return v;
-    }
-    return 0;
-  }
-
-  function getDisplayName(entry, fallback) {
-    if (entry && typeof entry.tag === "string" && entry.tag.trim()) return entry.tag;
-    if (entry && typeof entry.name === "string" && entry.name.trim()) return entry.name;
-    return fallback;
-  }
-
-  const pageSize = 10;
-  const myPageStart = rankIdx >= 0 ? Math.floor(rankIdx / pageSize) : 0;
-  let currentPage = myPageStart;
-
-  function renderLbPage(pageIndex) {
-    currentPage = Math.max(0, Math.min(pageIndex, Math.ceil(list.length / pageSize) - 1));
-    const start = currentPage * pageSize;
-    const end = Math.min(start + pageSize, list.length);
-
-    const itemsHtml = list.slice(start, end).map((entry, idx) => {
-      const rank  = start + idx + 1;
-      const name  = getDisplayName(entry, `Player ${rank}`);
-      const score = Math.floor(getScore(entry));
-      const time  = formatLeaderboardTime(getTime(entry));
-      const isMe  = entryMatchesUser(entry);
-      return `
-        <li${isMe ? ' style="color:#bef264;"' : ""}>
-          <strong>#${rank}</strong>
-          ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} score
-        </li>
-      `;
-    }).join("");
-
-    lbEl.innerHTML = `
-      <ul class="frog-panel-list" style="max-width:340px; margin:0 auto; text-align:left;">
-        ${itemsHtml}
-      </ul>
-      <div class="frog-panel-footer">
-        <div style="margin-bottom:6px; font-size:11px; color:#a8a29e;">
-          Showing ${start + 1}–${end} of ${list.length}
-        </div>
-        <div style="display:flex; gap:8px; justify-content:center;">
-          <button id="endLbPrevBtn" class="frog-btn frog-btn-secondary"
-            style="width:auto; margin-bottom:0; padding:4px 8px; font-size:11px; min-width:56px;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
-          <button id="endLbNextBtn" class="frog-btn frog-btn-secondary"
-            style="width:auto; margin-bottom:0; padding:4px 8px; font-size:11px; min-width:56px;" ${end >= list.length ? "disabled" : ""}>Next</button>
-        </div>
-      </div>
-    `;
-
-    const prevBtn = document.getElementById("endLbPrevBtn");
-    const nextBtn = document.getElementById("endLbNextBtn");
-    if (prevBtn) prevBtn.addEventListener("click", () => renderLbPage(currentPage - 1));
-    if (nextBtn) nextBtn.addEventListener("click", () => renderLbPage(currentPage + 1));
-  }
-
-  renderLbPage(currentPage);
 }
 function clampLuck(value) {
   return Math.max(0, Math.min(MAX_LUCK, Math.floor(value || 0)));
@@ -5206,9 +5101,8 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     if (btnLeaderboard) {
-      btnLeaderboard.addEventListener("click", async () => {
-        const entries = await fetchLeaderboard();
-        showEndGameSummaryOverlay(entries);
+      btnLeaderboard.addEventListener("click", () => {
+        showLeaderboardOverlay();
       });
     }
 
