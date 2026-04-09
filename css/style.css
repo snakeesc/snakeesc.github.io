@@ -1316,7 +1316,7 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: stretch;
-  gap: 10%;
+  gap: 11%;
 }
 
 #upgradeOverlay .frog-upgrade-choice {
