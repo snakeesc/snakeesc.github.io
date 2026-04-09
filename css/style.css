@@ -1301,116 +1301,8 @@ a {
 }
 
 #upgradeOverlay .upgrade-layout {
-  min-height: 0 !important;
-}
-
-#upgradeOverlay .upgrade-choices {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: stretch;
-  gap: 12px;
-  min-height: 0 !important;
-  width: 100%;
-}
-
-#upgradeOverlay .frog-upgrade-choice {
-  position: static !important;
-  left: auto !important;
-  right: auto !important;
-  top: auto !important;
-  transform: none !important;
-  width: 0;
-  flex: 1;
-  min-width: 0;
-  max-width: 180px;
-  min-height: 160px;
-  padding: 16px 16px;
-  border-radius: 14px;
-  background: rgba(28, 25, 23, 0.92);
-  color: white;
-  border: 1px solid #44403c;
-  text-align: center;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  margin: 0;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.45);
-  backdrop-filter: blur(4px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
-}
-
-#upgradeOverlay .frog-upgrade-choice:hover {
-  transform: translateY(-6px) !important;
-  border-color: #84cc16;
-  box-shadow: 0 0 18px rgba(163,230,53,0.22), 0 14px 30px rgba(0,0,0,0.52);
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(1),
-#upgradeOverlay .frog-upgrade-choice:nth-child(2),
-#upgradeOverlay .frog-upgrade-choice:nth-child(3),
-#upgradeOverlay .frog-upgrade-choice:nth-child(4) {
-  left: auto;
-  right: auto;
-  top: auto;
-  transform: none;
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(2):hover,
-#upgradeOverlay .frog-upgrade-choice:nth-child(1):hover,
-#upgradeOverlay .frog-upgrade-choice:nth-child(3):hover,
-#upgradeOverlay .frog-upgrade-choice:nth-child(4):hover {
-  transform: translateY(-6px) !important;
-}
-
-#upgradeOverlay .frog-upgrade-title {
-  display: block;
-  font-size: 15px;
-  font-weight: 800;
-  color: #d9f99d;
-  margin-bottom: 8px;
-  text-align: center;
-  line-height: 1.3;
-}
-
-#upgradeOverlay .frog-upgrade-desc {
-  display: block;
-  font-size: 12px;
-  line-height: 1.4;
-  color: #f5f5f4;
-  font-weight: 500;
-  text-align: center;
-}
-
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility { border-top: 3px solid #65a30d; box-shadow: 0 10px 28px rgba(0,0,0,0.45); border-left: 1px solid #44403c; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     { border-top: 3px solid #eab308; box-shadow: 0 10px 28px rgba(0,0,0,0.45); border-left: 1px solid #44403c; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival { border-top: 3px solid #ef4444; box-shadow: 0 10px 28px rgba(0,0,0,0.45); border-left: 1px solid #44403c; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb      { border-top: 3px solid #fb923c; box-shadow: 0 10px 28px rgba(0,0,0,0.45); border-left: 1px solid #44403c; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role     { border-top: 3px solid #a855f7; box-shadow: 0 10px 28px rgba(0,0,0,0.45); border-left: 1px solid #44403c; }
-
-#upgradeOverlay .frog-panel-title {
-  display: none;
-}
-
-#upgradeOverlay .frog-panel-sub {
-  margin: 0 0 18px;
-  text-align: center;
-  font-size: 13px;
-  color: #f5f5f4;
-  text-shadow: 1px 1px darkslateblue;
-}
-
-#upgradeOverlay .upgrade-layout {
   position: relative;
   width: 100%;
-  min-height: 360px;
 }
 
 #upgradeOverlay .upgrade-column {
@@ -1422,128 +1314,92 @@ a {
 #upgradeOverlay .upgrade-choices {
   position: relative;
   width: 100%;
-  min-height: 360px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 14px;
 }
 
-/* floating choice cards */
 #upgradeOverlay .frog-upgrade-choice {
-  position: absolute;
-  width: 220px;
-  min-height: 96px;
-  padding: 12px 14px;
+  position: static;
+  flex: 1;
+  min-width: 0;
+  max-width: 200px;
+  min-height: 180px;
+  padding: 20px 16px;
   border-radius: 12px;
   background: rgba(28, 25, 23, 0.96);
   color: white;
   border: 1px solid #44403c;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   font-family: inherit;
   font-size: 13px;
   font-weight: 800;
   margin: 0;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    border-color 140ms ease,
-    filter 140ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
   backdrop-filter: blur(2px);
 }
 
-/* desktop 3-card spread */
-#upgradeOverlay .frog-upgrade-choice:nth-child(1) {
-  left: 6%;
-  top: 138px;
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(2) {
-  left: 50%;
-  top: 36px;
-  transform: translateX(-50%);
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(3) {
-  right: 6%;
-  top: 138px;
-}
-
-/* hover */
 #upgradeOverlay .frog-upgrade-choice:hover {
-  filter: brightness(1.06);
+  transform: translateY(-6px);
   border-color: #84cc16;
   box-shadow: 0 0 18px rgba(163, 230, 53, 0.22), 0 14px 30px rgba(0, 0, 0, 0.52);
 }
 
-/* keep middle card centered on hover */
-#upgradeOverlay .frog-upgrade-choice:nth-child(2):hover {
-  transform: translateX(-50%) scale(1.08) translateY(-6px);
-}
-
-#upgradeOverlay .frog-upgrade-choice:nth-child(1):hover,
-#upgradeOverlay .frog-upgrade-choice:nth-child(3):hover {
-  transform: scale(1.08) translateY(-6px);
-}
-
-/* title / desc */
 #upgradeOverlay .frog-upgrade-title {
   display: block;
-  font-size: 14px;
-  line-height: 1.2;
+  font-size: 15px;
+  line-height: 1.3;
   font-weight: 800;
   color: #d9f99d;
-  margin-bottom: 6px;
+  margin-bottom: 0;
+  text-align: center;
 }
 
 #upgradeOverlay .frog-upgrade-desc {
   display: block;
   font-size: 12px;
-  line-height: 1.35;
-  color: #f5f5f4;
-  font-weight: 600;
+  line-height: 1.4;
+  color: #a8a29e;
+  font-weight: 500;
+  text-align: center;
 }
 
-/* colored left accent by upgrade type */
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
-  border-color: #65a30d;
-  box-shadow: inset 5px 0 0 #65a30d, 0 10px 28px rgba(0, 0, 0, 0.45);
-}
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility { border-top: 3px solid #65a30d; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     { border-top: 3px solid #eab308; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival { border-top: 3px solid #ef4444; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb      { border-top: 3px solid #fb923c; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role     { border-top: 3px solid #a855f7; }
 
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
-  border-color: #eab308;
-  box-shadow: inset 5px 0 0 #eab308, 0 10px 28px rgba(0, 0, 0, 0.45);
-}
-
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival {
-  border-color: #ef4444;
-  box-shadow: inset 5px 0 0 #ef4444, 0 10px 28px rgba(0, 0, 0, 0.45);
-}
-
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
-  border-color: #fb923c;
-  box-shadow: inset 5px 0 0 #fb923c, 0 10px 28px rgba(0, 0, 0, 0.45);
-}
-
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
-  border-color: #a855f7;
-  box-shadow: inset 5px 0 0 #a855f7, 0 10px 28px rgba(0, 0, 0, 0.45);
-}
-
-/* spawn animation */
 #upgradeOverlay .frog-upgrade-choice.is-spawning {
   animation: upgradeCardSpawn 260ms ease-out both;
 }
 
 @keyframes upgradeCardSpawn {
-  0% {
-    opacity: 0;
-    transform: scale(0.72);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0%   { opacity: 0; transform: scale(0.85) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+@media (max-width: 600px) {
+  #upgradeOverlay .upgrade-choices {
+    flex-direction: column;
+    align-items: center;
+  }
+  #upgradeOverlay .frog-upgrade-choice {
+    width: min(320px, 88vw);
+    max-width: 88vw;
+    min-height: 0;
+    flex: none;
+  }
+}
 /* mobile / narrow screens */
 @media (max-width: 900px) {
   #upgradeOverlay .upgrade-layout,
