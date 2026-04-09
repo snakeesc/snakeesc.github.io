@@ -1051,12 +1051,11 @@ const MAX_LUCK = 30;
 
   // Top center — time / frogs / score
   const hud = document.createElement("div");
-  hud.style.cssText = "position:absolute;top:10px;left:50%;transform:translateX(-50%);padding:5px 12px;border-radius:7px;background:rgba(0,0,0,0.55);color:#fff;font-family:monospace;font-size:12px;z-index:100;pointer-events:none;white-space:nowrap;";
+  hud.style.cssText = "position:absolute;top:10px;left:50%;transform:translateX(-50%);padding:5px 14px;border-radius:7px;background:rgba(0,0,0,0.55);color:#fff;font-family:monospace;font-size:13px;z-index:100;pointer-events:none;white-space:nowrap;display:flex;align-items:center;gap:14px;";
   const timerLabel = document.createElement("span");
   const frogsLabel = document.createElement("span");
   const scoreLabel = document.createElement("span");
-  frogsLabel.style.marginLeft = "10px";
-  scoreLabel.style.marginLeft = "10px";
+  timerLabel.style.color = "rgba(255,255,255,0.6)";
   hud.appendChild(timerLabel);
   hud.appendChild(frogsLabel);
   hud.appendChild(scoreLabel);
@@ -1150,25 +1149,35 @@ const MAX_LUCK = 30;
   function updateHUD() {
     if (!inGameUIVisible) return;
     timerLabel.textContent = formatTime(elapsedTime);
-    frogsLabel.textContent = ` · 🐸 ${frogs.length}`;
-    scoreLabel.textContent = ` · ${Math.floor(score)}`;
+    frogsLabel.innerHTML = `&nbsp;&nbsp;🐸 ${frogs.length}`;
+    scoreLabel.textContent = `  ${Math.floor(score)}`;
   }
 
   function updateBuffsBar() {
     if (!buffsBar || !inGameUIVisible) return;
     const pills = [];
-    if (speedBuffTime    > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#bef264;">⚡ Speed ${speedBuffTime.toFixed(1)}s</span>`);
-    if (jumpBuffTime     > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#bef264;">🦘 Jump ${jumpBuffTime.toFixed(1)}s</span>`);
-    if (snakeSlowTime    > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">🐍 Slow ${snakeSlowTime.toFixed(1)}s</span>`);
-    if (snakeConfuseTime > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">😵 Confuse ${snakeConfuseTime.toFixed(1)}s</span>`);
-    if (snakeShrinkTime  > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">🔻 Shrink ${snakeShrinkTime.toFixed(1)}s</span>`);
-    if (frogShieldTime   > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#bef264;">🛡 Shield ${frogShieldTime.toFixed(1)}s</span>`);
-    if (timeSlowTime     > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#a78bfa;">⏳ Slow ${timeSlowTime.toFixed(1)}s</span>`);
-    if (orbMagnetTime    > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#fb923c;">🔮 Magnet ${orbMagnetTime.toFixed(1)}s</span>`);
-    if (scoreMultiTime   > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#fbbf24;">★ x2 ${scoreMultiTime.toFixed(1)}s</span>`);
-    if (panicHopTime     > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#bef264;">😱 Panic ${panicHopTime.toFixed(1)}s</span>`);
-    if (lifeStealTime    > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">🩸 Steal ${lifeStealTime.toFixed(1)}s</span>`);
-    if (snakeFrenzyTime  > 0) pills.push(`<span style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 7px;font-size:10px;color:#f87171;">🔥 Frenzy ${snakeFrenzyTime.toFixed(1)}s</span>`);
+
+    const pill = (emoji, time, color) =>
+      `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <span style="font-size:16px;line-height:1;">${emoji}</span>
+        <div style="background:rgba(0,0,0,0.55);border-radius:4px;padding:1px 5px;font-size:9px;color:${color};font-family:monospace;">${time.toFixed(1)}s</div>
+      </div>`;
+
+    if (speedBuffTime    > 0) pills.push(pill("⚡", speedBuffTime,    "#bef264"));
+    if (jumpBuffTime     > 0) pills.push(pill("🦘", jumpBuffTime,     "#bef264"));
+    if (snakeSlowTime    > 0) pills.push(pill("🐍", snakeSlowTime,    "#f87171"));
+    if (snakeConfuseTime > 0) pills.push(pill("😵", snakeConfuseTime, "#f87171"));
+    if (snakeShrinkTime  > 0) pills.push(pill("🔻", snakeShrinkTime,  "#f87171"));
+    if (frogShieldTime   > 0) pills.push(pill("🛡", frogShieldTime,   "#bef264"));
+    if (timeSlowTime     > 0) pills.push(pill("⏳", timeSlowTime,     "#a78bfa"));
+    if (orbMagnetTime    > 0) pills.push(pill("🔮", orbMagnetTime,    "#fb923c"));
+    if (scoreMultiTime   > 0) pills.push(pill("★",  scoreMultiTime,   "#fbbf24"));
+    if (panicHopTime     > 0) pills.push(pill("😱", panicHopTime,     "#bef264"));
+    if (lifeStealTime    > 0) pills.push(pill("🩸", lifeStealTime,    "#f87171"));
+    if (snakeFrenzyTime  > 0) pills.push(pill("🔥", snakeFrenzyTime,  "#f87171"));
+
+    buffsBar.style.gap = "8px";
+    buffsBar.style.alignItems = "flex-end";
     buffsBar.innerHTML = pills.join("");
   }
 
