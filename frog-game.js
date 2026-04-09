@@ -1137,33 +1137,53 @@ const MAX_LUCK = 30;
   function updateStatsPanel() {
     if (!statsPanel || !statsPanelVisible || !inGameUIVisible) return;
 
-    const hopSpeedBonus    = frogPermanentSpeedFactor < 1 ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100) : 0;
-    const jumpBonus        = Math.round((frogPermanentJumpFactor - 1) * 100);
+    const hopSpeedBonus     = frogPermanentSpeedFactor < 1 ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100) : 0;
+    const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
-    const orbRateBonus     = orbSpawnIntervalFactor < 1 ? Math.round((1 - orbSpawnIntervalFactor) * 100) : 0;
-    const deathrattlePct   = Math.round(frogDeathRattleChance * 100);
-    const orbCollectorPct  = Math.round(orbCollectorChance * 100);
-    const snakeSpeedBonus  = snakePermanentSpeedFactor > 1 ? Math.round((snakePermanentSpeedFactor - 1) * 100) : 0;
+    const orbRateBonus      = orbSpawnIntervalFactor < 1 ? Math.round((1 - orbSpawnIntervalFactor) * 100) : 0;
+    const deathrattlePct    = Math.round(frogDeathRattleChance * 100);
+    const orbLingerBonus    = Math.round((orbTtlFactor - 1) * 100);
 
     const icon = (emoji, label, val, color) => `
-      <div style="background:rgba(0,0,0,0.55);border-radius:6px;padding:3px 6px;display:flex;align-items:center;gap:4px;">
-        <span style="font-size:12px;">${emoji}</span>
+      <div style="background:rgba(0,0,0,0.55);border-radius:6px;padding:4px 8px;display:flex;align-items:center;gap:5px;">
+        <span style="font-size:15px;">${emoji}</span>
         <span style="font-size:12px;color:white;font-family:monospace;">${label} <strong style="color:${color};">${val}</strong></span>
       </div>`;
 
+    const g = "rgba(163,230,53,0.9)";
+    const r = "rgba(248,113,113,0.9)";
+    const o = "rgba(251,146,60,0.9)";
+    const p = "rgba(167,139,250,0.9)";
+
     const items = [];
-    if (hopSpeedBonus     > 0) items.push(icon("🐸", "Speed",    `+${hopSpeedBonus}%`,    "rgba(163,230,53,0.9)"));
-    if (jumpBonus         > 0) items.push(icon("🦘", "Jump",     `+${jumpBonus}%`,        "rgba(163,230,53,0.9)"));
-    if (buffDurationBonus > 0) items.push(icon("⏱",  "Buffs",    `+${buffDurationBonus}%`,"rgba(251,146,60,0.9)"));
-    if (orbRateBonus      > 0) items.push(icon("🔮", "Orbs",     `+${orbRateBonus}%`,     "rgba(251,146,60,0.9)"));
-    if (deathrattlePct    > 0) items.push(icon("💀", "DR",       `${deathrattlePct}%`,    "rgba(248,113,113,0.9)"));
-    if (orbCollectorPct   > 0) items.push(icon("🧲", "Collector",`${orbCollectorPct}%`,   "rgba(251,146,60,0.9)"));
-    if (snakeSpeedBonus   > 0) items.push(icon("🐍", "Snake",    `+${snakeSpeedBonus}%`,  "rgba(248,113,113,0.9)"));
-    if (lastStandActive)       items.push(icon("🏹", "Last Stand","",                   "rgba(248,113,113,0.9)"));
-    if (graveWaveActive)       items.push(icon("👻", "Grave Wave","",                   "rgba(248,113,113,0.9)"));
-    if (orbSpecialistActive)   items.push(icon("🧪", "Specialist","",                   "rgba(251,146,60,0.9)"));
-    if (frogEatFrogActive)     items.push(icon("🍽",  "Cannibal", "",                   "rgba(163,230,53,0.9)"));
-    if (doubleYolkerActive)    items.push(icon("🥚", "Double Yolker", "", "rgba(251,146,60,0.9)"));
+
+    // Mobility
+    if (hopSpeedBonus     > 0) items.push(icon("🐸", "Speed",          `+${hopSpeedBonus}%`,     g));
+    if (jumpBonus         > 0) items.push(icon("🦘", "Jump",           `+${jumpBonus}%`,         g));
+    if (survivalInstinctActive)items.push(icon("⚡", "Survival Inst.", "",                      g));
+
+    // Buffs / orbs
+    if (buffDurationBonus > 0) items.push(icon("⏱",  "Buffs",         `+${buffDurationBonus}%`, o));
+    if (orbRateBonus      > 0) items.push(icon("🎯",  "Orb Rate",      `+${orbRateBonus}%`,      o));
+    if (orbLingerBonus    > 0) items.push(icon("🌀",  "Orb Linger",   `+${orbLingerBonus}%`,     o));
+    if (doubleYolkerActive)    items.push(icon("🥚",  "Dbl Yolker",   "",                      o));
+    if (chainReactionActive)   items.push(icon("⚡",  "Chain React.", "",                      o));
+    if (nightBloomActive)      items.push(icon("🌙",  "Night Bloom",  "",                      o));
+    if (moltFortuneActive)     items.push(icon("🔮",  "Molt Fortune", "",                      o));
+    if (orbSpecialistActive)   items.push(icon("🧪",  "Orb Spec.",    "",                      o));
+    if (orbCollectorActive)    items.push(icon("🧲",  "Orb Collector","",                      o));
+
+    // Survival
+    if (deathrattlePct    > 0) items.push(icon("💀",  "Deathrattle",  `${deathrattlePct}%`,      r));
+    if (lastStandActive)       items.push(icon("🏹",  "Last Stand",   "",                      r));
+    if (graveWaveActive)       items.push(icon("👻",  "Grave Wave",   "",                      r));
+    if (secondWindActive)      items.push(icon("💨",  "Second Wind",  "",                      r));
+    if (toxicBloodActive)      items.push(icon("🧪",  "Toxic Blood",  "",                      r));
+    if (frogDeathOrbChance> 0) items.push(icon("⚱️", "Ouroboros",    "",                      r));
+
+    // Role
+    if (extraUpgradeOptionActive) items.push(icon("🔷", "Loaded Hand", "",                     p));
+    if (frogEatFrogActive)        items.push(icon("🍽",  "Cannibal",   "",                     g));
 
     statsPanel.innerHTML = items.join("");
     statsPanel.style.display = items.length > 0 && inGameUIVisible ? "flex" : "none";
