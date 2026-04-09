@@ -2972,7 +2972,9 @@ function clearSeveredMark(el) {
 function createSnakeFromExistingSegments(segmentData, angle, speedFactor) {
   if (!segmentData || !segmentData.length) return null;
 
+  const snakeSprites = getPlayerSnakeSpriteSet();
   const headPos = segmentData[0];
+
   const headEl = document.createElement("div");
   headEl.className = "snake-head";
   headEl.style.position = "absolute";
@@ -2983,7 +2985,7 @@ function createSnakeFromExistingSegments(segmentData, angle, speedFactor) {
   headEl.style.backgroundRepeat = "no-repeat";
   headEl.style.pointerEvents = "none";
   headEl.style.zIndex = "30";
-  headEl.style.backgroundImage = "url(./images/head.png)";
+  headEl.style.backgroundImage = `url(${snakeSprites.head})`;
   container.appendChild(headEl);
 
   const segments = [];
@@ -2992,8 +2994,12 @@ function createSnakeFromExistingSegments(segmentData, angle, speedFactor) {
     const segEl = src.el;
     if (!segEl) continue;
 
-    segEl.className = i === segmentData.length - 1 ? "snake-tail" : "snake-body";
+    const isTail = i === segmentData.length - 1;
+    segEl.className = isTail ? "snake-tail" : "snake-body";
     segEl.style.zIndex = "29";
+    segEl.style.backgroundImage = isTail
+      ? `url(${snakeSprites.tail})`
+      : `url(${snakeSprites.body})`;
 
     segments.push({
       el: segEl,
@@ -4422,7 +4428,11 @@ function samplePathAtDistance(path, startIdx, dist) {
         angle = Math.atan2(ny - py, nx - px);
       }
 
-      seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
+      const isTail = i === snakeObj.segments.length - 1;
+      const renderAngle = isTail ? angle + Math.PI : angle;
+
+      seg.el.style.transform =
+        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
     }
 
     // 4. COLLISIONS
