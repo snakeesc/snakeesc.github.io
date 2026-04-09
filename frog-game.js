@@ -1018,7 +1018,8 @@ const MAX_LUCK = 30;
   let frogEatFrogActive = false;
   let snakeEggActive = false;
   let snakeEggTimer = 0;         // counts up to hatch interval
-  let snakeEggHatchInterval = 0; // randomised 60-120s per egg
+  let snakeEggHatchInterval = 60; // check every 60 seconds
+  const SNAKE_EGG_HATCH_CHANCE = 0.5; // 50% chance each minute
   let babySnakes = [];           // tracks the two baby snakes
   // --------------------------------------------------
   // MOUSE
@@ -2977,7 +2978,7 @@ function queueSeveredRemnantsForNextShed() {
 function activateSnakeEgg() {
     snakeEggActive = true;
     snakeEggTimer = 0;
-    snakeEggHatchInterval = 60 + Math.random() * 60; // 60–120 seconds
+    snakeEggHatchInterval = 60; // 60–120 seconds
 
     // +10% to all tracked stats
     frogPermanentSpeedFactor    *= 0.909; // ~+10% speed (lower = faster)
@@ -7288,7 +7289,7 @@ doubleYolkerActive = false;
     graveWaveUsed = false;
     snakeEggActive = false;
     snakeEggTimer = 0;
-    snakeEggHatchInterval = 0;
+    snakeEggHatchInterval = 60; // check every 60 seconds
     babySnakes = [];
     permanentScoreMultiplier = 1.0;
     quantumOrbsActive = false;
