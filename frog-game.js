@@ -5940,7 +5940,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
   `;
-
+  
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
   const msgEl = document.getElementById("dashboardTagMessage");
