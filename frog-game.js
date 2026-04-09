@@ -882,7 +882,7 @@ function rollFrogCosmetics() {
 let extraUpgradeOptionActive = false;
   // UI + audio toggles
   let soundEnabled      = true;
-  let statsPanelVisible = false;
+  let statsPanelVisible = true;
   let mainMenuActive    = false;
 
   let lastRunScore  = 0;
@@ -7323,6 +7323,7 @@ doubleYolkerActive = false;
     }
 
     updateHUD();
+    updateBuffsBar();
     updateStatsPanel();
     animId = requestAnimationFrame(drawFrame);
   }
