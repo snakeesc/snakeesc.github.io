@@ -4385,14 +4385,24 @@ function samplePathAtDistance(path, startIdx, dist) {
       const seg = snakeObj.segments[i];
       seg.x = result.x;
       seg.y = result.y;
-      searchIdx = result.nextStart;
+      // Advance past this segment's anchor so the next segment starts further back
+      searchIdx = result.nextStart + 1;
 
+      // Angle: path[0] is head (newest), higher indices are older/further-back positions.
+      // To get the direction this segment is travelling (head-ward), we look from
+      // the older point (nextStart+1) toward the newer point (nextStart).
       let angle = 0;
       if (result.nextStart + 1 < snakeObj.path.length) {
+        const px = snakeObj.path[result.nextStart + 1].x;
+        const py = snakeObj.path[result.nextStart + 1].y;
+        const nx = snakeObj.path[result.nextStart].x;
+        const ny = snakeObj.path[result.nextStart].y;
+        angle = Math.atan2(ny - py, nx - px);
+      } else if (result.nextStart > 0) {
         const px = snakeObj.path[result.nextStart].x;
         const py = snakeObj.path[result.nextStart].y;
-        const nx = snakeObj.path[result.nextStart + 1].x;
-        const ny = snakeObj.path[result.nextStart + 1].y;
+        const nx = snakeObj.path[result.nextStart - 1].x;
+        const ny = snakeObj.path[result.nextStart - 1].y;
         angle = Math.atan2(ny - py, nx - px);
       }
 
@@ -4409,6 +4419,8 @@ function samplePathAtDistance(path, startIdx, dist) {
       seg.el.style.pointerEvents = "none";
       seg.el.style.zIndex = "29";
 
+      // Tail sprite faces away from head, so no extra rotation needed now that
+      // angle already points in the direction of travel (head-ward).
       const renderAngle = isTail ? angle + Math.PI : angle;
 
       seg.el.style.transform =
