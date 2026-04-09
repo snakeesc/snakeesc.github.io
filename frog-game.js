@@ -1142,7 +1142,7 @@ const MAX_LUCK = 30;
 
   const btnStats = makeControlButton("Toggle stats");
   const btnSound = makeControlButton("Sound: ON");
-  const btnEnd   = makeControlButton("🛑");
+  const btnEnd   = makeControlButton("End Run");
 
   controlsBar.appendChild(btnStats);
   controlsBar.appendChild(btnSound);
