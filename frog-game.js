@@ -5720,7 +5720,7 @@ function closeAnimatedOverlay(overlayEl) {
 
         content.innerHTML = `
           <div class="frog-panel-section-label" style="margin-top:0;">Global Leaderboard</div>
-          <ul class="frog-panel-list" style="margin-bottom:0;">
+          <ul class="frog-panel-list" style="margin-bottom:0;min-width:320px;">
             ${itemsHtml || '<li style="color:#a8a29e;">No entries.</li>'}
           </ul>
           <div class="frog-panel-footer">
