@@ -460,7 +460,7 @@ a { color: inherit; }
 
 #upgradeOverlay .upgrade-choices {
   width: 100%; display: flex; flex-direction: row;
-  justify-content: center; align-items: stretch; gap: 12px;
+  justify-content: center; align-items: stretch; gap: 11%;
 }
 
 #upgradeOverlay .frog-upgrade-choice {
