@@ -5516,13 +5516,6 @@ function closeAnimatedOverlay(overlayEl) {
     buffGuideOverlay = document.getElementById("buffGuideOverlay");
     if (!buffGuideOverlay) return;
 
-    // Click outside panel closes it
-    buffGuideOverlay.addEventListener("click", (e) => {
-      if (e.target === buffGuideOverlay) {
-        hideBuffGuideOverlay();
-      }
-    });
-
     // Escape closes it
     document.addEventListener("keydown", (e) => {
       if (buffGuideOverlay && buffGuideOverlay.style.display === "flex" && e.key === "Escape") {
