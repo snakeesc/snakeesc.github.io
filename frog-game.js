@@ -5855,7 +5855,6 @@ async function showDashboardOverlay(cachedLeaderboard) {
       />
       <button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary" style="width:auto;padding:6px 10px;font-size:12px;margin-bottom:0;">Save</button>
     </div>
-    <div id="dashboardTagMessage" style="font-size:11px;min-height:16px;margin-bottom:10px;color:#a8a29e;"></div>
 
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
