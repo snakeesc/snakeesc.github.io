@@ -1385,7 +1385,7 @@ a {
 
 @media (max-width: 600px) {
   #upgradeOverlay .upgrade-choices {
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
   }
   #upgradeOverlay .frog-upgrade-choice {
