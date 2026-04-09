@@ -4399,17 +4399,16 @@ function samplePathAtDistance(path, startIdx, dist) {
       const isTail = i === snakeObj.segments.length - 1;
       const sprites = getPlayerSnakeSpriteSet();
 
-      // Keep class + sprite in sync every frame
       seg.el.className = isTail ? "snake-tail" : "snake-body";
       seg.el.style.backgroundImage = isTail
         ? `url(${sprites.tail})`
         : `url(${sprites.body})`;
       seg.el.style.backgroundRepeat = "no-repeat";
+      seg.el.style.backgroundPosition = "center";
       seg.el.style.backgroundSize = "contain";
       seg.el.style.pointerEvents = "none";
       seg.el.style.zIndex = "29";
 
-      // Tail should point the opposite direction from body travel
       const renderAngle = isTail ? angle + Math.PI : angle;
 
       seg.el.style.transform =
