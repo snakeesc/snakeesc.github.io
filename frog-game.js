@@ -4399,8 +4399,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       // Decrement z-index per segment so tail always renders beneath the body in front of it
       seg.el.style.zIndex = String(29 - i);
 
-      const renderAngle = isTail ? angle + Math.PI : angle;
-      seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
+      seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad) scale(${shrinkScale})`;
     }
 
     // 4. COLLISIONS
