@@ -1956,8 +1956,8 @@ background: #65a30d;
 
   #upgradeOverlay .upgrade-choices {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: row;
+    gap: 11%;
   }
 
   #upgradeOverlay .frog-upgrade-choice {
