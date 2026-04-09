@@ -545,18 +545,8 @@ function generateLocalTag() {
   }
 
   function getSavedDashboardTag() {
-    try {
-      if (typeof localStorage === "undefined") return null;
-      const tag = localStorage.getItem(TAG_STORAGE_KEY);
-      if (tag && String(tag).trim() !== "") return String(tag).trim();
-
-      // First visit — generate and persist a random tag
-      const newTag = generateLocalTag();
-      localStorage.setItem(TAG_STORAGE_KEY, newTag);
-      return newTag;
-    } catch (e) {
-      return null;
-    }
+    // Delegate to the single canonical getter so there is one source of truth.
+    return getSavedPlayerTag();
   }
 
   function recordRunToDashboard() {
@@ -583,6 +573,7 @@ function generateLocalTag() {
       time: runTime,
       orbs: runOrbs,
       frogsLost: frogsLostThisRun,
+      sheds: Number(snakeShedCount) || 0,
       at: Date.now(),
       isLatest: true
     });
@@ -836,17 +827,26 @@ function rollFrogCosmetics() {
   // PLAYER TAG STORAGE (client-side only)
   // --------------------------------------------------
 
+  /**
+   * Always returns a tag string.
+   * On first visit a random tag is generated and persisted so the player
+   * always has an identity before they choose a custom one.
+   * Existing saved tags are never modified.
+   */
   function getSavedPlayerTag() {
     try {
-      if (typeof localStorage === "undefined") return null;
+      if (typeof localStorage === "undefined") return generateLocalTag();
       const val = localStorage.getItem(TAG_STORAGE_KEY);
       if (val && String(val).trim() !== "") {
         return String(val).trim();
       }
+      // First visit — generate and persist a random tag
+      const newTag = generateLocalTag();
+      localStorage.setItem(TAG_STORAGE_KEY, newTag);
+      return newTag;
     } catch (e) {
-      // ignore
+      return generateLocalTag();
     }
-    return null;
   }
 
   const container = document.getElementById("frog-game");
@@ -1405,7 +1405,9 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     sheds: Number(snakeShedCount) || 0
   };
 
-  const playerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
+  // Use a mutable variable so the tag-save handler can update it without
+  // the overlay needing to close/reopen (fixes a stale-closure bug).
+  let activePlayerTag = getSavedPlayerTag ? getSavedPlayerTag() : null;
   const localStats = loadDashboardStats();
   const currentTag = getSavedDashboardTag() || "";
 
@@ -1420,10 +1422,10 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   if (myEntry && myEntry.userId) {
     rankIdx = list.findIndex(e => e && e.userId === myEntry.userId);
   }
-  if (rankIdx === -1 && playerTag) {
+  if (rankIdx === -1 && activePlayerTag) {
     rankIdx = list.findIndex(e =>
       typeof e?.tag === "string" &&
-      e.tag.trim().toLowerCase() === playerTag.trim().toLowerCase()
+      e.tag.trim().toLowerCase() === activePlayerTag.trim().toLowerCase()
     );
   }
   if (rankIdx !== -1) {
@@ -1515,15 +1517,34 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
         return;
       }
       const newTag = validation.tag;
-      await saveDashboardTag(newTag);
-      if (tagMsg) { tagMsg.textContent = "Tag saved."; tagMsg.style.color = "#bef264"; }
+
       try {
-        if (leaderboardBest.found && (leaderboardBest.bestRun > 0 || leaderboardBest.bestTime > 0)) {
-          await submitScoreToServer(leaderboardBest.bestRun, leaderboardBest.bestTime, null, newTag);
+        const result = await submitScoreToServer(
+          Math.floor(run.score || 0),
+          run.time || 0,
+          null,
+          newTag
+        );
+
+        if (result && result._error) {
+          const msg = result.error === "tag_taken"
+            ? "That tag is already taken — try another."
+            : (result.message || "Could not save tag. Try again.");
+          if (tagMsg) { tagMsg.textContent = msg; tagMsg.style.color = "#fca5a5"; }
+          return;
         }
+
+        await saveDashboardTag(newTag);
+        // Update the live mutable reference so entryMatchesUser stays correct
+        activePlayerTag = newTag;
+        if (myEntry) myEntry.tag = newTag;
+        if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#bef264"; }
+
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
-      } catch (e) {}
+      } catch (e) {
+        if (tagMsg) { tagMsg.textContent = "Connection error. Try again."; tagMsg.style.color = "#fca5a5"; }
+      }
     });
   }
 
@@ -1541,9 +1562,14 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   }
 
   function entryMatchesUser(entry) {
-    if (!entry || !playerTag) return false;
-    return normalizeTag(entry.tag) === normalizeTag(playerTag) ||
-           normalizeTag(entry.name) === normalizeTag(playerTag);
+    if (!entry) return false;
+    // Prefer userId — stable even after a tag rename
+    if (myEntry && myEntry.userId && entry.userId) {
+      return entry.userId === myEntry.userId;
+    }
+    if (!activePlayerTag) return false;
+    return normalizeTag(entry.tag) === normalizeTag(activePlayerTag) ||
+           normalizeTag(entry.name) === normalizeTag(activePlayerTag);
   }
 
   function getScore(entry) {
@@ -5930,9 +5956,17 @@ async function showDashboardOverlay(cachedLeaderboard) {
   const leaderboardEntries = cachedLeaderboard || await fetchLeaderboard();
   const normalizedCurrentTag = typeof currentTag === "string" ? currentTag.trim().toLowerCase() : "";
   const leaderboardBest = (() => {
-    const match = leaderboardEntries.find(e =>
-      typeof e?.tag === "string" && e.tag.trim().toLowerCase() === normalizedCurrentTag
-    );
+    // Prefer userId match (stable across renames), fall back to tag-string match
+    const lastMe = window.FrogGameLeaderboard && window.FrogGameLeaderboard._lastMyEntry;
+    let match = null;
+    if (lastMe && lastMe.userId) {
+      match = leaderboardEntries.find(e => e && e.userId === lastMe.userId);
+    }
+    if (!match && normalizedCurrentTag) {
+      match = leaderboardEntries.find(e =>
+        typeof e?.tag === "string" && e.tag.trim().toLowerCase() === normalizedCurrentTag
+      );
+    }
     if (!match) return { bestRun: 0, bestTime: 0, found: false };
     return {
       bestRun: Math.floor(Number(match.bestScore ?? match.score ?? 0)),
@@ -6121,25 +6155,24 @@ async function showDashboardOverlay(cachedLeaderboard) {
           margin-bottom:6px;
         "
       />
-      <button
-        id="dashboardSaveTagBtn"
-        class="frog-btn frog-btn-secondary"
-        style="
-          width:auto;
-          padding:6px 10px;
-          font-size:12px;
-          margin-bottom:4px;
-        "
-      >
-        Save Tag
-      </button>
-      ${localStats.recentRuns && localStats.recentRuns.length ? `
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <button
-          id="dashboardLastRunBtn"
+          id="dashboardSaveTagBtn"
           class="frog-btn frog-btn-secondary"
-          style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:4px;"
-        >📋 Last Run</button>
-      ` : ""}
+          style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
+        >
+          Save Tag
+        </button>
+        ${localStats.recentRuns && localStats.recentRuns.length ? `
+          <button
+            id="dashboardLastRunBtn"
+            class="frog-btn frog-btn-secondary"
+            style="width:auto; padding:6px 10px; font-size:12px; margin-bottom:0;"
+          >
+            📋 Last Run
+          </button>
+        ` : ""}
+      </div>
     </div>
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
@@ -6155,39 +6188,35 @@ async function showDashboardOverlay(cachedLeaderboard) {
       const validation = validateDashboardTag(tagInput.value);
 
       if (!validation.ok) {
-        if (msgEl) {
-          msgEl.textContent = validation.message;
-          msgEl.style.color = "#fca5a5";
-        }
+        if (msgEl) { msgEl.textContent = validation.message; msgEl.style.color = "#fca5a5"; }
         return;
       }
 
       const newTag = validation.tag;
-      await saveDashboardTag(newTag);
 
-      if (currentTagEl) {
-        currentTagEl.textContent = newTag;
-      }
-
-      if (msgEl) {
-        msgEl.textContent = "Tag saved.";
-        msgEl.style.color = "#bef264";
-      }
-
+      // Submit to server first — don't save locally until we know the tag is accepted
       try {
-        const bestScore =
-          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
-        const bestTime =
-          leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+        const bestScore = leaderboardBest && leaderboardBest.found ? leaderboardBest.bestRun : 0;
+        const bestTime  = leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
+        const result = await submitScoreToServer(bestScore, bestTime, null, newTag);
 
-        if (bestScore > 0 || bestTime > 0) {
-          await submitScoreToServer(bestScore, bestTime, null, newTag);
+        if (result && result._error) {
+          const msg = result.error === "tag_taken"
+            ? "That tag is already taken — try another."
+            : (result.message || "Could not save tag. Try again.");
+          if (msgEl) { msgEl.textContent = msg; msgEl.style.color = "#fca5a5"; }
+          return;
         }
+
+        // Server accepted — now save locally
+        await saveDashboardTag(newTag);
+        if (currentTagEl) currentTagEl.textContent = newTag;
+        if (msgEl) { msgEl.textContent = "Tag saved."; msgEl.style.color = "#bef264"; }
 
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
       } catch (e) {
-        // ignore
+        if (msgEl) { msgEl.textContent = "Connection error. Try again."; msgEl.style.color = "#fca5a5"; }
       }
     });
   }
@@ -6195,14 +6224,27 @@ async function showDashboardOverlay(cachedLeaderboard) {
   const lastRunBtn = document.getElementById("dashboardLastRunBtn");
   if (lastRunBtn) {
     lastRunBtn.addEventListener("click", () => {
+      // Use in-memory run if available, otherwise reconstruct from saved stats
       if (!latestCompletedRun) {
         const saved = loadDashboardStats().recentRuns;
         if (saved && saved.length) {
           const r = saved[0];
-          latestCompletedRun = { score: r.score||0, time: r.time||0, orbs: r.orbs||0, frogsLost: r.frogsLost||0, sheds: r.sheds||0 };
+          latestCompletedRun = {
+            score:     r.score     || 0,
+            time:      r.time      || 0,
+            orbs:      r.orbs      || 0,
+            frogsLost: r.frogsLost || 0,
+            sheds:     r.sheds     || 0
+          };
         }
       }
-      if (dashboardOverlay) dashboardOverlay.style.display = "none";
+      // Close dashboard without chaining to showMainMenu.
+      // Force-clear all animation classes before hiding so no pending
+      // animationend listener can fire and call showMainMenu afterward.
+      if (dashboardOverlay) {
+        dashboardOverlay.classList.remove("is-animating-out", "is-open", "is-animating-in");
+        dashboardOverlay.style.display = "none";
+      }
       showEndGameSummaryOverlay(Array.isArray(leaderboardEntries) ? leaderboardEntries : []);
     });
   }
@@ -7275,28 +7317,24 @@ function startRunFromMenu() {
 
     const finalStats = { frogsEaten: totalFrogsSpawned };
 
-    const playerTag = getSavedDashboardTag();
+    const playerTag = getSavedPlayerTag();
     summaryPending = true;
 
     (async () => {
-      try {
-        const posted = await submitScoreToServer(
-          lastRunScore,
-          lastRunTime,
-          finalStats,
-          playerTag
-        );
-        const entries = Array.isArray(posted) ? posted : (await fetchLeaderboard()) || [];
-        const topList = entries.slice(0, 100);
-        updateMiniLeaderboard(topList);
-        hideGameOver();
-        summaryPending = false;
-        showEndGameSummaryOverlay(topList);
-      } catch (e) {
-        hideGameOver();
-        summaryPending = false;
-        showEndGameSummaryOverlay([]);
-      }
+      const posted = await submitScoreToServer(
+        lastRunScore,
+        lastRunTime,
+        finalStats,
+        playerTag
+      );
+
+      const rawList = posted || (await fetchLeaderboard()) || [];
+      const topList = rawList.slice(0, 100);
+
+      updateMiniLeaderboard(topList);
+      hideGameOver();
+      summaryPending = false;
+      showEndGameSummaryOverlay(topList);
     })();
 
     showGameOver();
