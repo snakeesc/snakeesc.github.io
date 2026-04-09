@@ -5725,9 +5725,9 @@ function closeAnimatedOverlay(overlayEl) {
           </ul>
           <div class="frog-panel-footer">
             <div style="margin-bottom:8px;">Page ${currentPage + 1} of ${totalPages}${myRankText}</div>
-            <div style="display:flex;gap:8px;justify-content:center;">
-              <button id="leaderboardPrevBtn" class="frog-btn frog-btn-secondary" style="width:auto;margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
-              <button id="leaderboardNextBtn" class="frog-btn frog-btn-secondary" style="width:auto;margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
+            <div style="display:flex;gap:8px;">
+              <button id="leaderboardPrevBtn" class="frog-btn frog-btn-secondary" style="flex:1;margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
+              <button id="leaderboardNextBtn" class="frog-btn frog-btn-secondary" style="flex:1;margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
             </div>
           </div>
         `;
