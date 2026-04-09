@@ -1203,7 +1203,9 @@ const MAX_LUCK = 30;
 
     if (snakeEggActive) {
       const remaining = Math.max(0, snakeEggHatchInterval - snakeEggTimer);
-      items.push(icon("🥚", "Egg hatches", `${remaining.toFixed(0)}s`, "rgba(251,146,60,0.9)"));
+      items.push(
+        icon("🥚", "Next hatch roll", `${Math.ceil(remaining)}s`, "rgba(251,146,60,0.9)")
+      );
     }
     if (babySnakes.length > 0) {
       const oldest = babySnakes.reduce((a, b) => a.babySnakeAge > b.babySnakeAge ? a : b);
