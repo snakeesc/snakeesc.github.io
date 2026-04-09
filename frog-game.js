@@ -4362,10 +4362,9 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (head.y < marginY) { head.y = marginY; head.angle = -head.angle; }
     else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) { head.y = height - marginY - SNAKE_SEGMENT_SIZE; head.angle = -head.angle; }
 
-    // 3. PATH & BODY POSITIONING (distance-based — fixes stretching at high speed)
+    // 3. PATH & BODY POSITIONING
     snakeObj.path.unshift({ x: head.x, y: head.y });
 
-    // Keep enough path history for all segments at the visual spacing
     const minPathPoints = snakeObj.segments.length * SEGMENT_VISUAL_SPACING * 2 + 64;
     if (snakeObj.path.length > minPathPoints) {
       snakeObj.path.length = minPathPoints;
@@ -4373,7 +4372,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     head.el.style.transform = `translate3d(${head.x}px, ${head.y}px, 0) rotate(${head.angle}rad) scale(${shrinkScale})`;
 
-    // Place each segment exactly SEGMENT_VISUAL_SPACING px further along the path
+    const sprites = getPlayerSnakeSpriteSet();
     let searchIdx = 0;
     for (let i = 0; i < snakeObj.segments.length; i++) {
       const result = samplePathAtDistance(
@@ -4385,12 +4384,8 @@ function samplePathAtDistance(path, startIdx, dist) {
       const seg = snakeObj.segments[i];
       seg.x = result.x;
       seg.y = result.y;
-      // Advance past this segment's anchor so the next segment starts further back
       searchIdx = result.nextStart + 1;
 
-      // Angle: path[0] is head (newest), higher indices are older/further-back positions.
-      // To get the direction this segment is travelling (head-ward), we look from
-      // the older point (nextStart+1) toward the newer point (nextStart).
       let angle = 0;
       if (result.nextStart + 1 < snakeObj.path.length) {
         const px = snakeObj.path[result.nextStart + 1].x;
@@ -4407,25 +4402,20 @@ function samplePathAtDistance(path, startIdx, dist) {
       }
 
       const isTail = i === snakeObj.segments.length - 1;
-      const sprites = getPlayerSnakeSpriteSet();
 
       seg.el.className = isTail ? "snake-tail" : "snake-body";
-      seg.el.style.backgroundImage = isTail
-        ? `url(${sprites.tail})`
-        : `url(${sprites.body})`;
+      seg.el.style.backgroundImage = isTail ? `url(${sprites.tail})` : `url(${sprites.body})`;
       seg.el.style.backgroundRepeat = "no-repeat";
       seg.el.style.backgroundPosition = "center";
       seg.el.style.backgroundSize = "contain";
       seg.el.style.pointerEvents = "none";
-      seg.el.style.zIndex = "29";
+      // Decrement z-index per segment so tail always renders beneath the body in front of it
+      seg.el.style.zIndex = String(29 - i);
 
-      // Tail sprite faces away from head, so no extra rotation needed now that
-      // angle already points in the direction of travel (head-ward).
       const renderAngle = isTail ? angle + Math.PI : angle;
-
-      seg.el.style.transform =
-        `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
+      seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
     }
+
     // 4. COLLISIONS
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
