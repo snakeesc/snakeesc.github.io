@@ -25,80 +25,16 @@
   const TAG_MIN_LENGTH    = 2;
   const TAG_MAX_LENGTH    = 20;
 
-  // Root patterns we want to block after normalization.
-  // (Avoid very short generic roots like "ass" to prevent false positives.)
-  const PROFANE_ROOTS = [
-    "fuck",
-    "shit",
-    "bitch",
-    "cunt",
-    "asshole",
-    "dick",
-    "cock",
-    "pussy",
-    "slut",
-    "whore",
-    "bastard",
-    "piss",
-    "damn",
-    "nigger",
-    "faggot",
-    "retard",
-    "kike",
-    "spic",
-    "chink",
-  ];
-
-  /**
-   * Normalize a tag for profanity matching:
-   * - lowercase
-   * - convert common leetspeak (0->o, 1->i, @->a, $->s, etc.)
-   * - strip non-alphanumeric chars (spaces, underscores, punctuation)
-   */
-  function normalizeForProfanity(str) {
-    const map = {
-      "0": "o",
-      "1": "i",
-      "2": "z",
-      "3": "e",
-      "4": "a",
-      "5": "s",
-      "6": "g",
-      "7": "t",
-      "8": "b",
-      "9": "g",
-      "@": "a",
-      "$": "s",
-      "!": "i",
-      "+": "t",
-    };
-
-    const lower = String(str).toLowerCase();
-    let out = "";
-    for (let i = 0; i < lower.length; i++) {
-      const ch = lower[i];
-      if (map[ch]) {
-        out += map[ch];
-      } else if (/[a-z0-9]/.test(ch)) {
-        out += ch;
-      } else {
-        // drop spaces, punctuation, emojis, etc.
-      }
-    }
-    return out;
-  }
-
+  /** @see frog-profanity.js (shared blocklist + normalization) */
   function isProfaneTag(tag) {
-    if (!tag) return false;
-    const norm = normalizeForProfanity(tag);
-    if (!norm) return false;
-
-    for (const bad of PROFANE_ROOTS) {
-      if (norm.includes(bad)) {
-        return true;
-      }
+    if (
+      window.FrogProfanity &&
+      typeof window.FrogProfanity.isProfaneTag === "function"
+    ) {
+      return window.FrogProfanity.isProfaneTag(tag);
     }
-    return false;
+    const n = String(tag || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    return ["fuck", "shit", "nigger", "rape", "nazi"].some((w) => n.includes(w));
   }
 
   // --------------------------------------------------
@@ -158,14 +94,27 @@
     return 0;
   }
 
-  function getDisplayName(entry, fallback) {
-    if (entry && typeof entry.tag === "string" && entry.tag.trim() !== "") {
-      return entry.tag;
+  /**
+   * @param {object|null} entry
+   * @param {number} [rank] 1-based leaderboard rank (for deterministic placeholder names)
+   * @param {string} [whenAnonymous] e.g. "You" for your row when tag is missing / legacy "Frog"
+   */
+  function getDisplayName(entry, rank, whenAnonymous) {
+    if (!entry) return whenAnonymous || "Player";
+    const raw = entry && typeof entry.tag === "string" ? entry.tag.trim() : "";
+    if (raw && raw.toLowerCase() !== "frog") {
+      return raw;
     }
     if (entry && typeof entry.name === "string" && entry.name.trim() !== "") {
-      return entry.name;
+      return entry.name.trim();
     }
-    return fallback || "Player";
+    if (whenAnonymous) return whenAnonymous;
+    const cfg = window.FrogGameConfig;
+    const r = typeof rank === "number" && rank > 0 ? rank : 1;
+    if (cfg && typeof cfg.leaderboardPlaceholderName === "function") {
+      return cfg.leaderboardPlaceholderName(entry, r);
+    }
+    return `Player ${r}`;
   }
 
   function getEntryKey(entry) {
@@ -378,6 +327,20 @@
         if (data.myEntry) lastMyEntry = data.myEntry;
       }
 
+      if (
+        lastMyEntry &&
+        typeof lastMyEntry.tag === "string" &&
+        lastMyEntry.tag.trim() !== "" &&
+        lastMyEntry.tag.trim().toLowerCase() !== "frog" &&
+        typeof localStorage !== "undefined"
+      ) {
+        try {
+          localStorage.setItem(TAG_STORAGE_KEY, lastMyEntry.tag.trim());
+        } catch (e) {
+          // ignore
+        }
+      }
+
       return dedupeAndSortEntries(entries);
     } catch (err) {
       console.error("fetchLeaderboard error", err);
@@ -440,6 +403,19 @@
         const match =
           key && entries.find((entry) => getEntryKey(entry) === key);
         lastMyEntry = match || data.myEntry;
+        if (
+          lastMyEntry &&
+          typeof lastMyEntry.tag === "string" &&
+          lastMyEntry.tag.trim() !== "" &&
+          lastMyEntry.tag.trim().toLowerCase() !== "frog" &&
+          typeof localStorage !== "undefined"
+        ) {
+          try {
+            localStorage.setItem(TAG_STORAGE_KEY, lastMyEntry.tag.trim());
+          } catch (e) {
+            // ignore
+          }
+        }
       }
 
       return entries;
@@ -520,7 +496,7 @@
     for (let i = 0; i < maxRows; i++) {
       const entry = entries[i] || {};
       const rank = i + 1;
-      const name = getDisplayName(entry, `Player ${rank}`);
+      const name = getDisplayName(entry, rank);
       const score = getEntryScore(entry);
       const time = getEntryTime(entry);
 
@@ -568,7 +544,11 @@
       findMyIndexInList(safeList, lastScore, lastTime);
     let summary = null;
 
-    const summaryName = getDisplayName(myEntry, "You");
+    const summaryName = getDisplayName(
+      myEntry,
+      myIndex >= 0 ? myIndex + 1 : 1,
+      "You"
+    );
 
     function renderSummary(name) {
       if (!summary) return;
@@ -712,7 +692,7 @@
           if (myEntry) myEntry.tag = cleanTag;
           if (lastMyEntry) lastMyEntry.tag = cleanTag;
 
-          renderSummary(getDisplayName(myEntry, cleanTag));
+          renderSummary(cleanTag);
 
           if (Array.isArray(result)) {
             // Re-render the mini leaderboard immediately with fresh worker data
@@ -861,7 +841,7 @@
         if (!e) continue;
 
         const rank = i + 1; // global rank
-        const name = getDisplayName(e, `Frog #${rank}`);
+        const name = getDisplayName(e, rank);
         const score = getEntryScore(e);
         const time = getEntryTime(e);
 

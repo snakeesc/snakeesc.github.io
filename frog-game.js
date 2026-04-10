@@ -538,45 +538,36 @@ function getDashboardLevelData(totalOrbsCollected) {
   };
 }
 
-  function generateLocalTag() {
-    const first = [
-      "Amber","Arcane","Bloom","Cloud","Clover","Crimson","Echo","Ember",
-      "Frost","Golden","Jade","Lucky","Lunar","Mint","Mossy","Neon",
-      "Nova","Pixel","Rune","Shadow","Silver","Sleepy","Solar","Storm","Swampy"
-    ];
-    const second = [
-      "Bog","Croak","Drift","Fern","Flip","Frog","Glow","Hop",
-      "Jumper","Lily","Marsh","Pond","Prince","Ripple","Scout",
-      "Skipper","Sprite","Tadpole","Toad","Traveler"
-    ];
-
-    for (let i = 0; i < 50; i++) {
-      const a = first[Math.floor(Math.random() * first.length)];
-      const b = second[Math.floor(Math.random() * second.length)];
-      const num = String(Math.floor(10 + Math.random() * 90)); // 2 digits
-      const tag = `${a}${b}${num}`;
-
-      if (tag.length <= 12) {
-        return tag;
-      }
-    }
-
-    // fallback if random combos keep going over
-    const shortFirst = ["Amber","Bloom","Echo","Frost","Jade","Lucky","Mint","Neon","Nova","Pixel","Rune","Solar"];
-    const shortSecond = ["Bog","Hop","Pond","Toad","Frog","Glow","Lily","Fern"];
-
-    const a = shortFirst[Math.floor(Math.random() * shortFirst.length)];
-    const b = shortSecond[Math.floor(Math.random() * shortSecond.length)];
-    const num = String(Math.floor(10 + Math.random() * 90));
-    return `${a}${b}${num}`.slice(0, 12);
-  }
-
   function getSavedDashboardTag() {
     // Delegate to the single canonical getter so there is one source of truth.
     return getSavedPlayerTag();
   }
 
-  function recordRunToDashboard() {
+  function pushRecentRunToServer() {
+    const runScore = Math.floor(Number(lastRunScore) || 0);
+    const runTime = Number(lastRunTime) || 0;
+    const runOrbs = Number(totalOrbsCollected) || 0;
+    const frogsLostThisRun = Math.max(0, Number(totalFrogsSpawned) || 0);
+    const tag =
+      getSavedPlayerTag && getSavedPlayerTag()
+        ? getSavedPlayerTag()
+        : null;
+    submitRecentRun({
+      tag,
+      score: runScore,
+      time: runTime,
+      orbs: runOrbs,
+      frogsLost: frogsLostThisRun,
+      sheds: snakeShedCount,
+    });
+  }
+
+  /**
+   * @param {{ skipRecentRunServer?: boolean }} [options] If true, only update local stats (call pushRecentRunToServer after leaderboard submit so tag matches server).
+   */
+  function recordRunToDashboard(options) {
+    const opts = options || {};
+
     const stats = loadDashboardStats();
 
     const runScore = Math.floor(Number(lastRunScore) || 0);
@@ -609,15 +600,9 @@ function getDashboardLevelData(totalOrbsCollected) {
 
     saveDashboardStats(stats);
 
-    // Also push to global recent-runs feed on the server
-    submitRecentRun({
-      tag:       getSavedPlayerTag ? getSavedPlayerTag() : null,
-      score:     runScore,
-      time:      runTime,
-      orbs:      runOrbs,
-      frogsLost: frogsLostThisRun,
-      sheds:     snakeShedCount,
-    });
+    if (!opts.skipRecentRunServer) {
+      pushRecentRunToServer();
+    }
   }
 
   function getLeaderboardEntryScore(entry) {
@@ -715,11 +700,13 @@ function getDashboardLevelData(totalOrbsCollected) {
       };
     }
 
-    if (
-      window.FrogGameLeaderboard &&
-      typeof window.FrogGameLeaderboard.isProfaneTag === "function" &&
-      window.FrogGameLeaderboard.isProfaneTag(tag)
-    ) {
+    const profane =
+      (window.FrogProfanity && typeof window.FrogProfanity.isProfaneTag === "function" &&
+        window.FrogProfanity.isProfaneTag(tag)) ||
+      (window.FrogGameLeaderboard &&
+        typeof window.FrogGameLeaderboard.isProfaneTag === "function" &&
+        window.FrogGameLeaderboard.isProfaneTag(tag));
+    if (profane) {
       return { ok: false, message: "That tag is not allowed." };
     }
 
@@ -864,24 +851,19 @@ function rollFrogCosmetics() {
   // --------------------------------------------------
 
   /**
-   * Always returns a tag string.
-   * On first visit a random tag is generated and persisted so the player
-   * always has an identity before they choose a custom one.
-   * Existing saved tags are never modified.
+   * Returns the saved tag, or "" before the server assigns one (first score submit).
+   * After POST /leaderboard, frog-leaderboard syncs myEntry.tag into localStorage.
    */
   function getSavedPlayerTag() {
     try {
-      if (typeof localStorage === "undefined") return generateLocalTag();
+      if (typeof localStorage === "undefined") return "";
       const val = localStorage.getItem(TAG_STORAGE_KEY);
       if (val && String(val).trim() !== "") {
         return String(val).trim();
       }
-      // First visit — generate and persist a random tag
-      const newTag = generateLocalTag();
-      localStorage.setItem(TAG_STORAGE_KEY, newTag);
-      return newTag;
+      return "";
     } catch (e) {
-      return generateLocalTag();
+      return "";
     }
   }
 
@@ -1399,13 +1381,27 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
     previewList[previewCount - 1] = list[rankIdx];
   }
 
+  function leaderboardRowDisplayName(entry, rank) {
+    const raw =
+      typeof entry?.tag === "string" && entry.tag.trim()
+        ? entry.tag.trim()
+        : "";
+    if (raw && raw.toLowerCase() !== "frog") return raw;
+    if (typeof entry?.name === "string" && entry.name.trim()) {
+      return entry.name.trim();
+    }
+    const cfg = window.FrogGameConfig;
+    if (cfg && typeof cfg.leaderboardPlaceholderName === "function") {
+      return cfg.leaderboardPlaceholderName(entry, rank);
+    }
+    return `Player ${rank}`;
+  }
+
   const lbRowsHtml = previewList.map((entry, i) => {
     const rank = rankIdx >= previewCount && i === previewCount - 1
       ? rankIdx + 1
       : i + 1;
-    const name = (typeof entry?.tag === "string" && entry.tag) ||
-                 (typeof entry?.name === "string" && entry.name) ||
-                 `Player ${rank}`;
+    const name = leaderboardRowDisplayName(entry, rank);
     const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0));
     const entryTime = formatLeaderboardTime(Number(entry?.bestTime ?? entry?.time ?? 0));
     const isMe = myEntry && entry && myEntry.userId && entry.userId === myEntry.userId
@@ -1462,7 +1458,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       ${list.length
         ? previewList.map((entry, i) => {
             const rank = rankIdx >= previewCount && i === previewCount - 1 ? rankIdx + 1 : i + 1;
-            const name = (typeof entry?.tag === "string" && entry.tag) || (typeof entry?.name === "string" && entry.name) || `Player ${rank}`;
+            const name = leaderboardRowDisplayName(entry, rank);
             const entryScore = Math.floor(Number(entry?.bestScore ?? entry?.score ?? 0)).toLocaleString();
             const entryTime = formatLeaderboardTime(Number(entry?.bestTime ?? entry?.time ?? 0));
             const isMe = myEntry && entry && myEntry.userId && entry.userId === myEntry.userId
@@ -5731,10 +5727,18 @@ function closeAnimatedOverlay(overlayEl) {
         return 0;
       }
 
-      function getDisplayName(entry, fallback) {
-        if (entry && typeof entry.tag === "string" && entry.tag.trim()) return entry.tag;
-        if (entry && typeof entry.name === "string" && entry.name.trim()) return entry.name;
-        return fallback;
+      function getDisplayName(entry, rank) {
+        if (!entry) return `Player ${rank}`;
+        const raw = typeof entry.tag === "string" ? entry.tag.trim() : "";
+        if (raw && raw.toLowerCase() !== "frog") return raw;
+        if (typeof entry.name === "string" && entry.name.trim()) {
+          return entry.name.trim();
+        }
+        const cfg = window.FrogGameConfig;
+        if (cfg && typeof cfg.leaderboardPlaceholderName === "function") {
+          return cfg.leaderboardPlaceholderName(entry, rank);
+        }
+        return `Player ${rank}`;
       }
 
       const pageSize = 10;
@@ -5751,7 +5755,7 @@ function closeAnimatedOverlay(overlayEl) {
 
         const itemsHtml = pageEntries.map((entry, idx) => {
           const rank = start + idx + 1;
-          const name = getDisplayName(entry, `Player ${rank}`);
+          const name = getDisplayName(entry, rank);
           const score = Math.floor(getScore(entry)).toLocaleString();
           const time = formatLeaderboardTime(getTime(entry));
           const isMe = entryMatchesUser(entry);
@@ -6528,7 +6532,14 @@ function getDashboardPfp() {
         html += "<tr><th style='text-align:left;'>#</th><th style='text-align:left;'>Tag</th><th style='text-align:right;'>Score</th><th style='text-align:right;'>Time</th></tr>";
         list.slice(0, 20).forEach((entry, i) => {
           const rank = i + 1;
-          const tagBase = entry.tag || entry.name || `Player ${rank}`;
+          const rawTag = typeof entry.tag === "string" ? entry.tag.trim() : "";
+          const tagBase =
+            (rawTag && rawTag.toLowerCase() !== "frog" && rawTag) ||
+            (typeof entry.name === "string" && entry.name.trim()) ||
+            (window.FrogGameConfig &&
+            typeof window.FrogGameConfig.leaderboardPlaceholderName === "function"
+              ? window.FrogGameConfig.leaderboardPlaceholderName(entry, rank)
+              : `Player ${rank}`);
 
           // ✅ Use bestScore / bestTime if score/time aren’t present
           const rawScore =
@@ -7145,7 +7156,7 @@ function startRunFromMenu() {
       sheds: Number(snakeShedCount) || 0
     };
 
-    recordRunToDashboard();
+    recordRunToDashboard({ skipRecentRunServer: true });
     hideGameOver();
     setInGameUIVisible(false);
 
@@ -7187,8 +7198,10 @@ function startRunFromMenu() {
       }
 
       updateMiniLeaderboard(leaderboardEntries);
+      pushRecentRunToServer();
     } catch (err) {
       console.error("endGame summary flow failed", err);
+      pushRecentRunToServer();
     } finally {
       summaryPending = false;
     }

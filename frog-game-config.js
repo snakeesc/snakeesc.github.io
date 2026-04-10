@@ -4,6 +4,140 @@
 (function () {
   "use strict";
 
+  /** Arcade-style tags (2–12 chars, letters only) — matches worker `makeRandomTag`. */
+  const ARCADE_TAG_SINGLES = [
+    "Hopper", "OrbLord", "MossRunner", "FrogStack", "Skitter", "Croaker", "LilyPad",
+    "NeonRib", "VoidNewt", "SwampKid", "DewHop", "BogFlip", "FenLeap", "RuneSkip",
+    "JadeBolt", "SkyLeap", "NeoGlow", "EchoFrog", "StarPad", "GloomHop", "VexRib",
+    "PikeRun", "MireHop", "CobDrift", "FluxHop", "TideSkip", "WolfPad", "NovaRun",
+    "Ripple", "MarshKid", "OrbWeaver", "GhostPad", "PixelHop", "SolarSkip", "LunarDrift"
+  ];
+
+  const ARCADE_TAG_LEADS = [
+    "Orb", "Moss", "Frog", "Lily", "Swamp", "Pond", "Dew", "Neo", "Void", "Star",
+    "Echo", "Rune", "Jade", "Bolt", "Flux", "Tide", "Reed", "Bog", "Fen", "Mire",
+    "Cob", "Pike", "Wisp", "Vex", "Nova", "Lunar", "Solar", "Pixel", "Frost", "Gloom",
+    "Wolf", "Sky", "Iris", "Byte", "Drift", "Marsh", "Ripple", "Ghost", "Gold", "Silver"
+  ];
+
+  const ARCADE_TAG_TRAILS = [
+    "Lord", "Runner", "Stack", "Hopper", "Skipper", "Drifter", "Nomad", "Seeker",
+    "Dodger", "Weaver", "Jumper", "Croaker", "Ribbit", "Flipper", "Scout", "Ranger",
+    "Warden", "Sprite", "Prince", "Slayer", "Keeper", "Legend", "Whisper", "Chaser",
+    "Hunter", "Walker", "Striker", "Pilot", "Rogue", "Master", "Guide", "Glimmer",
+    "Stalker", "Spark", "Slinger", "Rider", "Caller", "Breaker", "Maker", "Fang"
+  ];
+
+  const TAG_MAX_LEN = 12;
+  const TAG_MIN_LEN = 2;
+
+  function fnv1a32(str) {
+    let h = 2166136261;
+    const s = String(str || "");
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function buildArcadeCompoundPool() {
+    const out = [];
+    const seen = new Set();
+    for (const a of ARCADE_TAG_LEADS) {
+      for (const b of ARCADE_TAG_TRAILS) {
+        const t = a + b;
+        if (t.length >= 4 && t.length <= TAG_MAX_LEN && !seen.has(t)) {
+          seen.add(t);
+          out.push(t);
+        }
+      }
+    }
+    return out;
+  }
+
+  const ARCADE_DISPLAY_POOL = (function () {
+    const singles = ARCADE_TAG_SINGLES.filter(
+      (s) => s.length >= TAG_MIN_LEN && s.length <= TAG_MAX_LEN
+    );
+    return singles.concat(buildArcadeCompoundPool());
+  })();
+
+  /**
+   * Random tag for first-time players (no trailing digits unless retries fail).
+   * Same algorithm as Cloudflare worker `makeRandomTag`.
+   */
+  function generateArcadePlayerTag() {
+    const singles = ARCADE_TAG_SINGLES.filter(
+      (s) => s.length >= TAG_MIN_LEN && s.length <= TAG_MAX_LEN
+    );
+
+    for (let attempt = 0; attempt < 80; attempt++) {
+      const roll = Math.random();
+      if (roll < 0.38 && singles.length) {
+        const s = singles[Math.floor(Math.random() * singles.length)];
+        if (s) return s;
+      }
+      const a = ARCADE_TAG_LEADS[Math.floor(Math.random() * ARCADE_TAG_LEADS.length)];
+      const b = ARCADE_TAG_TRAILS[Math.floor(Math.random() * ARCADE_TAG_TRAILS.length)];
+      const tag = a + b;
+      if (tag.length >= 4 && tag.length <= TAG_MAX_LEN) return tag;
+    }
+
+    const shortLeads = ["Orb", "Neo", "Jade", "Moss", "Frog", "Lily", "Void", "Star"];
+    const shortTrails = ["Lord", "Run", "Hop", "Pad", "Rib", "Rex", "Kid", "Fox"];
+    for (let i = 0; i < 30; i++) {
+      const a = shortLeads[Math.floor(Math.random() * shortLeads.length)];
+      const b = shortTrails[Math.floor(Math.random() * shortTrails.length)];
+      const tag = a + b;
+      if (tag.length >= TAG_MIN_LEN && tag.length <= TAG_MAX_LEN) return tag;
+    }
+
+    const suffix = String(Math.floor(Math.random() * 10));
+    const base = "Hopper";
+    return (base + suffix).slice(0, TAG_MAX_LEN);
+  }
+
+  function scoreHint(entry) {
+    if (!entry || typeof entry !== "object") return 0;
+    const keys = ["bestScore", "score"];
+    for (const k of keys) {
+      if (!(k in entry)) continue;
+      let v = entry[k];
+      if (typeof v === "string") v = parseFloat(v);
+      if (typeof v === "number" && isFinite(v)) return v;
+    }
+    return 0;
+  }
+
+  function timeHint(entry) {
+    if (!entry || typeof entry !== "object") return 0;
+    const keys = ["bestTime", "time", "seconds", "duration"];
+    for (const k of keys) {
+      if (!(k in entry)) continue;
+      let v = entry[k];
+      if (typeof v === "string") v = parseFloat(v);
+      if (typeof v === "number" && isFinite(v)) return v;
+    }
+    return 0;
+  }
+
+  /**
+   * Deterministic “arcade” name for rows with no real tag (or legacy "Frog" placeholder).
+   */
+  function leaderboardPlaceholderName(entry, rank) {
+    const r = Math.max(1, Math.floor(Number(rank) || 1));
+    const seed = [
+      entry && entry.userId,
+      r,
+      scoreHint(entry),
+      timeHint(entry)
+    ].join(":");
+    if (!ARCADE_DISPLAY_POOL.length) return "Hopper";
+    const idx = fnv1a32(seed) % ARCADE_DISPLAY_POOL.length;
+    return ARCADE_DISPLAY_POOL[idx];
+  }
+
   const config = {
     TAG_STORAGE_KEY: "frogSnake_username",
     FROG_SIZE: 48,
@@ -145,6 +279,9 @@
   };
 
   config.AURA_RADIUS2 = config.AURA_RADIUS * config.AURA_RADIUS;
+
+  config.generateArcadePlayerTag = generateArcadePlayerTag;
+  config.leaderboardPlaceholderName = leaderboardPlaceholderName;
 
   window.FrogGameConfig = config;
 })();
