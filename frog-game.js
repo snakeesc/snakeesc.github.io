@@ -538,7 +538,7 @@ function getDashboardLevelData(totalOrbsCollected) {
   };
 }
 
-function generateLocalTag() {
+  function generateLocalTag() {
     const first = [
       "Amber","Arcane","Bloom","Cloud","Clover","Crimson","Echo","Ember",
       "Frost","Golden","Jade","Lucky","Lunar","Mint","Mossy","Neon",
@@ -549,11 +549,26 @@ function generateLocalTag() {
       "Jumper","Lily","Marsh","Pond","Prince","Ripple","Scout",
       "Skipper","Sprite","Tadpole","Toad","Traveler"
     ];
-    const num = Math.floor(100 + Math.random() * 900);
-    const tag = first[Math.floor(Math.random() * first.length)] +
-                second[Math.floor(Math.random() * second.length)] +
-                num;
-    return tag;
+
+    for (let i = 0; i < 50; i++) {
+      const a = first[Math.floor(Math.random() * first.length)];
+      const b = second[Math.floor(Math.random() * second.length)];
+      const num = String(Math.floor(10 + Math.random() * 90)); // 2 digits
+      const tag = `${a}${b}${num}`;
+
+      if (tag.length <= 12) {
+        return tag;
+      }
+    }
+
+    // fallback if random combos keep going over
+    const shortFirst = ["Amber","Bloom","Echo","Frost","Jade","Lucky","Mint","Neon","Nova","Pixel","Rune","Solar"];
+    const shortSecond = ["Bog","Hop","Pond","Toad","Frog","Glow","Lily","Fern"];
+
+    const a = shortFirst[Math.floor(Math.random() * shortFirst.length)];
+    const b = shortSecond[Math.floor(Math.random() * shortSecond.length)];
+    const num = String(Math.floor(10 + Math.random() * 90));
+    return `${a}${b}${num}`.slice(0, 12);
   }
 
   function getSavedDashboardTag() {
@@ -689,11 +704,11 @@ function generateLocalTag() {
       return { ok: false, message: "Enter a tag." };
     }
 
-    if (tag.length < 2 || tag.length > 20) {
-      return { ok: false, message: "Tag must be 2-20 characters." };
+    if (tag.length < 2 || tag.length > 12) {
+      return { ok: false, message: "Tag must be 2-12 characters." };
     }
 
-    if (!/^[a-zA-Z0-9 _-]{2,20}$/.test(tag)) {
+    if (!/^[a-zA-Z0-9 _-]{2,12}$/.test(tag)) {
       return {
         ok: false,
         message: "Use letters, numbers, spaces, _ or - only."
@@ -1464,7 +1479,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
       <input
         id="endSummaryTagInput"
         type="text"
-        maxlength="20"
+        maxlength="12"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
         style="flex:1;padding:6px 9px;border-radius:8px;border:1px solid #44403c;background:#292524;color:white;font-family:inherit;font-size:12px;"
@@ -5973,7 +5988,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
       <input
         id="dashboardTagInput"
         type="text"
-        maxlength="20"
+        maxlength="12"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
         style="flex:1;padding:6px 9px;border-radius:8px;border:1px solid #44403c;background:#292524;color:white;font-family:inherit;font-size:12px;"
