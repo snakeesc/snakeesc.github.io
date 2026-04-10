@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Main menu options — Escape the Snake (previews)</title>
+  <style>
+    :root {
+      --bg: #1c1917;
+      --panel: #292524;
+      --border: #44403c;
+      --text: #f5f5f4;
+      --muted: #a8a29e;
+      --accent: #a3e635;
+      --accent-dim: #84cc16;
+      --primary-btn: #4d7c0f;
+      --shadow: rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header h1 { font-size: 1.25rem; margin: 0 0 8px; font-weight: 700; }
+    header p { margin: 0; color: var(--muted); font-size: 14px; max-width: 720px; }
+    .grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: 28px;
+    }
+    section.preview {
+      background: #0c0a09;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    section.preview .meta {
+      padding: 12px 16px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+    section.preview .meta h2 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+    }
+    section.preview .meta p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .canvas {
+      min-height: 220px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(165deg, #1a1816 0%, #0f0e0d 100%);
+    }
+    .canvas.tall { min-height: 280px; }
+    .canvas.wide { min-height: 180px; }
+
+    /* Shared faux menu atoms */
+    .mm-title {
+      font-size: 18px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 6px;
+      text-shadow: 1px 1px 0 var(--shadow);
+    }
+    .mm-sub {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: default;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: var(--primary-btn);
+      color: #fff;
+      border-color: #3f6212;
+      box-shadow: 0 2px 0 #365314;
+    }
+    .btn-sec {
+      background: #3f3f46;
+      color: #fafafa;
+      border-color: #52525b;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent-dim);
+      border-color: #3f6212;
+    }
+    .btn-sm { padding: 6px 10px; font-size: 12px; }
+    .btn-icon { width: 40px; height: 40px; padding: 0; border-radius: 10px; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      box-shadow: 0 8px 24px var(--shadow);
+      width: 100%;
+      max-width: 340px;
+    }
+    .panel.wide { max-width: 440px; }
+    .panel.narrow { max-width: 280px; }
+
+    /* --- Variants --- */
+    .v1 .row-primary { text-align: center; margin-bottom: 10px; }
+    .v1 .row-sec { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+    .v2 .stack { display: flex; flex-direction: column; gap: 8px; }
+    .v2 .stack .btn { width: 100%; }
+
+    .v3 .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .v3 .span2 { grid-column: 1 / -1; }
+
+    .v4 .hero {
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+    .v4 .hero .big-cta {
+      font-size: 15px;
+      padding: 12px 28px;
+      border-radius: 999px;
+    }
+    .v4 .links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .v5 .icon-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .v5 .lbl { font-size: 9px; color: var(--muted); margin-top: 4px; text-align: center; }
+
+    .v6 .split {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+    .v6 .side {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .v6 .side .btn { min-width: 120px; }
+
+    .v7 .seg {
+      display: flex;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .v7 .seg button {
+      flex: 1;
+      padding: 10px 8px;
+      font-size: 11px;
+      border: none;
+      background: #3f3f46;
+      color: var(--muted);
+      cursor: default;
+    }
+    .v7 .seg button.on {
+      background: #365314;
+      color: #ecfccb;
+      font-weight: 700;
+    }
+
+    .v8 .dock {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 10px 12px;
+      background: #1c1917;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      max-width: fit-content;
+      margin: 12px auto 0;
+    }
+
+    .v9 .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .v9 .card {
+      background: #1c1917;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .v9 .card strong { display: block; color: var(--text); margin-bottom: 6px; font-size: 12px; }
+
+    .v10 .min {
+      text-align: center;
+    }
+    .v10 .min .btn-sec { margin: 4px; }
+
+    .v11 .bar {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .v11 .bar .btn { flex: 1; border-radius: 0; border: none; border-right: 1px solid var(--border); }
+    .v11 .bar .btn:last-child { border-right: none; }
+    .v11 .bar .btn-primary { flex: 1.4; }
+
+    .v12 .aside-layout {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .v12 .nav-v {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .v12 .nav-v .btn { width: 100%; justify-content: flex-start; font-size: 11px; }
+
+    .v13 .pill-menu {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .v13 .pill-menu .btn {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 11px;
+    }
+
+    @media (max-width: 520px) {
+      .v6 .split { grid-template-columns: 1fr; }
+      .v12 .aside-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Main menu layout previews</h1>
+    <p>
+      Static mockups only — not wired to the game. Use this page to compare hierarchy, density,
+      and mobile friendliness before changing <code>index.html</code> / CSS.
+    </p>
+  </header>
+
+  <div class="grid">
+
+    <section class="preview">
+      <div class="meta">
+        <h2>1 — Current-style (baseline)</h2>
+        <p>Primary full-width row, secondary actions wrapped below — closest to shipping layout.</p>
+      </div>
+      <div class="canvas">
+        <div class="panel v1">
+          <div class="mm-title">Escape the Snake <span aria-hidden="true">🐍</span></div>
+          <div class="mm-sub">Keep your frogs alive · Mouse to move</div>
+          <div class="row-primary"><button type="button" class="btn btn-primary">Start Run</button></div>
+          <div class="row-sec">
+            <button type="button" class="btn btn-sec btn-sm">How to Play</button>
+            <button type="button" class="btn btn-sec btn-sm">Upgrades</button>
+            <button type="button" class="btn btn-sec btn-sm">Leaderboard</button>
+            <button type="button" class="btn btn-sec btn-sm">Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>2 — Full vertical stack</h2>
+        <p>Every action equal width; very thumb-friendly, more scrolling on small screens if you add items.</p>
+      </div>
+      <div class="canvas">
+        <div class="panel v2 narrow">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="mm-sub">Survive · Collect orbs · Upgrade</div>
+          <div class="stack">
+            <button type="button" class="btn btn-primary">Start Run</button>
+            <button type="button" class="btn btn-sec">How to Play</button>
+            <button type="button" class="btn btn-sec">Upgrades</button>
+            <button type="button" class="btn btn-sec">Leaderboard</button>
+            <button type="button" class="btn btn-sec">Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>3 — 2×2 grid + wide primary</h2>
+        <p>Emphasizes Start; secondary four in a compact grid (good for desktop).</p>
+      </div>
+      <div class="canvas">
+        <div class="panel wide v3">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="mm-sub">Mouse to move · Frogs follow</div>
+          <button type="button" class="btn btn-primary span2" style="width:100%;margin-bottom:8px;">Start Run</button>
+          <div class="two-col">
+            <button type="button" class="btn btn-sec btn-sm">How to</button>
+            <button type="button" class="btn btn-sec btn-sm">Upgrades</button>
+            <button type="button" class="btn btn-sec btn-sm">Scores</button>
+            <button type="button" class="btn btn-sec btn-sm">Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>4 — Hero CTA + text links</h2>
+        <p>One loud button; everything else de-emphasized as links (settings, help, etc.).</p>
+      </div>
+      <div class="canvas tall">
+        <div class="panel v4">
+          <div class="hero">
+            <div class="mm-title">Escape the Snake</div>
+            <div class="mm-sub">Don’t get eaten.</div>
+            <button type="button" class="btn btn-primary big-cta">Play</button>
+            <div class="links">
+              <span>How to play</span>
+              <span>·</span>
+              <span>Upgrades</span>
+              <span>·</span>
+              <span>Leaderboard</span>
+              <span>·</span>
+              <span>Dashboard</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>5 — Icon strip + labels</h2>
+        <p>Compact; needs SVG/icons in production. Optional for a “launcher” feel.</p>
+      </div>
+      <div class="canvas tall">
+        <div class="panel v5">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="mm-sub">Choose an action</div>
+          <div style="text-align:center;margin-bottom:8px;">
+            <button type="button" class="btn btn-primary" style="padding:10px 24px;">▶ Start</button>
+          </div>
+          <div class="icon-row">
+            <div><button type="button" class="btn btn-sec btn-icon" title="Help">?</button><div class="lbl">Help</div></div>
+            <div><button type="button" class="btn btn-sec btn-icon" title="Upgrades">⚡</button><div class="lbl">Buffs</div></div>
+            <div><button type="button" class="btn btn-sec btn-icon" title="Scores">🏆</button><div class="lbl">Scores</div></div>
+            <div><button type="button" class="btn btn-sec btn-icon" title="Stats">📊</button><div class="lbl">Stats</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>6 — Split: play vs meta</h2>
+        <p>Left (or top on mobile): play + help. Right: account/social-ish actions.</p>
+      </div>
+      <div class="canvas tall">
+        <div class="panel wide v6">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="mm-sub">Survival arcade</div>
+          <div class="split">
+            <div>
+              <button type="button" class="btn btn-primary" style="width:100%;margin-bottom:8px;">Start Run</button>
+              <button type="button" class="btn btn-sec" style="width:100%;">How to Play</button>
+            </div>
+            <div class="side">
+              <button type="button" class="btn btn-sec btn-sm">Upgrades</button>
+              <button type="button" class="btn btn-sec btn-sm">Leaderboard</button>
+              <button type="button" class="btn btn-sec btn-sm">Dashboard</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>7 — Mode strip + actions</h2>
+        <p>Segmented control for future modes (e.g. Practice / Ranked) with shared menu below.</p>
+      </div>
+      <div class="canvas tall">
+        <div class="panel v7">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="seg">
+            <button type="button" class="on">Survival</button>
+            <button type="button" class="">Practice</button>
+            <button type="button" class="">Challenges</button>
+          </div>
+          <div class="row-primary" style="text-align:center;">
+            <button type="button" class="btn btn-primary">Start Run</button>
+          </div>
+          <div class="row-sec" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+            <button type="button" class="btn btn-sec btn-sm">How to</button>
+            <button type="button" class="btn btn-sec btn-sm">Upgrades</button>
+            <button type="button" class="btn btn-sec btn-sm">Leaderboard</button>
+            <button type="button" class="btn btn-sec btn-sm">Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>8 — Floating dock (mobile-first)</h2>
+        <p>Title + subtitle, primary above; secondary in a pill-shaped dock (thumb zone).</p>
+      </div>
+      <div class="canvas tall">
+        <div class="panel v8">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="mm-sub">Outrun the snake</div>
+          <div style="text-align:center;">
+            <button type="button" class="btn btn-primary" style="padding:10px 32px;">Start Run</button>
+          </div>
+          <div class="dock">
+            <button type="button" class="btn btn-sec btn-sm">❓</button>
+            <button type="button" class="btn btn-sec btn-sm">⚡</button>
+            <button type="button" class="btn btn-sec btn-sm">🏆</button>
+            <button type="button" class="btn btn-sec btn-sm">📊</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>9 — Card grid (explore)</h2>
+        <p>Each destination is a “tile” — heavier UI, good if you add art or descriptions per route.</p>
+      </div>
+      <div class="canvas tall">
+        <div class="panel wide v9">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="mm-sub">Where to?</div>
+          <div class="card-grid">
+            <div class="card"><strong>Play</strong><button type="button" class="btn btn-primary btn-sm" style="width:100%;">Start</button></div>
+            <div class="card"><strong>Learn</strong><button type="button" class="btn btn-sec btn-sm" style="width:100%;">How to</button></div>
+            <div class="card"><strong>Build</strong><button type="button" class="btn btn-sec btn-sm" style="width:100%;">Upgrades</button></div>
+            <div class="card"><strong>Compete</strong><button type="button" class="btn btn-sec btn-sm" style="width:100%;">Scores</button></div>
+          </div>
+          <div style="text-align:center;margin-top:10px;">
+            <button type="button" class="btn btn-ghost btn-sm">Dashboard →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>10 — Ultra minimal</h2>
+        <p>Title + one primary; everything else behind “More” (not shown) or a single secondary row.</p>
+      </div>
+      <div class="canvas wide">
+        <div class="panel narrow v10">
+          <div class="min">
+            <div class="mm-title">Escape the Snake</div>
+            <div class="mm-sub">Tap to play</div>
+            <button type="button" class="btn btn-primary" style="padding:12px 36px;">Start</button>
+            <div style="margin-top:12px;">
+              <button type="button" class="btn btn-sec btn-sm">More options ▾</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>11 — Horizontal bar (toolbar)</h2>
+        <p>All actions in one row — works on wide layouts; stacks poorly on narrow phones unless scrollable.</p>
+      </div>
+      <div class="canvas wide">
+        <div class="panel wide v11">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="mm-sub">Desktop-style toolbar</div>
+          <div class="bar">
+            <button type="button" class="btn btn-primary">▶ Run</button>
+            <button type="button" class="btn btn-sec">Help</button>
+            <button type="button" class="btn btn-sec">Buffs</button>
+            <button type="button" class="btn btn-sec">Scores</button>
+            <button type="button" class="btn btn-sec">Dash</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>12 — Sidebar nav</h2>
+        <p>Vertical list beside hero copy — desktop “app shell”; collapses to hamburger on mobile.</p>
+      </div>
+      <div class="canvas">
+        <div class="panel wide v12">
+          <div class="aside-layout">
+            <div class="nav-v">
+              <button type="button" class="btn btn-sec btn-sm">How to</button>
+              <button type="button" class="btn btn-sec btn-sm">Upgrades</button>
+              <button type="button" class="btn btn-sec btn-sm">Scores</button>
+              <button type="button" class="btn btn-sec btn-sm">Dashboard</button>
+            </div>
+            <div>
+              <div class="mm-title" style="text-align:left;">Escape the Snake</div>
+              <div class="mm-sub" style="text-align:left;">Stay alive. Score high.</div>
+              <button type="button" class="btn btn-primary" style="width:100%;margin-top:8px;">Start Run</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview">
+      <div class="meta">
+        <h2>13 — Pill secondary row</h2>
+        <p>Primary block button; secondary actions as small pills (dense, still tappable).</p>
+      </div>
+      <div class="canvas">
+        <div class="panel v13">
+          <div class="mm-title">Escape the Snake</div>
+          <div class="mm-sub">Frogs · Orbs · Snake</div>
+          <div style="text-align:center;">
+            <button type="button" class="btn btn-primary" style="padding:11px 40px;border-radius:12px;">Start Run</button>
+          </div>
+          <div class="pill-menu">
+            <button type="button" class="btn btn-sec">How to Play</button>
+            <button type="button" class="btn btn-sec">Upgrades</button>
+            <button type="button" class="btn btn-sec">Leaderboard</button>
+            <button type="button" class="btn btn-sec">Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>
