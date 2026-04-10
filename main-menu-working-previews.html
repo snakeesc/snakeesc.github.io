@@ -542,10 +542,6 @@
     row.addEventListener("click", () => {
       dmgSetSelection(Number(row.getAttribute("data-i")));
     });
-    row.addEventListener("dblclick", () => {
-      dmgSetSelection(Number(row.getAttribute("data-i")));
-      dmgActivate();
-    });
   });
 
   document.getElementById("dmg-up").addEventListener("click", () => {
