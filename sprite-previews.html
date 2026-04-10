@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Escape the Snake — Sprite Preview Lab</title>
+    <style>
+      :root {
+        --bg: #050608;
+        --grid-size: 32;
+        --pixel: 4px; /* 32 * 4 = 128px display */
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        background: radial-gradient(1000px 700px at 15% 10%, rgba(163, 230, 53, 0.12), transparent 60%), #050608;
+        color: #e5e5e5;
+      }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 18px 14px 40px; }
+      h1 { font-size: 16px; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+      p { margin: 0 0 10px; font-size: 12px; color: #9ca3af; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      @media (max-width: 980px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+
+      .card {
+        border: 1px solid #27272f;
+        border-radius: 10px;
+        background: #050609;
+        padding: 10px;
+      }
+      .card h2 {
+        margin: 0 0 4px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #e5e5e5;
+      }
+      .card .meta {
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+
+      .sprite-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .sprite-label {
+        font-size: 11px;
+        color: #9ca3af;
+        min-width: 70px;
+      }
+
+      .sprite {
+        position: relative;
+        width: calc(var(--grid-size) * var(--pixel));
+        height: calc(var(--grid-size) * var(--pixel));
+        image-rendering: pixelated;
+        background: #020617;
+        box-shadow: 0 0 0 1px #111827, 0 10px 24px rgba(0,0,0,0.8);
+      }
+      .sprite::before {
+        /* faint grid */
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(to right, rgba(15,23,42,0.5) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(15,23,42,0.5) 1px, transparent 1px);
+        background-size: var(--pixel) var(--pixel);
+        opacity: 0.35;
+        pointer-events: none;
+      }
+
+      .pixels {
+        position: absolute;
+        inset: 0;
+      }
+
+      .px {
+        position: absolute;
+        width: var(--pixel);
+        height: var(--pixel);
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+      }
+
+      /* helpers: place at (x, y) in the 32x32 grid */
+      /* usage: class="px g fg" style="--x:10;--y:12;" */
+      .px { left: calc(var(--x) * var(--pixel)); top: calc(var(--y) * var(--pixel)); }
+
+      /* palettes */
+      .fg-g      { background:#a3e635; }
+      .fg-g-mid  { background:#65a30d; }
+      .fg-g-dark { background:#365314; }
+      .fg-g-soft { background:#4ade80; }
+
+      .fg-y      { background:#facc15; }
+      .fg-y-soft { background:#fbbf24; }
+      .fg-o      { background:#fb923c; }
+
+      .fg-c      { background:#22c55e; }
+      .fg-c-soft { background:#4ade80; }
+
+      .fg-red    { background:#f97373; }
+      .fg-red-dark { background:#b91c1c; }
+
+      .fg-wall   { background:#111827; }
+      .fg-wall-hi{ background:#1f2937; }
+
+      .fg-snake  { background:#a3e635; }
+      .fg-snake-hi { background:#ecfccb; }
+      .fg-snake-dark { background:#365314; }
+
+      .fg-frog   { background:#22c55e; }
+      .fg-frog-hi{ background:#bbf7d0; }
+      .fg-frog-dark{ background:#166534; }
+
+      .fg-eye    { background:#e5e7eb; }
+      .fg-eye-dark { background:#020617; }
+
+      .fg-bullet { background:#facc15; }
+
+      .fg-bg-dot { background:#0b1120; }
+
+      .caption {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #9ca3af;
+      }
+
+      .size-toggle {
+        margin-bottom: 10px;
+        font-size: 11px;
+        color: #9ca3af;
+      }
+      .size-toggle button {
+        background:#111827;
+        color:#e5e5e5;
+        border:1px solid #27272f;
+        padding:3px 7px;
+        border-radius:6px;
+        font-family:inherit;
+        font-size:11px;
+        cursor:pointer;
+        margin-right:4px;
+      }
+      .size-toggle button[aria-pressed="true"]{
+        border-color:#a3e635;
+        color:#a3e635;
+      }
+    </style>
+  </head>
+  <body data-size="32">
+    <div class="wrap">
+      <h1>Sprite Preview Lab</h1>
+      <p>Rough code-built pixel previews for frogs and snake in a dark arcade / terminal style. These are concept layouts, not final art.</p>
+      <div class="size-toggle">
+        Size:
+        <button type="button" data-size="32" aria-pressed="true">32×32</button>
+        <button type="button" data-size="48" aria-pressed="false">48×48</button>
+      </div>
+
+      <div class="grid">
+        <!-- Frog A: Terminal Green Slime -->
+        <section class="card">
+          <h2>Frog A — terminal green</h2>
+          <div class="meta">Chunky pixel frog; monochrome-ish green, glowing eyes.</div>
+          <div class="sprite-row">
+            <div class="sprite-label">Idle</div>
+            <div class="sprite frog-a-idle"><div class="pixels"></div></div>
+          </div>
+          <div class="sprite-row" style="margin-top:8px;">
+            <div class="sprite-label">Hop</div>
+            <div class="sprite frog-a-hop"><div class="pixels"></div></div>
+          </div>
+        </section>
+
+        <!-- Frog B: Outline + fill -->
+        <section class="card">
+          <h2>Frog B — outlined</h2>
+          <div class="meta">Frog with darker outline, lighter belly.</div>
+          <div class="sprite-row">
+            <div class="sprite-label">Idle</div>
+            <div class="sprite frog-b-idle"><div class="pixels"></div></div>
+          </div>
+          <div class="sprite-row" style="margin-top:8px;">
+            <div class="sprite-label">Hop</div>
+            <div class="sprite frog-b-hop"><div class="pixels"></div></div>
+          </div>
+        </section>
+
+        <!-- Frog C: Tiny retro -->
+        <section class="card">
+          <h2>Frog C — tiny retro</h2>
+          <div class="meta">Smaller body, exaggerated eyes (readable at distance).</div>
+          <div class="sprite-row">
+            <div class="sprite-label">Idle</div>
+            <div class="sprite frog-c-idle"><div class="pixels"></div></div>
+          </div>
+        </section>
+
+        <!-- Snake head variants -->
+        <section class="card">
+          <h2>Snake head — variants</h2>
+          <div class="meta">Different head shapes + eye treatments.</div>
+          <div class="sprite-row">
+            <div class="sprite-label">Head A</div>
+            <div class="sprite snake-head-a"><div class="pixels"></div></div>
+          </div>
+          <div class="sprite-row" style="margin-top:8px;">
+            <div class="sprite-label">Head B</div>
+            <div class="sprite snake-head-b"><div class="pixels"></div></div>
+          </div>
+        </section>
+
+        <!-- Snake body segments -->
+        <section class="card">
+          <h2>Snake body — segments</h2>
+          <div class="meta">Straight + corner segments in same palette.</div>
+          <div class="sprite-row">
+            <div class="sprite-label">Body</div>
+            <div class="sprite snake-body"><div class="pixels"></div></div>
+          </div>
+          <div class="sprite-row" style="margin-top:8px;">
+            <div class="sprite-label">Corner</div>
+            <div class="sprite snake-corner"><div class="pixels"></div></div>
+          </div>
+        </section>
+
+        <!-- Background tile / orb test -->
+        <section class="card">
+          <h2>Background + orbs</h2>
+          <div class="meta">Dark grid tile with subtle glow dots and orb.</div>
+          <div class="sprite-row">
+            <div class="sprite-label">Tile</div>
+            <div class="sprite bg-tile"><div class="pixels"></div></div>
+          </div>
+          <div class="sprite-row" style="margin-top:8px;">
+            <div class="sprite-label">Tile+orb</div>
+            <div class="sprite bg-tile-orb"><div class="pixels"></div></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const body = document.body;
+
+      function setSize(size) {
+        const px = size === 48 ? 3 : 4; // 32*4=128, 48*3=144
+        root.style.setProperty("--grid-size", size);
+        root.style.setProperty("--pixel", px + "px");
+        body.setAttribute("data-size", size);
+      }
+
+      document.querySelectorAll("[data-size]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const size = parseInt(btn.dataset.size, 10);
+          setSize(size);
+          document.querySelectorAll(".size-toggle button").forEach(b => {
+            b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+          });
+        });
+      });
+
+      function px(x, y, cls) {
+        const div = document.createElement("div");
+        div.className = "px " + cls;
+        div.style.setProperty("--x", x);
+        div.style.setProperty("--y", y);
+        return div;
+      }
+
+      function drawFrogAIdle(container) {
+        const p = container.querySelector(".pixels");
+        // body
+        for (let x = 9; x <= 22; x++) {
+          for (let y = 15; y <= 22; y++) {
+            p.appendChild(px(x, y, (y === 15 || y === 22 || x === 9 || x === 22) ? "fg-frog-dark" : "fg-frog"));
+          }
+        }
+        // eyes
+        p.appendChild(px(11, 12, "fg-frog-dark"));
+        p.appendChild(px(20, 12, "fg-frog-dark"));
+        p.appendChild(px(11, 11, "fg-eye"));
+        p.appendChild(px(20, 11, "fg-eye"));
+        p.appendChild(px(11, 10, "fg-eye-dark"));
+        p.appendChild(px(20, 10, "fg-eye-dark"));
+        // feet
+        for (let x of [9, 12, 19, 22]) {
+          p.appendChild(px(x, 23, "fg-frog-dark"));
+        }
+      }
+
+      function drawFrogAHop(container) {
+        const p = container.querySelector(".pixels");
+        for (let x = 11; x <= 20; x++) {
+          for (let y = 13; y <= 20; y++) {
+            p.appendChild(px(x, y, (y === 13 || y === 20 || x === 11 || x === 20) ? "fg-frog-dark" : "fg-frog"));
+          }
+        }
+        // eyes forward
+        p.appendChild(px(13, 11, "fg-eye"));
+        p.appendChild(px(18, 11, "fg-eye"));
+        p.appendChild(px(13, 10, "fg-eye-dark"));
+        p.appendChild(px(18, 10, "fg-eye-dark"));
+        // stretched back legs
+        p.appendChild(px(10, 20, "fg-frog-dark"));
+        p.appendChild(px(21, 20, "fg-frog-dark"));
+      }
+
+      function drawFrogBIdle(container) {
+        const p = container.querySelector(".pixels");
+        // outline
+        for (let x = 9; x <= 22; x++) {
+          p.appendChild(px(x, 16, "fg-frog-dark"));
+          p.appendChild(px(x, 22, "fg-frog-dark"));
+        }
+        for (let y = 17; y <= 21; y++) {
+          p.appendChild(px(9, y, "fg-frog-dark"));
+          p.appendChild(px(22, y, "fg-frog-dark"));
+        }
+        // fill
+        for (let x = 10; x <= 21; x++) {
+          for (let y = 17; y <= 21; y++) {
+            p.appendChild(px(x, y, "fg-frog"));
+          }
+        }
+        // belly
+        for (let x = 12; x <= 19; x++) {
+          for (let y = 19; y <= 21; y++) {
+            p.appendChild(px(x, y, "fg-g-soft"));
+          }
+        }
+        // eyes
+        p.appendChild(px(11, 15, "fg-eye"));
+        p.appendChild(px(20, 15, "fg-eye"));
+        p.appendChild(px(11, 14, "fg-eye-dark"));
+        p.appendChild(px(20, 14, "fg-eye-dark"));
+      }
+
+      function drawFrogBHop(container) {
+        const p = container.querySelector(".pixels");
+        // body tilted
+        for (let x = 11; x <= 20; x++) {
+          for (let y = 14; y <= 19; y++) {
+            p.appendChild(px(x, y, "fg-frog"));
+          }
+        }
+        // outline a bit darker on edges
+        for (let x = 11; x <= 20; x++) {
+          p.appendChild(px(x, 14, "fg-frog-dark"));
+          p.appendChild(px(x, 19, "fg-frog-dark"));
+        }
+        for (let y = 15; y <= 18; y++) {
+          p.appendChild(px(11, y, "fg-frog-dark"));
+          p.appendChild(px(20, y, "fg-frog-dark"));
+        }
+        // belly
+        for (let x = 13; x <= 18; x++) {
+          for (let y = 17; y <= 18; y++) {
+            p.appendChild(px(x, y, "fg-g-soft"));
+          }
+        }
+        // eyes more forward
+        p.appendChild(px(13, 13, "fg-eye"));
+        p.appendChild(px(18, 13, "fg-eye"));
+        p.appendChild(px(13, 12, "fg-eye-dark"));
+        p.appendChild(px(18, 12, "fg-eye-dark"));
+      }
+
+      function drawFrogCIdle(container) {
+        const p = container.querySelector(".pixels");
+        // tiny body
+        for (let x = 12; x <= 19; x++) {
+          for (let y = 16; y <= 19; y++) {
+            p.appendChild(px(x, y, "fg-frog"));
+          }
+        }
+        // eyes large
+        p.appendChild(px(13, 14, "fg-eye"));
+        p.appendChild(px(18, 14, "fg-eye"));
+        p.appendChild(px(13, 13, "fg-eye-dark"));
+        p.appendChild(px(18, 13, "fg-eye-dark"));
+      }
+
+      function drawSnakeHeadA(container) {
+        const p = container.querySelector(".pixels");
+        // head block
+        for (let x = 10; x <= 21; x++) {
+          for (let y = 13; y <= 20; y++) {
+            const edge = (x === 10 || x === 21 || y === 13 || y === 20);
+            p.appendChild(px(x, y, edge ? "fg-snake-dark" : "fg-snake"));
+          }
+        }
+        // snout
+        for (let x = 13; x <= 18; x++) {
+          p.appendChild(px(x, 12, "fg-snake"));
+        }
+        // eyes
+        p.appendChild(px(12, 15, "fg-eye"));
+        p.appendChild(px(19, 15, "fg-eye"));
+        p.appendChild(px(12, 14, "fg-eye-dark"));
+        p.appendChild(px(19, 14, "fg-eye-dark"));
+      }
+
+      function drawSnakeHeadB(container) {
+        const p = container.querySelector(".pixels");
+        // more triangular
+        for (let y = 14; y <= 20; y++) {
+          for (let x = 13 - (y-14); x <= 18 + (y-14); x++) {
+            p.appendChild(px(x, y, "fg-snake"));
+          }
+        }
+        // eyes closer
+        p.appendChild(px(14, 15, "fg-eye"));
+        p.appendChild(px(17, 15, "fg-eye"));
+        p.appendChild(px(14, 14, "fg-eye-dark"));
+        p.appendChild(px(17, 14, "fg-eye-dark"));
+        // small tongue suggestion
+        p.appendChild(px(15, 21, "fg-red"));
+        p.appendChild(px(16, 21, "fg-red"));
+      }
+
+      function drawSnakeBody(container) {
+        const p = container.querySelector(".pixels");
+        // horizontal bar
+        for (let x = 8; x <= 24; x++) {
+          for (let y = 15; y <= 18; y++) {
+            const cls = (y === 15 || y === 18) ? "fg-snake-dark" : "fg-snake";
+            p.appendChild(px(x, y, cls));
+          }
+        }
+      }
+
+      function drawSnakeCorner(container) {
+        const p = container.querySelector(".pixels");
+        // vertical
+        for (let y = 10; y <= 20; y++) {
+          for (let x = 14; x <= 17; x++) {
+            p.appendChild(px(x, y, "fg-snake"));
+          }
+        }
+        // horizontal
+        for (let x = 14; x <= 24; x++) {
+          for (let y = 17; y <= 20; y++) {
+            p.appendChild(px(x, y, "fg-snake"));
+          }
+        }
+      }
+
+      function drawBgTile(container) {
+        const p = container.querySelector(".pixels");
+        // random background dots
+        const coords = [
+          [3,4],[8,2],[12,6],[18,3],[22,5],
+          [5,10],[15,11],[20,9],
+          [4,18],[9,20],[16,19],[23,17],
+        ];
+        coords.forEach(([x,y]) => p.appendChild(px(x,y,"fg-bg-dot")));
+      }
+
+      function drawBgTileOrb(container) {
+        const p = container.querySelector(".pixels");
+        drawBgTile(container);
+        // orb center
+        for (let x = 13; x <= 18; x++) {
+          for (let y = 13; y <= 18; y++) {
+            const isEdge = (x === 13 || x === 18 || y === 13 || y === 18);
+            p.appendChild(px(x, y, isEdge ? "fg-y-soft" : "fg-bullet"));
+          }
+        }
+      }
+
+      // Draw all sprites
+      drawFrogAIdle(document.querySelector(".frog-a-idle"));
+      drawFrogAHop(document.querySelector(".frog-a-hop"));
+      drawFrogBIdle(document.querySelector(".frog-b-idle"));
+      drawFrogBHop(document.querySelector(".frog-b-hop"));
+      drawFrogCIdle(document.querySelector(".frog-c-idle"));
+      drawSnakeHeadA(document.querySelector(".snake-head-a"));
+      drawSnakeHeadB(document.querySelector(".snake-head-b"));
+      drawSnakeBody(document.querySelector(".snake-body"));
+      drawSnakeCorner(document.querySelector(".snake-corner"));
+      drawBgTile(document.querySelector(".bg-tile"));
+      drawBgTileOrb(document.querySelector(".bg-tile-orb"));
+    </script>
+  </body>
+</html>
+
