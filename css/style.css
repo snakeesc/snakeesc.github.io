@@ -585,7 +585,7 @@ a { color: inherit; }
   }
 
   .frog-panel-title { font-size: 16px; }
-  .frog-panel-title .emoji { font-size: 18px; }
+  .frog-panel-title .emoji { font-size: 18px; text-shadow: none;}
   .frog-panel-sub { font-size: 13px; margin-bottom: 10px; }
   .frog-panel-section-label { font-size: 11px; margin-top: 10px; }
   .frog-panel-list li { font-size: 13px; margin-bottom: 6px; }
