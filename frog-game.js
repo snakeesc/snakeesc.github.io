@@ -4750,6 +4750,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
+    /*
     if (!snakeEggActive && babySnakes.length === 0) {
       upgrades.push({
         id: "snakeEgg",
@@ -4757,6 +4758,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         apply: () => { activateSnakeEgg(); }
       });
     }
+    */
 
     if (!extraUpgradeOptionActive) {
       upgrades.push({
