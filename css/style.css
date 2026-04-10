@@ -469,7 +469,7 @@ a { color: inherit; }
   flex: 0 0 150px;
   width: 150px;
   min-height: 200px;
-  padding: 18px 12px;
+  padding: 0px;
   border-radius: 6px;
   background: #111;
   border: 2px solid #333;
