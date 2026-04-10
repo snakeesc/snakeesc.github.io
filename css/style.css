@@ -513,7 +513,7 @@ a { color: inherit; }
   text-transform: uppercase;
 }
 
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-title { color: darkorange; text-shadow: 2px 2px gray; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-title { color: white; text-shadow: 2px 2px gray; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     .frog-upgrade-title { color: yellow; text-shadow: 2px 2px gray; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-title { color: white; text-shadow: 2px 2px gray; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb      .frog-upgrade-title { color: white; text-shadow: 2px 2px gray; }
