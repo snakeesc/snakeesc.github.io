@@ -500,7 +500,7 @@ a { color: inherit; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb:hover      { border-color: #fdba74; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role:hover     { border-color: #c084fc; }
 
-#upgradeOverlay .frog-upgrade-emoji { font-size: 22px; line-height: 1; }
+#upgradeOverlay .frog-upgrade-emoji { font-size: 20px; line-height: 1; }
 
 #upgradeOverlay .frog-upgrade-title {
   font-size: 12px;
