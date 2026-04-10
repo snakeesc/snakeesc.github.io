@@ -636,6 +636,26 @@ function getDashboardLevelData(totalOrbsCollected) {
   async function getMyDashboardBestFromLeaderboard() {
     try {
       const entries = await fetchLeaderboard();
+      const liveMyEntry =
+        window.FrogGameLeaderboard &&
+        window.FrogGameLeaderboard._lastMyEntry
+          ? window.FrogGameLeaderboard._lastMyEntry
+          : null;
+
+      if (liveMyEntry && liveMyEntry.userId) {
+        const exact = (entries || []).find(
+          (entry) => entry && entry.userId === liveMyEntry.userId
+        );
+
+        if (exact) {
+          return {
+            bestRun: Math.floor(getLeaderboardEntryScore(exact)),
+            bestTime: getLeaderboardEntryTime(exact),
+            found: true
+          };
+        }
+      }
+
       const savedTag =
         (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
         (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||

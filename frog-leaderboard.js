@@ -25,6 +25,37 @@
   const TAG_MIN_LENGTH    = 2;
   const TAG_MAX_LENGTH    = 20;
 
+  const PLAYER_ID_STORAGE_KEY = "frogSnake_playerId";
+
+  function generatePlayerId() {
+    try {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+    } catch (e) {}
+
+    return (
+      "frog_" +
+      Math.random().toString(36).slice(2) +
+      Date.now().toString(36)
+    );
+  }
+
+  function getOrCreatePlayerId() {
+    try {
+      if (typeof localStorage === "undefined") return generatePlayerId();
+
+      let id = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
+      if (id && String(id).trim()) return String(id).trim();
+
+      id = generatePlayerId();
+      localStorage.setItem(PLAYER_ID_STORAGE_KEY, id);
+      return id;
+    } catch (e) {
+      return generatePlayerId();
+    }
+  }
+
   /** @see frog-profanity.js (shared blocklist + normalization) */
   function isProfaneTag(tag) {
     if (
@@ -306,10 +337,12 @@
   // --------------------------------------------------
   async function fetchLeaderboard() {
     try {
-      const res = await fetch(LEADERBOARD_URL, {
+      const clientId = encodeURIComponent(getOrCreatePlayerId());
+      const res = await fetch(`${LEADERBOARD_URL}?clientId=${clientId}`, {
         method: "GET",
         headers: { Accept: "application/json" },
       });
+
       if (!res.ok) {
         console.warn("fetchLeaderboard non-OK:", res.status);
         return [];
@@ -356,7 +389,6 @@
         finalTag = tag.trim();
       }
 
-      // Fallback: if caller didn't pass a tag, try localStorage
       if (!finalTag && typeof localStorage !== "undefined") {
         try {
           const stored = localStorage.getItem(TAG_STORAGE_KEY);
@@ -372,6 +404,7 @@
         score,
         time,
         stats: stats || null,
+        clientId: getOrCreatePlayerId(),
       };
 
       if (finalTag && finalTag.length > 0) {
@@ -383,13 +416,13 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
         console.warn("Failed to submit score:", res.status, errData);
         return { _error: true, status: res.status, ...(errData || {}) };
       }
-      
+
       const data = await res.json().catch(() => null);
       if (!data || !Array.isArray(data.entries)) {
         console.warn("Leaderboard response missing entries:", data);
@@ -400,9 +433,9 @@
 
       if (data.myEntry) {
         const key = getEntryKey(data.myEntry);
-        const match =
-          key && entries.find((entry) => getEntryKey(entry) === key);
+        const match = key && entries.find((entry) => getEntryKey(entry) === key);
         lastMyEntry = match || data.myEntry;
+
         if (
           lastMyEntry &&
           typeof lastMyEntry.tag === "string" &&
@@ -540,7 +573,7 @@
     `;
     scoreboardOverlayInner.appendChild(header);
 
-    let { index: myIndex, entry: myEntry } =
+    const { index: myIndex, entry: myEntry } =
       findMyIndexInList(safeList, lastScore, lastTime);
     let summary = null;
 
@@ -689,36 +722,18 @@
             localStorage.setItem(TAG_STORAGE_KEY, cleanTag);
           }
 
-          // Update all cached references to the tag so highlighting stays correct
           if (myEntry) myEntry.tag = cleanTag;
           if (lastMyEntry) lastMyEntry.tag = cleanTag;
 
           renderSummary(cleanTag);
 
-          // Get the fresh list — prefer the server response, fall back to fetch
-          const freshList = Array.isArray(result) ? result : await fetchLeaderboard();
-
-          // Re-render the full scoreboard table in place so the new tag is shown
-          // and the highlight follows the correct row
-          if (freshList.length > 0) {
-            safeList.length = 0;
-            for (const e of freshList) safeList.push(e);
-            totalEntries = safeList.length;
-            totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
-
-            // Recompute which row is "mine" using the updated lastMyEntry (userId match)
-            const { index: newMyIndex } = findMyIndexInList(safeList, lastScore, lastTime);
-            myIndex = newMyIndex;
-
-            // Jump to the page that contains the player's row
-            if (myIndex >= 0) {
-              currentPage = Math.floor(myIndex / PAGE_SIZE);
-            }
-            renderPage();
+          if (Array.isArray(result)) {
+            // Re-render the mini leaderboard immediately with fresh worker data
+            updateMiniLeaderboard(result);
+          } else {
+            const refreshed = await fetchLeaderboard();
+            updateMiniLeaderboard(refreshed);
           }
-
-          // Also refresh the mini leaderboard
-          updateMiniLeaderboard(freshList, lastMyEntry);
 
           error.textContent = "";
           tagBox.style.display = "none";
@@ -772,8 +787,8 @@
     // ----- Leaderboard table with pagination (10 per page) -----
     const PAGE_SIZE = 10;
     let currentPage = 0;
-    let totalEntries = safeList.length;
-    let totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
+    const totalEntries = safeList.length;
+    const totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
 
     const tableWrapper = document.createElement("div");
     tableWrapper.className = "scoreboard-table-wrapper";
