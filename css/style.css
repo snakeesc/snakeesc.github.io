@@ -256,7 +256,7 @@ a { color: inherit; }
 .frog-overlay.is-open { display: flex; }
 
 .frog-panel {
-  background: transparent;
+  background: #1c1917;
   padding: 18px 22px 16px;
   border-radius: 14px;
   border: none;
