@@ -4603,6 +4603,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
   function getUpgradeChoices() {
     const neon = "#4defff";
+    const crimson = "crimson";
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
@@ -4620,7 +4621,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!doubleYolkerActive) {
       upgrades.push({
         id: "doubleYolker",
-        label: `🥚 Double Yolker<br>Orbs have a <span style="color:${neon};">15%</span> chance to spawn <span style="color:${neon};">2</span> frogs`,
+        label: `🥚 Double Yolker<br>Orbs have a <span style="color:${crimson};">15%</span> chance to spawn <span style="color:${neon};">2</span> frogs`,
         apply: () => { doubleYolkerActive = true; }
       });
     }
@@ -4636,7 +4637,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
       upgrades.push({
         id: "epicMoreOrbs",
-        label: `🎯 Orb Flow<br>Increase orb spawn rate by <span style="color:${neon};">10%</span>`,
+        label: `🎯 Orb Flow<br>Increase orb spawn rate by <span style="color:${crimson};">10%</span>`,
         apply: () => {
           orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
           if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) {
@@ -4648,13 +4649,13 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     upgrades.push({
       id: "luckyRoll",
-      label: `🎲 Lucky Roll<br>Trigger a random orb buff at <span style="color:${neon};">1.5x</span> duration`,
+      label: `🎲 Lucky Roll<br>Trigger a random orb buff at <span style="color:${crimson};">1.5x</span> duration`,
       apply: () => { triggerLuckyRoll(); }
     });
 
     upgrades.push({
       id: "epicOrbStorm",
-      label: `🌩️ Orb Storm<br>Drop <span style="color:${neon};">${ORB_STORM_COUNT}</span> random orbs right now`,
+      label: `🌩️ Orb Storm<br>Drop <span style="color:${crimson};">${ORB_STORM_COUNT}</span> random orbs right now`,
       apply: () => {
         const width  = window.innerWidth;
         const height = window.innerHeight;
