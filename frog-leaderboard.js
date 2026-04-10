@@ -540,7 +540,7 @@
     `;
     scoreboardOverlayInner.appendChild(header);
 
-    const { index: myIndex, entry: myEntry } =
+    let { index: myIndex, entry: myEntry } =
       findMyIndexInList(safeList, lastScore, lastTime);
     let summary = null;
 
@@ -689,18 +689,36 @@
             localStorage.setItem(TAG_STORAGE_KEY, cleanTag);
           }
 
+          // Update all cached references to the tag so highlighting stays correct
           if (myEntry) myEntry.tag = cleanTag;
           if (lastMyEntry) lastMyEntry.tag = cleanTag;
 
           renderSummary(cleanTag);
 
-          if (Array.isArray(result)) {
-            // Re-render the mini leaderboard immediately with fresh worker data
-            updateMiniLeaderboard(result);
-          } else {
-            const refreshed = await fetchLeaderboard();
-            updateMiniLeaderboard(refreshed);
+          // Get the fresh list — prefer the server response, fall back to fetch
+          const freshList = Array.isArray(result) ? result : await fetchLeaderboard();
+
+          // Re-render the full scoreboard table in place so the new tag is shown
+          // and the highlight follows the correct row
+          if (freshList.length > 0) {
+            safeList.length = 0;
+            for (const e of freshList) safeList.push(e);
+            totalEntries = safeList.length;
+            totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
+
+            // Recompute which row is "mine" using the updated lastMyEntry (userId match)
+            const { index: newMyIndex } = findMyIndexInList(safeList, lastScore, lastTime);
+            myIndex = newMyIndex;
+
+            // Jump to the page that contains the player's row
+            if (myIndex >= 0) {
+              currentPage = Math.floor(myIndex / PAGE_SIZE);
+            }
+            renderPage();
           }
+
+          // Also refresh the mini leaderboard
+          updateMiniLeaderboard(freshList, lastMyEntry);
 
           error.textContent = "";
           tagBox.style.display = "none";
@@ -754,8 +772,8 @@
     // ----- Leaderboard table with pagination (10 per page) -----
     const PAGE_SIZE = 10;
     let currentPage = 0;
-    const totalEntries = safeList.length;
-    const totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
+    let totalEntries = safeList.length;
+    let totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
 
     const tableWrapper = document.createElement("div");
     tableWrapper.className = "scoreboard-table-wrapper";
