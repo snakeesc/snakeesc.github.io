@@ -171,7 +171,7 @@ const STARTING_BUFFS = [
     levelRequired: 5,
     emoji: "⚗️",
     name: "Evolved",
-    desc: "Start with 1–5 frogs of one random role"
+    desc: "Start with 2–4 frogs of one random role"
   },
   {
     id: "luckyStart",
@@ -285,7 +285,7 @@ function applySelectedStartingBuff() {
     case "evolved": {
       const roleIds = ["champion", "aura", "magnet", "lucky", "zombie"];
       const chosenRole = roleIds[Math.floor(Math.random() * roleIds.length)];
-      const count = randInt(1, 5);
+      const count = randInt(2, 4);
 
       for (let i = 0; i < count; i++) {
         spawnRoleFrog(chosenRole);
@@ -2657,7 +2657,14 @@ function triggerLuckyRoll() {
 }
 
 function promoteAllFrogs() {
-  for (const frog of frogs) {
+  if (!Array.isArray(frogs) || frogs.length === 0) return;
+
+  const pool = frogs.slice();
+  const count = Math.min(12, pool.length);
+
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    const frog = pool.splice(idx, 1)[0];
     grantStarUpgrade(frog);
   }
 }
@@ -3283,7 +3290,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
     // Zombie on-death effect (any zombie frog)
     if (frog.isZombie) {
-      spawnExtraFrogs(5);
+      spawnExtraFrogs(3);
       if (source === "snake") {
         snakeSlowTime = Math.max(snakeSlowTime, 3 * buffDurationFactor);
       }
@@ -3453,7 +3460,7 @@ function computeDeathRattleChanceForFrog(frog) {
         break;
 
       case "megaSpawn": {
-        const base = getLuckBiasedInt(10, 20);
+        const base = getLuckBiasedInt(8, 15);
         const bonus = isLuckyCollector ? getLuckBiasedInt(3, 8) : 0;
         spawnExtraFrogs(base + bonus);
         break;
@@ -4046,7 +4053,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
         let frogsToSpawnFromOrb = 0;
 
-        if (orbSpecialistActive) {
+        if (orbSpecialistActive && Math.random() < 0.50) {
           frogsToSpawnFromOrb += 1;
         }
 
@@ -4800,7 +4807,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!orbSpecialistActive) {
       upgrades.push({
         id: "epicOrbSpecialist",
-        label: `🧪 Orb Specialist<br>Every collected orb guarantees <span style="color:${epicTitleColor};">1</span> extra frog`,
+        label: `🧪 Orb Specialist<br>Collected orbs have a <span style="color:${epicTitleColor};">50%</span> chance to spawn <span style="color:${epicTitleColor};">1</span> extra frog`,
         apply: () => { orbSpecialistActive = true; }
       });
     }
@@ -4832,7 +4839,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (frogs.length > 0) {
       upgrades.push({
         id: "promotionEpic",
-        label: `🥇 Promotion<br>All frogs gain <span style="color:${epicTitleColor};">+1 star</span> immediately`,
+        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">12</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
         apply: () => { promoteAllFrogs(); }
       });
     }
