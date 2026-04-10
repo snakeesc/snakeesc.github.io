@@ -310,7 +310,7 @@ a { color: inherit; }
   text-align: center; margin-bottom: 8px; border: none;
   transition: transform 0.08s ease, filter 0.12s ease; box-shadow: none;
 }
-.frog-btn-primary { background: #65a30d; color: white; font-weight: 800; }
+.frog-btn-primary { background: #65a30d; color: white; font-weight: 800; box-shadow: 2px 2px #4f7518; }
 .frog-btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
 .frog-btn-secondary { background: #292524; color: white; border: 1px solid #44403c; font-weight: 700; }
 .frog-btn-secondary:hover { filter: brightness(1.08); transform: translateY(-1px); }
