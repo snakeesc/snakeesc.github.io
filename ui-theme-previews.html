@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Escape the Snake — Layout Preview Lab</title>
+    <style>
+      :root {
+        --bg: #0b120d;
+        --ink: #f5f5f4;
+        --muted: #cbd5c0;
+        --line: rgba(255, 255, 255, 0.12);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        background: radial-gradient(1000px 700px at 15% 10%, rgba(132, 204, 22, 0.1), transparent 55%), var(--bg);
+        color: var(--ink);
+      }
+      .wrap { max-width: 1300px; margin: 0 auto; padding: 18px 14px 40px; }
+      .top {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        margin-bottom: 12px;
+      }
+      h1 { font-size: 16px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+      p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+      .preview {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        min-height: 290px;
+        position: relative;
+      }
+      .label {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        z-index: 2;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 6px;
+        border-radius: 7px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+      }
+      .stage {
+        min-height: 290px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn {
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        font: inherit;
+        font-size: 12px;
+        padding: 9px 10px;
+      }
+      .btn.primary { font-weight: 800; }
+
+      /* 1) Classic Centered Modal */
+      .p1 .stage { background: linear-gradient(180deg, #0a120c, #101c14); }
+      .p1 .panel {
+        width: 360px; border-radius: 14px; border: 1px solid #3c4a3f;
+        background: #161d17; padding: 16px; box-shadow: 0 16px 34px rgba(0,0,0,0.6);
+      }
+      .p1 .title { text-align: center; font-weight: 900; margin-bottom: 8px; }
+      .p1 .sub { text-align: center; color: #bfd0bf; font-size: 12px; margin-bottom: 10px; }
+      .p1 .btn.primary { width: 100%; background: #9be21b; color: #0c150e; border-color: #9be21b; margin-bottom: 8px; }
+      .p1 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+      /* 2) Split Left Nav + Content */
+      .p2 .stage { background: linear-gradient(180deg, #12110d, #1a1811); }
+      .p2 .shell {
+        width: 480px; border: 1px solid #4e4739; border-radius: 12px;
+        background: #1d1a13; display: grid; grid-template-columns: 150px 1fr; overflow: hidden;
+      }
+      .p2 .nav { border-right: 1px solid #4e4739; padding: 10px; display: grid; gap: 7px; }
+      .p2 .nav .btn { text-align: left; background: #2a251b; border-color: #5b513f; }
+      .p2 .main { padding: 12px; }
+      .p2 .main h4 { margin: 0 0 6px; font-size: 13px; }
+      .p2 .list { display: grid; gap: 7px; }
+      .p2 .item { border: 1px solid #5b513f; background: #2a251b; border-radius: 8px; padding: 7px; font-size: 12px; color: #d9cfbf; }
+
+      /* 3) Stacked Command Cards */
+      .p3 .stage { background: linear-gradient(180deg, #071217, #0f2028); }
+      .p3 .stack { width: 430px; display: grid; gap: 8px; }
+      .p3 .head { font-size: 14px; font-weight: 900; letter-spacing: 0.06em; margin-bottom: 2px; }
+      .p3 .card {
+        border: 1px solid #32515d; background: #122630; border-radius: 10px;
+        padding: 10px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+      }
+      .p3 .card b { font-size: 12px; }
+      .p3 .card span { font-size: 11px; color: #a8c5cd; }
+      .p3 .mini { font-size: 11px; padding: 6px 7px; border-radius: 7px; border: 1px solid #3f6a77; background: #1a3541; }
+
+      /* 4) Corner HUD + Drawer */
+      .p4 .stage {
+        justify-content: flex-start; align-items: flex-end;
+        background:
+          linear-gradient(180deg, #0d150f, #18261a),
+          repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 7px);
+      }
+      .p4 .hud {
+        width: 420px; border: 1px solid #3f5b41; border-radius: 10px; background: #162118;
+        display: grid; grid-template-columns: 56px 1fr; overflow: hidden;
+      }
+      .p4 .icons { border-right: 1px solid #3f5b41; display: grid; gap: 7px; padding: 8px; }
+      .p4 .dot { width: 36px; height: 36px; border: 1px solid #4f7652; border-radius: 9px; background: #223528; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+      .p4 .drawer { padding: 10px; }
+      .p4 .drawer h4 { margin: 0 0 6px; font-size: 13px; }
+      .p4 .drawer .btn { margin-right: 6px; margin-bottom: 6px; }
+
+      /* 5) Bulletin Board List Layout */
+      .p5 .stage { background: linear-gradient(180deg, #1b130d, #2a1d14); }
+      .p5 .board {
+        width: 450px; border: 1px solid #6b4c34; border-radius: 12px; background: #2c1f16;
+        padding: 12px;
+      }
+      .p5 .board h4 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+      .p5 .ticket {
+        border: 1px dashed #8b664b; border-radius: 8px; background: #3b2b1f; padding: 9px; margin-bottom: 8px;
+      }
+      .p5 .ticket b { font-size: 12px; }
+      .p5 .ticket div { font-size: 11px; color: #e5ccb7; margin-top: 4px; }
+
+      /* 6) Terminal Console Style */
+      .p6 .stage { background: #0a0a0a; }
+      .p6 .term {
+        width: 500px; border: 1px solid #2f2f2f; border-radius: 10px; background: #111;
+        box-shadow: 0 14px 30px rgba(0,0,0,0.65);
+      }
+      .p6 .bar { height: 30px; border-bottom: 1px solid #2f2f2f; display: flex; align-items: center; padding: 0 10px; font-size: 11px; color: #a3a3a3; }
+      .p6 .out { padding: 10px; font-size: 12px; line-height: 1.6; color: #d4d4d4; }
+      .p6 .ok { color: #a3e635; }
+      .p6 .warn { color: #fbbf24; }
+      .p6 .line { margin-bottom: 4px; }
+
+      /* 7) Compact Top Command Strip */
+      .p7 .stage {
+        align-items: flex-start;
+        background: linear-gradient(180deg, #0e121c, #171f31);
+      }
+      .p7 .strip {
+        width: 560px; margin-top: 12px; border: 1px solid #434d66; border-radius: 11px;
+        background: #1a2236; padding: 10px;
+      }
+      .p7 .strip .title { font-size: 12px; margin-bottom: 8px; color: #c8d1e3; }
+      .p7 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .p7 .actions .btn { background: #2a3552; border-color: #4f5f87; }
+      .p7 .actions .btn.primary { background: #9be21b; border-color: #9be21b; color: #0e1a11; }
+
+      /* 8) Arcade Cabinet Frame */
+      .p8 .stage {
+        background: linear-gradient(180deg, #1a0d1e, #2d1334);
+      }
+      .p8 .cab {
+        width: 390px; border: 2px solid #8b5cf6; border-radius: 14px; background: #1e1124;
+        padding: 10px; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2), 0 16px 34px rgba(0,0,0,0.55);
+      }
+      .p8 .screen {
+        border: 1px solid #7040c6; border-radius: 8px; background: #110b16;
+        padding: 10px; margin-bottom: 9px;
+      }
+      .p8 .screen h4 { margin: 0 0 6px; font-size: 13px; color: #ddd6fe; }
+      .p8 .screen p { margin: 0; font-size: 11px; color: #c4b5fd; }
+      .p8 .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .p8 .controls .btn { background: #2f1c3f; border-color: #7e56c8; }
+
+      /* 9) Minimal Light Card */
+      .p9 .stage { background: linear-gradient(180deg, #e6f5dd, #ccebc5); color: #193321; }
+      .p9 .panel {
+        width: 360px; border: 1px solid #8ab59b; border-radius: 12px; background: #f4fff0;
+        padding: 14px; box-shadow: 0 12px 26px rgba(0,0,0,0.16);
+      }
+      .p9 .panel h4 { margin: 0 0 6px; text-align: center; font-size: 14px; }
+      .p9 .panel p { margin: 0 0 10px; text-align: center; color: #35533f; }
+      .p9 .btn { background: #ecf7e7; color: #1f3a2a; border-color: #9bc0a8; }
+      .p9 .btn.primary { background: #8fd536; border-color: #8fd536; color: #18301f; width: 100%; margin-bottom: 8px; }
+      .p9 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+      /* 10) Leaderboard-Focused Layout */
+      .p10 .stage { background: linear-gradient(180deg, #0f1113, #171a1e); }
+      .p10 .panel {
+        width: 460px; border: 1px solid #3d444f; border-radius: 12px; background: #1d2229; padding: 12px;
+      }
+      .p10 .head { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: #c9d1dd; }
+      .p10 table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      .p10 th, .p10 td { padding: 7px 8px; border-bottom: 1px solid #2d3440; color: #dce3ec; text-align: left; }
+      .p10 tr.me td { background: rgba(163,230,53,0.15); color: #efffd0; font-weight: 800; }
+      .p10 .footer { display: flex; gap: 8px; margin-top: 9px; }
+      .p10 .footer .btn { flex: 1; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <h1>Escape the Snake — Layout Preview Lab</h1>
+        <p>
+          10 different UI directions below. These are intentionally different in structure, not just color.
+          Tell me the preview numbers you like, and I will merge the best parts into one final unified game theme.
+        </p>
+      </div>
+
+      <div class="grid">
+        <section class="preview p1"><div class="label">Preview 1 · classic modal</div><div class="stage"><div class="panel"><div class="title">Escape the Snake 🐍</div><div class="sub">Keep your frogs alive as long as you can.</div><button class="btn primary">Start Run</button><div class="row"><button class="btn">How to Play</button><button class="btn">Upgrades</button><button class="btn">Leaderboard</button><button class="btn">Dashboard</button></div></div></div></section>
+
+        <section class="preview p2"><div class="label">Preview 2 · split nav</div><div class="stage"><div class="shell"><div class="nav"><button class="btn">Start</button><button class="btn">How To</button><button class="btn">Upgrades</button><button class="btn">Board</button></div><div class="main"><h4>Current Run</h4><div class="list"><div class="item">Frogs alive: 12</div><div class="item">Snake speed: Medium</div><div class="item">Next shed in: 00:32</div></div></div></div></div></section>
+
+        <section class="preview p3"><div class="label">Preview 3 · command cards</div><div class="stage"><div class="stack"><div class="head">Choose an upgrade</div><div class="card"><div><b>Mutation</b><br /><span>Jump faster and higher</span></div><button class="mini">Pick</button></div><div class="card"><div><b>Orb Whisperer</b><br /><span>Orbs linger longer</span></div><button class="mini">Pick</button></div><div class="card"><div><b>Last Stand</b><br /><span>Revive chance boost</span></div><button class="mini">Pick</button></div></div></div></section>
+
+        <section class="preview p4"><div class="label">Preview 4 · hud drawer</div><div class="stage"><div class="hud"><div class="icons"><div class="dot">▶</div><div class="dot">?</div><div class="dot">⬆</div><div class="dot">🏆</div></div><div class="drawer"><h4>Pause Menu</h4><button class="btn primary">Resume</button><button class="btn">Restart</button><button class="btn">How To</button><button class="btn">Quit</button></div></div></div></section>
+
+        <section class="preview p5"><div class="label">Preview 5 · bulletin list</div><div class="stage"><div class="board"><h4>Upgrade Bulletin</h4><div class="ticket"><b>Orb Collector</b><div>Collected orbs can spawn extra frogs.</div></div><div class="ticket"><b>Buffs Last Longer</b><div>All temporary bonuses extend duration.</div></div><div class="ticket"><b>Snake Egg</b><div>Weakens speed gain on next shed.</div></div></div></div></section>
+
+        <section class="preview p6"><div class="label">Preview 6 · terminal style</div><div class="stage"><div class="term"><div class="bar">escape://snake/ui</div><div class="out"><div class="line"><span class="ok">[OK]</span> run_state = active</div><div class="line"><span class="warn">[TIP]</span> avoid direct line to snake head</div><div class="line">commands: <b>resume</b> · <b>restart</b> · <b>upgrades</b></div><div class="line">input: <span class="ok">mouse</span></div></div></div></div></section>
+
+        <section class="preview p7"><div class="label">Preview 7 · top command strip</div><div class="stage"><div class="strip"><div class="title">Quick actions (minimal in-game UI)</div><div class="actions"><button class="btn primary">Start Run</button><button class="btn">Pause</button><button class="btn">Upgrades</button><button class="btn">Leaderboard</button><button class="btn">How To</button></div></div></div></section>
+
+        <section class="preview p8"><div class="label">Preview 8 · arcade cabinet</div><div class="stage"><div class="cab"><div class="screen"><h4>Escape the Snake</h4><p>Arcade-styled framing, still clean and readable.</p></div><div class="controls"><button class="btn">Start</button><button class="btn">How To</button><button class="btn">Upgrades</button><button class="btn">Board</button></div></div></div></section>
+
+        <section class="preview p9"><div class="label">Preview 9 · light simple</div><div class="stage"><div class="panel"><h4>Escape the Snake</h4><p>A bright, easy-on-eyes option for menus.</p><button class="btn primary">Start Run</button><div class="row"><button class="btn">How To</button><button class="btn">Upgrades</button><button class="btn">Board</button><button class="btn">Close</button></div></div></div></section>
+
+        <section class="preview p10"><div class="label">Preview 10 · leaderboard-first</div><div class="stage"><div class="panel"><div class="head"><span>Leaderboard</span><span>Top runs</span></div><table><thead><tr><th>#</th><th>Name</th><th>Time</th></tr></thead><tbody><tr><td>1</td><td>Hopper</td><td>12:44</td></tr><tr class="me"><td>2</td><td>You</td><td>11:59</td></tr><tr><td>3</td><td>OrbLord</td><td>11:13</td></tr><tr><td>4</td><td>MossRunner</td><td>09:42</td></tr></tbody></table><div class="footer"><button class="btn">Prev</button><button class="btn">Next</button></div></div></div></section>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Escape the Snake — UI Theme Previews</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ui-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+        /* Tokens (overridden per theme) */
+        --bg-0: #0b120d;
+        --bg-1: #0f1a12;
+        --panel-bg: #141412;
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+
+        --text-0: #f5f5f4;
+        --text-1: rgba(245, 245, 244, 0.82);
+        --muted: rgba(245, 245, 244, 0.62);
+
+        --accent: #84cc16;
+        --accent-2: #14b8a6;
+        --danger: #ef4444;
+
+        --btn-primary-bg: var(--accent);
+        --btn-primary-fg: #0b120d;
+        --btn-secondary-bg: rgba(255, 255, 255, 0.06);
+        --btn-secondary-fg: var(--text-0);
+        --btn-border: rgba(255, 255, 255, 0.12);
+
+        --radius-lg: 14px;
+        --radius-md: 10px;
+        --radius-sm: 8px;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--ui-font);
+        background:
+          radial-gradient(1200px 900px at 20% 10%, rgba(132, 204, 22, 0.12), transparent 55%),
+          radial-gradient(1100px 800px at 85% 75%, rgba(20, 184, 166, 0.10), transparent 60%),
+          linear-gradient(180deg, var(--bg-0), var(--bg-1));
+        color: var(--text-0);
+      }
+
+      /* Theme variants */
+      [data-theme="pond-night"] {
+        color-scheme: dark;
+        --bg-0: #070d0a;
+        --bg-1: #0b1511;
+        --panel-bg: #101614;
+        --panel-border: rgba(255, 255, 255, 0.10);
+        --text-0: #f5f5f4;
+        --text-1: rgba(245, 245, 244, 0.84);
+        --muted: rgba(245, 245, 244, 0.62);
+        --accent: #9be21b;
+        --accent-2: #22c55e;
+        --btn-primary-fg: #0a120d;
+        --btn-secondary-bg: rgba(255, 255, 255, 0.06);
+        --btn-border: rgba(255, 255, 255, 0.13);
+      }
+
+      [data-theme="moss-stone"] {
+        color-scheme: dark;
+        --bg-0: #0b100a;
+        --bg-1: #121a10;
+        --panel-bg: #14170f;
+        --panel-border: rgba(255, 255, 255, 0.10);
+        --text-0: #f6f4ee;
+        --text-1: rgba(246, 244, 238, 0.84);
+        --muted: rgba(246, 244, 238, 0.62);
+        --accent: #b7e33a;
+        --accent-2: #fbbf24;
+        --btn-primary-fg: #121a10;
+        --btn-secondary-bg: rgba(246, 244, 238, 0.07);
+        --btn-border: rgba(246, 244, 238, 0.14);
+      }
+
+      [data-theme="sunny-meadow"] {
+        color-scheme: light;
+        --bg-0: #e8f5dd;
+        --bg-1: #cfecc1;
+        --panel-bg: #14351f;
+        --panel-border: rgba(255, 255, 255, 0.16);
+        --shadow: 0 16px 44px rgba(0, 0, 0, 0.28);
+        --text-0: #f8fafc;
+        --text-1: rgba(248, 250, 252, 0.86);
+        --muted: rgba(248, 250, 252, 0.64);
+        --accent: #a3e635;
+        --accent-2: #22c55e;
+        --btn-primary-fg: #0b120d;
+        --btn-secondary-bg: rgba(255, 255, 255, 0.10);
+        --btn-border: rgba(255, 255, 255, 0.18);
+      }
+
+      .wrap {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 22px 16px 52px;
+      }
+
+      .topbar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+
+      .title {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+
+      .title h1 {
+        margin: 0;
+        font-size: 15px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .title .hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .tab {
+        all: unset;
+        cursor: pointer;
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--btn-border);
+        background: var(--btn-secondary-bg);
+        color: var(--btn-secondary-fg);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        transition: transform 90ms ease, filter 120ms ease;
+      }
+
+      .tab:hover {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+      }
+
+      .tab[aria-pressed="true"] {
+        background: color-mix(in srgb, var(--accent) 22%, var(--btn-secondary-bg));
+        border-color: color-mix(in srgb, var(--accent) 35%, var(--btn-border));
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        align-items: start;
+        margin-top: 12px;
+      }
+
+      @media (max-width: 980px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        border: 1px solid color-mix(in srgb, var(--panel-border) 100%, transparent);
+        background: color-mix(in srgb, var(--panel-bg) 78%, transparent);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card-hd {
+        padding: 12px 14px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .card-hd strong {
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .card-hd span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .card-bd {
+        padding: 14px;
+      }
+
+      /* === Shared UI components (mirrors your in-game overlays) === */
+      .frog-panel {
+        background: color-mix(in srgb, var(--panel-bg) 92%, transparent);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-lg);
+        color: var(--text-0);
+        box-shadow: var(--shadow);
+        padding: 16px 16px 14px;
+      }
+
+      .frog-panel-title {
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .frog-panel-sub {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-1);
+        line-height: 1.55;
+        margin-bottom: 12px;
+      }
+
+      .frog-panel-section-label {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--accent) 80%, var(--text-0));
+        margin: 12px 0 6px;
+      }
+
+      .frog-panel-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .frog-panel-list li {
+        font-size: 12px;
+        color: var(--text-1);
+        line-height: 1.55;
+        padding: 8px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: var(--radius-md);
+        margin-bottom: 8px;
+      }
+
+      .frog-btn {
+        width: 100%;
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+        text-align: center;
+        margin-bottom: 8px;
+        border: 1px solid var(--btn-border);
+        transition: transform 90ms ease, filter 120ms ease;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+      }
+
+      .frog-btn:hover {
+        filter: brightness(1.06);
+        transform: translateY(-1px);
+      }
+
+      .frog-btn-primary {
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-fg);
+        border-color: color-mix(in srgb, var(--btn-primary-bg) 55%, var(--btn-border));
+      }
+
+      .frog-btn-secondary {
+        background: var(--btn-secondary-bg);
+        color: var(--btn-secondary-fg);
+      }
+
+      .frog-btn-danger {
+        background: color-mix(in srgb, var(--danger) 28%, var(--btn-secondary-bg));
+        color: color-mix(in srgb, var(--danger) 45%, var(--text-0));
+        border-color: color-mix(in srgb, var(--danger) 35%, var(--btn-border));
+      }
+
+      .upgrade-choices {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .frog-upgrade-choice {
+        width: 160px;
+        min-height: 190px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 12px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      }
+
+      .frog-upgrade-choice.is-hover {
+        transform: translateY(-3px);
+        filter: brightness(1.04);
+      }
+
+      .frog-upgrade-emoji {
+        font-size: 22px;
+      }
+
+      .frog-upgrade-title {
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        font-weight: 900;
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .frog-upgrade-desc {
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-1);
+      }
+
+      .upgrade-type-mobility {
+        border-color: color-mix(in srgb, var(--accent) 45%, rgba(255, 255, 255, 0.12));
+      }
+
+      .upgrade-type-buff {
+        border-color: color-mix(in srgb, var(--accent-2) 55%, rgba(255, 255, 255, 0.12));
+      }
+
+      .upgrade-type-survival {
+        border-color: color-mix(in srgb, var(--danger) 50%, rgba(255, 255, 255, 0.12));
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        background: rgba(0, 0, 0, 0.22);
+        font-size: 12px;
+      }
+
+      thead th {
+        text-align: left;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-0);
+        padding: 10px 10px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+      }
+
+      tbody td {
+        padding: 9px 10px;
+        color: var(--text-1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      }
+
+      tbody tr:nth-child(odd) td {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      tbody tr.is-me td {
+        background: color-mix(in srgb, var(--accent) 16%, rgba(255, 255, 255, 0.03));
+        color: var(--text-0);
+        font-weight: 900;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      @media (max-width: 560px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .kbd {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 7px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-0);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.03em;
+      }
+    </style>
+  </head>
+  <body data-theme="pond-night">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="title">
+          <h1>UI Theme Previews</h1>
+          <div class="hint">Pick a direction — then I’ll apply it to `css/style.css` everywhere.</div>
+        </div>
+
+        <div class="tabs" role="group" aria-label="Theme selector">
+          <button class="tab" data-theme-btn="pond-night" aria-pressed="true">Pond Night</button>
+          <button class="tab" data-theme-btn="moss-stone" aria-pressed="false">Moss & Stone</button>
+          <button class="tab" data-theme-btn="sunny-meadow" aria-pressed="false">Sunny Meadow</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <div class="card-hd">
+            <strong>Main menu</strong>
+            <span>Panel + buttons</span>
+          </div>
+          <div class="card-bd">
+            <div class="frog-panel">
+              <div class="frog-panel-title">Escape the Snake <span aria-hidden="true">🐍</span></div>
+              <div class="frog-panel-sub">
+                Keep your frogs alive as long as you can.<br />
+                Mouse to move · Frogs follow your cursor.
+              </div>
+
+              <button class="frog-btn frog-btn-primary">Start Run</button>
+
+              <div class="two-col">
+                <button class="frog-btn frog-btn-secondary">How to Play</button>
+                <button class="frog-btn frog-btn-secondary">Upgrades</button>
+                <button class="frog-btn frog-btn-secondary">Leaderboard</button>
+                <button class="frog-btn frog-btn-secondary">Dashboard</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-hd">
+            <strong>How to play</strong>
+            <span>Section labels + list items</span>
+          </div>
+          <div class="card-bd">
+            <div class="frog-panel">
+              <div class="frog-panel-title">How to Play <span aria-hidden="true">❓</span></div>
+              <div class="frog-panel-sub">
+                Escape the Snake is a survival game. Keep your frogs alive as long as possible.
+              </div>
+
+              <div class="frog-panel-section-label">Controls</div>
+              <ul class="frog-panel-list">
+                <li><strong>Mouse:</strong> move your cursor – your frogs try to follow. <span class="kbd">Hold steady</span></li>
+              </ul>
+
+              <div class="frog-panel-section-label">Tips</div>
+              <ul class="frog-panel-list">
+                <li>Plan your path early when the snake sheds (it gets faster).</li>
+                <li>Don’t chase every orb; staying alive is more important.</li>
+              </ul>
+
+              <button class="frog-btn frog-btn-secondary">Close</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-hd">
+            <strong>Upgrade choice</strong>
+            <span>Cards (3 options)</span>
+          </div>
+          <div class="card-bd">
+            <div class="frog-panel">
+              <div class="frog-panel-title">Choose an upgrade</div>
+              <div class="frog-panel-sub">Pick one. Survive longer. Simple.</div>
+
+              <div class="upgrade-choices">
+                <div class="frog-upgrade-choice upgrade-type-mobility">
+                  <div class="frog-upgrade-emoji" aria-hidden="true">🦵</div>
+                  <div class="frog-upgrade-title">Mutation</div>
+                  <div class="frog-upgrade-desc">+10% jump speed and +10% jump height.</div>
+                </div>
+
+                <div class="frog-upgrade-choice upgrade-type-buff is-hover">
+                  <div class="frog-upgrade-emoji" aria-hidden="true">✨</div>
+                  <div class="frog-upgrade-title">Orb Whisperer</div>
+                  <div class="frog-upgrade-desc">Orbs linger longer before fading.</div>
+                </div>
+
+                <div class="frog-upgrade-choice upgrade-type-survival">
+                  <div class="frog-upgrade-emoji" aria-hidden="true">🛡️</div>
+                  <div class="frog-upgrade-title">Last Stand</div>
+                  <div class="frog-upgrade-desc">Your last frog gets a strong revive chance.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-hd">
+            <strong>Leaderboard</strong>
+            <span>Table readability</span>
+          </div>
+          <div class="card-bd">
+            <div class="frog-panel">
+              <div class="frog-panel-title">Leaderboard <span aria-hidden="true">🏆</span></div>
+              <div class="frog-panel-sub">Top runs from all players.</div>
+
+              <table aria-label="Leaderboard preview table">
+                <thead>
+                  <tr>
+                    <th style="width: 56px;">Rank</th>
+                    <th>Name</th>
+                    <th style="text-align: right; width: 96px;">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>1</td><td>Hopper</td><td style="text-align: right;">12:44</td></tr>
+                  <tr><td>2</td><td>OrbLord</td><td style="text-align: right;">11:10</td></tr>
+                  <tr class="is-me"><td>3</td><td>You</td><td style="text-align: right;">10:58</td></tr>
+                  <tr><td>4</td><td>SnakeBait</td><td style="text-align: right;">10:02</td></tr>
+                  <tr><td>5</td><td>MossRunner</td><td style="text-align: right;">09:47</td></tr>
+                  <tr><td>6</td><td>FrogStack</td><td style="text-align: right;">09:31</td></tr>
+                </tbody>
+              </table>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+                <button class="frog-btn frog-btn-secondary" style="margin-bottom: 0;">Prev</button>
+                <button class="frog-btn frog-btn-secondary" style="margin-bottom: 0;">Next</button>
+              </div>
+
+              <div style="margin-top: 10px;">
+                <button class="frog-btn frog-btn-danger" style="margin-bottom: 0;">Close</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const root = document.body;
+      const buttons = Array.from(document.querySelectorAll("[data-theme-btn]"));
+
+      function setTheme(theme) {
+        root.setAttribute("data-theme", theme);
+        for (const b of buttons) {
+          b.setAttribute("aria-pressed", b.getAttribute("data-theme-btn") === theme ? "true" : "false");
+        }
+      }
+
+      for (const b of buttons) {
+        b.addEventListener("click", () => setTheme(b.getAttribute("data-theme-btn")));
+      }
+    </script>
+  </body>
+</html>
+
