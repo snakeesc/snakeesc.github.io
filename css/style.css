@@ -454,7 +454,11 @@ a { color: inherit; }
   width: min(860px, 94vw); max-width: 94vw; overflow: visible;
 }
 
-#upgradeOverlay .frog-panel-sub { margin: 0 0 18px; text-align: center; font-size: 13px; color: #f5f5f4; text-shadow: 1px 1px darkslateblue; }
+#upgradeOverlay .frog-panel-sub {
+  margin: 0 0 18px; text-align: center;
+  font-size: 13px; color: #a8a29e;
+}
+
 #upgradeOverlay .upgrade-layout { width: 100%; }
 #upgradeOverlay .upgrade-column { background: transparent; border: none; padding: 0; }
 
@@ -463,16 +467,17 @@ a { color: inherit; }
   justify-content: center; align-items: stretch; gap: 11%;
 }
 
+/* Base card — matches .frog-panel language */
 #upgradeOverlay .frog-upgrade-choice {
   all: unset;
   box-sizing: border-box;
   flex: 0 0 150px;
   width: 150px;
   min-height: 200px;
-  padding: 18px 12px;
-  border-radius: 6px;
-  background: #111;
-  border: 2px solid #333;
+  padding: 18px 14px;
+  border-radius: 14px;
+  background: #1c1917;
+  border: 1px solid #44403c;
   text-align: center;
   cursor: pointer;
   display: flex;
@@ -480,49 +485,50 @@ a { color: inherit; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 3px 3px 0 #000, inset 0 1px 0 rgba(255,255,255,0.06);
-  transition: transform 140ms ease, box-shadow 140ms ease;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 
 #upgradeOverlay .frog-upgrade-choice:hover {
   transform: translateY(-4px);
+  background: #242120;
 }
 
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility { border-color: #65a30d; box-shadow: 2px 2px 0 #1a4d00, inset 0 1px 0 rgba(255,255,255,0.06); }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     { border-color: #eab308; box-shadow: 2px 2px 0 #713f12, inset 0 1px 0 rgba(255,255,255,0.06); }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival { border-color: #ef4444; box-shadow: 2px 2px 0 #7f1d1d, inset 0 1px 0 rgba(255,255,255,0.06); }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb      { border-color: #fb923c; box-shadow: 2px 2px 0 #7c3d0e, inset 0 1px 0 rgba(255,255,255,0.06); }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role     { border-color: #a855f7; box-shadow: 2px 2px 0 #4a1d96, inset 0 1px 0 rgba(255,255,255,0.06); }
+/* Type accent: just the border color changes, nothing heavy */
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility { border-color: #65a30d; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     { border-color: #eab308; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival { border-color: #ef4444; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb      { border-color: #fb923c; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role     { border-color: #a855f7; }
 
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility:hover { border-color: #84cc16; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff:hover     { border-color: #fbbf24; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival:hover { border-color: #f87171; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb:hover      { border-color: #fdba74; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role:hover     { border-color: #c084fc; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility:hover { border-color: #84cc16; background: #1e2218; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff:hover     { border-color: #fbbf24; background: #221e14; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival:hover { border-color: #f87171; background: #221818; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb:hover      { border-color: #fdba74; background: #221c14; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role:hover     { border-color: #c084fc; background: #1e1822; }
 
-#upgradeOverlay .frog-upgrade-emoji { font-size: 22px; line-height: 1; }
+#upgradeOverlay .frog-upgrade-emoji { font-size: 26px; line-height: 1; }
 
 #upgradeOverlay .frog-upgrade-title {
   font-size: 12px;
-  font-weight: 900;
-  color: inherit;
+  font-weight: 700;
   line-height: 1.3;
   font-family: monospace;
   text-align: center;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-title { color: #65a30d; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     .frog-upgrade-title { color: #eab308; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-title { color: #ef4444; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb      .frog-upgrade-title { color: #fb923c; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role     .frog-upgrade-title { color: #a855f7; }
+/* Title colors match type border */
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-title { color: #84cc16; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     .frog-upgrade-title { color: #fbbf24; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-title { color: #f87171; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb      .frog-upgrade-title { color: #fdba74; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role     .frog-upgrade-title { color: #c084fc; }
 
 #upgradeOverlay .frog-upgrade-desc {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.5;
-  color: white;
+  color: #a8a29e;
   font-weight: 400;
   font-family: monospace;
   text-align: center;
