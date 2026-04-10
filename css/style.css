@@ -468,7 +468,7 @@ a { color: inherit; }
   box-sizing: border-box;
   flex: 0 0 150px;
   width: 150px;
-  min-height: 200px;
+  min-height: 175px;
   padding: 18px 12px;
   border-radius: 6px;
   background: #111;
@@ -513,11 +513,11 @@ a { color: inherit; }
   text-transform: uppercase;
 }
 
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-title { color: white; text-shadow: 2px 2px gray; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     .frog-upgrade-title { color: white; text-shadow: 2px 2px gray; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-title { color: darkorange; text-shadow: 2px 2px gray; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff     .frog-upgrade-title { color: yellow; text-shadow: 2px 2px gray; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-title { color: white; text-shadow: 2px 2px gray; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb      .frog-upgrade-title { color: white; text-shadow: 2px 2px gray; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role     .frog-upgrade-title { color: white; text-shadow: 2px 2px gray; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role     .frog-upgrade-title { color: chartreuse; text-shadow: 2px 2px gray; }
 
 #upgradeOverlay .frog-upgrade-desc {
   font-size: 12px;
