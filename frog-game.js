@@ -5320,7 +5320,7 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-title">How to Play 🐸</div>
+      <div class="frog-panel-title">How to Play <span class="emoji">🐸</span></div>
       <div class="frog-panel-sub">Stay alive. Don't let the snake eat all your frogs.</div>
 
       <div class="frog-panel-section-label">Basics</div>
@@ -5599,7 +5599,7 @@ function closeAnimatedOverlay(overlayEl) {
       const pageItems = upgrades.slice(start, start + itemsPerPage);
 
       panel.innerHTML = `
-        <div class="frog-panel-title">Upgrades ⚡</div>
+        <div class="frog-panel-title">Upgrades <span class="emoji">⚡</span></div>
         <div class="frog-panel-sub">All upgrades in the current build.</div>
 
         <ul class="frog-panel-list">
