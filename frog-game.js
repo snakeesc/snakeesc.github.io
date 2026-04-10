@@ -5764,7 +5764,6 @@ function closeAnimatedOverlay(overlayEl) {
         }).join("");
 
         const totalPages = Math.ceil(list.length / pageSize);
-        const myRankText = myIndex >= 0 ? ` · You: #${myIndex + 1}` : "";
 
         content.innerHTML = `
           <div class="frog-panel-section-label" style="margin-top:0;">Global Leaderboard</div>
@@ -5772,10 +5771,10 @@ function closeAnimatedOverlay(overlayEl) {
             ${itemsHtml || '<li style="color:#a8a29e;">No entries.</li>'}
           </ul>
           <div class="frog-panel-footer">
-            <div style="margin-bottom:8px;">Page ${currentPage + 1} of ${totalPages}${myRankText}</div>
+            <div style="margin-bottom:8px;">Page ${currentPage + 1} of ${totalPages}</div>
             <div style="display:flex;gap:8px;">
-              <button id="leaderboardPrevBtn" class="frog-btn frog-btn-secondary" style="flex:1;margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
-              <button id="leaderboardNextBtn" class="frog-btn frog-btn-secondary" style="flex:1;margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
+              <button id="leaderboardPrevBtn" class="frog-btn frog-btn-secondary leaderboard-page-btn" style="flex:1;margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
+              <button id="leaderboardNextBtn" class="frog-btn frog-btn-secondary leaderboard-page-btn" style="flex:1;margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
             </div>
           </div>
         `;
