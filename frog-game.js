@@ -4622,14 +4622,13 @@ function samplePathAtDistance(path, startIdx, dist) {
   let endGameSummaryOverlay = null;
 
   function getUpgradeChoices() {
-    const neon = "#4defff";
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
 
     upgrades.push({
       id: "roleDraft",
-      label: `🎭 Role Draft<br>Choose between <span style="color:${neon};">2</span> random frog roles`,
+      label: `🎭 Role Draft<br>Choose between <span class="frog-upgrade-stat">2</span> random frog roles`,
       opensRoleDraft: true,
       apply: () => {
         roleDraftUsed = true;
@@ -4640,7 +4639,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!doubleYolkerActive) {
       upgrades.push({
         id: "doubleYolker",
-        label: `🥚 Double Yolker<br>Orbs have a <span style="color:${neon};">15%</span> chance to spawn <span style="color:${neon};">2</span> frogs`,
+        label: `🥚 Double Yolker<br>Orbs have a <span class="frog-upgrade-stat">15%</span> chance to spawn <span class="frog-upgrade-stat">2</span> frogs`,
         apply: () => { doubleYolkerActive = true; }
       });
     }
@@ -4648,7 +4647,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (frogs.length < maxFrogsCap) {
       upgrades.push({
         id: "spawn20",
-        label: `🐸 Spawn frogs<br><span style="color:${neon};">${NORMAL_SPAWN_AMOUNT}</span> frogs right now`,
+        label: `🐸 Spawn frogs<br><span class="frog-upgrade-stat">${NORMAL_SPAWN_AMOUNT}</span> frogs right now`,
         apply: () => { spawnExtraFrogs(NORMAL_SPAWN_AMOUNT); }
       });
     }
@@ -4656,7 +4655,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (orbSpawnIntervalFactor > minOrbSpawnIntervalFactor + 1e-4) {
       upgrades.push({
         id: "epicMoreOrbs",
-        label: `🎯 Orb Flow<br>Increase orb spawn rate by <span style="color:${neon};">10%</span>`,
+        label: `🎯 Orb Flow<br>Increase orb spawn rate by <span class="frog-upgrade-stat">10%</span>`,
         apply: () => {
           orbSpawnIntervalFactor *= ORB_INTERVAL_UPGRADE_FACTOR;
           if (orbSpawnIntervalFactor < minOrbSpawnIntervalFactor) {
@@ -4668,13 +4667,13 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     upgrades.push({
       id: "luckyRoll",
-      label: `🎲 Lucky Roll<br>Trigger a random orb buff at <span style="color:${neon};">1.5x</span> duration`,
+      label: `🎲 Lucky Roll<br>Trigger a random orb buff at <span class="frog-upgrade-stat">1.5x</span> duration`,
       apply: () => { triggerLuckyRoll(); }
     });
 
     upgrades.push({
       id: "epicOrbStorm",
-      label: `🌩️ Orb Storm<br>Drop <span style="color:${neon};">${ORB_STORM_COUNT}</span> random orbs right now`,
+      label: `🌩️ Orb Storm<br>Drop <span class="frog-upgrade-stat">${ORB_STORM_COUNT}</span> random orbs right now`,
       apply: () => {
         const width  = window.innerWidth;
         const height = window.innerHeight;
@@ -4685,7 +4684,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!pairOfScissorsUsed && !epicChainPending && upgradeOverlayContext !== "start") {
       upgrades.push({
         id: "pairOfScissors",
-        label: `✂️ Pair of Scissors<br>Cut the snake in <span style="color:${neon};">half</span> and slow it by <span style="color:${neon};">20%</span>`,
+        label: `✂️ Pair of Scissors<br>Cut the snake in <span class="frog-upgrade-stat">half</span> and slow it by <span class="frog-upgrade-stat">20%</span>`,
         apply: () => { applyPairOfScissors(); }
       });
     }
@@ -4693,7 +4692,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!orbLingerBonusUsed) {
       upgrades.push({
         id: "orbWhisperer",
-        label: `🌀 Orb Whisperer<br>Orbs linger <span style="color:${neon};">30%</span> longer`,
+        label: `🌀 Orb Whisperer<br>Orbs linger <span class="frog-upgrade-stat">30%</span> longer`,
         apply: () => {
           orbLingerBonusUsed = true;
           orbTtlFactor *= 1.3;
@@ -4709,7 +4708,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!ouroborosPactUsed) {
       upgrades.push({
         id: "ouroborosPact",
-        label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span style="color:${neon};">20%</span> chance to drop an orb`,
+        label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span class="frog-upgrade-stat">20%</span> chance to drop an orb`,
         apply: () => {
           ouroborosPactUsed = true;
           frogDeathOrbChance = Math.max(frogDeathOrbChance, 0.20);
@@ -4723,7 +4722,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (luckStat < MAX_LUCK) {
       upgrades.push({
         id: "luck",
-        label: `🍀 Luck<br>Gain <span style="color:${neon};">+5</span> luck`,
+        label: `🍀 Luck<br>Gain <span class="frog-upgrade-stat">+5</span> luck`,
         apply: () => { addLuck(5); }
       });
     }
@@ -4731,7 +4730,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (frogDeathRattleChance < MAX_DEATHRATTLE_CHANCE - 1e-4) {
       upgrades.push({
         id: "commonDeathRattle",
-        label: `💀 Deathrattle<br>+<span style="color:${neon};">${deathPerPickPct}%</span> revive chance`,
+        label: `💀 Deathrattle<br>+<span class="frog-upgrade-stat">${deathPerPickPct}%</span> revive chance`,
         apply: () => {
           frogDeathRattleChance = Math.min(
             MAX_DEATHRATTLE_CHANCE,
@@ -4744,7 +4743,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!lastStandActive) {
       upgrades.push({
         id: "lastStand",
-        label: `🏹 Last Stand<br>Last frog has <span style="color:${neon};">${Math.round(LAST_STAND_MIN_CHANCE * 100)}%</span> revive odds`,
+        label: `🏹 Last Stand<br>Last frog has <span class="frog-upgrade-stat">${Math.round(LAST_STAND_MIN_CHANCE * 100)}%</span> revive odds`,
         apply: () => { lastStandActive = true; }
       });
     }
@@ -4752,7 +4751,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!survivalInstinctActive) {
       upgrades.push({
         id: "survivalInstinct",
-        label: `⚡ Survival Instinct<br>When below 10 frogs, they hop <span style="color:${neon};">20%</span> faster`,
+        label: `⚡ Survival Instinct<br>When below 10 frogs, they hop <span class="frog-upgrade-stat">20%</span> faster`,
         apply: () => { survivalInstinctActive = true; }
       });
     }
@@ -4760,7 +4759,6 @@ function samplePathAtDistance(path, startIdx, dist) {
     return upgrades;
   }
   function getEpicUpgradeChoices() {
-    const epicTitleColor = "#ffb347";
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
@@ -4768,7 +4766,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!chainReactionActive) {
       upgrades.push({
         id: "chainReaction",
-        label: `⚡ Chain Reaction<br>Orb collection has a <span style="color:${epicTitleColor};">25%</span> chance to trigger a second free orb buff`,
+        label: `⚡ Chain Reaction<br>Orb collection has a <span class="frog-upgrade-stat">25%</span> chance to trigger a second free orb buff`,
         apply: () => { chainReactionActive = true; }
       });
     }
@@ -4777,7 +4775,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!snakeEggActive && babySnakes.length === 0) {
       upgrades.push({
         id: "snakeEgg",
-        label: `🥚 Snake Egg<br>Hatches <span style="color:${epicTitleColor};">2 baby snakes</span> at a random 1-min interval. Gain <span style="color:${epicTitleColor};">+10%</span> to all stats while active.`,
+        label: `🥚 Snake Egg<br>Hatches <span class="frog-upgrade-stat">2 baby snakes</span> at a random 1-min interval. Gain <span class="frog-upgrade-stat">+10%</span> to all stats while active.`,
         apply: () => { activateSnakeEgg(); }
       });
     }
@@ -4786,7 +4784,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!extraUpgradeOptionActive) {
       upgrades.push({
         id: "extraUpgradeOption",
-        label: `🃏 Loaded Hand<br>Future upgrade screens show <span style="color:${epicTitleColor};">4</span> choices instead of 3`,
+        label: `🃏 Loaded Hand<br>Future upgrade screens show <span class="frog-upgrade-stat">4</span> choices instead of 3`,
         apply: () => { extraUpgradeOptionActive = true; }
       });
     }
@@ -4794,7 +4792,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!nightBloomActive) {
       upgrades.push({
         id: "nightBloom",
-        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${epicTitleColor};">50%</span> chance to spawn a frog at that spot`,
+        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span class="frog-upgrade-stat">50%</span> chance to spawn a frog at that spot`,
         apply: () => { nightBloomActive = true; }
       });
     }
@@ -4810,7 +4808,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (frogDeathRattleChance < MAX_DEATHRATTLE_CHANCE - 1e-4) {
       upgrades.push({
         id: "epicDeathRattle",
-        label: `💀 Epic Deathrattle<br>+<span style="color:${epicTitleColor};">${deathPerPickPct}%</span> revive chance`,
+        label: `💀 Epic Deathrattle<br>+<span class="frog-upgrade-stat">${deathPerPickPct}%</span> revive chance`,
         apply: () => {
           frogDeathRattleChance = Math.min(
             MAX_DEATHRATTLE_CHANCE,
@@ -4823,7 +4821,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!orbSpecialistActive) {
       upgrades.push({
         id: "epicOrbSpecialist",
-        label: `🧪 Orb Specialist<br>Collected orbs have a <span style="color:${epicTitleColor};">50%</span> chance to spawn <span style="color:${epicTitleColor};">1</span> extra frog`,
+        label: `🧪 Orb Specialist<br>Collected orbs have a <span class="frog-upgrade-stat">50%</span> chance to spawn <span class="frog-upgrade-stat">1</span> extra frog`,
         apply: () => { orbSpecialistActive = true; }
       });
     }
@@ -4831,7 +4829,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!secondWindUsed && !secondWindActive) {
       upgrades.push({
         id: "secondWind",
-        label: `💨 Second Wind<br>Below 10 frogs: instantly spawn <span style="color:${epicTitleColor};">20</span> (once)`,
+        label: `💨 Second Wind<br>Below 10 frogs: instantly spawn <span class="frog-upgrade-stat">20</span> (once)`,
         apply: () => { secondWindActive = true; }
       });
     }
@@ -4839,7 +4837,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
         id: "graveWave",
-        label: `👻 Grave Wave<br>Each shed spawns <span style="color:${epicTitleColor};">10-15</span> frogs`,
+        label: `👻 Grave Wave<br>Each shed spawns <span class="frog-upgrade-stat">10-15</span> frogs`,
         apply: () => { graveWaveActive = true; graveWaveUsed = true; }
       });
     }
@@ -4855,7 +4853,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (frogs.length > 0) {
       upgrades.push({
         id: "promotionEpic",
-        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">12</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
+        label: `🥇 Promotion<br>Up to <span class="frog-upgrade-stat">12</span> random frogs gain <span class="frog-upgrade-stat">+1 star</span>`,
         apply: () => { promoteAllFrogs(); }
       });
     }
@@ -4863,7 +4861,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!frogScatterUsed && frogs.length > 0) {
       upgrades.push({
         id: "frogScatter",
-        label: `🌪️ Frog Scatter<br>Kill and respawn <span style="color:${epicTitleColor};">all</span> current frogs`,
+        label: `🌪️ Frog Scatter<br>Kill and respawn <span class="frog-upgrade-stat">all</span> current frogs`,
         apply: () => { frogScatterUsed = true; scatterFrogSwarm(); }
       });
     }
@@ -4871,7 +4869,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!moltFortuneActive) {
       upgrades.push({
         id: "moltFortune",
-        label: `🔮 Molt Fortune<br>Snake drops <span style="color:${epicTitleColor};">5-10</span> orbs when shedding`,
+        label: `🔮 Molt Fortune<br>Snake drops <span class="frog-upgrade-stat">5-10</span> orbs when shedding`,
         apply: () => { moltFortuneActive = true; }
       });
     }
@@ -6534,7 +6532,6 @@ function getDashboardPfp() {
 
   function setInfoPage(pageIndex) {
     if (!infoContentEl || !infoPageLabel) return;
-    const neon = "#4defff";
 
     const maxPage = 4; // 0..4: 5 total pages
     infoPage = Math.max(0, Math.min(maxPage, pageIndex));
@@ -6614,10 +6611,10 @@ function getDashboardPfp() {
   • Avoid the snake and keep the frogs alive as long as possible.<br>
   • Frogs hop around the screen. Move your mouse to guide the swarm.<br>
   • Collect orbs to trigger buffs and upgrades.<br>
-  • Every minute you choose a <span style="color:${neon};">common</span> upgrade.<br>
-  • Every 3 minutes you get a <span style="color:${neon};">common + epic</span> upgrade chain.<br>
+  • Every minute you choose a <span class="frog-upgrade-stat">common</span> upgrade.<br>
+  • Every 3 minutes you get a <span class="frog-upgrade-stat">common + epic</span> upgrade chain.<br>
   • Every 5 minutes the snake sheds, gets stronger, and changes color.<br>
-  • Your run ends when <span style="color:${neon};">all frogs are gone</span>.
+  • Your run ends when <span class="frog-upgrade-stat">all frogs are gone</span>.
   `;
     } else if (infoPage === 2) {
       // PAGE 2 – Orb buffs
@@ -6780,7 +6777,6 @@ function initUpgradeOverlay() {
     const optionCount = extraUpgradeOptionActive ? 4 : 3;
 
     containerEl.innerHTML = "";
-    const neon = "#4defff";
 
     if (upgradeOverlayTitleEl) {
       upgradeOverlayTitleEl.textContent = "Choose an upgrade";
@@ -6819,7 +6815,7 @@ function initUpgradeOverlay() {
               id: "spawn20",
               label: `
                 🐸 Spawn frogs<br>
-                <span style="color:${neon};">${NORMAL_SPAWN_AMOUNT}</span> frogs right now
+                <span class="frog-upgrade-stat">${NORMAL_SPAWN_AMOUNT}</span> frogs right now
               `,
               apply: () => {
                 spawnExtraFrogs(NORMAL_SPAWN_AMOUNT);
