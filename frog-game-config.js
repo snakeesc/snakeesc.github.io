@@ -173,7 +173,7 @@
     ORB_SPAWN_INTERVAL_MAX: 6.50,
     SNAKE_SEGMENT_SIZE: 48,
     SNAKE_EGG_HATCH_CHANCE: 0.5, // egg hatch chance
-    SNAKE_BASE_SPEED: 70,
+    SNAKE_BASE_SPEED: 58,
     SNAKE_TURN_RATE: Math.PI * 0.75,
     // Default spacing for snake segments (in path samples) before clamping.
     // Lowered to keep body segments tighter across devices.
