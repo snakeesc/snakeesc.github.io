@@ -337,6 +337,32 @@
   // --------------------------------------------------
   async function fetchLeaderboard() {
     try {
+      const PLAYER_ID_STORAGE_KEY = "frogSnake_playerId";
+
+      function generatePlayerId() {
+        try {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return window.crypto.randomUUID();
+          }
+        } catch (e) {}
+        return "frog_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
+      function getOrCreatePlayerId() {
+        try {
+          if (typeof localStorage === "undefined") return generatePlayerId();
+
+          let id = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
+          if (id && String(id).trim()) return String(id).trim();
+
+          id = generatePlayerId();
+          localStorage.setItem(PLAYER_ID_STORAGE_KEY, id);
+          return id;
+        } catch (e) {
+          return generatePlayerId();
+        }
+      }
+
       const clientId = encodeURIComponent(getOrCreatePlayerId());
       const res = await fetch(`${LEADERBOARD_URL}?clientId=${clientId}`, {
         method: "GET",
@@ -383,6 +409,32 @@
 
   async function submitScoreToServer(score, time, stats, tag) {
     try {
+      const PLAYER_ID_STORAGE_KEY = "frogSnake_playerId";
+
+      function generatePlayerId() {
+        try {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return window.crypto.randomUUID();
+          }
+        } catch (e) {}
+        return "frog_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
+      function getOrCreatePlayerId() {
+        try {
+          if (typeof localStorage === "undefined") return generatePlayerId();
+
+          let id = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
+          if (id && String(id).trim()) return String(id).trim();
+
+          id = generatePlayerId();
+          localStorage.setItem(PLAYER_ID_STORAGE_KEY, id);
+          return id;
+        } catch (e) {
+          return generatePlayerId();
+        }
+      }
+
       let finalTag = null;
 
       if (typeof tag === "string") {
@@ -457,7 +509,6 @@
       return null;
     }
   }
-  
   // --------------------------------------------------
   // MINI LEADERBOARD (top-right HUD / pre-game view)
   // --------------------------------------------------

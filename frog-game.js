@@ -632,75 +632,75 @@ function getDashboardLevelData(totalOrbsCollected) {
   function normalizeDashboardTag(str) {
     return typeof str === "string" ? str.trim().toLowerCase() : "";
   }
-
+  
   async function getMyDashboardBestFromLeaderboard() {
-    try {
-      const entries = await fetchLeaderboard();
-      const liveMyEntry =
-        window.FrogGameLeaderboard &&
-        window.FrogGameLeaderboard._lastMyEntry
-          ? window.FrogGameLeaderboard._lastMyEntry
-          : null;
+  try {
+    const entries = await fetchLeaderboard();
+    const liveMyEntry =
+      window.FrogGameLeaderboard &&
+      window.FrogGameLeaderboard._lastMyEntry
+        ? window.FrogGameLeaderboard._lastMyEntry
+        : null;
 
-      if (liveMyEntry && liveMyEntry.userId) {
-        const exact = (entries || []).find(
-          (entry) => entry && entry.userId === liveMyEntry.userId
-        );
+    if (liveMyEntry && liveMyEntry.userId) {
+      const exact = (entries || []).find(
+        (entry) => entry && entry.userId === liveMyEntry.userId
+      );
 
-        if (exact) {
-          return {
-            bestRun: Math.floor(getLeaderboardEntryScore(exact)),
-            bestTime: getLeaderboardEntryTime(exact),
-            found: true
-          };
-        }
+      if (exact) {
+        return {
+          bestRun: Math.floor(getLeaderboardEntryScore(exact)),
+          bestTime: getLeaderboardEntryTime(exact),
+          found: true
+        };
       }
+    }
 
-      const savedTag =
-        (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
-        (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
-        getSavedDashboardTag();
+    const savedTag =
+      (typeof getSavedPlayerTag === "function" && getSavedPlayerTag()) ||
+      (LMod && typeof LMod.getCurrentUserLabel === "function" && LMod.getCurrentUserLabel()) ||
+      getSavedDashboardTag();
 
-      if (!savedTag) {
-        return { bestRun: 0, bestTime: 0, found: false };
-      }
+    if (!savedTag) {
+      return { bestRun: 0, bestTime: 0, found: false };
+    }
 
-      const target = normalizeDashboardTag(savedTag);
-      let bestEntry = null;
+    const target = normalizeDashboardTag(savedTag);
+    let bestEntry = null;
 
-      for (const entry of entries || []) {
-        const tag = normalizeDashboardTag(entry?.tag);
-        const name = normalizeDashboardTag(entry?.name);
+    for (const entry of entries || []) {
+      const tag = normalizeDashboardTag(entry?.tag);
+      const name = normalizeDashboardTag(entry?.name);
 
-        if (tag === target || name === target) {
-          if (!bestEntry) {
+      if (tag === target || name === target) {
+        if (!bestEntry) {
+          bestEntry = entry;
+        } else {
+          const scoreA = getLeaderboardEntryScore(entry);
+          const scoreB = getLeaderboardEntryScore(bestEntry);
+          const timeA = getLeaderboardEntryTime(entry);
+          const timeB = getLeaderboardEntryTime(bestEntry);
+
+          if (scoreA > scoreB || (scoreA === scoreB && timeA < timeB)) {
             bestEntry = entry;
-          } else {
-            const scoreA = getLeaderboardEntryScore(entry);
-            const scoreB = getLeaderboardEntryScore(bestEntry);
-            const timeA = getLeaderboardEntryTime(entry);
-            const timeB = getLeaderboardEntryTime(bestEntry);
-
-            if (scoreA > scoreB || (scoreA === scoreB && timeA < timeB)) {
-              bestEntry = entry;
-            }
           }
         }
       }
+    }
 
-      if (!bestEntry) {
-        return { bestRun: 0, bestTime: 0, found: false };
-      }
-
-      return {
-        bestRun: Math.floor(getLeaderboardEntryScore(bestEntry)),
-        bestTime: getLeaderboardEntryTime(bestEntry),
-        found: true
-      };
-    } catch (e) {
+    if (!bestEntry) {
       return { bestRun: 0, bestTime: 0, found: false };
     }
+
+    return {
+      bestRun: Math.floor(getLeaderboardEntryScore(bestEntry)),
+      bestTime: getLeaderboardEntryTime(bestEntry),
+      found: true
+    };
+  } catch (e) {
+    return { bestRun: 0, bestTime: 0, found: false };
   }
+}
 
   function validateDashboardTag(rawTag) {
     const tag = String(rawTag || "").trim();
