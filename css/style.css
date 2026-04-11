@@ -411,7 +411,32 @@ a { color: inherit; }
    UPGRADE GUIDE / BUFF CARDS / MISC
 ============================================ */
 
-.stat-highlight { color: #a3e635; }
+.stat-highlight {
+  color: #fef3c7;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+/* Upgrade card specific highlight colors */
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .stat-highlight {
+  color: #ecfccb; /* soft lime */
+}
+
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .stat-highlight {
+  color: #fef3c7; /* warm cream */
+}
+
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .stat-highlight {
+  color: #fee2e2; /* soft red tint */
+}
+
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .stat-highlight {
+  color: #ffedd5; /* soft orange cream */
+}
+
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role .stat-highlight {
+  color: #f3e8ff; /* soft lavender */
+}
 
 .buff-guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
 .buff-card { background: #1c1917; border-radius: 10px; padding: 10px 12px; border: 1px solid #44403c; box-shadow: 0 6px 16px rgba(0,0,0,0.9); }
