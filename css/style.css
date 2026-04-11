@@ -528,38 +528,6 @@ a { color: inherit; }
   text-align: center;
 }
 
-/* Emphasized numbers/stats in card body — per-type colors read on saturated card hues */
-#upgradeOverlay .frog-upgrade-desc .frog-upgrade-stat {
-  font-weight: 800;
-}
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-desc .frog-upgrade-stat {
-  color: #fffbeb;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
-}
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .frog-upgrade-desc .frog-upgrade-stat {
-  color: #292524;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-desc .frog-upgrade-stat {
-  color: #fff7ed;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
-}
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-desc .frog-upgrade-stat {
-  color: #431407;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role .frog-upgrade-desc .frog-upgrade-stat {
-  color: #fef9c3;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
-}
-
-/* Same class name in info overlay (how-to) — dark panel, keep a clear cool accent */
-.frog-info-overlay .frog-upgrade-stat {
-  color: #7dd3fc;
-  font-weight: 700;
-  text-shadow: none;
-}
-
 #upgradeOverlay .frog-upgrade-choice.is-spawning { animation: upgradeCardSpawn 260ms ease-out both; }
 
 @keyframes upgradeCardSpawn {
