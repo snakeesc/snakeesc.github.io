@@ -4622,7 +4622,7 @@ function samplePathAtDistance(path, startIdx, dist) {
   let endGameSummaryOverlay = null;
 
   function getUpgradeChoices() {
-    const neon = "#4defff";
+    const neon = "#fef3c7";
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
