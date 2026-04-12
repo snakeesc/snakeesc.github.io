@@ -2670,7 +2670,7 @@ function promoteAllFrogs() {
   if (!Array.isArray(frogs) || frogs.length === 0) return;
 
   const pool = frogs.slice();
-  const count = Math.min(12, pool.length);
+  const count = Math.min(getLuckBiasedInt(10, 15), pool.length);
 
   for (let i = 0; i < count; i++) {
     const idx = Math.floor(Math.random() * pool.length);
@@ -4025,7 +4025,7 @@ function computeDeathRattleChanceForFrog(frog) {
         } else {
           applyBuff(orb.type, collectedBy);
 
-          if (chainReactionActive && Math.random() < getLuckBoostedChance(0.25, 0.50)) {
+          if (chainReactionActive && Math.random() < getLuckBoostedChance(0.15, 0.15)) {
             triggerChainReactionBonus(collectedBy);
           }
         }
@@ -4717,7 +4717,7 @@ function getUpgradeChoices() {
     if (!chainReactionActive) {
       upgrades.push({
         id: "chainReaction",
-        label: `⚡ Chain Reaction<br>Orb collection has a <span style="color:${epicTitleColor};">25%</span> chance to trigger a second free orb buff`,
+        label: `⚡ Chain Reaction<br>Orb collection has a <span style="color:${epicTitleColor};">15%</span> chance to trigger a second free orb buff`,
         apply: () => { chainReactionActive = true; }
       });
     }
@@ -4804,7 +4804,7 @@ function getUpgradeChoices() {
     if (frogs.length > 0) {
       upgrades.push({
         id: "promotionEpic",
-        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">12</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
+        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">10-15</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
         apply: () => { promoteAllFrogs(); }
       });
     }
