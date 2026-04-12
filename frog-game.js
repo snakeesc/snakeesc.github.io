@@ -4672,8 +4672,8 @@ function getUpgradeChoices() {
   if (luckStat < MAX_LUCK) {
     upgrades.push({
       id: "luck",
-      label: `🍀 Luck<br>Gain <span style="color:${c.buff};">+5</span> luck`,
-      apply: () => { addLuck(5); }
+      label: `🍀 Luck<br>Gain <span style="color:${c.buff};">+10</span> luck`,
+      apply: () => { addLuck(10); }
     });
   }
 
