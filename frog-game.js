@@ -4673,19 +4673,6 @@ function getUpgradeChoices() {
     });
   }
 
-  if (buffDurationFactor < buffDurationCap - 1e-4) {
-    upgrades.push({
-      id: "buffDuration",
-      label: `⏱ Buffs Last Longer<br>Increase buff duration by <span style="color:${c.buff};">15%</span>`,
-      apply: () => {
-        buffDurationFactor *= BUFF_DURATION_UPGRADE_FACTOR;
-        if (buffDurationFactor > buffDurationCap) {
-          buffDurationFactor = buffDurationCap;
-        }
-      }
-    });
-  }
-
   if (!orbLingerBonusUsed) {
     upgrades.push({
       id: "orbWhisperer",
