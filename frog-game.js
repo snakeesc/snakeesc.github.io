@@ -4689,14 +4689,6 @@ function getUpgradeChoices() {
     });
   }
 
-  if (!orbSpecialistActive) {
-    upgrades.push({
-      id: "orbSpecialist",
-      label: `🧪 Orb Specialist<br>Each collected orb has a <span style="color:${c.buff};">50%</span> chance to spawn <span style="color:${c.buff};">1</span> extra frog`,
-      apply: () => { orbSpecialistActive = true; }
-    });
-  }
-
   if (!ouroborosPactUsed) {
     upgrades.push({
       id: "ouroborosPact",
