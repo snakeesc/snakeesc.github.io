@@ -2309,16 +2309,12 @@ function createFrogAt(x, y, tokenId) {
       factor = snakePermanentSpeedFactor;
     }
 
-    // Global debuffs / buffs still apply to all snakes
-    if (snakeSlowTime > 0)   factor *= SNAKE_SLOW_FACTOR;
-    if (timeSlowTime > 0)    factor *= TIME_SLOW_FACTOR;
-    if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR; // Frenzy speeds all snakes
+  if (snakeSlowTime > 0)   factor *= SNAKE_SLOW_FACTOR;
+    if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR;
 
     if (snakeObj && snakeObj.isBabySnake) {
-      // Baby snakes locked at base speed — ignore shed bonuses and frenzy
       let babyFactor = 1.0;
       if (snakeSlowTime > 0) babyFactor *= SNAKE_SLOW_FACTOR;
-      if (timeSlowTime > 0)  babyFactor *= TIME_SLOW_FACTOR;
       return babyFactor;
     }
 
@@ -3260,15 +3256,6 @@ function computeDeathRattleChanceForFrog(frog) {
       // Global temporary shield from orb: protects vs snake hits
       if (frogShieldTime > 0) {
         return false;
-      }
-
-      // Clone Swarm: chance that the snake bites a fake decoy instead
-      if (cloneSwarmTime > 0) {
-        const DECOY_CHANCE = 0.65;
-        if (Math.random() < DECOY_CHANCE) {
-          playSnakeMunch(); // snake thinks it ate something
-          return false;
-        }
       }
 
       // 🩸 Toxic Blood (Epic Upgrade)
@@ -4831,7 +4818,7 @@ function getUpgradeChoices() {
     if (!toxicBloodActive) {
       upgrades.push({
         id: "toxicBlood",
-        label: `🧪 Poisonous Skin<br>Snake is slowed briefly every time it eats a frog`,
+        label: `🩸 Poisonous Skin<br>Snake is slowed briefly every time it eats a frog`,
         apply: () => { toxicBloodActive = true; }
       });
     }
@@ -5571,7 +5558,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
       { type: "survival", label: "⚱️ Ouroboros Pact", desc: "Dead frogs have a 20% chance to drop an orb." },
       { type: "survival", label: "💨 Second Wind", desc: "Once per run, when you fall below 10 frogs, instantly spawn 20." },
-      { type: "survival", label: "🧪 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
+      { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 10–15 frogs." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
       { type: "role", label: "🎭 Role Draft", desc: "Choose between 2 random frog roles." },
