@@ -23,7 +23,7 @@
   // --------------------------------------------------
   const TAG_STORAGE_KEY   = "frogSnake_username";
   const TAG_MIN_LENGTH    = 2;
-  const TAG_MAX_LENGTH    = 20;
+  const TAG_MAX_LENGTH    = 12;
 
   const PLAYER_ID_STORAGE_KEY = "frogSnake_playerId";
 
@@ -170,13 +170,13 @@
 
     const candTime = getEntryTime(candidate);
     const currTime = getEntryTime(current);
-    return candTime < currTime;
+    return candTime > currTime; // higher survival time wins on tie
   }
 
   function compareEntriesByScoreTime(a, b) {
     const diff = getEntryScore(b) - getEntryScore(a);
     if (diff !== 0) return diff;
-    return getEntryTime(a) - getEntryTime(b);
+    return getEntryTime(b) - getEntryTime(a); // higher time ranks first on tie
   }
 
   function dedupeAndSortEntries(entries) {
@@ -337,32 +337,6 @@
   // --------------------------------------------------
   async function fetchLeaderboard() {
     try {
-      const PLAYER_ID_STORAGE_KEY = "frogSnake_playerId";
-
-      function generatePlayerId() {
-        try {
-          if (window.crypto && typeof window.crypto.randomUUID === "function") {
-            return window.crypto.randomUUID();
-          }
-        } catch (e) {}
-        return "frog_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-      }
-
-      function getOrCreatePlayerId() {
-        try {
-          if (typeof localStorage === "undefined") return generatePlayerId();
-
-          let id = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
-          if (id && String(id).trim()) return String(id).trim();
-
-          id = generatePlayerId();
-          localStorage.setItem(PLAYER_ID_STORAGE_KEY, id);
-          return id;
-        } catch (e) {
-          return generatePlayerId();
-        }
-      }
-
       const clientId = encodeURIComponent(getOrCreatePlayerId());
       const res = await fetch(`${LEADERBOARD_URL}?clientId=${clientId}`, {
         method: "GET",
@@ -395,9 +369,7 @@
       ) {
         try {
           localStorage.setItem(TAG_STORAGE_KEY, lastMyEntry.tag.trim());
-        } catch (e) {
-          // ignore
-        }
+        } catch (e) {}
       }
 
       return dedupeAndSortEntries(entries);
@@ -409,35 +381,9 @@
 
   async function submitScoreToServer(score, time, stats, tag) {
     try {
-      const PLAYER_ID_STORAGE_KEY = "frogSnake_playerId";
-
-      function generatePlayerId() {
-        try {
-          if (window.crypto && typeof window.crypto.randomUUID === "function") {
-            return window.crypto.randomUUID();
-          }
-        } catch (e) {}
-        return "frog_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-      }
-
-      function getOrCreatePlayerId() {
-        try {
-          if (typeof localStorage === "undefined") return generatePlayerId();
-
-          let id = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
-          if (id && String(id).trim()) return String(id).trim();
-
-          id = generatePlayerId();
-          localStorage.setItem(PLAYER_ID_STORAGE_KEY, id);
-          return id;
-        } catch (e) {
-          return generatePlayerId();
-        }
-      }
-
       let finalTag = null;
 
-      if (typeof tag === "string") {
+      if (typeof tag === "string" && tag.trim() !== "") {
         finalTag = tag.trim();
       }
 
@@ -447,9 +393,7 @@
           if (stored && stored.trim() !== "") {
             finalTag = stored.trim();
           }
-        } catch (e) {
-          // ignore
-        }
+        } catch (e) {}
       }
 
       const payload = {
@@ -488,6 +432,7 @@
         const match = key && entries.find((entry) => getEntryKey(entry) === key);
         lastMyEntry = match || data.myEntry;
 
+        // Persist whatever tag the server assigned (including auto-generated arcade tags)
         if (
           lastMyEntry &&
           typeof lastMyEntry.tag === "string" &&
@@ -497,9 +442,7 @@
         ) {
           try {
             localStorage.setItem(TAG_STORAGE_KEY, lastMyEntry.tag.trim());
-          } catch (e) {
-            // ignore
-          }
+          } catch (e) {}
         }
       }
 
@@ -806,7 +749,7 @@
           return;
         }
 
-        if (!/^[a-zA-Z0-9 _-]{2,20}$/.test(raw)) {
+        if (!/^[a-zA-Z0-9 _-]{2,12}$/.test(raw)) {
           error.textContent = "Use letters, numbers, spaces, _ or - only.";
           return;
         }

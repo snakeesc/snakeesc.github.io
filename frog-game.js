@@ -7239,6 +7239,7 @@ function startRunFromMenu() {
       }
 
       updateMiniLeaderboard(leaderboardEntries);
+      // Push recent run AFTER submit so the server-assigned tag is now in localStorage
       pushRecentRunToServer();
     } catch (err) {
       console.error("endGame summary flow failed", err);
