@@ -2655,12 +2655,10 @@ function getRandomTriggeredOrbBuffType() {
     "snakeConfuse",
     "snakeShrink",
     "frogShield",
-    "timeSlow",
     "orbMagnet",
     "megaSpawn",
     "scoreMulti",
     "panicHop",
-    "cloneSwarm",
     "lifeSteal"
   ];
 
