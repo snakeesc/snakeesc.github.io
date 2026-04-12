@@ -3573,7 +3573,6 @@ function computeDeathRattleChanceForFrog(frog) {
     if (snakeSlowTime    > 0) snakeSlowTime    = Math.max(0, snakeSlowTime    - dt * debuffTickMultiplier);
     if (snakeConfuseTime > 0) snakeConfuseTime = Math.max(0, snakeConfuseTime - dt * debuffTickMultiplier);
     if (snakeShrinkTime  > 0) snakeShrinkTime  = Math.max(0, snakeShrinkTime  - dt * debuffTickMultiplier);
-    if (timeSlowTime     > 0) timeSlowTime     = Math.max(0, timeSlowTime     - dt * debuffTickMultiplier);
 
     // Snake egg timer
     if (snakeEggActive) {
@@ -3792,27 +3791,6 @@ function computeDeathRattleChanceForFrog(frog) {
       }
 
       frog.el.style.transform = `translate3d(${frog.x}px, ${frog.y}px, 0)`;
-
-      // Clone Swarm visual
-      if (cloneSwarmTime > 0) {
-        if (!frog.cloneEl) {
-          const cloneEl = frog.el.cloneNode(true);
-          cloneEl.style.opacity = "0.35";
-          cloneEl.style.filter = "brightness(1.3)";
-          cloneEl.style.pointerEvents = "none";
-          cloneEl.style.zIndex = "9";
-          container.appendChild(cloneEl);
-          frog.cloneEl = cloneEl;
-        }
-        const offset = 8;
-        frog.cloneEl.style.transform =
-          `translate3d(${frog.x + offset}px, ${frog.y - offset}px, 0)`;
-      } else if (frog.cloneEl) {
-        if (frog.cloneEl.parentNode === container) {
-          container.removeChild(frog.cloneEl);
-        }
-        frog.cloneEl = null;
-      }
 
       // 🧪 Alchemist Orb Drop
       if (frog.isAlchemist) {
@@ -4677,10 +4655,10 @@ function getUpgradeChoices() {
   if (!ouroborosPactUsed) {
     upgrades.push({
       id: "ouroborosPact",
-      label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span style="color:${c.survival};">20%</span> chance to drop an orb`,
+      label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span style="color:${c.survival};">15%</span> chance to drop an orb`,
       apply: () => {
         ouroborosPactUsed = true;
-        frogDeathOrbChance = Math.max(frogDeathOrbChance, 0.20);
+        frogDeathOrbChance = Math.max(frogDeathOrbChance, 0.15);
       }
     });
   }
