@@ -4686,20 +4686,6 @@ function getUpgradeChoices() {
     });
   }
 
-  if (!orbCollectorActive || orbCollectorChance < MAX_ORB_COLLECTOR_TOTAL - 1e-4) {
-    upgrades.push({
-      id: "orbCollector",
-      label: `🧲 Orb Collector<br>Collected orbs have a <span style="color:${c.orb};">+20%</span> chance to spawn a frog`,
-      apply: () => {
-        orbCollectorActive = true;
-        orbCollectorChance = Math.min(
-          MAX_ORB_COLLECTOR_TOTAL,
-          orbCollectorChance + ORB_COLLECTOR_CHANCE
-        );
-      }
-    });
-  }
-
   if (!orbLingerBonusUsed) {
     upgrades.push({
       id: "orbWhisperer",
