@@ -4702,7 +4702,7 @@ function getUpgradeChoices() {
   return upgrades;
 }
   function getEpicUpgradeChoices() {
-    const epicTitleColor = "#ffb347";
+    const epicTitleColor = "orangered";
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
