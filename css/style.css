@@ -416,26 +416,30 @@ a { color: inherit; }
   font-weight: 800;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
-
+/* Specific Functional Colors */
+.stat-positive { color: #a3e635; } /* Lime 400 - Your preferred accent */
+.stat-neutral  { color: #60a5fa; } /* Bright Blue for utility */
+.stat-warning  { color: #f87171; } /* Amber for luck/special */
+.stat-danger   { color: #f87171; } /* Red for speed/threat */
 /* Upgrade card specific highlight colors */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .stat-highlight {
-  color: #ecfccb; /* soft lime */
+  color: #a3e635; /* soft lime */
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .stat-highlight {
-  color: #fef3c7; /* warm cream */
+  color: #60a5fa; /* warm cream */
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .stat-highlight {
-  color: #fee2e2; /* soft red tint */
+  color: #fbbf24; /* soft red tint */
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .stat-highlight {
-  color: #ffedd5; /* soft orange cream */
+  color: #f87171; /* soft orange cream */
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role .stat-highlight {
-  color: #f3e8ff; /* soft lavender */
+  color: #a3e635; /* soft lavender */
 }
 
 .buff-guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
