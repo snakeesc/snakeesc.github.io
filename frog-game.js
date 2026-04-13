@@ -1172,7 +1172,7 @@ const MAX_LUCK = 30;
     const hopSpeedBonus     = frogPermanentSpeedFactor < 1 ? Math.round((1 / frogPermanentSpeedFactor - 1) * 100) : 0;
     const jumpBonus         = Math.round((frogPermanentJumpFactor - 1) * 100);
     const buffDurationBonus = Math.round((buffDurationFactor - 1) * 100);
-    const orbRateBonus      = orbSpawnIntervalFactor < 1 ? Math.round((1 - orbSpawnIntervalFactor) * 100) : 0;
+    const orbRateBonus = orbSpawnIntervalFactor < 1 ? (((1 - orbSpawnIntervalFactor) * 100).toFixed(1)) : 0;
     const deathrattlePct    = Math.round(frogDeathRattleChance * 100);
     const orbLingerBonus    = Math.round((orbTtlFactor - 1) * 100);
 
