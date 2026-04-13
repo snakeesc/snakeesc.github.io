@@ -4582,7 +4582,7 @@ function getUpgradeChoices() {
     mobility: "#fde68a",
     buff: "#fde68a",
     survival: "#fde68a",
-    orb: "#fde68a",
+    orb: "orangered",
     role: "#fde68a"
   };
 
