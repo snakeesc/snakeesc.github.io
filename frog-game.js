@@ -1759,7 +1759,7 @@ function snakeShed(stage) {
     const newSpeedFactor = baseSpeedFactor * speedMult;
     snakePermanentSpeedFactor = newSpeedFactor;
 
-    snakeTurnRate = Math.min(SNAKE_TURN_RATE_CAP, snakeTurnRate * 1.2);
+    snakeTurnRate = Math.min(SNAKE_TURN_RATE_CAP, snakeTurnRate * 1.35); // Increased from 1.2
     snakeShedStage = stage;
 
     const width = window.innerWidth;
@@ -2299,24 +2299,17 @@ function createFrogAt(x, y, tokenId) {
   }
 
   function getSnakeSpeedFactor(snakeObj) {
-    // Per-snake permanent speed factor (from sheds)
-    let factor;
+    let factor = snakeObj?.speedFactor || snakePermanentSpeedFactor;
 
-    if (snakeObj && typeof snakeObj.speedFactor === "number") {
-      factor = snakeObj.speedFactor;
-    } else {
-      // Fallback to global if needed / for old snakes without speedFactor
-      factor = snakePermanentSpeedFactor;
+    // --- NEW: SQUAD SIZE SCALING ---
+    // If player has > 50 frogs, snake gains 1% speed for every 2 frogs over 50.
+    if (frogs.length > 75) {
+      const overcrowdingPenalty = (frogs.length - 50) * 0.005; 
+      factor += overcrowdingPenalty;
     }
 
-  if (snakeSlowTime > 0)   factor *= SNAKE_SLOW_FACTOR;
+    if (snakeSlowTime > 0) factor *= SNAKE_SLOW_FACTOR;
     if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR;
-
-    if (snakeObj && snakeObj.isBabySnake) {
-      let babyFactor = 1.0;
-      if (snakeSlowTime > 0) babyFactor *= SNAKE_SLOW_FACTOR;
-      return babyFactor;
-    }
 
     return factor;
   }
