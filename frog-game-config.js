@@ -173,7 +173,7 @@
     ORB_SPAWN_INTERVAL_MAX: 6.50,
     SNAKE_SEGMENT_SIZE: 48,
     SNAKE_EGG_HATCH_CHANCE: 0.5, // egg hatch chance
-    SNAKE_BASE_SPEED: 60,
+    SNAKE_BASE_SPEED: 45,
     SNAKE_TURN_RATE: Math.PI * 0.75,
     // Default spacing for snake segments (in path samples) before clamping.
     // Lowered to keep body segments tighter across devices.
@@ -222,7 +222,7 @@
     MIN_ORB_SPAWN_INTERVAL_FACTOR: 0.90,
     MAX_DEATHRATTLE_CHANCE: 0.20,
     MAX_ORB_COLLECTOR_TOTAL: 1.0,
-    SNAKE_SHED_SPEEDUP: 1.35,
+    SNAKE_SHED_SPEEDUP: 1.50,
     MIN_TOTAL_FROG_SPEED_FACTOR: 0.75,
     MAX_TOTAL_FROG_JUMP_FACTOR: 2.20,
     MAX_SNAKE_SEGMENTS: 100,
