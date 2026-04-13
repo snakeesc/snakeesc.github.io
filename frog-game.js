@@ -4648,10 +4648,10 @@ function getUpgradeChoices() {
   if (!ouroborosPactUsed) {
     upgrades.push({
       id: "ouroborosPact",
-      label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span style="color:${c.survival};">15%</span> chance to drop an orb`,
+      label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span style="color:${c.survival};">10%</span> chance to drop an orb`,
       apply: () => {
         ouroborosPactUsed = true;
-        frogDeathOrbChance = Math.max(frogDeathOrbChance, 0.15);
+        frogDeathOrbChance = Math.max(frogDeathOrbChance, 0.10);
       }
     });
   }
