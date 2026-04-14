@@ -4580,7 +4580,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 function getUpgradeChoices() {
   const statColors = {
     mobility: "#fde68a",
-    buff: "#fde68a",
+    buff: "orangered",
     survival: "#fde68a",
     orb: "orangered",
     role: "#fde68a"
