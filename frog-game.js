@@ -4699,6 +4699,33 @@ function getUpgradeChoices() {
     });
   }
 
+  upgrades.push({
+    id: "luckyRoll",
+    label: `🎲 Lucky Roll<br>Trigger a random orb buff instantly, with <span style="color:${c.buff};">+50%</span> duration`,
+    apply: () => { triggerLuckyRoll(); }
+  });
+
+  if (!pairOfScissorsUsed && !epicChainPending && initialUpgradeDone) {
+    upgrades.push({
+      id: "pairOfScissors",
+      label: `✂️ Pair of Scissors<br>Cuts the snake in half and <span style="color:${c.mobility};">slows it</span>`,
+      apply: () => { applyPairOfScissors(); }
+    });
+  }
+
+  upgrades.push({
+    id: "epicOrbStorm",
+    label: `🌪️ Orb Storm<br>Drop up to <span style="color:${epicTitleColor};">10</span> random orbs across the arena`,
+    apply: () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const count = randInt(1, 10);
+      for (let i = 0; i < count; i++) {
+        spawnOrbRandom(w, h);
+      }
+    }
+  });
+
   return upgrades;
 }
   function getEpicUpgradeChoices() {
