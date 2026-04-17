@@ -5550,7 +5550,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "buff", label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
       { type: "buff", label: "⚡ Chain Reaction", desc: "When collecting an orb, there is a 25% chance of a second buff." },
       { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 25% chance to spawn a frog." },
-      { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb guarantees 1 extra frog." },
+      { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb has a 50% chance ot spawn an extra frog." },
       { type: "buff", label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
