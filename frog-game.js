@@ -2319,7 +2319,7 @@ function createFrogAt(x, y, tokenId) {
     ? Math.max(12, Math.round(SNAKE_SEGMENT_GAP * 0.85))
     : SNAKE_SEGMENT_GAP;
 
-  const SEGMENT_VISUAL_SPACING = 22; // px between segment centres — tune this to taste
+  const SEGMENT_VISUAL_SPACING = Math.round(SNAKE_SEGMENT_SIZE * 0.46); // px between segment centres — tune this to taste
 
   function computeSegmentGap() {
     // Still used for path pre-fill length calculations; no longer drives visual spacing.
