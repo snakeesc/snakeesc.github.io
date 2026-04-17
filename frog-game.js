@@ -4579,11 +4579,11 @@ function samplePathAtDistance(path, startIdx, dist) {
 
   function getUpgradeChoices() {
     const statColors = {
-      mobility: "#fde68a",
-      buff: "orangered",
-      survival: "#fde68a",
-      orb: "orangered",
-      role: "#fde68a"
+      mobility: "yellow",
+      buff: "yellow",
+      survival: "yellow",
+      orb: "yellow",
+      role: "yellow"
     };
 
     const c = statColors;
@@ -4729,7 +4729,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     return upgrades;
   }
   function getEpicUpgradeChoices() {
-    const epicTitleColor = "orangered";
+    const epicTitleColor = "yellow";
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
