@@ -4715,7 +4715,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     upgrades.push({
       id: "epicOrbStorm",
-      label: `🌪️ Orb Storm<br>Drop up to <span style="color:${epicTitleColor};">10</span> random orbs across the arena`,
+      label: `🌪️ Orb Storm<br>Drop up to <span style="color:${c.buff};">10</span> random orbs across the arena`,
       apply: () => {
         const w = window.innerWidth;
         const h = window.innerHeight;
