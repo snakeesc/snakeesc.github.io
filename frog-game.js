@@ -4719,7 +4719,7 @@ function getUpgradeChoices() {
     apply: () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const count = randInt(1, 10);
+      const count = randInt(3, 10);
       for (let i = 0; i < count; i++) {
         spawnOrbRandom(w, h);
       }
