@@ -403,6 +403,28 @@
         clientId: getOrCreatePlayerId(),
       };
 
+      let previousTag = null;
+      if (typeof localStorage !== "undefined") {
+        try {
+          const stored = localStorage.getItem(TAG_STORAGE_KEY);
+          if (stored && stored.trim() !== "") {
+            previousTag = stored.trim();
+          }
+        } catch (e) {}
+      }
+
+      if (finalTag && finalTag.length > 0) {
+        payload.tag = finalTag;
+      }
+
+      if (
+        previousTag &&
+        finalTag &&
+        previousTag.trim().toLowerCase() !== finalTag.trim().toLowerCase()
+      ) {
+        payload.previousTag = previousTag.trim();
+      }
+
       if (finalTag && finalTag.length > 0) {
         payload.tag = finalTag;
       }
