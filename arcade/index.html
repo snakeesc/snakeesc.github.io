@@ -2,314 +2,244 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Escape the Snake — Arcade Edition (Preview)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-
+  <title>Escape the Snake — Arcade Edition</title>
   <link rel="icon"
-    href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%90%8D%3C%2Ftext%3E%3C%2Fsvg%3E" />
+      href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%90%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9Q540R6FC5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-9Q540R6FC5');
+  </script>
+
+  <meta name="viewport" id="vp" content="width=1024, initial-scale=1, viewport-fit=cover">
+  <script>
+    (function () {
+      const BASE = 1024;
+      const w = Math.min(window.innerWidth || BASE, screen.width || BASE);
+      const s = w / BASE;
+      const vp = document.getElementById("vp");
+      vp.setAttribute(
+        "content",
+        `width=${BASE}, initial-scale=${s}, maximum-scale=${s}, viewport-fit=cover`
+      );
+    })();
+  </script>
+
+  <!-- Original style.css comes first; arcade-theme.css overrides it. -->
+  <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/arcade-theme.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    #frog-game {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+  </style>
 </head>
 <body class="arcade-body">
+  <!-- Game canvas host. frog-game.js mounts everything in here. -->
+  <div id="frog-game"></div>
 
-  <!-- GAME CANVAS HOST -->
-  <div id="frog-game">
-    <!-- Placeholder background while real game isn't wired up.
-         When integrating the real frog-game.js, this content gets replaced. -->
-    <div id="arcade-arena-placeholder" class="arcade-arena">
-      <div class="arena-grid"></div>
-      <div class="arena-vignette"></div>
-      <div class="arena-scanlines"></div>
-      <div class="arena-center-text">
-        <div class="arena-center-eyebrow">// PREVIEW MODE</div>
-        <div class="arena-center-title">ARENA</div>
-        <div class="arena-center-sub">real game canvas mounts here</div>
-      </div>
-    </div>
-
-    <!-- IN-GAME HUD (hidden until run starts) -->
-    <div id="arcadeHud" class="arcade-hud" hidden>
-
-      <!-- Top-left: controls -->
-      <div class="hud-panel hud-controls">
-        <div class="hud-eyebrow">// CONTROLS</div>
-        <button id="btnStats" class="hud-btn">STATS</button>
-        <button id="btnSound" class="hud-btn">SOUND</button>
-        <button id="btnEnd" class="hud-btn hud-btn-danger">END RUN</button>
+  <!-- MAIN MENU OVERLAY -->
+  <div id="mainMenuOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Escape the Snake
+        <span class="emoji">🐍</span>
       </div>
 
-      <!-- Top-center: time / frogs / score -->
-      <div class="hud-panel hud-main">
-        <div class="hud-stat">
-          <div class="hud-stat-label">TIME</div>
-          <div class="hud-stat-value" id="hudTime">00:00.0</div>
-        </div>
-        <div class="hud-divider"></div>
-        <div class="hud-stat">
-          <div class="hud-stat-label">FROGS</div>
-          <div class="hud-stat-value hud-stat-frogs" id="hudFrogs">50</div>
-        </div>
-        <div class="hud-divider"></div>
-        <div class="hud-stat">
-          <div class="hud-stat-label">SCORE</div>
-          <div class="hud-stat-value hud-stat-score" id="hudScore">0</div>
-        </div>
+      <div class="frog-panel-sub">
+        Keep your frogs alive as long as you can.<br />
+        Mouse to move · Frogs follow your cursor.
       </div>
 
-      <!-- Top-right: mini leaderboard -->
-      <div class="hud-panel hud-leaderboard">
-        <div class="hud-eyebrow">// LEADERBOARD</div>
-        <div class="hud-lb-rows" id="hudLbRows">
-          <!-- rows injected by JS -->
-        </div>
-        <div class="hud-lb-footer">
-          <span class="hud-eyebrow-small">NEXT SHED IN</span>
-          <span class="hud-lb-shed" id="hudShedTimer">3:00</span>
-        </div>
+      <div style="margin-bottom: 8px;">
+        <button id="btnStartRun" class="frog-btn frog-btn-primary">
+          Start Run
+        </button>
       </div>
-
-      <!-- Bottom-left: active stats panel -->
-      <div class="hud-panel hud-stats" id="hudStats">
-        <div class="hud-eyebrow">// ACTIVE</div>
-        <div class="hud-stats-rows" id="hudStatsRows">
-          <!-- rows injected by JS -->
-        </div>
-        <div class="hud-eyebrow hud-eyebrow-tight">// TEMP BUFFS</div>
-        <div class="hud-stats-temp" id="hudStatsTemp">
-          <!-- temp buff rows injected by JS -->
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ============================================
-       MAIN MENU
-  ============================================ -->
-  <div id="mainMenuOverlay" class="arc-overlay is-open">
-    <div class="arc-panel arc-panel-menu">
-      <div class="arc-eyebrow arc-eyebrow-center">— ARCADE EDITION —</div>
-      <div class="arc-title-stack">
-        <div class="arc-title-line">ESCAPE</div>
-        <div class="arc-title-line arc-title-danger">THE SNAKE</div>
-      </div>
-
-      <div class="arc-tagline">
-        KEEP YOUR FROGS ALIVE.<br />
-        MOUSE TO MOVE.
-      </div>
-
-      <button id="btnStartRun" class="arc-btn arc-btn-primary">▸ START RUN</button>
-
-      <div class="arc-grid-2">
-        <button id="btnHowTo" class="arc-btn arc-btn-secondary">HOW TO PLAY</button>
-        <button id="btnBuffGuide" class="arc-btn arc-btn-secondary">UPGRADES</button>
-        <button id="btnLeaderboard" class="arc-btn arc-btn-secondary">LEADERBOARD</button>
-        <button id="btnDashboard" class="arc-btn arc-btn-secondary">DASHBOARD</button>
-      </div>
-
-      <div class="arc-panel-footer-split">
-        <span>TAG: <span id="menuTag">ORBLORD</span></span>
-        <span>BEST: <span id="menuBest">—</span></span>
+      <div>
+        <button id="btnHowTo" class="frog-btn frog-btn-secondary">
+          How to Play
+        </button>
+        <button id="btnBuffGuide" class="frog-btn frog-btn-secondary">
+          Upgrades
+        </button>
+        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">
+          Leaderboard
+        </button>
+        <button id="btnDashboard" class="frog-btn frog-btn-secondary">
+          Dashboard
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- ============================================
-       UPGRADE SELECTION (preview)
-  ============================================ -->
-  <div id="upgradeOverlay" class="arc-overlay">
-    <div class="arc-panel arc-panel-upgrade">
-      <div class="arc-eyebrow arc-eyebrow-center">// CHOOSE UPGRADE · LVL <span id="upgradeLvl">1</span></div>
-      <div class="arc-eyebrow-sub arc-eyebrow-center">— SELECT ONE —</div>
-
-      <div id="upgradeChoicesContainer" class="arc-upgrade-list">
-        <!-- choices injected by JS -->
+  <!-- UPGRADE SELECTION OVERLAY -->
+  <div id="upgradeOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Choose an upgrade
       </div>
 
-      <div class="arc-upgrade-hint">PRESS 1 · 2 · 3 OR TAP</div>
-    </div>
-  </div>
+      <div id="upgradeOverlaySub" class="frog-panel-sub"></div>
 
-  <!-- ============================================
-       LEADERBOARD
-  ============================================ -->
-  <div id="leaderboardOverlay" class="arc-overlay">
-    <div class="arc-panel arc-panel-wide">
-      <div class="arc-eyebrow">// LEADERBOARD</div>
-
-      <div class="arc-tab-row">
-        <button class="arc-tab is-active" data-lb-sort="score">SCORE</button>
-        <button class="arc-tab" data-lb-sort="time">TIME</button>
-        <button class="arc-tab" data-lb-sort="frogs">FROGS</button>
-      </div>
-
-      <div class="arc-table-head">
-        <span class="arc-th arc-th-rank">#</span>
-        <span class="arc-th arc-th-name">TAG</span>
-        <span class="arc-th arc-th-time">TIME</span>
-        <span class="arc-th arc-th-score">SCORE</span>
-      </div>
-
-      <div id="leaderboardContent" class="arc-table-body">
-        <div class="arc-empty">Loading…</div>
-      </div>
-
-      <div class="arc-pager">
-        <button class="arc-pager-btn" data-lb-page="prev">◂ PREV</button>
-        <span class="arc-pager-info" id="lbPageInfo">1 / 1</span>
-        <button class="arc-pager-btn" data-lb-page="next">NEXT ▸</button>
-      </div>
-
-      <div class="arc-panel-footer">
-        <button id="leaderboardCloseBtn" class="arc-btn arc-btn-secondary">CLOSE</button>
+      <div class="upgrade-layout">
+        <div class="upgrade-column upgrade-column-choices">
+          <div id="upgradeChoicesContainer" class="upgrade-choices">
+            <!-- buttons injected by JS -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ============================================
-       DASHBOARD
-  ============================================ -->
-  <div id="dashboardOverlay" class="arc-overlay">
-    <div class="arc-panel arc-panel-wide">
-      <div class="arc-eyebrow">// DASHBOARD · <span id="dashTag">ORBLORD</span></div>
-
-      <div class="arc-stat-grid">
-        <div class="arc-stat-card">
-          <div class="arc-stat-card-label">BEST TIME</div>
-          <div class="arc-stat-card-value arc-text-green-bright" id="dashBestTime">—</div>
-        </div>
-        <div class="arc-stat-card">
-          <div class="arc-stat-card-label">BEST SCORE</div>
-          <div class="arc-stat-card-value arc-text-amber" id="dashBestScore">—</div>
-        </div>
-        <div class="arc-stat-card">
-          <div class="arc-stat-card-label">RUNS</div>
-          <div class="arc-stat-card-value arc-text-green" id="dashRuns">0</div>
-        </div>
-        <div class="arc-stat-card">
-          <div class="arc-stat-card-label">RANK</div>
-          <div class="arc-stat-card-value arc-text-purple" id="dashRank">—</div>
-        </div>
+  <!-- HOW TO PLAY OVERLAY -->
+  <div id="howToOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        How to Play
+        <span class="emoji">❓</span>
       </div>
 
-      <div class="arc-eyebrow arc-eyebrow-tight">// RECENT RUNS</div>
-      <div class="arc-recent-list" id="dashRecent">
-        <div class="arc-empty">No runs yet.</div>
+      <div class="frog-panel-sub">
+        Escape the Snake is a survival game. Keep your frogs alive as long as possible.
       </div>
 
-      <div class="arc-eyebrow arc-eyebrow-tight">// SNAKE SKIN</div>
-      <div class="arc-skin-row" id="dashSkins">
-        <button class="arc-skin-chip is-selected" data-skin="default">CLASSIC ✓</button>
-        <button class="arc-skin-chip" data-skin="alt">SERPENT</button>
-        <button class="arc-skin-chip is-locked" data-skin="alt2">SHADOW 🔒</button>
-      </div>
+      <div class="frog-panel-section-label">Controls</div>
+      <ul class="frog-panel-list">
+        <li><strong>Mouse:</strong> move your cursor – your frogs try to follow.</li>
+      </ul>
 
-      <div class="arc-panel-footer">
-        <button id="dashboardCloseBtn" class="arc-btn arc-btn-secondary">CLOSE</button>
+      <div class="frog-panel-section-label">Goal</div>
+      <ul class="frog-panel-list">
+        <li>Avoid letting the snake eat your frogs!</li>
+        <li>The goal is to stay alive for as long as possible.</li>
+        <li>Collect orbs and upgrade buffs to survive longer.</li>
+      </ul>
+
+      <div class="frog-panel-section-label">Tips</div>
+      <ul class="frog-panel-list">
+        <li>Plan your path early when the snake sheds (it gets faster).</li>
+        <li>Don't chase every orb; staying alive is more important.</li>
+        <li>Some buffs make the snake slower, some make frogs safer – learn which is which.</li>
+      </ul>
+
+      <div class="frog-panel-footer">
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
+          Close
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- ============================================
-       END OF RUN
-  ============================================ -->
-  <div id="endRunOverlay" class="arc-overlay">
-    <div class="arc-panel arc-panel-end">
-      <div class="arc-eyebrow arc-eyebrow-center arc-text-red">— GAME OVER —</div>
-      <div class="arc-title-line arc-title-danger arc-title-end">EATEN</div>
-
-      <div class="arc-stat-grid">
-        <div class="arc-stat-card">
-          <div class="arc-stat-card-label">SURVIVED</div>
-          <div class="arc-stat-card-value arc-text-green-bright" id="endTime">00:00</div>
-        </div>
-        <div class="arc-stat-card">
-          <div class="arc-stat-card-label">SCORE</div>
-          <div class="arc-stat-card-value arc-text-amber" id="endScore">0</div>
-        </div>
-        <div class="arc-stat-card">
-          <div class="arc-stat-card-label">FROGS LOST</div>
-          <div class="arc-stat-card-value arc-text-pink" id="endFrogsLost">0</div>
-        </div>
-        <div class="arc-stat-card">
-          <div class="arc-stat-card-label">ORBS</div>
-          <div class="arc-stat-card-value arc-text-purple" id="endOrbs">0</div>
-        </div>
+  <!-- BUFF / UPGRADE GUIDE OVERLAY -->
+  <div id="buffGuideOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Upgrades
+        <span class="emoji"></span>
       </div>
 
-      <div id="endPbCallout" class="arc-callout" hidden>★ NEW PERSONAL BEST</div>
-
-      <div class="arc-grid-2 arc-grid-2-tight">
-        <button id="endAgainBtn" class="arc-btn arc-btn-primary">▸ AGAIN</button>
-        <button id="endMenuBtn" class="arc-btn arc-btn-secondary">MENU</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================
-       HOW TO PLAY
-  ============================================ -->
-  <div id="howToOverlay" class="arc-overlay">
-    <div class="arc-panel">
-      <div class="arc-eyebrow">// HOW TO PLAY</div>
-
-      <div class="arc-section">
-        <div class="arc-eyebrow-tight">// CONTROLS</div>
-        <div class="arc-body-text">
-          <span class="arc-text-amber">MOUSE</span> → frogs follow your cursor
-        </div>
+      <div class="frog-panel-sub">
+        A quick reference for the regular and epic upgrades in the current build.
       </div>
 
-      <div class="arc-section">
-        <div class="arc-eyebrow-tight">// GOAL</div>
-        <ul class="arc-list">
-          <li>avoid the snake</li>
-          <li>stay alive as long as possible</li>
-          <li>collect orbs, take upgrades</li>
-        </ul>
-      </div>
+      <div class="frog-panel-section-label">Regular Upgrades</div>
+      <ul class="frog-panel-list">
+        <li><strong>Spawn Frogs</strong> — spawn frogs instantly.</li>
+        <li><strong>Orb Whisperer</strong> — orbs linger longer before fading.</li>
+        <li><strong>Ouroboros Pact</strong> — dead frogs have a chance to drop an orb.</li>
+        <li><strong>Mutation</strong> — +10% jump speed and +10% jump height.</li>
+        <li><strong>Buffs Last Longer</strong> — increases buff duration.</li>
+        <li><strong>More Orbs Over Time</strong> — faster orb spawns.</li>
+        <li><strong>Deathrattle</strong> — dead frogs can respawn.</li>
+        <li><strong>Orb Collector</strong> — collected orbs can spawn extra frogs.</li>
+        <li><strong>Last Stand</strong> — your last frog gets a strong revive chance.</li>
+      </ul>
 
-      <div class="arc-section">
-        <div class="arc-eyebrow-tight">// TIPS</div>
-        <ul class="arc-list">
-          <li>snake speeds up when it sheds</li>
-          <li>don't chase every orb</li>
-          <li>some buffs slow the snake, others protect frogs — learn which</li>
-        </ul>
-      </div>
+      <div class="frog-panel-section-label">Epic Upgrades</div>
+      <ul class="frog-panel-list">
+        <li><strong>Spawn Frogs</strong> — spawn a large frog wave instantly.</li>
+        <li><strong>Deathrattle</strong> — big boost to revive chance.</li>
+        <li><strong>Buffs Extended</strong> — larger buff duration increase.</li>
+        <li><strong>Orb Storm</strong> — drops a burst of random orbs immediately.</li>
+        <li><strong>Snake Egg</strong> — weakens the speed gain on the next shed.</li>
+        <li><strong>Grave Wave</strong> — each shed summons ghost frogs.</li>
+        <li><strong>Orb Specialist</strong> — orbs always spawn 1 frog, with Orb Collector able to add more.</li>
+        <li><strong>Frog Scatter</strong> — kill and respawn all current frogs.</li>
+        <li><strong>Pair of Scissors</strong> — splits the snake into two slower snakes.</li>
+      </ul>
 
-      <div class="arc-panel-footer">
-        <button id="howToCloseBtn" class="arc-btn arc-btn-secondary">CLOSE</button>
+      <div class="frog-panel-footer">
+        <button id="buffGuideCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
+          Close
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- ============================================
-       UPGRADES (BUFF GUIDE)
-  ============================================ -->
-  <div id="buffGuideOverlay" class="arc-overlay">
-    <div class="arc-panel arc-panel-wide">
-      <div class="arc-eyebrow">// UPGRADE REFERENCE</div>
-
-      <div class="arc-tab-row">
-        <button class="arc-tab is-active" data-buff-tab="regular">REGULAR</button>
-        <button class="arc-tab" data-buff-tab="epic">EPIC</button>
+  <!-- LEADERBOARD OVERLAY -->
+  <div id="leaderboardOverlay" class="frog-overlay">
+    <div class="frog-panel">
+      <div class="frog-panel-title">
+        Leaderboard
+        <span class="emoji">🏆</span>
       </div>
 
-      <div id="buffGuideContent" class="arc-buff-list">
-        <!-- injected by JS -->
+      <div class="frog-panel-sub">
+        Top runs from all players.
       </div>
 
-      <div class="arc-panel-footer">
-        <button id="buffGuideCloseBtn" class="arc-btn arc-btn-secondary">CLOSE</button>
+      <div id="leaderboardContent">
+        <!-- Your existing leaderboard table / list goes here -->
+      </div>
+
+      <div class="frog-panel-footer">
+        <button id="leaderboardCloseBtn" class="frog-btn frog-btn-secondary">
+          Close
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- App scripts -->
-  <script src="js/arcade-data.js"></script>
-  <script src="js/arcade-ui.js"></script>
-  <script src="js/arcade-preview.js"></script>
+  <!-- DASHBOARD OVERLAY -->
+  <div id="dashboardOverlay" class="frog-overlay">
+    <div class="frog-panel">
+
+      <div class="frog-panel-sub">
+      </div>
+
+      <div id="dashboardContent">
+        <div class="leaderboard-loading">Loading dashboard…</div>
+      </div>
+
+      <div class="frog-panel-footer">
+        <button id="dashboardCloseBtn" class="frog-btn frog-btn-secondary">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/frog-game-config.js"></script>
+  <script src="js/frog-game-utils.js"></script>
+  <script src="js/frog-audio.js"></script>
+  <script src="js/frog-profanity.js"></script>
+  <script src="js/frog-leaderboard.js"></script>
+  <script src="js/frog-game.js"></script>
+
+  <!-- Cloudflare Web Analytics -->
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "02f1ec21acba45f38ae0a30210c222d1"}'></script>
 </body>
 </html>

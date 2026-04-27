@@ -1,150 +1,135 @@
-# Escape the Snake — Arcade Edition (UI Preview)
+# /arcade/ — Escape the Snake Arcade Edition
 
-Drop-in folder for testing the new neon arcade theme without touching
-production. Lives at `/arcade/` on your site:
+Full working game with the new neon arcade theme applied.
+Drop this folder at the root of `snakeesc.github.io` so it's accessible at
 `https://snakeesc.github.io/arcade/`.
 
 ## What this is
 
-A self-contained UI shell with the new theme applied to every overlay
-and the in-game HUD. The actual game canvas is stubbed out with a
-placeholder so you can navigate the menus and see what a "live run"
-looks like with the new HUD chrome in place.
+A complete clone of the production game with theme-only changes. Every gameplay
+feature — upgrades, leaderboard, snake sheds, orb buffs, ghost frogs, scoreboard,
+end-of-run summary — works identically to production. Only the visual styling
+has changed.
 
-## What's here
+## Folder structure
 
 ```
 arcade/
-├── index.html              ← entry point
+├── index.html
 ├── css/
-│   └── arcade-theme.css    ← the entire new theme (no dependency on style.css)
+│   ├── style.css           ← exact copy of production style.css
+│   └── arcade-theme.css    ← NEW theme overrides (loaded after style.css)
 ├── js/
-│   ├── arcade-data.js      ← mock leaderboard + upgrade list + helpers
-│   ├── arcade-ui.js        ← overlay rendering (leaderboard, dashboard, etc.)
-│   └── arcade-preview.js   ← button wiring + fake "in-run" demo loop
+│   ├── frog-game.js        ← MODIFIED: HUD inline styles → class names
+│   ├── frog-game-config.js ← MODIFIED: image paths → ../images/
+│   ├── frog-game-utils.js  ← unchanged
+│   ├── frog-audio.js       ← MODIFIED: audio path → ../audio/
+│   ├── frog-leaderboard.js ← MODIFIED: mini leaderboard rows use class names
+│   └── frog-profanity.js   ← unchanged
 └── README.md
 ```
 
-No images, no fonts, no external deps. Pure HTML/CSS/JS.
+## Asset paths
 
-## What works
+The arcade build does **not** duplicate `/images/` or `/audio/`. It references
+the production assets via `../images/` and `../audio/` so the existing FreshFrogs
+sprite folder, snake skin PNGs, and audio files all keep working.
 
-- **Main menu** — start, how-to, upgrades, leaderboard, dashboard
-- **How to Play** overlay
-- **Upgrades reference** with REGULAR / EPIC tabs (full list from your real config)
-- **Leaderboard** — sortable by score / time / frogs, paginated, your row highlighted
-- **Dashboard** — stat cards, recent runs, snake skin selector
-- **In-game HUD** — top-center main stats, top-left controls, top-right mini leaderboard,
-  bottom-left active stats panel + temp buffs
-- **Upgrade selection** — appears 12 seconds into the mock run
-- **End-of-run summary** — survived/score/frogs lost/orbs + PB callout
+This means:
+- `/arcade/` will only function correctly when sitting next to your existing
+  `/images/` and `/audio/` folders at the site root.
+- No duplication, no stale assets.
+- If you ever rename or move those folders in production, update the paths in
+  `frog-game-config.js` and `frog-audio.js`.
 
-Click "Start Run" on the main menu to see the HUD. Click "End Run" in
-the top-left controls to bring up the end-of-run overlay.
+## What was changed in the JS
 
-## What's stubbed
+Production game files create UI DOM with inline styles. To let CSS take over,
+those inline styles needed to become class names. The changes were surgical:
 
-- **Game canvas** — there's a placeholder grid + scanlines where the real
-  arena would render. When integrating with `frog-game.js`, the real game
-  mounts into `#frog-game` and the placeholder either gets removed or
-  hidden behind it.
-- **Leaderboard data** — uses 20 mock entries from `arcade-data.js`. Replace
-  with your real Cloudflare worker fetch.
-- **Stats updates** — driven by a fake elapsed timer in `arcade-preview.js`,
-  not the real game state.
-- **Audio** — none. The original `frog-audio.js` continues to work as-is
-  when you wire it up.
+### `frog-game.js` (around lines 1080–1240)
 
-## Integration path (when you're ready)
+Before, the HUD bar / mini leaderboard / stats panel / controls / game over
+banner were created with `style.cssText = "..."`. They now use class names
+like `arc-hud-main`, `arc-hud-mini-board`, `arc-hud-stats-panel`,
+`arc-hud-controls`, `arc-hud-btn`, `arc-game-over-banner`.
 
-This is a UI shell, not a fork of the game. Suggested merge order:
+The `updateStatsPanel()` function had inline-styled "icon chip" HTML hardcoded.
+It now produces `<div class="arc-stat-chip arc-stat-cat-{mobility|survival|orb|role}">`
+rows that the theme styles via category-specific border/colors.
 
-### Step 1 — Drop the new theme into a new branch
+The display toggles (`hud.style.display = "flex"`, etc.) were untouched —
+the new CSS still uses `display: flex` for those panels.
 
-Copy `arcade/css/arcade-theme.css` next to `style.css`. Keep both linked
-in `index.html` for now so you can A/B compare. The new classes are
-all prefixed `arc-` or `hud-` so they won't collide.
+### `frog-leaderboard.js` (around line 545)
 
-### Step 2 — Switch overlay markup
+The mini leaderboard rows previously had `row.style.color = "#ffd700"` for the
+"that's me" highlight. Now they get `row.classList.add("arc-mini-lb-me")` and
+the theme styles it.
 
-The overlay element IDs in `arcade/index.html` match the originals
-(`mainMenuOverlay`, `upgradeOverlay`, `leaderboardOverlay`, etc.) so
-your existing JS that opens/closes them should keep working. The
-**inner markup** is what changed — replace the contents of each
-`.frog-overlay > .frog-panel` with the corresponding `.arc-overlay >
-.arc-panel` markup from `arcade/index.html`.
+### `frog-game-config.js` and `frog-audio.js`
 
-### Step 3 — Wire HUD updates
+Asset paths shifted from `./images/` and `./audio/` to `../images/` and
+`../audio/` so that, when running from `/arcade/`, asset URLs still resolve
+to the same production folders.
 
-In `frog-game.js`, find `updateHUD()` (around line 1160). Add a call to
-`window.ArcadePreview.updateHudFromGame(...)` passing the live state:
+## What's in `arcade-theme.css`
 
-```js
-function updateHUD() {
-  if (!inGameUIVisible) return;
-  // ... existing code ...
+A pure-CSS overlay that targets the existing class names from `style.css` and
+overrides their visual treatment — and styles the new HUD class names added
+in the JS edits.
 
-  // NEW: feed the arcade HUD
-  if (window.ArcadePreview) {
-    window.ArcadePreview.updateHudFromGame({
-      elapsed:       elapsedTime,
-      frogs:         frogs.length,
-      score:         Math.floor(score),
-      shedRemaining: Math.max(0, nextShedTime - elapsedTime)
-    });
-  }
-}
-```
+It does NOT delete or replace anything in `style.css`. Both files load; theme
+wins via load order and `!important` where necessary.
 
-The `updateStatsPanel()` function (around line 1169) is what feeds the
-bottom-left active-stats panel. That one builds an HTML string from
-permanent upgrade counts — easiest path is to refactor it to build the
-same DOM rows that `arcade-ui.js > renderHudStats()` produces, but
-driven from real upgrade state instead of `SAMPLE_ACTIVE_STATS`.
+Major sections:
+- Base body/font overrides
+- `#frog-bg` repurposed as the arena (grid + scanlines, grass tufts hidden)
+- `.frog-overlay`, `.frog-panel`, `.frog-btn` re-skinned
+- `.frog-upgrade-choice` category colors swapped to the neon palette
+- `.scoreboard-card`, `.summary-pill`, `.scoreboard-row` re-skinned
+- `.buff-card`, `.upgrade-guide-list` re-skinned
+- HUD classes (`arc-hud-*`, `arc-stat-chip`, `arc-mini-lb-row`)
+- Command center, dashboard, wallet stats also overridden
+- Mobile breakpoints at 768px and 480px
 
-### Step 4 — Real leaderboard
+## Deployment
 
-Replace `MOCK_LEADERBOARD` in `arcade-data.js` with a real fetch from
-your Cloudflare worker. Same shape (`{ tag, bestScore, bestTime,
-frogs, userId, isMe }`) keeps everything else unchanged.
+1. Drop the entire `arcade/` folder at the root of `snakeesc.github.io`.
+2. Push to GitHub Pages.
+3. Visit `https://snakeesc.github.io/arcade/`.
+4. Production game at `https://snakeesc.github.io/` is untouched.
 
-### Step 5 — Background
+## Reverting
 
-The existing CSS pixel-grass background (`#frog-bg`, `.grass`,
-`.flower`) needs to either be replaced by the new arena (grid +
-scanlines) or hidden when the arcade theme is active. Cleanest option:
-gate the grass-background creation in `frog-game.js` behind a flag,
-default off when the new theme loads.
+If anything breaks, just delete the `/arcade/` folder. Production is
+completely unaffected since this is a self-contained clone.
 
-### Step 6 — Sprites (separate task)
+## Known things to test
 
-This preview keeps the old sprite system entirely. Sprite work is
-tracked separately — once you sign off on the menus, we'll do the new
-flat neon frog sprite + new snake skin set.
+- **Start a run** — HUD bar, mini leaderboard, controls, stats panel should
+  all be neon-themed
+- **Upgrade selection** — category-colored cards (mobility green, survival
+  pink, orb amber, role purple) — should match the theme
+- **Snake sheds** — visuals should still trigger normally; HUD should update
+- **Orb collection** — orb buff icons should appear in the bottom-left stats
+  panel with category coloring
+- **Game over** — `Game Over` banner should appear in red-bordered theme
+- **Scoreboard at end of run** — should use the theme's table styling
+- **Leaderboard overlay** from main menu — theme styling applied
+- **Dashboard** — theme styling on stats and recent runs
+- **Snake skin selector in dashboard** — should still work, themed
+- **Mobile** — at 480px the mini leaderboard hides; main HUD compresses
 
-## Notes
+## Known limitations / next steps
 
-- The HUD's `STATS` button toggles the bottom-left panel exactly like
-  the original `btnStats` does.
-- The `SOUND` button currently just toggles its label — wire to
-  `FrogGameAudio.setMuted()` when integrating.
-- The dashboard `data-skin` chips correspond to the existing
-  `SNAKE_SKINS` ids (`default` / `alt` / `alt2`). Wire to
-  `saveSelectedSnakeSkinId()`.
-- All overlays use the same `.arc-overlay.is-open` toggle pattern, so
-  any utility you write for one works for all.
-- Phone/mobile layouts are handled via the `@media (max-width: 768px)`
-  and `@media (max-width: 480px)` blocks at the bottom of
-  `arcade-theme.css`. The mini leaderboard hides below 480px to
-  preserve the main HUD readability.
-
-## Tweaks worth doing during preview
-
-- Try the gameplay HUD at narrow widths (resize the browser) — the
-  HUD compresses but probably wants more polish at 380px.
-- The mock run shows the upgrade overlay 12 seconds in. To preview it
-  immediately, run `ArcadeUI.openOverlay('upgradeOverlay')` in the
-  console.
-- To see the end-of-run overlay without playing, run
-  `ArcadePreview.endMockRun()` mid-run, or
-  `ArcadeUI.openOverlay('endRunOverlay')` directly.
+- **Sprites** are the original FreshFrogs PNGs and red snake. Sprite swap is
+  the next phase; currently the entities don't match the neon theme.
+- The grass background was hidden, but if `MAIN_MENU_BACKGROUND_ENABLED` is
+  flipped to `true` in config, grass will start spawning behind the menu
+  again. The CSS hides the tufts, but ideally `seedMatchGrass()` should be
+  gated off entirely. Not worth touching unless you re-enable it.
+- Inline `style="background: transparent;"` on the main menu's `.frog-panel`
+  in `index.html` is preserved from the original — it makes the main menu
+  panel borderless. If you want the neon panel border on the main menu,
+  remove that inline style.
