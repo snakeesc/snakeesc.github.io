@@ -1,11 +1,5 @@
 /* ============================================
    ESCAPE THE SNAKE — ARCADE EDITION (NEON)
-   Loads after style.css. Targets existing classes
-   plus new arc-* classes for preview-matching layouts.
-============================================ */
-
-/* ============================================
-   DESIGN TOKENS
 ============================================ */
 
 :root {
@@ -52,10 +46,6 @@
   --arc-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 }
 
-/* ============================================
-   BASE
-============================================ */
-
 html, body {
   background: var(--arc-bg-deep) !important;
   color: var(--arc-green) !important;
@@ -69,7 +59,7 @@ body.arcade-body {
 }
 
 /* ============================================
-   ARENA
+   ARENA (replaces grass background)
 ============================================ */
 
 #frog-bg {
@@ -87,11 +77,7 @@ body.arcade-body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 40%,
-    rgba(0, 0, 0, 0.45) 100%
-  );
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.45) 100%);
 }
 
 #frog-bg::after {
@@ -111,6 +97,17 @@ body.arcade-body {
 #frog-bg .grass-field,
 #frog-bg .grass {
   display: none !important;
+}
+
+/* ============================================
+   FROG SPRITE — make pixel-art crisp
+============================================ */
+
+.frog-sprite,
+.frog-sprite img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 /* ============================================
@@ -146,9 +143,7 @@ body.arcade-body {
   margin-bottom: 10px !important;
 }
 
-.frog-panel-title .emoji {
-  display: none;
-}
+.frog-panel-title .emoji { display: none; }
 
 .frog-panel-sub {
   color: var(--arc-green) !important;
@@ -260,7 +255,7 @@ body.arcade-body {
 }
 
 /* ============================================
-   MAIN MENU — exact preview match
+   MAIN MENU
 ============================================ */
 
 #mainMenuOverlay .arc-menu-panel {
@@ -268,14 +263,8 @@ body.arcade-body {
   padding: 18px 20px !important;
 }
 
-/* Hide the original frog-panel-title for main menu — using our custom title block */
-#mainMenuOverlay .frog-panel-title {
-  display: none !important;
-}
-
-#mainMenuOverlay .frog-panel-sub {
-  display: none;
-}
+#mainMenuOverlay .frog-panel-title { display: none !important; }
+#mainMenuOverlay .frog-panel-sub { display: none; }
 
 .arc-menu-eyebrow {
   font-family: var(--arc-mono);
@@ -300,13 +289,8 @@ body.arcade-body {
   line-height: 1;
 }
 
-.arc-menu-title-line + .arc-menu-title-line {
-  margin-top: 4px;
-}
-
-.arc-menu-title-danger {
-  color: var(--arc-red) !important;
-}
+.arc-menu-title-line + .arc-menu-title-line { margin-top: 4px; }
+.arc-menu-title-danger { color: var(--arc-red) !important; }
 
 .arc-menu-tagline {
   font-family: var(--arc-mono);
@@ -319,13 +303,7 @@ body.arcade-body {
   text-transform: uppercase;
 }
 
-#mainMenuOverlay .frog-btn.arc-menu-primary {
-  margin-bottom: 12px !important;
-}
-
-#mainMenuOverlay .frog-btn.arc-menu-primary::before {
-  content: "";
-}
+#mainMenuOverlay .frog-btn.arc-menu-primary { margin-bottom: 12px !important; }
 
 .arc-menu-grid {
   display: grid;
@@ -354,7 +332,7 @@ body.arcade-body {
 }
 
 /* ============================================
-   UPGRADE OVERLAY — preview-matching cards
+   UPGRADE SELECTION
 ============================================ */
 
 #upgradeOverlay .frog-panel {
@@ -365,9 +343,7 @@ body.arcade-body {
   padding: 0 !important;
 }
 
-#upgradeOverlay .frog-panel-title {
-  display: none !important;
-}
+#upgradeOverlay .frog-panel-title { display: none !important; }
 
 #upgradeOverlay .frog-panel-sub {
   font-family: var(--arc-mono) !important;
@@ -387,7 +363,6 @@ body.arcade-body {
   padding: 0 !important;
 }
 
-/* Stack cards vertically like the preview */
 #upgradeOverlay .upgrade-choices {
   display: flex !important;
   flex-direction: column !important;
@@ -418,13 +393,13 @@ body.arcade-body {
   transform: translateY(-1px) !important;
 }
 
-/* Category color variants */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility {
   background: var(--arc-bg) !important;
   border-color: var(--arc-green) !important;
   box-shadow: 0 2px 0 var(--arc-rim), inset 0 1px 0 rgba(108,255,138,0.06) !important;
 }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff {
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff,
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
   background: var(--arc-amber-bg) !important;
   border-color: var(--arc-amber) !important;
   box-shadow: 0 2px 0 var(--arc-amber-line), inset 0 1px 0 rgba(255,182,108,0.08) !important;
@@ -434,18 +409,12 @@ body.arcade-body {
   border-color: var(--arc-pink) !important;
   box-shadow: 0 2px 0 var(--arc-pink-line), inset 0 1px 0 rgba(255,102,170,0.08) !important;
 }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb {
-  background: var(--arc-amber-bg) !important;
-  border-color: var(--arc-amber) !important;
-  box-shadow: 0 2px 0 var(--arc-amber-line), inset 0 1px 0 rgba(255,182,108,0.08) !important;
-}
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role {
   background: var(--arc-purple-bg) !important;
   border-color: var(--arc-purple) !important;
   box-shadow: 0 2px 0 var(--arc-purple-line), inset 0 1px 0 rgba(182,108,255,0.08) !important;
 }
 
-/* Card head: number + category badge */
 .frog-upgrade-head {
   display: flex !important;
   justify-content: space-between !important;
@@ -467,10 +436,7 @@ body.arcade-body {
   opacity: 0.7;
 }
 
-/* Hide standalone emoji block (preview cards don't have one) */
-#upgradeOverlay .frog-upgrade-emoji {
-  display: none !important;
-}
+#upgradeOverlay .frog-upgrade-emoji { display: none !important; }
 
 #upgradeOverlay .frog-upgrade-title {
   font-family: var(--arc-mono) !important;
@@ -485,26 +451,24 @@ body.arcade-body {
   display: inline !important;
 }
 
-/* Title color and num color match category */
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-title,
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-num { color: var(--arc-green-bright) !important; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-cat { color: var(--arc-green-dim) !important; }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .frog-upgrade-title,
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .frog-upgrade-num     { color: var(--arc-amber-bright) !important; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .frog-upgrade-cat     { color: var(--arc-amber-dim) !important; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .frog-upgrade-num,
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-title,
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-num { color: var(--arc-amber-bright) !important; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .frog-upgrade-cat,
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-cat { color: var(--arc-amber-dim) !important; }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-title,
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-num { color: var(--arc-pink-bright) !important; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-cat { color: var(--arc-pink-dim) !important; }
 
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-title,
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-num      { color: var(--arc-amber-bright) !important; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-cat      { color: var(--arc-amber-dim) !important; }
-
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-role .frog-upgrade-title,
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role .frog-upgrade-num     { color: var(--arc-purple-bright) !important; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role .frog-upgrade-cat     { color: var(--arc-purple-dim) !important; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role .frog-upgrade-num { color: var(--arc-purple-bright) !important; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role .frog-upgrade-cat { color: var(--arc-purple-dim) !important; }
 
 #upgradeOverlay .frog-upgrade-desc {
   font-family: var(--arc-mono) !important;
@@ -517,10 +481,10 @@ body.arcade-body {
 }
 
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-mobility .frog-upgrade-desc { color: var(--arc-green) !important; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .frog-upgrade-desc     { color: var(--arc-amber) !important; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-buff .frog-upgrade-desc,
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-desc { color: var(--arc-amber) !important; }
 #upgradeOverlay .frog-upgrade-choice.upgrade-type-survival .frog-upgrade-desc { color: var(--arc-pink) !important; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-orb .frog-upgrade-desc      { color: var(--arc-amber) !important; }
-#upgradeOverlay .frog-upgrade-choice.upgrade-type-role .frog-upgrade-desc     { color: var(--arc-purple) !important; }
+#upgradeOverlay .frog-upgrade-choice.upgrade-type-role .frog-upgrade-desc { color: var(--arc-purple) !important; }
 
 .arc-upgrade-hint {
   text-align: center;
@@ -540,18 +504,74 @@ body.arcade-body {
 }
 
 /* ============================================
-   LEADERBOARD OVERLAY — preview-matching grid table
+   HOW TO PLAY — preview-matching
+============================================ */
+
+#howToOverlay .arc-howto-panel {
+  width: min(440px, 92vw) !important;
+}
+
+#howToOverlay .frog-panel-title { display: none !important; }
+#howToOverlay > .frog-panel > .frog-panel-sub { display: none !important; }
+
+.arc-howto-section { margin-bottom: 14px; }
+.arc-howto-section:last-of-type { margin-bottom: 0; }
+
+.arc-howto-label {
+  font-family: var(--arc-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--arc-green-dim);
+  margin-bottom: 6px;
+}
+
+.arc-howto-body {
+  font-family: var(--arc-mono);
+  font-size: 12px;
+  color: var(--arc-green-bright);
+  line-height: 1.7;
+  letter-spacing: 0.5px;
+}
+
+.arc-howto-key {
+  color: var(--arc-amber-bright);
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+.arc-howto-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: var(--arc-mono);
+  font-size: 12px;
+  color: var(--arc-green-bright);
+  line-height: 1.8;
+  letter-spacing: 0.3px;
+}
+
+.arc-howto-list li {
+  padding-left: 14px;
+  position: relative;
+}
+
+.arc-howto-list li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--arc-green-dim);
+}
+
+/* ============================================
+   LEADERBOARD OVERLAY — grid table
 ============================================ */
 
 #leaderboardOverlay .arc-leaderboard-panel {
   width: min(440px, 92vw) !important;
 }
 
-/* Hide original title block; using custom eyebrow */
 #leaderboardOverlay .frog-panel-title,
-#leaderboardOverlay > .frog-panel > .frog-panel-sub {
-  display: none !important;
-}
+#leaderboardOverlay > .frog-panel > .frog-panel-sub { display: none !important; }
 
 .arc-overlay-eyebrow {
   font-family: var(--arc-mono);
@@ -660,7 +680,7 @@ body.arcade-body {
 }
 
 /* ============================================
-   DASHBOARD — preserved structure, themed
+   DASHBOARD — hybrid layout
 ============================================ */
 
 #dashboardOverlay .arc-dashboard-panel {
@@ -668,52 +688,188 @@ body.arcade-body {
 }
 
 #dashboardOverlay .frog-panel-title,
-#dashboardOverlay > .frog-panel > .frog-panel-sub {
-  display: none !important;
+#dashboardOverlay > .frog-panel > .frog-panel-sub { display: none !important; }
+
+.arc-dash-header {
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--arc-line);
+  margin-bottom: 12px;
 }
 
-#dashboardOverlay .frog-panel-section-label {
-  text-transform: uppercase;
+.arc-dash-tag {
   font-family: var(--arc-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--arc-green-bright);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.arc-dash-level {
+  font-family: var(--arc-mono);
+  font-size: 11px;
+  color: var(--arc-green);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.arc-dash-rank { color: var(--arc-amber-bright); }
+
+.arc-dash-progress {
+  width: 160px;
+  height: 4px;
+  background: var(--arc-bg);
+  border: 1px solid var(--arc-line);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0 auto 6px;
+}
+
+.arc-dash-progress-bar {
+  height: 100%;
+  background: var(--arc-green);
+  transition: width 200ms ease;
+}
+
+.arc-dash-progress-hint {
+  font-family: var(--arc-mono);
+  font-size: 9px;
+  color: var(--arc-green-dim);
+  letter-spacing: 1px;
+}
+
+.arc-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.arc-stat-card {
+  background: var(--arc-bg);
+  border: 1px solid var(--arc-line);
+  border-radius: 3px;
+  padding: 8px 10px;
+}
+
+.arc-stat-card-label {
+  font-family: var(--arc-mono);
+  font-size: 9px;
+  color: var(--arc-green-dim);
+  letter-spacing: 1.5px;
+  margin-bottom: 2px;
+}
+
+.arc-stat-card-value {
+  font-family: var(--arc-mono);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--arc-green-bright);
+  line-height: 1.2;
+}
+
+.arc-text-green-bright { color: var(--arc-green-bright) !important; }
+.arc-text-amber        { color: var(--arc-amber-bright) !important; }
+.arc-text-green        { color: var(--arc-green) !important; }
+.arc-text-purple       { color: var(--arc-purple-bright) !important; }
+
+.arc-eyebrow-tight {
+  font-family: var(--arc-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--arc-green-dim);
   margin-top: 14px;
   margin-bottom: 6px;
 }
 
-/* The dashboard content uses inline color styles from JS — override the
-   colors that point at the old palette so they fit the neon theme */
+.arc-recent-list {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 4px;
+}
 
-#dashboardContent {
+.arc-recent-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 70px;
+  gap: 8px;
+  padding: 4px 4px;
   font-family: var(--arc-mono);
+  font-size: 10px;
   color: var(--arc-green);
+  border-bottom: 1px dashed var(--arc-line);
 }
 
-/* The "Level X" big label */
-#dashboardContent [style*="color:#bef264"],
-#dashboardContent [style*="color: #bef264"] {
-  color: var(--arc-amber-bright) !important;
-}
-#dashboardContent [style*="color:#a3e635"],
-#dashboardContent [style*="color: #a3e635"] {
-  color: var(--arc-green) !important;
-}
-#dashboardContent [style*="color:#a8a29e"],
-#dashboardContent [style*="color: #a8a29e"] {
-  color: var(--arc-green-dim) !important;
+.arc-recent-row:last-child { border-bottom: none; }
+
+.arc-recent-when { color: var(--arc-green-dim); }
+.arc-recent-time { text-align: right; }
+.arc-recent-score {
+  text-align: right;
+  color: var(--arc-amber-bright);
+  font-weight: 500;
 }
 
-#dashboardContent input[type="text"] {
-  background: var(--arc-bg) !important;
-  border: 1px solid var(--arc-line) !important;
-  color: var(--arc-green-bright) !important;
-  font-family: var(--arc-mono) !important;
-  border-radius: 3px !important;
+.arc-tag-editor {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
-/* Snake skin selector */
-.snake-skin-option .snake-skin-frame,
+.arc-tag-input {
+  flex: 1;
+  padding: 6px 9px;
+  border-radius: 3px;
+  border: 1px solid var(--arc-line);
+  background: var(--arc-bg);
+  color: var(--arc-green-bright);
+  font-family: var(--arc-mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  outline: none;
+}
+
+.arc-tag-input:focus {
+  border-color: var(--arc-green);
+}
+
+.arc-tag-save-btn {
+  all: unset;
+  box-sizing: border-box;
+  background: transparent;
+  color: var(--arc-green);
+  padding: 6px 14px;
+  font-family: var(--arc-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-align: center;
+  border: 1px solid var(--arc-rim);
+  border-radius: 3px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 100ms ease;
+}
+
+.arc-tag-save-btn:hover {
+  background: var(--arc-bg);
+  color: var(--arc-green-bright);
+  border-color: var(--arc-green);
+}
+
+.arc-tag-message {
+  font-family: var(--arc-mono);
+  font-size: 10px;
+  color: var(--arc-green-dim);
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+/* Snake skin selector — themed circle thumbnails */
 .snake-skin-option > div:first-child {
   background: var(--arc-bg) !important;
-  border-color: var(--arc-line) !important;
+  border: 1px solid var(--arc-line) !important;
 }
 
 .snake-skin-option.is-selected > div:first-child {
@@ -721,8 +877,21 @@ body.arcade-body {
   box-shadow: 0 0 0 1px var(--arc-green) !important;
 }
 
+/* Starting buff selector */
+.starting-buff-option {
+  background: var(--arc-bg) !important;
+  border: 1px solid var(--arc-line) !important;
+  color: var(--arc-green) !important;
+  font-family: var(--arc-mono) !important;
+}
+
+.starting-buff-option:hover:not(:disabled) {
+  background: var(--arc-rim) !important;
+  border-color: var(--arc-green) !important;
+}
+
 /* ============================================
-   SCOREBOARD (end of run)
+   END-OF-RUN SCOREBOARD — themed but full features kept
 ============================================ */
 
 .scoreboard-card {
@@ -751,16 +920,19 @@ body.arcade-body {
   text-transform: uppercase;
 }
 
-.summary-pill {
+.summary-pill,
+.summary-metrics .summary-pill {
   background: var(--arc-bg) !important;
   border: 1px solid var(--arc-line) !important;
   border-radius: 3px !important;
+  padding: 8px 10px !important;
 }
 
 .pill-label {
   color: var(--arc-green-dim) !important;
   font-size: 9px !important;
   letter-spacing: 1.5px !important;
+  text-transform: uppercase;
 }
 
 .pill-value {
@@ -798,6 +970,7 @@ body.arcade-body {
 .scoreboard-td {
   color: var(--arc-green) !important;
   font-size: 11px !important;
+  padding: 6px 8px !important;
 }
 
 .scoreboard-rank {
@@ -823,12 +996,28 @@ body.arcade-body {
   font-weight: 500 !important;
   letter-spacing: 1px !important;
   text-transform: uppercase;
+  font-size: 11px !important;
+}
+
+.scoreboard-btn:hover {
+  background: var(--arc-bg) !important;
+  color: var(--arc-green-bright) !important;
+  border-color: var(--arc-green) !important;
+  filter: none !important;
+  transform: translateY(0) !important;
 }
 
 .scoreboard-btn--primary {
   background: var(--arc-green) !important;
   color: var(--arc-bg-deep) !important;
   border-color: var(--arc-green-bright) !important;
+  box-shadow: 0 2px 0 var(--arc-rim) !important;
+}
+
+.scoreboard-btn--primary:hover {
+  background: var(--arc-green) !important;
+  color: var(--arc-bg-deep) !important;
+  filter: brightness(1.08) !important;
 }
 
 .scoreboard-btn--ghost {
@@ -839,6 +1028,33 @@ body.arcade-body {
 .scoreboard-hint {
   color: var(--arc-green-dim) !important;
   font-size: 10px !important;
+}
+
+.summary-heading {
+  color: var(--arc-green-bright) !important;
+  font-weight: 500 !important;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* End-of-run leaderboard preview rows */
+.scoreboard-card .frog-panel-list li {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Tag input within scoreboard */
+.scoreboard-card input[type="text"] {
+  background: var(--arc-bg) !important;
+  border: 1px solid var(--arc-line) !important;
+  color: var(--arc-green-bright) !important;
+  font-family: var(--arc-mono) !important;
+  border-radius: 3px !important;
+}
+
+.scoreboard-card input[type="text"]:focus {
+  border-color: var(--arc-green) !important;
+  outline: none !important;
 }
 
 /* ============================================
@@ -1175,12 +1391,6 @@ body.arcade-body {
 .sale_link_btn:hover {
   background: var(--arc-rim) !important;
   color: var(--arc-green-bright) !important;
-}
-
-.sale_link_btn.opensea,
-.sale_link_btn.etherscan {
-  background: var(--arc-bg) !important;
-  color: var(--arc-green) !important;
 }
 
 .main-menu-discord-btn {

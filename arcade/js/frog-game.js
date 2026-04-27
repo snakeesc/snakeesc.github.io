@@ -1591,9 +1591,9 @@ const SNAKE_SKIN_STORAGE_KEY = "frogSnake_selectedSnakeSkin";
     {
       id: "default",
       label: "Classic",
-      head: "../images/head.png",
-      body: "../images/body.png",
-      tail: "../images/tail.png",
+      head: "./images/head.png",
+      body: "./images/body.png",
+      tail: "./images/tail.png",
       requiredLevel: 1
     },
     {
@@ -1953,48 +1953,20 @@ function snakeShed(stage) {
   }
 
   async function buildLayersForFrog(frog, meta) {
+    // Arcade build: single flat sprite, no trait layering.
     frog.el.innerHTML = "";
 
     const baseImg = document.createElement("img");
     baseImg.className = "frog-sprite-base";
-    baseImg.src = frog.spriteSrc;
+    baseImg.src = "./images/frog.png";
     baseImg.alt = "";
-
-    const skinImg = document.createElement("img");
-    skinImg.className = "frog-sprite-skin";
-    skinImg.src = frog.skinSrc;
-    skinImg.alt = "";
+    baseImg.style.imageRendering = "pixelated";
 
     frog.el.appendChild(baseImg);
-    frog.el.appendChild(skinImg);
-
     frog.baseImg = baseImg;
-    frog.skinImg = skinImg;
-
+    frog.skinImg = null;
     frog.layers = [];
 
-    const attrs = Array.isArray(meta.attributes) ? meta.attributes : [];
-    for (const attr of attrs) {
-      const traitType = attr.trait_type;
-      const value = attr.value;
-      if (!traitType || typeof value === "undefined") continue;
-      if (SKIP_TRAITS.has(traitType)) continue;
-
-      const img = await loadTraitImage(traitType, value);
-      if (!img) continue;
-
-      img.alt = "";
-      img.style.position = "absolute";
-      img.style.inset = "0";
-      img.style.width = "100%";
-      img.style.height = "100%";
-      img.style.imageRendering = "pixelated";
-
-      frog.layers.push(img);
-      frog.el.appendChild(img);
-    }
-
-    // Re-apply glow + emoji badge that may have been cleared
     refreshFrogPermaGlow(frog);
     updateFrogRoleEmoji(frog);
   }
@@ -2110,37 +2082,16 @@ function createFrogAt(x, y, tokenId) {
 
   const baseImg = document.createElement("img");
   baseImg.className = "frog-sprite-base";
-  baseImg.src = frog.spriteSrc;
+  baseImg.src = "./images/frog.png";
   baseImg.alt = "";
-
-  const skinImg = document.createElement("img");
-  skinImg.className = "frog-sprite-skin";
-  skinImg.src = frog.skinSrc;
-  skinImg.alt = "";
+  baseImg.style.imageRendering = "pixelated";
 
   el.appendChild(baseImg);
-  el.appendChild(skinImg);
 
   frog.baseImg = baseImg;
-  frog.skinImg = skinImg;
-
-  if (frog.eyesSrc) {
-    const eyesImg = document.createElement("img");
-    eyesImg.className = "frog-sprite-eyes";
-    eyesImg.src = frog.eyesSrc;
-    eyesImg.alt = "";
-    el.appendChild(eyesImg);
-    frog.eyesImg = eyesImg;
-  }
-
-  if (frog.hatSrc) {
-    const hatImg = document.createElement("img");
-    hatImg.className = "frog-sprite-hat";
-    hatImg.src = frog.hatSrc;
-    hatImg.alt = "";
-    el.appendChild(hatImg);
-    frog.hatImg = hatImg;
-  }
+  // skinImg/eyesImg/hatImg are intentionally not created in arcade build
+  // — the arcade frog is a single 16x16 sprite, no trait layering.
+  frog.skinImg = null;
 
   return frog;
 }
@@ -4935,10 +4886,11 @@ function samplePathAtDistance(path, startIdx, dist) {
     const frog = buildMenuFrogState(x, y, tokenId);
     mainMenuFrogs.push(frog);
 
-    frog.el.style.backgroundImage = `url("${frog.spriteSrc}")`;
+    frog.el.style.backgroundImage = `url("./images/frog.png")`;
     frog.el.style.backgroundSize = "contain";
     frog.el.style.backgroundRepeat = "no-repeat";
     frog.el.style.backgroundPosition = "center";
+    frog.el.style.imageRendering = "pixelated";
 
     return frog;
   }
@@ -5966,48 +5918,62 @@ async function showDashboardOverlay(cachedLeaderboard) {
     : "";
 
   content.innerHTML = `
-    <div style="text-align:center;padding-bottom:14px;border-bottom:1px solid #292524;margin-bottom:2px;">
-      <div style="
-        position:relative;
-        width:96px;
-        height:96px;
-        border-radius:999px;
-        overflow:hidden;
-        background:${dashboardPfp.bgColor || "#292524"};
-        border:0px solid #44403c;
-        margin:0 auto 8px;
-      ">
-        <img src="${dashboardPfp.spriteSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:1;" />
-        <img src="${dashboardPfp.skinSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:2;" />
-        ${dashboardPfp.eyesSrc ? `<img src="${dashboardPfp.eyesSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:3;" />` : ""}
-        ${dashboardPfp.hatSrc ? `<img src="${dashboardPfp.hatSrc}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:4;" />` : ""}
+    <div class="arc-dash-header">
+      <div class="arc-dash-tag" id="dashboardCurrentTag">${currentTag || "No tag set"}</div>
+      <div class="arc-dash-level">
+        Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span class="arc-dash-rank">#${bestRecordRank + 1} ranked</span>` : ""}
       </div>
-      <div style="font-size:15px;font-weight:bold;color:#bef264;margin-bottom:2px;" id="dashboardCurrentTag">${currentTag || "No tag set"}</div>
-      <div style="color:#a3e635;margin-bottom:6px;">Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a8a29e;">#${bestRecordRank + 1} ranked</span>` : ""}</div>
-      <div style="width:120px;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin:0 auto 3px;">
-        <div style="width:${levelData.progressPercent}%;height:100%;background:#bef264;border-radius:999px;"></div>
+      <div class="arc-dash-progress">
+        <div class="arc-dash-progress-bar" style="width:${levelData.progressPercent}%;"></div>
       </div>
-      <div style="color:#a8a29e;margin-bottom:6px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
-      <div style="color:#f5f5f4;">
-        <strong style="color:#bef264;">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong> best
-        · <strong style="color:#bef264;">${localStats.totalRuns || 0}</strong> runs
-        · <strong style="color:#bef264;">${localStats.totalOrbsCollected || 0}</strong> orbs
-        · <strong style="color:#bef264;">${formatDashboardDuration(localStats.totalPlayTime || 0)}</strong>
+      <div class="arc-dash-progress-hint">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
+    </div>
+
+    <div class="arc-stat-grid">
+      <div class="arc-stat-card">
+        <div class="arc-stat-card-label">BEST SCORE</div>
+        <div class="arc-stat-card-value arc-text-green-bright">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</div>
+      </div>
+      <div class="arc-stat-card">
+        <div class="arc-stat-card-label">BEST TIME</div>
+        <div class="arc-stat-card-value arc-text-amber">${leaderboardBest.found && leaderboardBest.bestTime ? formatDashboardDuration(leaderboardBest.bestTime) : "—"}</div>
+      </div>
+      <div class="arc-stat-card">
+        <div class="arc-stat-card-label">RUNS</div>
+        <div class="arc-stat-card-value arc-text-green">${localStats.totalRuns || 0}</div>
+      </div>
+      <div class="arc-stat-card">
+        <div class="arc-stat-card-label">ORBS</div>
+        <div class="arc-stat-card-value arc-text-purple">${localStats.totalOrbsCollected || 0}</div>
       </div>
     </div>
 
-    <div class="frog-panel-section-label" style="margin-top:14px;">Leaderboard Tag</div>
-    <div style="display:flex;gap:6px;margin-bottom:4px;">
+    ${(Array.isArray(localStats.recentRuns) && localStats.recentRuns.length) ? `
+      <div class="arc-eyebrow-tight">// RECENT RUNS</div>
+      <div class="arc-recent-list">
+        ${localStats.recentRuns.slice(0, 4).map(r => `
+          <div class="arc-recent-row">
+            <span class="arc-recent-when">recent</span>
+            <span class="arc-recent-time">${formatDashboardDuration(r.time || 0)}</span>
+            <span class="arc-recent-score">${Math.floor(r.score || 0).toLocaleString()}</span>
+          </div>
+        `).join("")}
+      </div>
+    ` : ""}
+
+    <div class="arc-eyebrow-tight">// LEADERBOARD TAG</div>
+    <div class="arc-tag-editor">
       <input
         id="dashboardTagInput"
         type="text"
         maxlength="12"
         value="${String(currentTag).replace(/"/g, "&quot;")}"
         placeholder="Enter player tag"
-        style="flex:1;padding:6px 9px;border-radius:8px;border:1px solid #44403c;background:#292524;color:white;font-family:inherit;font-size:12px;"
+        class="arc-tag-input"
       />
-      <button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary" style="width:auto;padding:6px 10px;font-size:12px;margin-bottom:0;">Save</button>
+      <button id="dashboardSaveTagBtn" class="arc-tag-save-btn">SAVE</button>
     </div>
+    <div id="dashboardTagMessage" class="arc-tag-message"></div>
 
     ${buildStartingBuffSelectorHtml()}
     ${buildSnakeSkinSelectorHtml()}
@@ -6854,7 +6820,7 @@ function initUpgradeOverlay() {
       const emoji = emojiMatch ? emojiMatch[0] : "";
       const nameOnly = titleHtml.replace(emoji, "").trim();
 
-      // Derive category label from class name (upgrade-type-mobility -> MOBILITY)
+      // Derive category label from class name
       const catMatch = colorClass.match(/upgrade-type-(\w+)/);
       const catLabel = catMatch ? catMatch[1].toUpperCase() : "";
 

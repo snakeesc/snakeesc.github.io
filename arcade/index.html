@@ -6,7 +6,6 @@
   <link rel="icon"
       href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%90%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-9Q540R6FC5"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -29,7 +28,6 @@
     })();
   </script>
 
-  <!-- Original style.css comes first; arcade-theme.css overrides it. -->
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/arcade-theme.css" />
   <style>
@@ -49,32 +47,23 @@
 <body class="arcade-body">
   <div id="frog-game"></div>
 
-  <!-- ============================================
-       MAIN MENU — preview-matching markup
-  ============================================ -->
+  <!-- MAIN MENU -->
   <div id="mainMenuOverlay" class="frog-overlay">
     <div class="frog-panel arc-menu-panel">
-      <!-- Eyebrow -->
       <div class="arc-menu-eyebrow">— ARCADE EDITION —</div>
-
-      <!-- Two-line title (the snake word in red) -->
       <div class="arc-menu-title">
         <div class="arc-menu-title-line">ESCAPE</div>
         <div class="arc-menu-title-line arc-menu-title-danger">THE SNAKE</div>
       </div>
-
-      <!-- Tagline -->
       <div class="arc-menu-tagline">
         KEEP YOUR FROGS ALIVE.<br />
         MOUSE TO MOVE.
       </div>
 
-      <!-- Primary -->
       <button id="btnStartRun" class="frog-btn frog-btn-primary arc-menu-primary">
         ▸ START RUN
       </button>
 
-      <!-- 2-column secondary grid -->
       <div class="arc-menu-grid">
         <button id="btnHowTo" class="frog-btn frog-btn-secondary">HOW TO PLAY</button>
         <button id="btnBuffGuide" class="frog-btn frog-btn-secondary">UPGRADES</button>
@@ -82,7 +71,6 @@
         <button id="btnDashboard" class="frog-btn frog-btn-secondary">DASHBOARD</button>
       </div>
 
-      <!-- Footer -->
       <div class="arc-menu-footer">
         <span>TAG: <span id="menuTagDisplay">—</span></span>
         <span>BEST: <span id="menuBestDisplay">—</span></span>
@@ -90,73 +78,57 @@
     </div>
   </div>
 
-  <!-- ============================================
-       UPGRADE SELECTION
-  ============================================ -->
+  <!-- UPGRADE SELECTION -->
   <div id="upgradeOverlay" class="frog-overlay">
     <div class="frog-panel">
-      <div class="frog-panel-title">
-        Choose an upgrade
-      </div>
-
+      <div class="frog-panel-title">Choose an upgrade</div>
       <div id="upgradeOverlaySub" class="frog-panel-sub"></div>
-
       <div class="upgrade-layout">
         <div class="upgrade-column upgrade-column-choices">
-          <div id="upgradeChoicesContainer" class="upgrade-choices">
-            <!-- buttons injected by JS -->
-          </div>
+          <div id="upgradeChoicesContainer" class="upgrade-choices"></div>
         </div>
       </div>
-
       <div class="arc-upgrade-hint">PRESS 1 · 2 · 3 OR TAP</div>
     </div>
   </div>
 
-  <!-- ============================================
-       HOW TO PLAY
-  ============================================ -->
+  <!-- HOW TO PLAY -->
   <div id="howToOverlay" class="frog-overlay">
-    <div class="frog-panel">
-      <div class="frog-panel-title">
-        How to Play
-        <span class="emoji">❓</span>
+    <div class="frog-panel arc-howto-panel">
+      <div class="arc-overlay-eyebrow">// HOW TO PLAY</div>
+
+      <div class="arc-howto-section">
+        <div class="arc-howto-label">// CONTROLS</div>
+        <div class="arc-howto-body">
+          <span class="arc-howto-key">MOUSE</span> → frogs follow your cursor
+        </div>
       </div>
 
-      <div class="frog-panel-sub">
-        Escape the Snake is a survival game. Keep your frogs alive as long as possible.
+      <div class="arc-howto-section">
+        <div class="arc-howto-label">// GOAL</div>
+        <ul class="arc-howto-list">
+          <li>avoid the snake</li>
+          <li>stay alive as long as possible</li>
+          <li>collect orbs, take upgrades</li>
+        </ul>
       </div>
 
-      <div class="frog-panel-section-label">Controls</div>
-      <ul class="frog-panel-list">
-        <li><strong>Mouse:</strong> move your cursor – your frogs try to follow.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Goal</div>
-      <ul class="frog-panel-list">
-        <li>Avoid letting the snake eat your frogs!</li>
-        <li>The goal is to stay alive for as long as possible.</li>
-        <li>Collect orbs and upgrade buffs to survive longer.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">Tips</div>
-      <ul class="frog-panel-list">
-        <li>Plan your path early when the snake sheds (it gets faster).</li>
-        <li>Don't chase every orb; staying alive is more important.</li>
-        <li>Some buffs make the snake slower, some make frogs safer – learn which is which.</li>
-      </ul>
+      <div class="arc-howto-section">
+        <div class="arc-howto-label">// TIPS</div>
+        <ul class="arc-howto-list">
+          <li>snake speeds up when it sheds</li>
+          <li>don't chase every orb</li>
+          <li>some buffs slow the snake, others protect frogs &mdash; learn which</li>
+        </ul>
+      </div>
 
       <div class="frog-panel-footer">
-        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary" style="margin-top:6px;">
-          Close
-        </button>
+        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">CLOSE</button>
       </div>
     </div>
   </div>
 
-  <!-- ============================================
-       BUFF / UPGRADE GUIDE
-  ============================================ -->
+  <!-- BUFF / UPGRADE GUIDE -->
   <div id="buffGuideOverlay" class="frog-overlay">
     <div class="frog-panel">
       <div class="frog-panel-title">
@@ -202,34 +174,26 @@
     </div>
   </div>
 
-  <!-- ============================================
-       LEADERBOARD — preview-matching: tighter title + grid table from JS
-  ============================================ -->
+  <!-- LEADERBOARD -->
   <div id="leaderboardOverlay" class="frog-overlay">
     <div class="frog-panel arc-leaderboard-panel">
       <div class="arc-overlay-eyebrow">// LEADERBOARD</div>
-
       <div id="leaderboardContent">
         <div class="arc-empty">Loading…</div>
       </div>
-
       <div class="frog-panel-footer">
         <button id="leaderboardCloseBtn" class="frog-btn frog-btn-secondary">CLOSE</button>
       </div>
     </div>
   </div>
 
-  <!-- ============================================
-       DASHBOARD — preserved structure, themed
-  ============================================ -->
+  <!-- DASHBOARD -->
   <div id="dashboardOverlay" class="frog-overlay">
     <div class="frog-panel arc-dashboard-panel">
       <div class="arc-overlay-eyebrow">// DASHBOARD</div>
-
       <div id="dashboardContent">
         <div class="arc-empty">Loading dashboard…</div>
       </div>
-
       <div class="frog-panel-footer">
         <button id="dashboardCloseBtn" class="frog-btn frog-btn-secondary">CLOSE</button>
       </div>
@@ -243,7 +207,6 @@
   <script src="js/frog-leaderboard.js"></script>
   <script src="js/frog-game.js"></script>
 
-  <!-- Populate menu footer once tag is loaded -->
   <script>
     (function () {
       function update() {
@@ -276,16 +239,12 @@
           }
         } catch (e) {}
       }
-      // Update on load and whenever menu opens
       document.addEventListener("DOMContentLoaded", update);
-      // Also update when storage changes
       window.addEventListener("storage", update);
-      // Periodic refresh while menu is visible
       setInterval(update, 2000);
     })();
   </script>
 
-  <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "02f1ec21acba45f38ae0a30210c222d1"}'></script>
 </body>
 </html>
