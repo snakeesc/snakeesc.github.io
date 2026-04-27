@@ -1178,12 +1178,10 @@ const MAX_LUCK = 30;
     const orbLingerBonus    = Math.round((orbTtlFactor - 1) * 100);
 
     const icon = (emoji, label, val, color) => {
-      // color token maps to a category class for theming
       let cat = "mobility";
       if (color === "r") cat = "survival";
       else if (color === "o") cat = "orb";
       else if (color === "p") cat = "role";
-      // legacy callers may still pass color strings; default to mobility (green)
       return `
       <div class="arc-stat-chip arc-stat-cat-${cat}">
         <span class="arc-stat-chip-icon">${emoji}</span>
@@ -1191,10 +1189,10 @@ const MAX_LUCK = 30;
       </div>`;
     };
 
-    const g = "g"; // mobility
-    const r = "r"; // survival
-    const o = "o"; // orb / buff
-    const p = "p"; // role
+    const g = "g";
+    const r = "r";
+    const o = "o";
+    const p = "p";
 
     const items = [];
 
@@ -5666,7 +5664,7 @@ function closeAnimatedOverlay(overlayEl) {
     const content = document.getElementById("leaderboardContent");
     if (!content) return;
 
-    content.innerHTML = '<div class="leaderboard-loading">Loading leaderboard…</div>';
+    content.innerHTML = '<div class="arc-empty">Loading…</div>';
 
     try {
       const entries = await fetchLeaderboard();
@@ -5674,8 +5672,7 @@ function closeAnimatedOverlay(overlayEl) {
 
       if (list.length === 0) {
         content.innerHTML = `
-          <div class="frog-panel-section-label">Global Leaderboard</div>
-          <ul class="frog-panel-list"><li>No runs yet.</li></ul>
+          <div class="arc-empty">No runs yet.</div>
         `;
         openAnimatedOverlay(leaderboardOverlay);
         return;
@@ -5751,33 +5748,40 @@ function closeAnimatedOverlay(overlayEl) {
         const end = Math.min(start + pageSize, list.length);
         const pageEntries = list.slice(start, end);
 
-        const itemsHtml = pageEntries.map((entry, idx) => {
+        const rowsHtml = pageEntries.map((entry, idx) => {
           const rank = start + idx + 1;
           const name = getDisplayName(entry, rank);
           const score = Math.floor(getScore(entry)).toLocaleString();
           const time = formatLeaderboardTime(getTime(entry));
           const isMe = entryMatchesUser(entry);
+          const rankClass = rank <= 3 ? ` arc-row-rank-${rank}` : "";
+          const meClass = isMe ? " arc-row-me" : "";
           return `
-            <li${isMe ? ' style="color:#bef264;"' : ""}>
-              <strong>#${rank}</strong>
-              ${isMe ? "⭐ " : ""}${name} · ${time} · ${score} score
-            </li>
+            <div class="arc-row${rankClass}${meClass}">
+              <span class="arc-row-rank">${String(rank).padStart(2, "0")}</span>
+              <span class="arc-row-name">${name}${isMe ? " (you)" : ""}</span>
+              <span class="arc-row-time">${time}</span>
+              <span class="arc-row-score">${score}</span>
+            </div>
           `;
         }).join("");
 
         const totalPages = Math.ceil(list.length / pageSize);
 
         content.innerHTML = `
-          <div class="frog-panel-section-label" style="margin-top:0;">Global Leaderboard</div>
-          <ul class="frog-panel-list" style="margin-bottom:0;min-width:320px;">
-            ${itemsHtml || '<li style="color:#a8a29e;">No entries.</li>'}
-          </ul>
-          <div class="frog-panel-footer">
-            <div style="margin-bottom:8px;">Page ${currentPage + 1} of ${totalPages}</div>
-            <div style="display:flex;gap:8px;">
-              <button id="leaderboardPrevBtn" class="frog-btn frog-btn-secondary leaderboard-page-btn" style="flex:1;margin-bottom:0;" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
-              <button id="leaderboardNextBtn" class="frog-btn frog-btn-secondary leaderboard-page-btn" style="flex:1;margin-bottom:0;" ${end >= list.length ? "disabled" : ""}>Next</button>
-            </div>
+          <div class="arc-table-head">
+            <span class="arc-th arc-th-rank">#</span>
+            <span class="arc-th arc-th-name">TAG</span>
+            <span class="arc-th arc-th-time">TIME</span>
+            <span class="arc-th arc-th-score">SCORE</span>
+          </div>
+          <div class="arc-table-body">
+            ${rowsHtml || '<div class="arc-empty">No entries.</div>'}
+          </div>
+          <div class="arc-pager">
+            <button id="leaderboardPrevBtn" class="arc-pager-btn" ${currentPage === 0 ? "disabled" : ""}>◂ PREV</button>
+            <span class="arc-pager-info">${currentPage + 1} / ${totalPages}</span>
+            <button id="leaderboardNextBtn" class="arc-pager-btn" ${end >= list.length ? "disabled" : ""}>NEXT ▸</button>
           </div>
         `;
 
@@ -5791,8 +5795,7 @@ function closeAnimatedOverlay(overlayEl) {
     } catch (err) {
       console.error("Failed to load leaderboard:", err);
       content.innerHTML = `
-        <div class="frog-panel-section-label">Leaderboard</div>
-        <ul class="frog-panel-list"><li>Failed to load leaderboard.</li></ul>
+        <div class="arc-empty">Failed to load leaderboard.</div>
       `;
     }
 
@@ -6837,7 +6840,8 @@ function initUpgradeOverlay() {
 
     choices.forEach((choice, index) => {
       const btn = document.createElement("button");
-      btn.className = `frog-upgrade-choice is-spawning ${getUpgradeColorClass(choice.id)}`;
+      const colorClass = getUpgradeColorClass(choice.id);
+      btn.className = `frog-upgrade-choice is-spawning ${colorClass}`;
       btn.style.animationDelay = `${index * 70}ms`;
 
       const rawLabel = String(choice.label || "").trim();
@@ -6850,7 +6854,15 @@ function initUpgradeOverlay() {
       const emoji = emojiMatch ? emojiMatch[0] : "";
       const nameOnly = titleHtml.replace(emoji, "").trim();
 
+      // Derive category label from class name (upgrade-type-mobility -> MOBILITY)
+      const catMatch = colorClass.match(/upgrade-type-(\w+)/);
+      const catLabel = catMatch ? catMatch[1].toUpperCase() : "";
+
       btn.innerHTML = `
+        <div class="frog-upgrade-head">
+          <div class="frog-upgrade-num">[${index + 1}]</div>
+          <div class="frog-upgrade-cat">${catLabel}</div>
+        </div>
         <div class="frog-upgrade-emoji">${emoji}</div>
         <div class="frog-upgrade-title">${nameOnly}</div>
         ${descHtml ? `<div class="frog-upgrade-desc">${descHtml}</div>` : ""}

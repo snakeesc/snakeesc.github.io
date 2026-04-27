@@ -47,45 +47,52 @@
   </style>
 </head>
 <body class="arcade-body">
-  <!-- Game canvas host. frog-game.js mounts everything in here. -->
   <div id="frog-game"></div>
 
-  <!-- MAIN MENU OVERLAY -->
+  <!-- ============================================
+       MAIN MENU — preview-matching markup
+  ============================================ -->
   <div id="mainMenuOverlay" class="frog-overlay">
-    <div class="frog-panel">
-      <div class="frog-panel-title">
-        Escape the Snake
-        <span class="emoji">🐍</span>
+    <div class="frog-panel arc-menu-panel">
+      <!-- Eyebrow -->
+      <div class="arc-menu-eyebrow">— ARCADE EDITION —</div>
+
+      <!-- Two-line title (the snake word in red) -->
+      <div class="arc-menu-title">
+        <div class="arc-menu-title-line">ESCAPE</div>
+        <div class="arc-menu-title-line arc-menu-title-danger">THE SNAKE</div>
       </div>
 
-      <div class="frog-panel-sub">
-        Keep your frogs alive as long as you can.<br />
-        Mouse to move · Frogs follow your cursor.
+      <!-- Tagline -->
+      <div class="arc-menu-tagline">
+        KEEP YOUR FROGS ALIVE.<br />
+        MOUSE TO MOVE.
       </div>
 
-      <div style="margin-bottom: 8px;">
-        <button id="btnStartRun" class="frog-btn frog-btn-primary">
-          Start Run
-        </button>
+      <!-- Primary -->
+      <button id="btnStartRun" class="frog-btn frog-btn-primary arc-menu-primary">
+        ▸ START RUN
+      </button>
+
+      <!-- 2-column secondary grid -->
+      <div class="arc-menu-grid">
+        <button id="btnHowTo" class="frog-btn frog-btn-secondary">HOW TO PLAY</button>
+        <button id="btnBuffGuide" class="frog-btn frog-btn-secondary">UPGRADES</button>
+        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">LEADERBOARD</button>
+        <button id="btnDashboard" class="frog-btn frog-btn-secondary">DASHBOARD</button>
       </div>
-      <div>
-        <button id="btnHowTo" class="frog-btn frog-btn-secondary">
-          How to Play
-        </button>
-        <button id="btnBuffGuide" class="frog-btn frog-btn-secondary">
-          Upgrades
-        </button>
-        <button id="btnLeaderboard" class="frog-btn frog-btn-secondary">
-          Leaderboard
-        </button>
-        <button id="btnDashboard" class="frog-btn frog-btn-secondary">
-          Dashboard
-        </button>
+
+      <!-- Footer -->
+      <div class="arc-menu-footer">
+        <span>TAG: <span id="menuTagDisplay">—</span></span>
+        <span>BEST: <span id="menuBestDisplay">—</span></span>
       </div>
     </div>
   </div>
 
-  <!-- UPGRADE SELECTION OVERLAY -->
+  <!-- ============================================
+       UPGRADE SELECTION
+  ============================================ -->
   <div id="upgradeOverlay" class="frog-overlay">
     <div class="frog-panel">
       <div class="frog-panel-title">
@@ -101,10 +108,14 @@
           </div>
         </div>
       </div>
+
+      <div class="arc-upgrade-hint">PRESS 1 · 2 · 3 OR TAP</div>
     </div>
   </div>
 
-  <!-- HOW TO PLAY OVERLAY -->
+  <!-- ============================================
+       HOW TO PLAY
+  ============================================ -->
   <div id="howToOverlay" class="frog-overlay">
     <div class="frog-panel">
       <div class="frog-panel-title">
@@ -143,7 +154,9 @@
     </div>
   </div>
 
-  <!-- BUFF / UPGRADE GUIDE OVERLAY -->
+  <!-- ============================================
+       BUFF / UPGRADE GUIDE
+  ============================================ -->
   <div id="buffGuideOverlay" class="frog-overlay">
     <div class="frog-panel">
       <div class="frog-panel-title">
@@ -189,45 +202,36 @@
     </div>
   </div>
 
-  <!-- LEADERBOARD OVERLAY -->
+  <!-- ============================================
+       LEADERBOARD — preview-matching: tighter title + grid table from JS
+  ============================================ -->
   <div id="leaderboardOverlay" class="frog-overlay">
-    <div class="frog-panel">
-      <div class="frog-panel-title">
-        Leaderboard
-        <span class="emoji">🏆</span>
-      </div>
-
-      <div class="frog-panel-sub">
-        Top runs from all players.
-      </div>
+    <div class="frog-panel arc-leaderboard-panel">
+      <div class="arc-overlay-eyebrow">// LEADERBOARD</div>
 
       <div id="leaderboardContent">
-        <!-- Your existing leaderboard table / list goes here -->
+        <div class="arc-empty">Loading…</div>
       </div>
 
       <div class="frog-panel-footer">
-        <button id="leaderboardCloseBtn" class="frog-btn frog-btn-secondary">
-          Close
-        </button>
+        <button id="leaderboardCloseBtn" class="frog-btn frog-btn-secondary">CLOSE</button>
       </div>
     </div>
   </div>
 
-  <!-- DASHBOARD OVERLAY -->
+  <!-- ============================================
+       DASHBOARD — preserved structure, themed
+  ============================================ -->
   <div id="dashboardOverlay" class="frog-overlay">
-    <div class="frog-panel">
-
-      <div class="frog-panel-sub">
-      </div>
+    <div class="frog-panel arc-dashboard-panel">
+      <div class="arc-overlay-eyebrow">// DASHBOARD</div>
 
       <div id="dashboardContent">
-        <div class="leaderboard-loading">Loading dashboard…</div>
+        <div class="arc-empty">Loading dashboard…</div>
       </div>
 
       <div class="frog-panel-footer">
-        <button id="dashboardCloseBtn" class="frog-btn frog-btn-secondary">
-          Close
-        </button>
+        <button id="dashboardCloseBtn" class="frog-btn frog-btn-secondary">CLOSE</button>
       </div>
     </div>
   </div>
@@ -238,6 +242,48 @@
   <script src="js/frog-profanity.js"></script>
   <script src="js/frog-leaderboard.js"></script>
   <script src="js/frog-game.js"></script>
+
+  <!-- Populate menu footer once tag is loaded -->
+  <script>
+    (function () {
+      function update() {
+        try {
+          const tagEl = document.getElementById("menuTagDisplay");
+          const bestEl = document.getElementById("menuBestDisplay");
+          if (tagEl) {
+            const saved = localStorage.getItem("frogSnake_username");
+            tagEl.textContent = saved || "—";
+          }
+          if (bestEl) {
+            const dashStats = localStorage.getItem("frogSnake_dashboardStats_v1");
+            if (dashStats) {
+              const parsed = JSON.parse(dashStats);
+              const recent = parsed && parsed.recentRuns;
+              if (recent && recent.length) {
+                const bestTime = Math.max(...recent.map(r => r.time || 0));
+                if (bestTime > 0) {
+                  const m = Math.floor(bestTime / 60);
+                  const s = Math.floor(bestTime - m * 60);
+                  const h = Math.floor(m / 60);
+                  if (h > 0) {
+                    bestEl.textContent = `${h}:${String(m % 60).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+                  } else {
+                    bestEl.textContent = `${m}:${String(s).padStart(2, "0")}`;
+                  }
+                }
+              }
+            }
+          }
+        } catch (e) {}
+      }
+      // Update on load and whenever menu opens
+      document.addEventListener("DOMContentLoaded", update);
+      // Also update when storage changes
+      window.addEventListener("storage", update);
+      // Periodic refresh while menu is visible
+      setInterval(update, 2000);
+    })();
+  </script>
 
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "02f1ec21acba45f38ae0a30210c222d1"}'></script>

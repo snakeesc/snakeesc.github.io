@@ -557,7 +557,6 @@
         time
       )}, ${Math.floor(score)}`;
 
-      // Highlight your row if you're on the board
       if (entryMatchesMe(entry)) {
         row.classList.add("arc-mini-lb-me");
       }
