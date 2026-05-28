@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Design Preview — Escape the Snake</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0f0f0f;
+    --surface:   #161616;
+    --surface2:  #1e1e1e;
+    --border:    #2a2a2a;
+    --red:       #cc1a1a;
+    --red-dim:   #7a1010;
+    --red-glow:  rgba(204,26,26,0.18);
+    --green:     #22c55e;
+    --green-dim: #166534;
+    --amber:     #f59e0b;
+    --text:      #e8e8e8;
+    --muted:     #666;
+    --dim:       #444;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  body {
+    background: #0a0a0a;
+    color: var(--text);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  h2 {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+
+  /* ─── SHARED PANEL ─── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+  }
+  .panel-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ─── PIXEL SPRITES (CSS box-shadow technique) ─── */
+
+  /* 8×8 pixel frog — green */
+  .sprite-frog {
+    width: 4px; height: 4px;
+    image-rendering: pixelated;
+    background: transparent;
+    box-shadow:
+      /* row 0 */  8px 0px 0 var(--green), 12px 0px 0 var(--green),
+      /* row 1 */  4px 4px 0 var(--green),  8px 4px 0 var(--green), 12px 4px 0 var(--green), 16px 4px 0 var(--green),
+      /* row 2 */  4px 8px 0 var(--green),  8px 8px 0 #0f0f0f,      12px 8px 0 #0f0f0f,      16px 8px 0 var(--green),
+      /* row 3 */  4px 12px 0 var(--green), 8px 12px 0 var(--green), 12px 12px 0 var(--green), 16px 12px 0 var(--green),
+      /* row 4 */  0px 16px 0 var(--green), 4px 16px 0 var(--green), 16px 16px 0 var(--green), 20px 16px 0 var(--green);
+    margin: 12px;
+  }
+
+  /* 8×8 pixel frog — smaller */
+  .sprite-frog-sm {
+    width: 2px; height: 2px;
+    background: transparent;
+    box-shadow:
+      4px 0px 0 var(--green), 6px 0px 0 var(--green),
+      2px 2px 0 var(--green), 4px 2px 0 var(--green), 6px 2px 0 var(--green), 8px 2px 0 var(--green),
+      2px 4px 0 var(--green), 4px 4px 0 #0f0f0f,      6px 4px 0 #0f0f0f,      8px 4px 0 var(--green),
+      2px 6px 0 var(--green), 4px 6px 0 var(--green), 6px 6px 0 var(--green), 8px 6px 0 var(--green),
+      0px 8px 0 var(--green), 2px 8px 0 var(--green),  8px 8px 0 var(--green), 10px 8px 0 var(--green);
+    margin: 6px;
+  }
+
+  /* snake head */
+  .sprite-snake-head {
+    width: 4px; height: 4px;
+    background: transparent;
+    box-shadow:
+      4px 0px 0 var(--red),  8px 0px 0 var(--red), 12px 0px 0 var(--red), 16px 0px 0 var(--red),
+      0px 4px 0 var(--red),  4px 4px 0 var(--red),  8px 4px 0 var(--red), 12px 4px 0 var(--red), 16px 4px 0 var(--red), 20px 4px 0 var(--red),
+      0px 8px 0 var(--red),  4px 8px 0 #0a0a0a,     8px 8px 0 var(--red), 12px 8px 0 var(--red), 16px 8px 0 #0a0a0a,   20px 8px 0 var(--red),
+      0px 12px 0 var(--red), 4px 12px 0 var(--red), 8px 12px 0 var(--red),12px 12px 0 var(--red),16px 12px 0 var(--red),20px 12px 0 var(--red),
+                             4px 16px 0 var(--red), 8px 16px 0 var(--red),12px 16px 0 var(--red),16px 16px 0 var(--red),
+                             8px 20px 0 #e8e8e8,   12px 20px 0 #e8e8e8;
+    margin: 12px;
+  }
+
+  /* snake body segment */
+  .sprite-snake-body {
+    width: 4px; height: 4px;
+    background: transparent;
+    box-shadow:
+      0px 0px 0 var(--red-dim),  4px 0px 0 var(--red),  8px 0px 0 var(--red), 12px 0px 0 var(--red), 16px 0px 0 var(--red-dim),
+      0px 4px 0 var(--red),      4px 4px 0 var(--red),  8px 4px 0 var(--red), 12px 4px 0 var(--red), 16px 4px 0 var(--red),
+      0px 8px 0 var(--red),      4px 8px 0 var(--red),  8px 8px 0 var(--red-dim), 12px 8px 0 var(--red), 16px 8px 0 var(--red),
+      0px 12px 0 var(--red),     4px 12px 0 var(--red), 8px 12px 0 var(--red), 12px 12px 0 var(--red), 16px 12px 0 var(--red),
+      0px 16px 0 var(--red-dim), 4px 16px 0 var(--red), 8px 16px 0 var(--red), 12px 16px 0 var(--red), 16px 16px 0 var(--red-dim);
+    margin: 12px;
+  }
+
+  /* ─── PREVIEW LAYOUT ─── */
+  .preview-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  /* ─── SCREEN A: MAIN MENU ─── */
+  .screen-menu {
+    width: 420px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .screen-topbar {
+    background: var(--red);
+    padding: 0.35rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: #fff;
+  }
+  .screen-topbar .dot { width: 7px; height: 7px; background: rgba(255,255,255,0.5); }
+
+  .screen-body {
+    padding: 1.5rem;
+  }
+
+  .game-title {
+    font-size: 1.05rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+  }
+  .game-title span { color: var(--red); }
+
+  .game-subtitle {
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+  }
+
+  .menu-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1rem 0;
+  }
+
+  .menu-btn-primary {
+    display: block;
+    width: 100%;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1rem;
+    font-family: inherit;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    text-align: left;
+  }
+  .menu-btn-primary::before { content: "▶ "; opacity: 0.8; }
+  .menu-btn-primary:hover { background: #e02020; }
+
+  .menu-btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .menu-btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 0.45rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: left;
+  }
+  .menu-btn-secondary::before { content: "· "; }
+  .menu-btn-secondary:hover { border-color: var(--red-dim); color: var(--text); }
+
+  .menu-footer {
+    border-top: 1px solid var(--border);
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.6rem;
+    color: var(--dim);
+  }
+  .menu-footer span { color: var(--muted); }
+
+  /* ─── SCREEN B: IN-GAME ─── */
+  .screen-game {
+    width: 500px;
+    height: 340px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hud-topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    background: rgba(15,15,15,0.92);
+    border-bottom: 1px solid var(--border);
+    padding: 0.3rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    z-index: 10;
+  }
+
+  .hud-stat { color: var(--muted); }
+  .hud-stat span { color: var(--text); margin-left: 0.3rem; }
+  .hud-stat.red span { color: var(--red); }
+  .hud-stat.green span { color: var(--green); }
+
+  /* fake arena dots */
+  .arena-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, #1e1e1e 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.5;
+  }
+
+  /* frog cluster */
+  .frog-cluster {
+    position: absolute;
+    top: 120px; left: 200px;
+    display: flex; flex-wrap: wrap;
+    width: 90px;
+    gap: 2px;
+  }
+
+  .px-frog {
+    width: 10px; height: 10px;
+    background: var(--green);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -1px -1px 0 rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .px-frog::before {
+    content: "";
+    position: absolute;
+    top: 1px; left: 1px;
+    width: 2px; height: 2px;
+    background: #0f0f0f;
+    box-shadow: 4px 0 0 #0f0f0f;
+  }
+  .px-frog.shield { box-shadow: 0 0 4px 1px rgba(34,197,94,0.7), inset 2px 2px 0 rgba(255,255,255,0.15); }
+
+  /* cursor dot */
+  .cursor-dot {
+    position: absolute;
+    top: 148px; left: 236px;
+    width: 4px; height: 4px;
+    background: #fff;
+    opacity: 0.4;
+  }
+
+  /* snake */
+  .snake-seg {
+    position: absolute;
+    width: 14px; height: 14px;
+    background: var(--red);
+  }
+  .snake-seg.head {
+    background: var(--red);
+    box-shadow: inset -1px -1px 0 rgba(0,0,0,0.4);
+  }
+  .snake-seg.head::after {
+    content: "";
+    position: absolute;
+    bottom: -3px; left: 4px;
+    width: 2px; height: 4px;
+    background: #e8e8e8;
+    box-shadow: 4px 0 0 #e8e8e8;
+  }
+  .snake-seg.body { background: #a81212; }
+  .snake-seg.body.dim { background: #7a1010; }
+
+  /* orb */
+  .px-orb {
+    position: absolute;
+    width: 8px; height: 8px;
+    background: var(--amber);
+    box-shadow: 0 0 6px 2px rgba(245,158,11,0.6);
+  }
+
+  /* hud bottom-left: active buffs */
+  .hud-buffs {
+    position: absolute;
+    bottom: 8px; left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    z-index: 10;
+  }
+  .buff-chip {
+    background: rgba(15,15,15,0.85);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    display: flex;
+    gap: 6px;
+  }
+  .buff-chip .bname { color: var(--text); }
+  .buff-chip .bbar {
+    width: 30px; height: 4px;
+    background: var(--border);
+    margin-top: 3px;
+    position: relative;
+    align-self: center;
+  }
+  .buff-chip .bbar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: var(--pct, 60%);
+    background: var(--red);
+  }
+
+  /* hud bottom-right: mini leaderboard */
+  .hud-lb {
+    position: absolute;
+    bottom: 8px; right: 8px;
+    z-index: 10;
+  }
+  .lb-row {
+    background: rgba(15,15,15,0.85);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    font-size: 0.55rem;
+    display: flex;
+    gap: 8px;
+    margin-top: 1px;
+  }
+  .lb-row .rank { color: var(--dim); width: 10px; }
+  .lb-row .name { color: var(--text); width: 64px; }
+  .lb-row .score { color: var(--amber); text-align: right; flex: 1; }
+  .lb-row.me .name { color: var(--green); }
+
+  /* ─── SCREEN C: UPGRADE OVERLAY ─── */
+  .screen-upgrade {
+    width: 420px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .upgrade-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .upgrade-header-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .upgrade-header-sub {
+    font-size: 0.6rem;
+    color: var(--red);
+  }
+  .upgrade-cards {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .upgrade-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.65rem 0.85rem;
+    cursor: pointer;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .upgrade-card:hover { border-color: var(--red-dim); }
+  .upgrade-card.epic { border-color: var(--amber); background: rgba(245,158,11,0.04); }
+  .upgrade-num {
+    font-size: 0.65rem;
+    color: var(--red);
+    flex-shrink: 0;
+    width: 16px;
+  }
+  .upgrade-info { flex: 1; }
+  .upgrade-name {
+    font-size: 0.7rem;
+    color: var(--text);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2rem;
+  }
+  .upgrade-desc {
+    font-size: 0.58rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .upgrade-badge {
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border: 1px solid;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 1px;
+  }
+  .badge-mobility { color: #60a5fa; border-color: #60a5fa; }
+  .badge-survival { color: var(--green); border-color: var(--green); }
+  .badge-epic     { color: var(--amber); border-color: var(--amber); }
+
+  /* ─── SCREEN D: GAME OVER ─── */
+  .screen-gameover {
+    width: 340px;
+    background: var(--bg);
+    border: 1px solid var(--red-dim);
+    box-shadow: 0 0 20px rgba(204,26,26,0.15);
+  }
+  .gameover-header {
+    background: var(--red);
+    padding: 0.5rem 1rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .gameover-body {
+    padding: 1.25rem;
+  }
+  .gameover-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .go-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.65rem;
+  }
+  .go-stat-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+  }
+  .go-stat-value {
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .go-stat-value.red { color: var(--red); }
+  .go-stat-value.green { color: var(--green); }
+  .go-stat-value.amber { color: var(--amber); }
+  .gameover-actions {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .go-btn-primary {
+    flex: 1;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .go-btn-secondary {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .go-btn-secondary:hover { border-color: var(--red-dim); color: var(--text); }
+
+  /* ─── SECTION LABELS ─── */
+  .section { max-width: 1100px; }
+  .section-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #1e1e1e;
+  }
+
+  /* ─── SPRITE REFERENCE ─── */
+  .sprite-row {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .sprite-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 100px;
+  }
+  .sprite-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .sprite-demo {
+    position: relative;
+    width: 32px; height: 32px;
+  }
+
+  /* canvas-based pixel art */
+  canvas { image-rendering: pixelated; }
+
+  /* note box */
+  .note {
+    background: var(--surface);
+    border-left: 2px solid var(--red);
+    padding: 0.6rem 1rem;
+    font-size: 0.62rem;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 600px;
+  }
+  .note strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="section">
+  <div class="section-title">Design Preview — Terminal / Arcade Metro Style</div>
+  <div class="note">
+    <strong>Concept:</strong> Dark terminal background · Red snake · Green frogs · Monospace everything · TUI-style panels with thin borders.
+    This is a static mockup — no game logic, just visuals.
+  </div>
+</div>
+
+<!-- ─── SPRITES ─── -->
+<div class="section">
+  <div class="section-title">Sprites (pixel art, CSS-drawn)</div>
+  <div class="sprite-row">
+
+    <div class="sprite-card">
+      <canvas id="c-frog-sm" width="16" height="16" style="width:64px;height:64px;image-rendering:pixelated;"></canvas>
+      <div class="sprite-label">Frog</div>
+    </div>
+
+    <div class="sprite-card">
+      <canvas id="c-snake-head" width="16" height="16" style="width:64px;height:64px;image-rendering:pixelated;"></canvas>
+      <div class="sprite-label">Snake Head</div>
+    </div>
+
+    <div class="sprite-card">
+      <canvas id="c-snake-body" width="16" height="16" style="width:64px;height:64px;image-rendering:pixelated;"></canvas>
+      <div class="sprite-label">Snake Body</div>
+    </div>
+
+    <div class="sprite-card">
+      <canvas id="c-snake-tail" width="16" height="16" style="width:64px;height:64px;image-rendering:pixelated;"></canvas>
+      <div class="sprite-label">Snake Tail</div>
+    </div>
+
+    <div class="sprite-card">
+      <canvas id="c-orb" width="16" height="16" style="width:64px;height:64px;image-rendering:pixelated;"></canvas>
+      <div class="sprite-label">Orb</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── SCREENS ─── -->
+<div class="section">
+  <div class="section-title">Screens</div>
+  <div class="preview-row">
+
+    <!-- MAIN MENU -->
+    <div>
+      <h2>Main Menu</h2>
+      <div class="screen-menu">
+        <div class="screen-topbar">
+          <div class="dot"></div>
+          ESCAPE THE SNAKE
+        </div>
+        <div class="screen-body">
+          <div class="game-title">ESCAPE THE <span>SNAKE</span></div>
+          <div class="game-subtitle">// keep your frogs alive · mouse to move</div>
+          <button class="menu-btn-primary">START RUN</button>
+          <div class="menu-btn-grid">
+            <button class="menu-btn-secondary">How to Play</button>
+            <button class="menu-btn-secondary">Upgrades</button>
+            <button class="menu-btn-secondary">Leaderboard</button>
+            <button class="menu-btn-secondary">Dashboard</button>
+          </div>
+          <div class="menu-footer">
+            <span>TAG <span>GhostPad</span></span>
+            <span>BEST <span>1,240</span></span>
+            <span>RUNS <span>47</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPGRADE OVERLAY -->
+    <div>
+      <h2>Upgrade Screen</h2>
+      <div class="screen-upgrade">
+        <div class="upgrade-header">
+          <span class="upgrade-header-label">// Choose an Upgrade</span>
+          <span class="upgrade-header-sub">ORB COLLECTED</span>
+        </div>
+        <div class="upgrade-cards">
+          <div class="upgrade-card">
+            <div class="upgrade-num">[1]</div>
+            <div class="upgrade-info">
+              <div class="upgrade-name">Mutation</div>
+              <div class="upgrade-desc">+10% jump speed and +10% jump height for all frogs.</div>
+            </div>
+            <div class="upgrade-badge badge-mobility">mobility</div>
+          </div>
+          <div class="upgrade-card">
+            <div class="upgrade-num">[2]</div>
+            <div class="upgrade-info">
+              <div class="upgrade-name">Deathrattle</div>
+              <div class="upgrade-desc">Dead frogs have a 5% chance to respawn on death.</div>
+            </div>
+            <div class="upgrade-badge badge-survival">survival</div>
+          </div>
+          <div class="upgrade-card epic">
+            <div class="upgrade-num">[3]</div>
+            <div class="upgrade-info">
+              <div class="upgrade-name">Orb Storm</div>
+              <div class="upgrade-desc">Immediately drops a burst of 10 random orbs on the arena.</div>
+            </div>
+            <div class="upgrade-badge badge-epic">epic</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <div class="preview-row">
+
+    <!-- IN-GAME HUD -->
+    <div>
+      <h2>In-Game (mock arena)</h2>
+      <div class="screen-game">
+        <div class="arena-grid"></div>
+
+        <!-- HUD top bar -->
+        <div class="hud-topbar">
+          <div class="hud-stat red">FROGS <span id="frog-count">42</span></div>
+          <div class="hud-stat">SCORE <span>1,084</span></div>
+          <div class="hud-stat">TIME <span>2:14</span></div>
+          <div class="hud-stat">SHED <span>0:46</span></div>
+          <div class="hud-stat green">ORBS <span>7</span></div>
+        </div>
+
+        <!-- snake segments -->
+        <div class="snake-seg head"  style="left:80px;  top:180px;"></div>
+        <div class="snake-seg body"  style="left:96px;  top:176px;"></div>
+        <div class="snake-seg body"  style="left:111px; top:170px;"></div>
+        <div class="snake-seg body dim" style="left:126px; top:163px;"></div>
+        <div class="snake-seg body dim" style="left:139px; top:155px;"></div>
+
+        <!-- frog cluster -->
+        <div class="frog-cluster" id="frogs"></div>
+
+        <!-- cursor -->
+        <div class="cursor-dot"></div>
+
+        <!-- orbs -->
+        <div class="px-orb" style="left:310px; top:90px;"></div>
+        <div class="px-orb" style="left:390px; top:230px;"></div>
+        <div class="px-orb" style="left:140px; top:270px;"></div>
+
+        <!-- active buffs -->
+        <div class="hud-buffs">
+          <div class="buff-chip">
+            <span class="bname">SNAKE SLOW</span>
+            <div class="bbar" style="--pct:70%"></div>
+          </div>
+          <div class="buff-chip">
+            <span class="bname">ORB MAGNET</span>
+            <div class="bbar" style="--pct:30%"></div>
+          </div>
+          <div class="buff-chip">
+            <span class="bname">MUTATION ×3</span>
+            <div class="bbar" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- mini leaderboard -->
+        <div class="hud-lb">
+          <div class="lb-row"><span class="rank">1</span><span class="name">OrbWeaver</span><span class="score">4,210</span></div>
+          <div class="lb-row"><span class="rank">2</span><span class="name">VoidDrifter</span><span class="score">3,880</span></div>
+          <div class="lb-row me"><span class="rank">3</span><span class="name">GhostPad</span><span class="score">1,084</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div>
+      <h2>Game Over</h2>
+      <div class="screen-gameover">
+        <div class="gameover-header">// GAME OVER — ALL FROGS EATEN</div>
+        <div class="gameover-body">
+          <div class="gameover-stat-grid">
+            <div class="go-stat">
+              <div class="go-stat-label">Score</div>
+              <div class="go-stat-value amber">1,240</div>
+            </div>
+            <div class="go-stat">
+              <div class="go-stat-label">Time</div>
+              <div class="go-stat-value">4:32</div>
+            </div>
+            <div class="go-stat">
+              <div class="go-stat-label">Frogs Lost</div>
+              <div class="go-stat-value red">50</div>
+            </div>
+            <div class="go-stat">
+              <div class="go-stat-label">Orbs Collected</div>
+              <div class="go-stat-value green">14</div>
+            </div>
+          </div>
+          <div class="gameover-actions">
+            <button class="go-btn-primary">PLAY AGAIN</button>
+            <button class="go-btn-secondary">MAIN MENU</button>
+            <button class="go-btn-secondary">LEADERBOARD</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Color palette ──
+const C = {
+  '.': null,
+  'G': '#22c55e',  // green
+  'g': '#4ade80',  // light green highlight
+  'd': '#16a34a',  // dark green shade
+  'e': '#166534',  // very dark green
+  'W': '#ffffff',  // white (eye white)
+  'B': '#060606',  // near-black (pupil)
+  'R': '#cc1a1a',  // red
+  'r': '#ef4444',  // light red highlight
+  'E': '#991b1b',  // dark red shade
+  'X': '#7f1d1d',  // very dark red
+  'w': '#f0f0f0',  // off-white (tongue)
+  'A': '#f59e0b',  // amber
+  'a': '#fde68a',  // light amber (highlight)
+  'b': '#d97706',  // dark amber (shadow)
+};
+
+function drawSprite(id, rows) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const ctx = el.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  rows.forEach((row, y) => {
+    [...row].forEach((ch, x) => {
+      if (C[ch]) { ctx.fillStyle = C[ch]; ctx.fillRect(x, y, 1, 1); }
+    });
+  });
+}
+
+// ── 16×16 Frog ──
+// Each row is exactly 16 chars. Layout: big eye bumps on top,
+// wide body with highlights, spread legs and feet at bottom.
+drawSprite('c-frog-sm', [
+  '................',
+  '..dGGd....dGGd..',
+  '.GGWBdG..GdBWGG.',
+  '.GGGGdG..GdGGGG.',
+  '..GGGGGGGGGGdG..',
+  '.GGgGGGGGGGGgGd.',
+  'GGGGGGGGGGGGGGdG',
+  'GGgGGGGGGGGGgGGd',
+  'GGGGGGGGGGGGGGde',
+  '.GGGGdGGGGdGGGd.',
+  '.GGGGGGGGGGGGdG.',
+  '..GGGGGGGGGGdG..',
+  'GGd.GGd..dGGd.GG',
+  'Gd...G....G...dG',
+  '................',
+  '................',
+]);
+
+// ── 16×16 Snake Head ──
+// Wide angular head, two eyes with pupils, scale texture, forked tongue.
+drawSprite('c-snake-head', [
+  '....RRRRRRRR....',
+  '..rRRrrRRrrRRr..',
+  '.RRRRRRRRRRRRRe.',
+  'RRReWBWeRReWBWRR',
+  'RRRRRRRRRRRRRRRe',
+  'RReRReRRRRReRReR',
+  'RRRRRRRRRRRRRRRe',
+  'RRrRRRRRRRRRrRRe',
+  '.RRRRRRRRRRRRRe.',
+  '..RRRRRRRRRRRe..',
+  '...eRRRRRRRRe...',
+  '....eRRRRRRe....',
+  '.....wwwwww.....',
+  '......w..w......',
+  '................',
+  '................',
+]);
+
+// ── 16×16 Snake Body ──
+// Tiling segment with repeating scale dot pattern and edge shading.
+drawSprite('c-snake-body', [
+  'XRRrRRRRRRRrRRRX',
+  'RRRRRRRRRRRRRRRe',
+  'RReRRRRRRRRRReRR',
+  'RRRRRRReRRReRRRR',
+  'RRRRRRRRRRRRRRRe',
+  'XRRrRRRRRRRrRRRX',
+  'RRRRRRRRRRRRRRRe',
+  'RReRRRRRRRRRReRR',
+  'RRRRRRReRRReRRRR',
+  'RRRRRRRRRRRRRRRe',
+  'XRRrRRRRRRRrRRRX',
+  'RRRRRRRRRRRRRRRe',
+  'RReRRRRRRRRRReRR',
+  'RRRRRRReRRReRRRR',
+  'RRRRRRRRRRRRRRRe',
+  'XRRRRRRRRRRRRRRe',
+]);
+
+// ── 16×16 Snake Tail ──
+// Tapers from wide to a point.
+drawSprite('c-snake-tail', [
+  '....RRRRRRRR....',
+  '...RRRRRRRRRRe..',
+  '..RRRRRRRRRRRe..',
+  '.RRRRRRRRRRRRRe.',
+  '.RRRRRRRRRRRRRe.',
+  '..RRRRRRRRRRRe..',
+  '...RRRRRRRRRe...',
+  '....RRRRRRRe....',
+  '.....RRRRRe.....',
+  '......RRRe......',
+  '.......Re.......',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+]);
+
+// ── 16×16 Orb ──
+// Circular gem with bright highlight top-left and shadow bottom-right.
+drawSprite('c-orb', [
+  '......aAAa......',
+  '....aAAAAAAAAa..',
+  '...aAAAAaAAAAb..',
+  '..aAAAAaAAAAAb..',
+  '..AAAAAaAAAAbb..',
+  '.AAAAAaAAAAAbbb.',
+  '.AAAAAaAAAAAbbb.',
+  '.AAAAAaAAAAAbbb.',
+  '..AAAAaAAAAAbbb.',
+  '..AAAAAAAAAAbbb.',
+  '...AAAAAAAAbbb..',
+  '....AAAAAAbbb...',
+  '.....AAAAbA.....',
+  '......AAAA......',
+  '.......aa.......',
+  '................',
+]);
+
+// ── Arena frog cluster ──
+(function() {
+  const cluster = document.getElementById("frogs");
+  for (let i = 0; i < 18; i++) {
+    const d = document.createElement("div");
+    d.className = "px-frog" + (i === 4 ? " shield" : "");
+    cluster.appendChild(d);
+  }
+})();
+</script>
+</body>
+</html>
