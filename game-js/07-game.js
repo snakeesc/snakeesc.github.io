@@ -5118,20 +5118,25 @@ function closeAnimatedOverlay(overlayEl) {
         <li>Plan your escape route before each shed hits.</li>
       </ul>
 
-      <div class="frog-panel-section-label">Tips</div>
-      <ul class="frog-panel-list">
-        <li>Don't bunch your frogs — clusters get eaten fast.</li>
-        <li>Survival upgrades often matter more than spawning more frogs.</li>
-        <li>Your score comes from frogs eaten — surviving longer scores more.</li>
-      </ul>
-
       <div class="frog-panel-footer">
         <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
       </div>
+      <div class="frog-scroll-hint" id="howToScrollHint">▼</div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
+
+    const scrollHint = document.getElementById("howToScrollHint");
+    if (scrollHint) {
+      const updateHint = () => {
+        const atBottom = panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 10;
+        const scrollable = panel.scrollHeight > panel.clientHeight + 10;
+        scrollHint.style.display = scrollable && !atBottom ? "block" : "none";
+      };
+      panel.addEventListener("scroll", updateHint);
+      requestAnimationFrame(updateHint);
+    }
 
     openAnimatedOverlay(howToOverlay);
   }

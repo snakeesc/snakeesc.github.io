@@ -1373,9 +1373,13 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   }
 }
 
-/* Mobile upgrade-card icon/text gap — measured 7px actual gap, too tight. */
+/* Mobile upgrade-card icon spacing — icon-to-text gap was fixed (was 7px,
+   too tight) but that left the icon's own left inset (14px) looking
+   disproportionately small next to the new, larger right-side gap (36px).
+   Balancing both sides to ~36px instead of just the one. */
 @media (pointer: coarse), (max-width: 600px) {
-  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { padding-left: 100px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { padding-left: 122px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji { left: 36px !important; }
 }
 
 /* My Stats tag input never got the same treatment as the end-game one —
@@ -1413,4 +1417,37 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .pp-board {
   border-radius: 14px !important;
   clip-path: none !important;
+}
+
+/* How-to-play scroll hint — no visible scrollbar, small bouncing arrow
+   instead so it's obvious there's more content (and the Close button)
+   below the fold, without looking like a raw browser scrollbar. */
+#howToOverlay .frog-panel {
+  position: relative;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#howToOverlay .frog-panel::-webkit-scrollbar { display: none; }
+#howToOverlay .frog-scroll-hint {
+  position: sticky;
+  bottom: 4px;
+  display: none;
+  margin: 0 auto;
+  width: fit-content;
+  padding: 2px 14px;
+  border-radius: 999px;
+  background: #497b36;
+  color: #fff8db;
+  font-size: 16px;
+  text-align: center;
+  pointer-events: none;
+  animation: frogScrollHintBounce 1.2s ease-in-out infinite;
+  z-index: 5;
+}
+@keyframes frogScrollHintBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+@media (pointer: coarse), (max-width: 600px) {
+  #howToOverlay#howToOverlay#howToOverlay .frog-scroll-hint { font-size: 34px !important; padding: 4px 24px !important; }
 }
