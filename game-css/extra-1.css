@@ -1212,6 +1212,9 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
  #howToOverlay .frog-panel-list{min-height:0!important}
 }
 
+/* Build 44: larger upgrade artwork on mobile only. */
+@media(pointer:coarse){#upgradeOverlay .frog-upgrade-emoji{width:50px!important;height:50px!important}}
+
 /* Isolated score components: same cream cards and stepped silhouette as upgrades. */
 #leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:460px;max-width:92vw;max-height:92dvh;overflow:auto;box-sizing:border-box;background:#073720;padding:14px;border:0;box-shadow:5px 5px #4a7e36;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
 #leaderboardOverlay .pp-board *,#endGameSummaryOverlay .pp-board *{font-family:ReferencePixel,monospace!important;text-shadow:none!important;box-sizing:border-box}
