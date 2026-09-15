@@ -1215,6 +1215,19 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 /* Build 44: larger upgrade artwork on mobile only. */
 @media(pointer:coarse){#upgradeOverlay .frog-upgrade-emoji{width:50px!important;height:50px!important}}
 
+/* Build 45: mobile help and profile readability. */
+@media(pointer:coarse){
+ #howToOverlay.frog-overlay .frog-panel,#dashboardOverlay.frog-overlay .frog-panel{width:880px!important;max-width:94vw!important;max-height:88dvh!important;overflow-y:auto!important;padding:28px!important}
+ #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:46px!important;line-height:1.35!important}
+ #howToOverlay.frog-overlay .frog-panel-title,#dashboardOverlay.frog-overlay .frog-panel-title{font-size:50px!important;line-height:1.15!important}
+ #howToOverlay.frog-overlay .frog-panel-section-label,#dashboardOverlay.frog-overlay .frog-panel-section-label{font-size:40px!important;line-height:1.2!important}
+ #dashboardOverlay #dashboardContent :is(p,li,label,small,span,strong){font-size:36px!important;line-height:1.3!important}
+ #dashboardOverlay #dashboardContent>div:first-child>div{font-size:36px!important}
+ #dashboardOverlay #dashboardCurrentTag{font-size:46px!important}
+ #dashboardOverlay #dashboardTagInput{font-size:38px!important;min-height:64px!important}
+ #howToOverlay.frog-overlay .frog-panel button,#dashboardOverlay.frog-overlay .frog-panel button{font-size:40px!important;min-height:68px!important}
+}
+
 /* Isolated score components: same cream cards and stepped silhouette as upgrades. */
 #leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:460px;max-width:92vw;max-height:92dvh;overflow:auto;box-sizing:border-box;background:#073720;padding:14px;border:0;box-shadow:5px 5px #4a7e36;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
 #leaderboardOverlay .pp-board *,#endGameSummaryOverlay .pp-board *{font-family:ReferencePixel,monospace!important;text-shadow:none!important;box-sizing:border-box}
@@ -1304,6 +1317,22 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
  #leaderboardOverlay .pp-time{font-size:32px}
  #leaderboardOverlay .pp-points strong{font-size:38px}
  #leaderboardOverlay .pp-pager button,#leaderboardOverlay .pp-pager span,#leaderboardOverlay .pp-back{font-size:36px;min-height:60px}
+}
+
+/* Build 45: readable mobile run summary; leaderboard unchanged. */
+@media(pointer:coarse){
+ #endGameSummaryOverlay .pp-board{width:850px;max-width:94vw;max-height:88dvh;overflow-y:auto;padding:26px}
+ #endGameSummaryOverlay .pp-heading{font-size:48px!important;line-height:1.15!important}
+ #endGameSummaryOverlay .pp-result>span{font-size:32px}
+ #endGameSummaryOverlay .pp-result>strong{font-size:96px}
+ #endGameSummaryOverlay .pp-result>small{font-size:34px}
+ #endGameSummaryOverlay .pp-metrics{gap:12px 24px}
+ #endGameSummaryOverlay .pp-metrics span{font-size:28px}
+ #endGameSummaryOverlay .pp-metrics strong{font-size:34px}
+ #endGameSummaryOverlay .pp-tag label,#endGameSummaryOverlay #endSummaryTagMsg{font-size:32px!important;line-height:1.3!important}
+ #endGameSummaryOverlay #endSummaryTagInput{font-size:38px!important;min-height:64px!important}
+ #endGameSummaryOverlay .pp-board button{font-size:38px;min-height:64px}
+ #endGameSummaryOverlay .pp-actions .pp-play{font-size:44px}
 }
 
 @font-face{font-family:ReferencePixel;src:url(../game-assets/fonts/jersey10.ttf)}
