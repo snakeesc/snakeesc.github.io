@@ -1373,6 +1373,11 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   }
 }
 
+/* Mobile upgrade-card icon/text gap — measured 7px actual gap, too tight. */
+@media (pointer: coarse), (max-width: 600px) {
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { padding-left: 100px !important; }
+}
+
 /* Desktop/laptop upgrade panel readability — three earlier passes each
    shrank #upgradeOverlay .frog-panel further (320px, then 305px, then
    292px) without anyone increasing it back; the panel had drifted much
