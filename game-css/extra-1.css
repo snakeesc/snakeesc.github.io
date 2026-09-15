@@ -1358,10 +1358,22 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 
 :root{--menu-help:url(../game-assets/sprites/menu-help.png)}
 
-/* Mobile how-to-play readability fix — appended to guarantee this wins
-   regardless of why the equivalent rule earlier in this file isn't taking
-   effect (not yet root-caused; revisit later). */
+/* Mobile how-to-play readability fix. Repeated ID selector used
+   deliberately to force maximum specificity — an earlier, equal-specificity
+   attempt at this exact rule was mysteriously losing the cascade. */
 @media (pointer: coarse), (max-width: 600px) {
-  #howToOverlay.frog-overlay .frog-panel { width: 880px !important; max-width: calc(94 * var(--app-vw, 1vw)) !important; }
-  #howToOverlay.frog-overlay .frog-panel :is(p, li, li span, li strong) { font-size: 46px !important; line-height: 1.35 !important; }
+  #howToOverlay#howToOverlay#howToOverlay.frog-overlay .frog-panel { width: 880px !important; max-width: calc(94 * var(--app-vw, 1vw)) !important; }
+  #howToOverlay#howToOverlay#howToOverlay.frog-overlay .frog-panel :is(p, li, li span, li strong) { font-size: 46px !important; line-height: 1.35 !important; }
+}
+
+/* Desktop/laptop upgrade panel readability — three earlier passes each
+   shrank #upgradeOverlay .frog-panel further (320px, then 305px, then
+   292px) without anyone increasing it back; the panel had drifted much
+   smaller than every other overlay's panel (which range 400-880px). */
+@media (pointer: fine) {
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel { width: 560px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { min-height: 140px !important; padding: 16px 18px 16px 90px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji { width: 52px !important; height: 52px !important; left: 16px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-title { font-size: 30px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-desc, #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-desc * { font-size: 24px !important; }
 }
