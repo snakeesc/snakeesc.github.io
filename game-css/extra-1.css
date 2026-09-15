@@ -1435,14 +1435,16 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 }
 #howToOverlay .frog-panel::-webkit-scrollbar { display: none; }
 #howToOverlay .frog-panel-close-row {
-  position: sticky;
-  top: -20px;
-  margin: -20px -22px 0;
-  padding: 6px 10px 0 0;
-  text-align: right;
-  z-index: 5;
+  /* No longer used for layout — position:sticky reserved its own row of
+     space in normal flow regardless of the negative-margin cancellation
+     attempted here previously, which is what caused the gap above the
+     title. The button below is taken out of flow entirely instead. */
+  display: contents;
 }
 #howToOverlay .frog-panel-close-x {
+  position: absolute;
+  top: 10px;
+  right: 12px;
   font-family: Pocket, monospace;
   font-size: 26px;
   line-height: 1;
@@ -1451,6 +1453,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   color: #073720;
   cursor: pointer;
   padding: 4px 8px;
+  z-index: 5;
 }
 #howToOverlay .frog-panel-close-x:hover { color: #497b36; }
 @media (pointer: coarse), (max-width: 600px) {
