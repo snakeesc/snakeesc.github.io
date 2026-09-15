@@ -1481,11 +1481,62 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardContent > div:nth-child(2) { gap: 16px !important; }
 }
 
-/* Widen main menu and My Stats panels on mobile — both felt narrow/
-   cramped. Using plain vw here (not the --app-vw custom property) since
-   this is the real mobile-browser path, where vw already ties correctly
-   to the virtual viewport the meta-viewport trick establishes. */
+/* Widen main menu panel on mobile — felt narrow/cramped. Using plain vw
+   here (not the --app-vw custom property) since this is the real
+   mobile-browser path, where vw already ties correctly to the virtual
+   viewport the meta-viewport trick establishes.
+   (A max-width:420px cap for My Stats used to live in this rule too;
+   removed below — see the My Stats width fix for why.) */
 @media (pointer: coarse), (max-width: 600px) {
   #mainMenuOverlay#mainMenuOverlay#mainMenuOverlay .pocket-menu { width: calc(92 * var(--app-vw, 1vw)) !important; max-width: 380px !important; }
-  #dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel { width: calc(92 * var(--app-vw, 1vw)) !important; max-width: 420px !important; }
+}
+
+/* Root cause of My Stats repeatedly coming back "too small and thin":
+   an old unconditional rule (no media guard) targets every panel except
+   main menu/upgrade — ".frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay)
+   .frog-panel { width:440px!important; ... }" — and because it uses two
+   :not(#id) clauses, it carries the specificity of *two* ID selectors,
+   which beats ordinary single-#id mobile overrides regardless of source
+   order. How to Play already escapes it with a triple-repeated-#id
+   selector (see the "Mobile how-to-play readability fix" above, 880px).
+   My Stats never got the same escape hatch, so on mobile it was silently
+   stuck at 440px (or worse — an even-higher-specificity 420px cap, now
+   removed) no matter how many times a normal-specificity fix was
+   reapplied. Giving it the same triple-#id treatment as How to Play,
+   matched to the same 880px width. */
+@media (pointer: coarse), (max-width: 600px) {
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay.frog-overlay .frog-panel { width: 880px !important; max-width: calc(94 * var(--app-vw, 1vw)) !important; }
+}
+
+/* Upgrade selection panel's frame didn't match the rest of the game's
+   menus. Every other panel (main menu, leaderboard, how-to-play, my
+   stats) uses the shared ink-green #073720 border/shadow; the upgrade
+   panel had drifted to a lighter, mismatched #72a949 border with a 3px
+   shadow instead of the shared 4px. Aligning it here — this is the only
+   place either property is set for this panel, confirmed against the
+   live computed styles rather than guessed from the source history. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel {
+  border-color: #073720 !important;
+  box-shadow: 4px 4px 0 #073720 !important;
+}
+
+/* How to Play brought in line with the leaderboard/my stats family —
+   confirmed via computed styles that its border/shadow/radius already
+   matched, but two things didn't: its title rendered at the browser's
+   plain 400 weight where the leaderboard's <h2> heading is bold by
+   default, and it had a divider line under the title that no other
+   panel in the family has. Also promoting the pill-style section labels
+   (already used successfully on mobile only) to desktop too, instead of
+   the plain small-caps text desktop was still showing. */
+#howToOverlay#howToOverlay#howToOverlay .frog-panel-title {
+  font-weight: 700 !important;
+  border-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+#howToOverlay#howToOverlay#howToOverlay .frog-panel-section-label {
+  color: #fff8db !important;
+  background: #497b36 !important;
+  display: inline-block !important;
+  padding: 4px 14px !important;
+  border-radius: 4px !important;
 }
