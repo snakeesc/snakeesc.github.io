@@ -1,0 +1,47 @@
+ESCAPE THE SNAKE — BUILD 42 — WEBSITE ROOT PACKAGE
+
+Restores the exact Build 33 snake artwork, size, spacing and upright head.
+Keeps the latest menu changes. Original audio is included as separate files.
+
+INSTALL IN YOUR EXISTING GITHUB WEBSITE FOLDER
+1. Make a backup or commit your current working tree.
+2. Extract this ZIP directly into the folder containing your current index.html.
+   Replace index.html when prompted. Do not create another game/ subfolder.
+3. Add index.html, game-js/, game-css/, game-assets/ and the license files to Git.
+4. Commit and push using your usual website deployment process.
+5. Reload the website without cached content; the corner label should say Build 42.
+
+DO NOT DELETE EVERYTHING.
+Keep .git/, .github/, CNAME, .nojekyll and any other hosting configuration present.
+Keep metrics.html, 404.html, arcade/, recent/, updates/, cloudflare/ and other pages
+or backend source you want to retain. This ZIP only replaces the main game.
+The new index uses game-js/, game-css/ and game-assets/, so old root frog-*.js,
+css/, images/ and audio/ are no longer needed by the NEW main game. However,
+other pages may use them. Keep those old shared assets until those pages have
+been checked or intentionally retired. They do not conflict with this package.
+To start a clean game-only site, use a separate branch/folder and copy these ZIP
+contents plus your hosting configuration; do not erase the existing repository.
+
+EDIT AUDIO
+The live sound files are in game-assets/audio/ with their original filenames.
+Replace a file with the same name and format to change that sound. No HTML edit
+is needed. To change a filename, volume, pool size or timing, edit the audio
+module in game-js/ (the file containing createPool and AUDIO_BASE).
+The asset-paths module maps original game paths to their external files.
+
+EDIT SPRITES
+Active snake sprites: game-assets/sprites/snake-head.png, snake-body.png,
+snake-tail.png. Approved role frogs and upgrade icons live under
+ game-assets/sprites/approved/.
+Replace files without renaming to retain references. Keep transparent background,
+image dimensions, orientation and anchor placement to avoid alignment changes.
+Other legacy artwork is included only where the runtime still references it.
+Fonts and CSS are external too; styling is in game-css/game.css.
+
+TEST LOCALLY
+From this folder run: python3 -m http.server 8000
+Open http://localhost:8000/ . Test sound, mobile steering, upgrades, menus and scores.
+The leaderboard and some profile metadata still require an internet connection.
+No backend changes, native app wrapper or store build are included.
+Script syntax and local asset paths were checked. Browser gameplay/audio and
+live score submission have not been verified in this environment.
