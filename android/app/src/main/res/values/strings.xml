@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Escape the Snake</string>
+    <string name="title_activity_main">Escape the Snake</string>
+    <string name="package_name">io.github.snakeesc.escapethesnake</string>
+    <string name="custom_url_scheme">io.github.snakeesc.escapethesnake</string>
+</resources>

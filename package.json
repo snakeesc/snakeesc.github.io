@@ -1,0 +1,29 @@
+{
+  "name": "escape-the-snake",
+  "version": "1.0.0",
+  "description": "Escape the Snake mobile app wrapper",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:www": "rm -rf www && mkdir -p www && cp index.html www/ && cp -r game-js www/game-js && cp -r game-css www/game-css && cp -r game-assets www/game-assets"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snakeesc/snakeesc.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/snakeesc/snakeesc.github.io/issues"
+  },
+  "homepage": "https://github.com/snakeesc/snakeesc.github.io#readme",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
+  }
+}
