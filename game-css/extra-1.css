@@ -1295,7 +1295,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #leaderboardOverlay .pp-me .pp-player strong{color:#245c37!important}
 
 /* Shared light menu surface; preserve condensed score layout. */
-#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{background:#fff8db;border:4px solid #073720;border-radius:7px;clip-path:none;box-shadow:3px 3px #527f36;color:#073720;scrollbar-color:#a6c27a #fff8db}
+#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{background:#fff8db;border:4px solid #073720;border-radius:0;clip-path:none;box-shadow:4px 4px 0 #073720;color:#073720;scrollbar-color:#a6c27a #fff8db}
 #leaderboardOverlay .pp-heading,#endGameSummaryOverlay .pp-heading{color:#073720!important}
 .pp-board button,.pp-pager span,.pp-tag label,.pp-tag p,#endGameSummaryOverlay #endSummaryTagMsg{color:#073720!important}
 .pp-board button:hover{color:#277241!important}
