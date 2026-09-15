@@ -1051,8 +1051,9 @@ const MAX_LUCK = 30;
   function updatePointerTarget(e) {
     if (e.isPrimary === false || mainMenuActive || gameOver || gamePaused || summaryPending) return;
     if (e.target && e.target.closest && e.target.closest('button,input,select,textarea,.frog-overlay,#frog-scoreboard-overlay')) return;
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
+    const __s = window.__escapeSnakeRenderScale || 1;
+    mouse.x = e.clientX / __s;
+    mouse.y = e.clientY / __s;
     mouse.active = true;
     if (e.type === 'pointerdown' || e.pointerType === 'touch' || e.pointerType === 'pen') mouse.follow = true;
   }

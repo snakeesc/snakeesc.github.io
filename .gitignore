@@ -8,3 +8,4 @@ www/
 *.p8
 *.mobileprovision
 *.cer
+android/keystore.properties

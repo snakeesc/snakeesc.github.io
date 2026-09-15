@@ -23,7 +23,7 @@ a { color: inherit; }
 ============================================ */
 
 .page {
-  min-height: 100vh;
+  min-height: calc(100 * var(--app-vh, 1vh));
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 1rem 2rem;
@@ -264,9 +264,9 @@ a { color: inherit; }
   color: white;
   font-family: monospace;
   min-width: 0;
-  width: min(440px, 90vw);
-  max-width: 90vw;
-  max-height: 86vh;
+  width: min(440px, calc(90 * var(--app-vw, 1vw)));
+  max-width: calc(90 * var(--app-vw, 1vw));
+  max-height: calc(86 * var(--app-vh, 1vh));
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: none;
@@ -372,7 +372,7 @@ a { color: inherit; }
 .scoreboard-overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: transparent; z-index: 9999; }
 
 .scoreboard-card {
-  width: min(480px, 90vw);
+  width: min(480px, calc(90 * var(--app-vw, 1vw)));
   background: linear-gradient(145deg, #0c0f0d, #111616);
   border: 1px solid #3f6212; border-radius: 14px;
   box-shadow: 0 16px 50px rgba(0,0,0,0.65);
@@ -465,7 +465,7 @@ a { color: inherit; }
 
 #upgradeOverlay .frog-panel {
   border: none; box-shadow: none; padding: 0; background: transparent;
-  width: min(860px, 94vw); max-width: 94vw; overflow: visible;
+  width: min(860px, calc(94 * var(--app-vw, 1vw))); max-width: calc(94 * var(--app-vw, 1vw)); overflow: visible;
 }
 
 #upgradeOverlay .frog-panel-sub { margin: 0 0 18px; text-align: center; font-size: 13px; color: #f5f5f4; text-shadow: 1px 1px darkslateblue; }
@@ -579,9 +579,9 @@ a { color: inherit; }
    SPECIFIC PANEL WIDTHS
 ============================================ */
 
-#endGameSummaryOverlay .frog-panel { width: min(460px, 90vw); max-width: 90vw; }
-#dashboardOverlay .frog-panel      { width: min(400px, 90vw); max-width: 90vw; }
-#buffGuideOverlay .frog-panel      { width: min(500px, 90vw); max-width: 90vw; }
+#endGameSummaryOverlay .frog-panel { width: min(460px, calc(90 * var(--app-vw, 1vw))); max-width: calc(90 * var(--app-vw, 1vw)); }
+#dashboardOverlay .frog-panel      { width: min(400px, calc(90 * var(--app-vw, 1vw))); max-width: calc(90 * var(--app-vw, 1vw)); }
+#buffGuideOverlay .frog-panel      { width: min(500px, calc(90 * var(--app-vw, 1vw))); max-width: calc(90 * var(--app-vw, 1vw)); }
 
 /* ============================================
    MOBILE — max 768px
@@ -589,9 +589,9 @@ a { color: inherit; }
 
 @media (max-width: 768px) {
   .frog-panel {
-    width: min(88vw, 400px);
-    max-width: 88vw;
-    max-height: 88vh;
+    width: min(calc(88 * var(--app-vw, 1vw)), 400px);
+    max-width: calc(88 * var(--app-vw, 1vw));
+    max-height: calc(88 * var(--app-vh, 1vh));
     padding: 14px 16px;
     border-radius: 12px;
     font-size: 13px;
@@ -608,11 +608,11 @@ a { color: inherit; }
   .frog-btn.leaderboard-page-btn { padding: 6px 8px; font-size: 12px; border-radius: 8px; }
   .frog-btn-danger { font-size: 12px; }
 
-  #endGameSummaryOverlay .frog-panel { width: min(90vw, 400px); }
-  #dashboardOverlay .frog-panel      { width: min(88vw, 360px); }
-  #buffGuideOverlay .frog-panel      { width: min(90vw, 400px); }
+  #endGameSummaryOverlay .frog-panel { width: min(calc(90 * var(--app-vw, 1vw)), 400px); }
+  #dashboardOverlay .frog-panel      { width: min(calc(88 * var(--app-vw, 1vw)), 360px); }
+  #buffGuideOverlay .frog-panel      { width: min(calc(90 * var(--app-vw, 1vw)), 400px); }
 
-  .scoreboard-card { width: min(90vw, 420px); padding: 14px 12px; }
+  .scoreboard-card { width: min(calc(90 * var(--app-vw, 1vw)), 420px); padding: 14px 12px; }
   .scoreboard-title { font-size: 15px; }
   .scoreboard-th, .scoreboard-td { font-size: 12px; padding: 6px 5px; }
   .leaderboard-title { font-size: 14px; }
@@ -620,7 +620,7 @@ a { color: inherit; }
   .leaderboard-head-cell { font-size: 11px; padding: 6px 8px; }
 
   /* upgrade cards — stay horizontal, just smaller */
-  #upgradeOverlay .frog-panel { width: min(94vw, 560px); }
+  #upgradeOverlay .frog-panel { width: min(calc(94 * var(--app-vw, 1vw)), 560px); }
   #upgradeOverlay .upgrade-choices { gap: 8px; }
   #upgradeOverlay .frog-upgrade-choice { flex: 0 0 110px; width: 110px; min-height: 160px; padding: 12px 8px; }
   #upgradeOverlay .frog-upgrade-emoji { font-size: 18px; }
@@ -633,7 +633,7 @@ a { color: inherit; }
 ============================================ */
 
 @media (max-width: 480px) {
-  .frog-panel { width: 94vw; max-width: 94vw; padding: 12px 14px; font-size: 12px; }
+  .frog-panel { width: calc(94 * var(--app-vw, 1vw)); max-width: calc(94 * var(--app-vw, 1vw)); padding: 12px 14px; font-size: 12px; }
   .frog-panel-title { font-size: 15px; }
   .frog-btn { font-size: 13px; padding: 10px 12px; }
   .frog-btn.leaderboard-page-btn { padding: 6px 8px; font-size: 12px; border-radius: 8px; }
@@ -642,8 +642,8 @@ a { color: inherit; }
 
   #upgradeOverlay .frog-upgrade-choice {
     flex: none;
-    width: min(300px, 86vw);
-    max-width: 86vw;
+    width: min(300px, calc(86 * var(--app-vw, 1vw)));
+    max-width: calc(86 * var(--app-vw, 1vw));
     min-height: 0;
     flex-direction: row;
     justify-content: flex-start;
@@ -705,9 +705,9 @@ button{touch-action:manipulation}
 .frog-btn:hover{background:#e6efa9!important;transform:translateY(-2px)}
 button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #mainMenuOverlay{flex-direction:column;justify-content:center;gap:24px;padding:30px 15px;overflow:hidden}
-.pocket-title{font-family:Pocket,monospace;font-weight:900;color:var(--cream);text-align:center;font-size:clamp(52px,7.6vw,112px);line-height:.82;letter-spacing:-.025em;filter:drop-shadow(0 7px 0 #073720);-webkit-text-stroke:11px var(--ink);paint-order:stroke fill;z-index:1;pointer-events:none;margin-bottom:10px}
+.pocket-title{font-family:Pocket,monospace;font-weight:900;color:var(--cream);text-align:center;font-size:clamp(52px,calc(7.6 * var(--app-vw, 1vw)),112px);line-height:.82;letter-spacing:-.025em;filter:drop-shadow(0 7px 0 #073720);-webkit-text-stroke:11px var(--ink);paint-order:stroke fill;z-index:1;pointer-events:none;margin-bottom:10px}
 .pocket-title span{display:block}.pocket-title span+span{margin-top:9px}
-#mainMenuOverlay .pocket-menu{width:390px;max-width:85vw;padding:22px 24px;display:flex;flex-direction:column;gap:3px;background:var(--cream)!important;border:5px solid var(--ink)!important;border-radius:0!important;box-shadow:6px 0 var(--ink),-6px 0 var(--ink),0 6px var(--ink),0 -6px var(--ink)!important;overflow:visible}
+#mainMenuOverlay .pocket-menu{width:390px;max-width:calc(85 * var(--app-vw, 1vw));padding:22px 24px;display:flex;flex-direction:column;gap:3px;background:var(--cream)!important;border:5px solid var(--ink)!important;border-radius:0!important;box-shadow:6px 0 var(--ink),-6px 0 var(--ink),0 6px var(--ink),0 -6px var(--ink)!important;overflow:visible}
 #mainMenuOverlay .frog-btn{margin:0!important;width:100%;padding:10px 12px 10px 47px;text-align:left;font-size:38px;line-height:1.15;font-weight:700;letter-spacing:0;text-transform:none;border:none!important;box-shadow:none!important;background:none!important;position:relative}
 #mainMenuOverlay .frog-btn:hover{color:#318a35!important;transform:none}
 #mainMenuOverlay .frog-btn:hover:before,#mainMenuOverlay #btnStartRun:before{content:"";position:absolute;left:17px;top:50%;transform:translateY(-50%);border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:14px solid currentColor}
@@ -719,7 +719,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #frog-mini-leaderboard{display:none!important}
 #frog-stats-panel{color:var(--ink)!important;font-family:Pocket,monospace!important}
 #upgradeOverlay{background:#23551b20!important;padding:15px}
-#upgradeOverlay .frog-panel{width:490px!important;max-width:94vw!important;background:var(--ink)!important;border:4px solid #4c9936!important;padding:12px!important;box-shadow:5px 5px 0 #123e24!important}
+#upgradeOverlay .frog-panel{width:490px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;background:var(--ink)!important;border:4px solid #4c9936!important;padding:12px!important;box-shadow:5px 5px 0 #123e24!important}
 #upgradeOverlay .frog-panel-title{display:block!important;color:var(--cream)!important;font-size:29px!important;text-transform:uppercase;text-align:center;margin:0 0 5px!important}
 #upgradeOverlay .frog-panel-sub{color:#d9e9ad!important;font-size:17px!important;margin:0 0 13px!important}
 #upgradeOverlay .upgrade-choices{display:flex!important;flex-direction:column!important;gap:9px!important;align-items:stretch!important}
@@ -739,14 +739,14 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 .frog-orb{background-image:var(--atlas)!important;background-size:400% 400%!important;background-position:0 100%!important}
 .frog-orb img{visibility:hidden}
 .pocket-decor{position:absolute;width:68px;height:68px;background:var(--atlas);background-size:400% 400%;pointer-events:none;image-rendering:pixelated}
-@media(max-width:600px){.pocket-title{font-size:clamp(45px,11vw,65px);-webkit-text-stroke:7px var(--ink)}#mainMenuOverlay{gap:24px}.pocket-hint{font-size:16px;max-width:250px}#mainMenuOverlay .pocket-menu{width:310px;padding:15px}#mainMenuOverlay .frog-btn{font-size:32px;padding-top:12px;padding-bottom:12px}#mainMenuOverlay #btnStartRun{font-size:37px}.pocket-profile{font-size:15px}#pocket-hud{font-size:15px!important;gap:8px!important;padding:8px 10px!important}.pocket-decor{width:45px;height:45px}#upgradeOverlay .frog-upgrade-title{font-size:23px!important}#upgradeOverlay .frog-upgrade-desc{font-size:17px!important}}
+@media(max-width:600px){.pocket-title{font-size:clamp(45px,calc(11 * var(--app-vw, 1vw)),65px);-webkit-text-stroke:7px var(--ink)}#mainMenuOverlay{gap:24px}.pocket-hint{font-size:16px;max-width:250px}#mainMenuOverlay .pocket-menu{width:310px;padding:15px}#mainMenuOverlay .frog-btn{font-size:32px;padding-top:12px;padding-bottom:12px}#mainMenuOverlay #btnStartRun{font-size:37px}.pocket-profile{font-size:15px}#pocket-hud{font-size:15px!important;gap:8px!important;padding:8px 10px!important}.pocket-decor{width:45px;height:45px}#upgradeOverlay .frog-upgrade-title{font-size:23px!important}#upgradeOverlay .frog-upgrade-desc{font-size:17px!important}}
 @media(max-height:570px) and (min-width:601px){#mainMenuOverlay{gap:13px;padding:18px}.pocket-title{font-size:61px}#mainMenuOverlay .pocket-menu{padding:8px 20px;width:325px}#mainMenuOverlay .frog-btn{font-size:27px;padding-top:6px;padding-bottom:6px}#mainMenuOverlay #btnStartRun{font-size:32px}.pocket-hint{font-size:16px}}
 #upgradeOverlay .frog-upgrade-desc span{color:#267b2d!important;text-shadow:none!important}
 #frog-game>div>button{font-family:Pocket,monospace!important;background:var(--cream)!important;color:var(--ink)!important;border:2px solid var(--ink)!important;border-radius:0!important}
 #mainMenuOverlay.is-animating-out .pocket-title,#mainMenuOverlay.is-animating-out .pocket-decor,#mainMenuOverlay.is-animating-out .pocket-hint,#mainMenuOverlay.is-animating-out .pocket-profile{visibility:hidden}
 #frog-bg .grass{background-image:var(--atlas);background-size:400% 400%;background-position:66.666% 100%;width:25px;height:25px;opacity:.7}
 #frog-bg .grass>*{display:none}
-@media(max-width:600px){#mainMenuOverlay .pocket-decor{z-index:-1;opacity:.85}#mainMenuOverlay .pocket-menu{z-index:2}#upgradeOverlay .frog-panel{max-height:90vh;overflow:auto!important}}
+@media(max-width:600px){#mainMenuOverlay .pocket-decor{z-index:-1;opacity:.85}#mainMenuOverlay .pocket-menu{z-index:2}#upgradeOverlay .frog-panel{max-height:calc(90 * var(--app-vh, 1vh));overflow:auto!important}}
 .frog-panel :is(p,li,label,strong,small,h2,h3),.frog-panel div:not(.frog-upgrade-emoji),.frog-panel span{color:var(--ink);text-shadow:none}
 .frog-overlay:not(#upgradeOverlay) .frog-panel :is(div,span,p,li,label,strong,small,h2,h3){color:var(--ink)!important;text-shadow:none!important}
 .frog-overlay:not(#upgradeOverlay) .frog-panel :is(div,li)[style*="background"],.dashboard-stat,.buff-card,.scoreboard-table-wrapper,.upgrade-summary-list li,.leaderboard-table,.leaderboard-table thead{background:#edf1cc!important;border-color:#6d9256!important;border-radius:0!important;box-shadow:none!important}
@@ -764,7 +764,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 .snake-body::before{width:70.833%;height:52.083%;background-position:33.333% 66.666%}
 .snake-tail::before{width:79.167%;height:58.333%;background-position:66.666% 66.666%}
 #mainMenuOverlay{gap:19px}
-.pocket-title{font-size:clamp(50px,6.4vw,87px);-webkit-text-stroke:9px var(--ink);filter:drop-shadow(0 5px 0 #073720)}
+.pocket-title{font-size:clamp(50px,calc(6.4 * var(--app-vw, 1vw)),87px);-webkit-text-stroke:9px var(--ink);filter:drop-shadow(0 5px 0 #073720)}
 #mainMenuOverlay .pocket-menu{width:330px;padding:15px 20px;border-width:4px!important;box-shadow:4px 0 var(--ink),-4px 0 var(--ink),0 4px var(--ink),0 -4px var(--ink)!important}
 #mainMenuOverlay .frog-btn{font-size:30px;padding:9px 10px 9px 40px}
 #mainMenuOverlay #btnStartRun{font-size:35px}
@@ -787,7 +787,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 .pocket-menu-snake .snake-body:nth-child(3){left:51px;top:23px;transform:rotate(28deg)}
 .pocket-menu-snake .snake-body:nth-child(4){left:74px;top:36px;transform:rotate(25deg)}
 .pocket-menu-snake .snake-tail{left:99px;top:41px;transform:rotate(10deg)}
-@media(max-width:600px){.frog-sprite::before{width:60%;height:60%}.pocket-title{font-size:clamp(42px,11vw,60px);-webkit-text-stroke:6px var(--ink)}#mainMenuOverlay .pocket-menu{width:280px;padding:12px 16px}#mainMenuOverlay .frog-btn{font-size:27px;min-height:47px}#mainMenuOverlay #btnStartRun{font-size:31px}.pocket-decor{width:32px;height:32px}.pocket-menu-snake{right:6%;top:12%;transform:scale(.7);transform-origin:right top}.pocket-hint{font-size:15px}#pocket-hud{font-size:14px!important;padding:7px 9px!important}#upgradeOverlay .frog-panel{width:350px!important}#upgradeOverlay .frog-upgrade-title{font-size:21px!important}#upgradeOverlay .frog-upgrade-desc{font-size:16px!important}}
+@media(max-width:600px){.frog-sprite::before{width:60%;height:60%}.pocket-title{font-size:clamp(42px,calc(11 * var(--app-vw, 1vw)),60px);-webkit-text-stroke:6px var(--ink)}#mainMenuOverlay .pocket-menu{width:280px;padding:12px 16px}#mainMenuOverlay .frog-btn{font-size:27px;min-height:47px}#mainMenuOverlay #btnStartRun{font-size:31px}.pocket-decor{width:32px;height:32px}.pocket-menu-snake{right:6%;top:12%;transform:scale(.7);transform-origin:right top}.pocket-hint{font-size:15px}#pocket-hud{font-size:14px!important;padding:7px 9px!important}#upgradeOverlay .frog-panel{width:350px!important}#upgradeOverlay .frog-upgrade-title{font-size:21px!important}#upgradeOverlay .frog-upgrade-desc{font-size:16px!important}}
 @media(max-height:570px) and (min-width:601px){.pocket-title{font-size:54px}#mainMenuOverlay{gap:12px}#mainMenuOverlay .pocket-menu{padding:7px 16px}#mainMenuOverlay .frog-btn{font-size:25px;padding-top:5px;padding-bottom:5px}#mainMenuOverlay #btnStartRun{font-size:29px}}
 .snake-body::before{width:75%}
 .pocket-menu-snake .snake-head::before{transform:translate(-50%,-50%) scaleX(-1)}
@@ -814,7 +814,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 .pocket-neck .neck-fill{stroke:#64ca30;stroke-width:14px}
 .pocket-menu-snake .snake-head{transform:none!important}
 .pocket-menu-snake .snake-head::before{transform:translate(-50%,-50%)}
-.pocket-title{font-size:clamp(62px,8vw,118px);line-height:.85;letter-spacing:0;font-weight:900;-webkit-text-stroke:12px #073720;filter:drop-shadow(0 7px 0 #073720);text-shadow:0 3px 0 #dfd995}
+.pocket-title{font-size:clamp(62px,calc(8 * var(--app-vw, 1vw)),118px);line-height:.85;letter-spacing:0;font-weight:900;-webkit-text-stroke:12px #073720;filter:drop-shadow(0 7px 0 #073720);text-shadow:0 3px 0 #dfd995}
 #mainMenuOverlay{gap:28px}
 #mainMenuOverlay .pocket-menu{width:440px;padding:23px 30px;background:var(--cream)!important;border:0!important;box-shadow:none!important;outline:none;isolation:isolate}
 #mainMenuOverlay .pocket-menu:before,#mainMenuOverlay .pocket-menu:after{content:"";position:absolute;inset:-7px;z-index:-2;background:var(--ink);clip-path:polygon(18px 0,calc(100% - 18px) 0,calc(100% - 18px) 6px,calc(100% - 6px) 6px,calc(100% - 6px) 18px,100% 18px,100% calc(100% - 18px),calc(100% - 6px) calc(100% - 18px),calc(100% - 6px) calc(100% - 6px),calc(100% - 18px) calc(100% - 6px),calc(100% - 18px) 100%,18px 100%,18px calc(100% - 6px),6px calc(100% - 6px),6px calc(100% - 18px),0 calc(100% - 18px),0 18px,6px 18px,6px 6px,18px 6px)}
@@ -831,13 +831,13 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #upgradeOverlay .frog-upgrade-emoji{width:55px;height:55px;left:13px}
 #upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:17px!important}
 #upgradeOverlay .frog-upgrade-desc span{font-weight:800!important}
-@media(max-width:600px){.pocket-title{font-size:clamp(43px,11.5vw,68px);-webkit-text-stroke:7px var(--ink)}#mainMenuOverlay .pocket-menu{width:285px;padding:15px 16px}#mainMenuOverlay .frog-btn{font-size:30px;padding:11px 8px 11px 44px}#mainMenuOverlay #btnStartRun{font-size:35px}#mainMenuOverlay{gap:27px}#upgradeOverlay .frog-panel{width:360px!important}#upgradeOverlay .frog-panel-title{font-size:25px!important}#upgradeOverlay .frog-upgrade-title{font-size:23px!important}#upgradeOverlay .frog-upgrade-choice{padding-left:69px!important}#upgradeOverlay .frog-upgrade-emoji{width:44px;height:44px}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:16px!important}}
+@media(max-width:600px){.pocket-title{font-size:clamp(43px,calc(11.5 * var(--app-vw, 1vw)),68px);-webkit-text-stroke:7px var(--ink)}#mainMenuOverlay .pocket-menu{width:285px;padding:15px 16px}#mainMenuOverlay .frog-btn{font-size:30px;padding:11px 8px 11px 44px}#mainMenuOverlay #btnStartRun{font-size:35px}#mainMenuOverlay{gap:27px}#upgradeOverlay .frog-panel{width:360px!important}#upgradeOverlay .frog-panel-title{font-size:25px!important}#upgradeOverlay .frog-upgrade-title{font-size:23px!important}#upgradeOverlay .frog-upgrade-choice{padding-left:69px!important}#upgradeOverlay .frog-upgrade-emoji{width:44px;height:44px}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:16px!important}}
 @media(max-height:620px) and (min-width:601px){.pocket-title{font-size:66px}#mainMenuOverlay{gap:18px}#mainMenuOverlay .pocket-menu{width:340px;padding:12px 20px}#mainMenuOverlay .frog-btn{font-size:29px;padding-top:7px;padding-bottom:7px}#mainMenuOverlay #btnStartRun{font-size:35px}}
-.pocket-title{font-family:ReferencePixel,Pocket,monospace;font-weight:400;letter-spacing:.025em;font-size:clamp(64px,9vw,135px)}
+.pocket-title{font-family:ReferencePixel,Pocket,monospace;font-weight:400;letter-spacing:.025em;font-size:clamp(64px,calc(9 * var(--app-vw, 1vw)),135px)}
 #mainMenuOverlay .frog-btn,#mainMenuOverlay #btnStartRun{font-family:ReferencePixel,Pocket,monospace!important;font-weight:400;font-size:54px}
 #upgradeOverlay .frog-panel-title{font-family:ReferencePixel,Pocket,monospace!important;font-size:34px!important;font-weight:400}
 #upgradeOverlay .frog-upgrade-title{font-family:ReferencePixel,Pocket,monospace!important;font-size:31px!important;font-weight:400!important}
-@media(max-width:600px){.pocket-title{font-size:clamp(46px,12vw,70px)}#mainMenuOverlay .frog-btn,#mainMenuOverlay #btnStartRun{font-size:37px}#upgradeOverlay .frog-panel-title{font-size:29px!important}#upgradeOverlay .frog-upgrade-title{font-size:27px!important}}
+@media(max-width:600px){.pocket-title{font-size:clamp(46px,calc(12 * var(--app-vw, 1vw)),70px)}#mainMenuOverlay .frog-btn,#mainMenuOverlay #btnStartRun{font-size:37px}#upgradeOverlay .frog-panel-title{font-size:29px!important}#upgradeOverlay .frog-upgrade-title{font-size:27px!important}}
 @media(max-height:620px) and (min-width:601px){.pocket-title{font-size:72px}#mainMenuOverlay .frog-btn,#mainMenuOverlay #btnStartRun{font-size:37px}}
 .pocket-title{transform:scaleX(1.22)}
 #upgradeOverlay .frog-panel-sub{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -846,9 +846,9 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #upgradeOverlay .frog-panel-title:before{left:1px}#upgradeOverlay .frog-panel-title:after{right:1px}
 @media(max-width:600px){.pocket-title{transform:scaleX(1.08)}}
 /* Use the approved artwork directly for fixed title/menu lettering. */
-.pocket-title{position:relative;background:var(--reference-title) center/contain no-repeat;width:min(54vw,800px);height:auto;aspect-ratio:714/237;transform:none;filter:none;text-shadow:none;-webkit-text-stroke:0;margin:0;font-size:0;line-height:0}
+.pocket-title{position:relative;background:var(--reference-title) center/contain no-repeat;width:min(calc(54 * var(--app-vw, 1vw)),800px);height:auto;aspect-ratio:714/237;transform:none;filter:none;text-shadow:none;-webkit-text-stroke:0;margin:0;font-size:0;line-height:0}
 .pocket-title span{position:absolute;opacity:0;pointer-events:none}
-#mainMenuOverlay .pocket-menu{position:relative;width:min(32vw,570px);height:auto;aspect-ratio:570/452;padding:0;background:var(--reference-menu) center/100% 100% no-repeat!important;box-shadow:none!important;border:0!important;display:block}
+#mainMenuOverlay .pocket-menu{position:relative;width:min(calc(32 * var(--app-vw, 1vw)),570px);height:auto;aspect-ratio:570/452;padding:0;background:var(--reference-menu) center/100% 100% no-repeat!important;box-shadow:none!important;border:0!important;display:block}
 #mainMenuOverlay .pocket-menu:before,#mainMenuOverlay .pocket-menu:after{display:none}
 #mainMenuOverlay .frog-btn,#mainMenuOverlay #btnStartRun{position:absolute;left:8%;width:85%;height:21%;min-height:0;margin:0!important;padding:0;font-size:0;color:transparent!important;border:0!important;background:none!important;box-shadow:none!important;transform:none}
 #mainMenuOverlay .frog-btn:before{display:none!important}
@@ -866,19 +866,19 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 .pocket-menu-snake .snake-body:nth-child(3){left:47px;top:0;transform:rotate(-12deg)}
 .pocket-menu-snake .snake-body:nth-child(4){left:70px;top:8px;transform:rotate(25deg)}
 .pocket-menu-snake .snake-tail{left:94px;top:18px;transform:rotate(18deg)}
-@media(max-width:600px){.pocket-title{width:94vw;max-width:480px;aspect-ratio:714/237;transform:none}#mainMenuOverlay .pocket-menu{width:80vw;max-width:330px;aspect-ratio:570/452;padding:0}#mainMenuOverlay .frog-btn,#mainMenuOverlay #btnStartRun{font-size:0;padding:0;min-height:0}.pocket-menu-snake{transform:scale(.65);top:14%;right:6%}#upgradeOverlay .frog-panel-title{height:33px;font-size:0!important}}
+@media(max-width:600px){.pocket-title{width:calc(94 * var(--app-vw, 1vw));max-width:480px;aspect-ratio:714/237;transform:none}#mainMenuOverlay .pocket-menu{width:calc(80 * var(--app-vw, 1vw));max-width:330px;aspect-ratio:570/452;padding:0}#mainMenuOverlay .frog-btn,#mainMenuOverlay #btnStartRun{font-size:0;padding:0;min-height:0}.pocket-menu-snake{transform:scale(.65);top:14%;right:6%}#upgradeOverlay .frog-panel-title{height:33px;font-size:0!important}}
 @media(max-height:620px) and (min-width:601px){.pocket-title{width:440px;height:146px}#mainMenuOverlay .pocket-menu{width:320px;padding:0}#mainMenuOverlay .frog-btn,#mainMenuOverlay #btnStartRun{font-size:0;padding:0}}
 /* Match the reference composition at its 1774 x 887 canvas size. */
-#mainMenuOverlay{justify-content:flex-start;padding-top:9.4vh;gap:20px}
-.pocket-title{width:40.3vw;max-width:714px}
-#mainMenuOverlay .pocket-menu{width:32.1vw;max-width:570px}
+#mainMenuOverlay{justify-content:flex-start;padding-top:calc(9.4 * var(--app-vh, 1vh));gap:20px}
+.pocket-title{width:calc(40.3 * var(--app-vw, 1vw));max-width:714px}
+#mainMenuOverlay .pocket-menu{width:calc(32.1 * var(--app-vw, 1vw));max-width:570px}
 .pocket-hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:14px;opacity:.8}
-.pocket-decor{width:4.8vw;height:4.8vw;max-width:85px;max-height:85px}
+.pocket-decor{width:calc(4.8 * var(--app-vw, 1vw));height:calc(4.8 * var(--app-vw, 1vw));max-width:85px;max-height:85px}
 .pocket-menu-snake{transform:scale(2.2);right:6%;top:15%}
-#upgradeOverlay{justify-content:flex-end!important;align-items:center!important;padding-right:1.5vw;background:transparent!important}
+#upgradeOverlay{justify-content:flex-end!important;align-items:center!important;padding-right:calc(1.5 * var(--app-vw, 1vw));background:transparent!important}
 #upgradeOverlay .frog-panel{width:500px!important}
-@media(max-width:1100px) and (min-width:601px){.pocket-menu-snake{transform:scale(1.4)}#mainMenuOverlay{justify-content:center;padding-top:25px}.pocket-title{width:54vw}#mainMenuOverlay .pocket-menu{width:37vw;max-width:400px}}
-@media(max-width:600px){#mainMenuOverlay{justify-content:center;padding-top:25px;gap:24px}.pocket-title{width:94vw}#mainMenuOverlay .pocket-menu{width:80vw;max-width:330px}.pocket-hint{display:none}.pocket-decor{width:32px;height:32px;max-width:32px;max-height:32px}.pocket-menu-snake{transform:scale(.65);top:14%;right:6%}#upgradeOverlay{justify-content:center!important;padding:12px}#upgradeOverlay .frog-panel{width:360px!important}}
+@media(max-width:1100px) and (min-width:601px){.pocket-menu-snake{transform:scale(1.4)}#mainMenuOverlay{justify-content:center;padding-top:25px}.pocket-title{width:calc(54 * var(--app-vw, 1vw))}#mainMenuOverlay .pocket-menu{width:calc(37 * var(--app-vw, 1vw));max-width:400px}}
+@media(max-width:600px){#mainMenuOverlay{justify-content:center;padding-top:25px;gap:24px}.pocket-title{width:calc(94 * var(--app-vw, 1vw))}#mainMenuOverlay .pocket-menu{width:calc(80 * var(--app-vw, 1vw));max-width:330px}.pocket-hint{display:none}.pocket-decor{width:32px;height:32px;max-width:32px;max-height:32px}.pocket-menu-snake{transform:scale(.65);top:14%;right:6%}#upgradeOverlay{justify-content:center!important;padding:12px}#upgradeOverlay .frog-panel{width:360px!important}}
 @media(max-height:620px) and (min-width:601px){#mainMenuOverlay{justify-content:center;padding-top:15px;gap:15px}.pocket-title{width:400px}#mainMenuOverlay .pocket-menu{width:300px}.pocket-hint{display:none}}
 #frog-bg{background-image:linear-gradient(#a8d96e33,#a8d96e33),var(--reference-ground)!important;background-size:auto,300px 130px!important;background-repeat:repeat!important}
 #upgradeOverlay .frog-upgrade-choice{min-height:110px!important;padding:13px 15px 13px 99px!important}
@@ -888,17 +888,17 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 @media(max-width:600px){#upgradeOverlay .frog-upgrade-choice{padding-left:70px!important;min-height:96px!important}#upgradeOverlay .frog-upgrade-title{font-size:28px!important}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:16px!important}#upgradeOverlay .frog-upgrade-emoji{width:45px;height:45px;left:13px}}
 /* Size-only refinement of the approved artwork. */
 #mainMenuOverlay{justify-content:center;padding-top:25px;gap:18px}
-.pocket-title{width:30.2vw;max-width:536px}
-#mainMenuOverlay .pocket-menu{width:24.1vw;max-width:428px}
-.pocket-decor{width:3.6vw;height:3.6vw;max-width:64px;max-height:64px}
+.pocket-title{width:calc(30.2 * var(--app-vw, 1vw));max-width:536px}
+#mainMenuOverlay .pocket-menu{width:calc(24.1 * var(--app-vw, 1vw));max-width:428px}
+.pocket-decor{width:calc(3.6 * var(--app-vw, 1vw));height:calc(3.6 * var(--app-vw, 1vw));max-width:64px;max-height:64px}
 .pocket-menu-snake{transform:scale(1.65)}
 .frog-orb{background-image:none!important;box-shadow:none!important}
 .frog-orb::before{content:"";position:absolute;left:50%;top:50%;width:60%;height:60%;transform:translate(-50%,-50%);background:var(--atlas) 0 100%/400% 400% no-repeat;image-rendering:pixelated;border-radius:50%;filter:drop-shadow(0 0 2px #38bee577);pointer-events:none}
 #frog-game>.snake-head::before{width:31.45px;height:47.6px;top:calc(50% + 9.35px)}
 #frog-game>.snake-body::before{width:22.95px;height:22.95px}
 #frog-game>.snake-tail::before{width:27.2px;height:19.55px}
-@media(max-width:1100px) and (min-width:601px){.pocket-title{width:41vw}#mainMenuOverlay .pocket-menu{width:29vw;max-width:320px}.pocket-menu-snake{transform:scale(1.05)}}
-@media(max-width:600px){.pocket-title{width:80vw;max-width:380px}#mainMenuOverlay .pocket-menu{width:70vw;max-width:285px}.pocket-decor{width:26px;height:26px;max-width:26px;max-height:26px}.pocket-menu-snake{transform:scale(.55)}#mainMenuOverlay{gap:20px}}
+@media(max-width:1100px) and (min-width:601px){.pocket-title{width:calc(41 * var(--app-vw, 1vw))}#mainMenuOverlay .pocket-menu{width:calc(29 * var(--app-vw, 1vw));max-width:320px}.pocket-menu-snake{transform:scale(1.05)}}
+@media(max-width:600px){.pocket-title{width:calc(80 * var(--app-vw, 1vw));max-width:380px}#mainMenuOverlay .pocket-menu{width:calc(70 * var(--app-vw, 1vw));max-width:285px}.pocket-decor{width:26px;height:26px;max-width:26px;max-height:26px}.pocket-menu-snake{transform:scale(.55)}#mainMenuOverlay{gap:20px}}
 @media(max-height:620px) and (min-width:601px){.pocket-title{width:330px}#mainMenuOverlay .pocket-menu{width:260px}}
 /* Consistent cream/pixel UI, with independently moving reference labels. */
 #mainMenuOverlay .pocket-decor,#mainMenuOverlay .pocket-menu-snake{display:none!important}
@@ -919,7 +919,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-family:ReferencePixel,Pocket,monospace!important;font-size:24px!important;font-weight:400!important;line-height:1.05!important;color:#123d24!important}
 #upgradeOverlay .frog-upgrade-desc span{color:#0b3a21!important;text-shadow:.35px 0 currentColor!important}
 #upgradeOverlay .frog-upgrade-emoji{width:48px;height:48px;left:12px}
-.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{background:linear-gradient(110deg,#fffbea,#fff6d6)!important;border:4px solid #073720!important;border-radius:0!important;box-shadow:4px 4px 0 #073720!important;padding:20px!important;color:#123d24!important;max-height:88vh;overflow:auto}
+.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{background:linear-gradient(110deg,#fffbea,#fff6d6)!important;border:4px solid #073720!important;border-radius:0!important;box-shadow:4px 4px 0 #073720!important;padding:20px!important;color:#123d24!important;max-height:calc(88 * var(--app-vh, 1vh));overflow:auto}
 .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel :is(div,span,p,li,td,th,label,button,input,select,strong,small,h2,h3){font-family:ReferencePixel,Pocket,monospace!important;color:#123d24!important;text-shadow:none!important}
 .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel-title{font-size:36px!important;line-height:1.1!important;font-weight:400!important;border-bottom:2px solid #648746;padding-bottom:10px}
 .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel-sub{font-size:22px!important;line-height:1.2!important}
@@ -934,27 +934,27 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #frog-game>div>button,#pocket-hud,#frog-stats-panel{font-family:ReferencePixel,Pocket,monospace!important}
 #frog-game>div>button{font-size:18px!important}
 #pocket-hud{font-size:21px!important}
-@media(max-width:600px){#upgradeOverlay .frog-panel{width:330px!important}#upgradeOverlay .frog-upgrade-title{font-size:27px!important}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:22px!important}.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{max-width:94vw!important;padding:14px!important}#pocket-hud{font-size:18px!important}}
+@media(max-width:600px){#upgradeOverlay .frog-panel{width:330px!important}#upgradeOverlay .frog-upgrade-title{font-size:27px!important}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:22px!important}.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{max-width:calc(94 * var(--app-vw, 1vw))!important;padding:14px!important}#pocket-hud{font-size:18px!important}}
 @media(prefers-reduced-motion:reduce){#mainMenuOverlay .frog-btn:after{transition:none}}
 #upgradeOverlay .frog-upgrade-desc span{font-weight:400!important;text-shadow:none!important;font-synthesis:none}
-.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{animation:none!important;transform:none!important;max-height:88vh!important;box-sizing:border-box!important}
+.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{animation:none!important;transform:none!important;max-height:calc(88 * var(--app-vh, 1vh))!important;box-sizing:border-box!important}
 #dashboardOverlay input{font-size:20px!important}
 #dashboardOverlay img{font-size:0}
 /* Compact menus; centered upgrade selection. */
 #upgradeOverlay{justify-content:center!important;align-items:center!important;padding:12px!important}
-#upgradeOverlay .frog-panel{width:350px!important;max-width:94vw!important}
+#upgradeOverlay .frog-panel{width:350px!important;max-width:calc(94 * var(--app-vw, 1vw))!important}
 #upgradeOverlay .frog-upgrade-choice{min-height:78px!important;padding-top:8px!important;padding-bottom:8px!important}
 #upgradeOverlay .frog-upgrade-title{font-size:26px!important}
 #upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:22px!important}
-.pocket-title{width:27vw;max-width:480px}
-#mainMenuOverlay .pocket-menu{width:21.6vw;max-width:384px}
-.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{width:440px!important;max-width:92vw!important;padding:16px!important;max-height:80vh!important}
+.pocket-title{width:calc(27 * var(--app-vw, 1vw));max-width:480px}
+#mainMenuOverlay .pocket-menu{width:calc(21.6 * var(--app-vw, 1vw));max-width:384px}
+.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{width:440px!important;max-width:calc(92 * var(--app-vw, 1vw))!important;padding:16px!important;max-height:calc(80 * var(--app-vh, 1vh))!important}
 .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel-title{font-size:30px!important}
 .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel-sub{font-size:20px!important}
 .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel :is(p,li,td,th){font-size:19px!important;line-height:1.15!important}
 .frog-panel-section-label{font-size:21px!important;margin-top:10px!important}
 .frog-overlay:not(#mainMenuOverlay) .frog-btn{font-size:21px!important;padding:6px 12px!important;min-height:32px}
-@media(max-width:600px){.pocket-title{width:76vw}#mainMenuOverlay .pocket-menu{width:65vw}#upgradeOverlay .frog-panel{width:330px!important}}
+@media(max-width:600px){.pocket-title{width:calc(76 * var(--app-vw, 1vw))}#mainMenuOverlay .pocket-menu{width:calc(65 * var(--app-vw, 1vw))}#upgradeOverlay .frog-panel{width:330px!important}}
 /* Three-item main menu and distinct orb pickup treatment. */
 #mainMenuOverlay #btnBuffGuide{display:none!important}
 #mainMenuOverlay #btnStartRun{top:12%}
@@ -967,9 +967,9 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 /* Small scale refinements and a warm, high-contrast value accent. */
 #upgradeOverlay .frog-upgrade-desc span,#upgradeOverlay .frog-upgrade-desc .stat-highlight{color:#91420e!important;font-weight:400!important;text-shadow:none!important}
 #upgradeOverlay .frog-upgrade-emoji{width:43px!important;height:43px!important;left:14px!important}
-.pocket-title{width:24.3vw;max-width:432px}
-#mainMenuOverlay .pocket-menu{width:19.44vw;max-width:346px}
-@media(max-width:600px){.pocket-title{width:68.4vw}#mainMenuOverlay .pocket-menu{width:58.5vw}}
+.pocket-title{width:calc(24.3 * var(--app-vw, 1vw));max-width:432px}
+#mainMenuOverlay .pocket-menu{width:calc(19.44 * var(--app-vw, 1vw));max-width:346px}
+@media(max-width:600px){.pocket-title{width:calc(68.4 * var(--app-vw, 1vw))}#mainMenuOverlay .pocket-menu{width:calc(58.5 * var(--app-vw, 1vw))}}
 /* Unified value signs; smaller, squarer snake; simpler orb lighting. */
 #upgradeOverlay .frog-upgrade-desc span,#upgradeOverlay .frog-upgrade-desc .stat-highlight{color:#006b83!important}
 #frog-game>.snake-head::before{width:29.2px;height:44.2px;top:calc(50% + 8.7px)}
@@ -987,18 +987,18 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 @media(pointer:coarse),(max-width:600px){
  #pocket-controls{top:auto!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;left:calc(8px + env(safe-area-inset-left))!important;flex-direction:row!important;gap:6px!important}
  #pocket-controls button{min-width:52px;min-height:44px;padding:8px!important}
- #pocket-hud{top:calc(8px + env(safe-area-inset-top))!important;max-width:calc(100vw - 16px);padding:6px 10px!important;gap:6px!important}
+ #pocket-hud{top:calc(8px + env(safe-area-inset-top))!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 16px);padding:6px 10px!important;gap:6px!important}
  #frog-stats-panel{bottom:calc(62px + env(safe-area-inset-bottom))!important}
  .frog-overlay:not(#mainMenuOverlay) .frog-btn{min-height:44px!important}
  #upgradeOverlay .frog-panel{max-height:calc(100dvh - 32px)!important;overflow-y:auto!important;box-sizing:border-box}
  .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{max-height:calc(100dvh - 32px)!important}
- #mainMenuOverlay .pocket-menu{width:clamp(260px,65vw,300px);max-width:90vw}
+ #mainMenuOverlay .pocket-menu{width:clamp(260px,calc(65 * var(--app-vw, 1vw)),300px);max-width:calc(90 * var(--app-vw, 1vw))}
  .pocket-profile{bottom:calc(12px + env(safe-area-inset-bottom));min-height:44px}
 }
 @media(max-height:500px) and (orientation:landscape){
  #mainMenuOverlay{gap:10px;padding-top:8px;padding-bottom:8px}
- .pocket-title{width:240px;max-width:40vw}
- #mainMenuOverlay .pocket-menu{width:260px;max-width:45vw}
+ .pocket-title{width:240px;max-width:calc(40 * var(--app-vw, 1vw))}
+ #mainMenuOverlay .pocket-menu{width:260px;max-width:calc(45 * var(--app-vw, 1vw))}
  #mainMenuOverlay .pocket-hint{display:none}
  #upgradeOverlay .frog-panel{max-height:calc(100dvh - 24px)!important;overflow-y:auto!important}
 }
@@ -1012,7 +1012,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #dashboardTagInput{min-width:0;flex:1;font-size:20px!important}
 #dashboardCloseBtn{margin-top:16px!important}
 /* Desktop menu refinement; framed leaderboard and run results. */
-@media(min-width:601px) and (pointer:fine){.pocket-title{width:21.4vw;max-width:380px}#mainMenuOverlay .pocket-menu{width:17.1vw;max-width:304px}}
+@media(min-width:601px) and (pointer:fine){.pocket-title{width:calc(21.4 * var(--app-vw, 1vw));max-width:380px}#mainMenuOverlay .pocket-menu{width:calc(17.1 * var(--app-vw, 1vw));max-width:304px}}
 #leaderboardOverlay .frog-panel,#endGameSummaryOverlay .frog-panel{border:5px solid #073720!important;box-shadow:5px 5px 0 #467834!important;padding:16px!important}
 #leaderboardOverlay .frog-panel-title,#endGameSummaryContent:before{display:block;background:#073720!important;color:#fff8db!important;padding:10px 12px!important;margin:-16px -16px 16px!important;border-bottom:3px solid #7cba49!important;font:32px/1.1 ReferencePixel,monospace!important;text-align:center;letter-spacing:1px}
 #endGameSummaryContent:before{content:"RUN COMPLETE"}
@@ -1027,12 +1027,12 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #endSummaryTagInput::placeholder,#frog-scoreboard-overlay input::placeholder{font:inherit!important;color:#547047!important;opacity:1}
 #endSummaryTagMsg{font-size:18px!important}
 #endGameSummaryOverlay .frog-panel-section-label,#leaderboardOverlay .frog-panel-section-label{font-size:22px!important;letter-spacing:.06em!important}
-@media(min-width:601px) and (pointer:fine){.pocket-title{width:19.2vw;max-width:342px}#mainMenuOverlay .pocket-menu{width:15.4vw;max-width:274px}#upgradeOverlay .frog-panel{width:320px!important}#upgradeOverlay .frog-upgrade-choice{min-height:70px!important;padding-left:62px!important}#upgradeOverlay .frog-upgrade-title{font-size:24px!important}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:20px!important}#upgradeOverlay .frog-upgrade-emoji{width:38px!important;height:38px!important}}
+@media(min-width:601px) and (pointer:fine){.pocket-title{width:calc(19.2 * var(--app-vw, 1vw));max-width:342px}#mainMenuOverlay .pocket-menu{width:calc(15.4 * var(--app-vw, 1vw));max-width:274px}#upgradeOverlay .frog-panel{width:320px!important}#upgradeOverlay .frog-upgrade-choice{min-height:70px!important;padding-left:62px!important}#upgradeOverlay .frog-upgrade-title{font-size:24px!important}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:20px!important}#upgradeOverlay .frog-upgrade-emoji{width:38px!important;height:38px!important}}
 /* Keep phone controls visible at the top, independent of playfield height. */
 @media(pointer:coarse){
  #pocket-controls{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(12px + env(safe-area-inset-left))!important;bottom:auto!important;right:auto!important;flex-direction:column!important;gap:8px!important;z-index:120!important}
  #pocket-controls button{min-width:108px!important;min-height:60px!important;font-size:28px!important;padding:10px 12px!important}
- #pocket-hud{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(140px + env(safe-area-inset-left))!important;right:12px!important;transform:none!important;width:max-content!important;max-width:calc(100vw - 156px)!important;font-size:25px!important;white-space:normal!important;flex-wrap:wrap!important}
+ #pocket-hud{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(140px + env(safe-area-inset-left))!important;right:12px!important;transform:none!important;width:max-content!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 156px)!important;font-size:25px!important;white-space:normal!important;flex-wrap:wrap!important}
 }
 /* Readable score panels: neutral rows, compact pagination, explicit title contrast. */
 #leaderboardOverlay.frog-overlay .frog-panel{width:580px!important;max-height:92dvh!important}
@@ -1055,8 +1055,8 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #leaderboardOverlay .player-row,#leaderboardOverlay .player-row:first-child,#endGameSummaryContent .player-row,#endGameSummaryContent .player-row:first-child{background:#dbedb4!important;border:2px solid #497b36!important;border-left:6px solid #006b83!important}
 #leaderboardOverlay .player-row::after,#endGameSummaryContent .player-row::after{content:"YOU";display:inline-block;margin-left:8px;font:16px ReferencePixel,monospace;color:#006b83}
 #leaderboardOverlay .frog-panel,#endGameSummaryOverlay .frog-panel{border-radius:0!important;background:#fff8db!important;box-shadow:4px 4px 0 #073720!important}
-@media(pointer:fine){#leaderboardOverlay.frog-overlay .frog-panel{width:540px!important}#endGameSummaryOverlay.frog-overlay .frog-panel{width:410px!important}.pocket-title{max-width:325px;width:18.2vw}#mainMenuOverlay .pocket-menu{max-width:260px;width:14.6vw}#upgradeOverlay .frog-panel{width:305px!important}}
-@media(pointer:coarse){#mainMenuOverlay .pocket-menu{width:310px!important;max-width:90vw}.pocket-title{width:380px!important;max-width:80vw}#upgradeOverlay .frog-panel{width:380px!important}#leaderboardOverlay.frog-overlay .frog-panel{width:620px!important}#endGameSummaryOverlay.frog-overlay .frog-panel{width:490px!important}}
+@media(pointer:fine){#leaderboardOverlay.frog-overlay .frog-panel{width:540px!important}#endGameSummaryOverlay.frog-overlay .frog-panel{width:410px!important}.pocket-title{max-width:325px;width:calc(18.2 * var(--app-vw, 1vw))}#mainMenuOverlay .pocket-menu{max-width:260px;width:calc(14.6 * var(--app-vw, 1vw))}#upgradeOverlay .frog-panel{width:305px!important}}
+@media(pointer:coarse){#mainMenuOverlay .pocket-menu{width:310px!important;max-width:calc(90 * var(--app-vw, 1vw))}.pocket-title{width:380px!important;max-width:calc(80 * var(--app-vw, 1vw))}#upgradeOverlay .frog-panel{width:380px!important}#leaderboardOverlay.frog-overlay .frog-panel{width:620px!important}#endGameSummaryOverlay.frog-overlay .frog-panel{width:490px!important}}
 /* Five-percent snake size refinement. */
 #frog-game>.snake-head::before{width:27.74px;height:41.99px;top:calc(50% + 8.265px)}
 #frog-game>.snake-body::before{width:20.9px;height:18.05px}
@@ -1090,9 +1090,9 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #frog-scoreboard-overlay .scoreboard-row--me td{background:#d9edb0!important}
 #frog-scoreboard-overlay button{font-size:22px!important;background:#e3ecc8!important;border:2px solid #527f36!important;border-radius:0!important;padding:6px 12px!important;box-shadow:none!important}
 #leaderboardOverlay#leaderboardOverlay .frog-panel-list li,#endGameSummaryOverlay#endGameSummaryOverlay .frog-panel-list li{box-shadow:inset 0 -2px #bed09a!important}
-@media(pointer:fine){#mainMenuOverlay .pocket-menu{width:14vw;max-width:248px}.pocket-title{width:17.4vw;max-width:310px}#upgradeOverlay .frog-panel{width:292px!important}}
+@media(pointer:fine){#mainMenuOverlay .pocket-menu{width:calc(14 * var(--app-vw, 1vw));max-width:248px}.pocket-title{width:calc(17.4 * var(--app-vw, 1vw));max-width:310px}#upgradeOverlay .frog-panel{width:292px!important}}
 /* New score layouts use their own components instead of legacy panel rules. */
-.score-surface{width:520px;max-width:92vw;max-height:92dvh;overflow:auto;padding:22px;background:#fff8db;color:#073720;border:6px solid #073720;box-shadow:5px 5px #53823a;font:24px/1.2 ReferencePixel,monospace;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
+.score-surface{width:520px;max-width:calc(92 * var(--app-vw, 1vw));max-height:92dvh;overflow:auto;padding:22px;background:#fff8db;color:#073720;border:6px solid #073720;box-shadow:5px 5px #53823a;font:24px/1.2 ReferencePixel,monospace;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
 .score-surface .frog-panel-title,.score-heading{font:36px/1 ReferencePixel,monospace!important;color:#073720!important;background:none!important;border:0!important;margin:0 0 22px!important;padding:0!important;text-align:center}
 .score-surface .frog-panel-sub{display:none}.score-surface .emoji{display:none}
 #leaderboardOverlay .score-surface .frog-panel-list li,#leaderboardOverlay .score-surface .rank-labels{display:grid!important;grid-template-columns:32px minmax(0,1fr) 74px 80px;gap:10px;align-items:center}
@@ -1114,13 +1114,13 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #endGameSummaryContent>.score-tag{background:transparent!important;border:0!important;padding:0!important;clip-path:none!important}
 #pocket-controls button,#pocket-hud,.frog-overlay .frog-btn,#frog-scoreboard-overlay button{border-radius:7px!important}
 .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-btn{clip-path:none!important}
-@media(pointer:fine){.pocket-title{width:15.6vw!important;max-width:280px!important}#mainMenuOverlay .pocket-menu{width:12.6vw!important;max-width:224px!important}}
+@media(pointer:fine){.pocket-title{width:calc(15.6 * var(--app-vw, 1vw))!important;max-width:280px!important}#mainMenuOverlay .pocket-menu{width:calc(12.6 * var(--app-vw, 1vw))!important;max-width:224px!important}}
 .pp-frog-badge{position:absolute;left:50%;top:70%;display:flex;gap:2px;transform:translateX(-50%);pointer-events:none}
 .frog-sprite .pp-frog-badge img{position:static!important;inset:auto!important;width:10px!important;height:10px!important;image-rendering:pixelated;display:block!important}
 .pp-frog-badge i{width:4px;height:4px;background:#f4df76;border:1px solid #073720;box-shadow:0 1px #073720}
 /* Modest phone readability increase without changing the playfield scale. */
 @media(pointer:coarse){
- #howToOverlay.frog-overlay .frog-panel{width:560px!important;max-width:92vw!important}
+ #howToOverlay.frog-overlay .frog-panel{width:560px!important;max-width:calc(92 * var(--app-vw, 1vw))!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li){font-size:25px!important;line-height:1.3!important}
  #howToOverlay.frog-overlay .frog-panel-title{font-size:36px!important}
  #howToOverlay.frog-overlay .frog-panel-section-label{font-size:26px!important}
@@ -1131,7 +1131,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 }
 .frog-sprite[data-approved-role]::before{background:var(--approved-frog) center/contain no-repeat!important;image-rendering:pixelated}
 #frog-game #pocket-controls button{border-radius:7px!important;clip-path:none!important}
-@media(pointer:fine){.pocket-title{width:14.4vw!important;max-width:258px!important}#mainMenuOverlay .pocket-menu{width:11.6vw!important;max-width:206px!important}}
+@media(pointer:fine){.pocket-title{width:calc(14.4 * var(--app-vw, 1vw))!important;max-width:258px!important}#mainMenuOverlay .pocket-menu{width:calc(11.6 * var(--app-vw, 1vw))!important;max-width:206px!important}}
 /* Hide the baked Play arrow, replacing it with a movable pixel pointer. */
 #mainMenuOverlay #btnStartRun:after{clip-path:inset(0 0 0 12%)}
 #mainMenuOverlay .frog-btn:before{display:none!important;content:"";position:absolute;left:0;top:50%;width:13px;height:19px;background:#073720;border:0!important;transform:translateY(-50%);clip-path:polygon(0 0,35% 0,35% 18%,65% 18%,65% 35%,100% 35%,100% 65%,65% 65%,65% 82%,35% 82%,35% 100%,0 100%);z-index:2}
@@ -1154,12 +1154,12 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #howToOverlay.frog-overlay .frog-panel-title{color:#073720!important;background:none!important}
 #howToOverlay.frog-overlay .frog-btn{background:transparent!important;color:#073720!important;border:1px solid #9ab47b!important;border-radius:7px!important;clip-path:none!important;box-shadow:none!important;font:24px/1.2 ReferencePixel,monospace!important;padding:8px 16px!important}
 @media(pointer:coarse){
- #upgradeOverlay .frog-panel{width:650px!important;max-width:92vw!important}
+ #upgradeOverlay .frog-panel{width:650px!important;max-width:calc(92 * var(--app-vw, 1vw))!important}
  #upgradeOverlay .frog-upgrade-choice{min-height:116px!important;padding-top:16px!important;padding-bottom:16px!important}
  #upgradeOverlay .frog-upgrade-title{font-size:40px!important;line-height:1.12!important}
  #upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:36px!important;line-height:1.2!important}
  #upgradeOverlay .frog-panel-sub{font-size:30px!important}
- #howToOverlay.frog-overlay .frog-panel{width:760px!important;max-width:92vw!important;max-height:88dvh!important;overflow:auto!important;padding:28px!important}
+ #howToOverlay.frog-overlay .frog-panel{width:760px!important;max-width:calc(92 * var(--app-vw, 1vw))!important;max-height:88dvh!important;overflow:auto!important;padding:28px!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:38px!important;line-height:1.3!important}
  #howToOverlay.frog-overlay .frog-panel-title{font-size:46px!important}
  #howToOverlay.frog-overlay .frog-panel-section-label{font-size:40px!important}
@@ -1207,7 +1207,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 
 /* Build 43: continuous mobile help, larger readable surface. */
 @media(pointer:coarse){
- #howToOverlay.frog-overlay .frog-panel{width:880px!important;max-width:94vw!important;max-height:88dvh!important;overflow-y:auto!important}
+ #howToOverlay.frog-overlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;max-height:88dvh!important;overflow-y:auto!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:42px!important;line-height:1.3!important}
  #howToOverlay .frog-panel-list{min-height:0!important}
 }
@@ -1217,7 +1217,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 
 /* Build 45: mobile help and profile readability. */
 @media(pointer:coarse){
- #howToOverlay.frog-overlay .frog-panel,#dashboardOverlay.frog-overlay .frog-panel{width:880px!important;max-width:94vw!important;max-height:88dvh!important;overflow-y:auto!important;padding:28px!important}
+ #howToOverlay.frog-overlay .frog-panel,#dashboardOverlay.frog-overlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;max-height:88dvh!important;overflow-y:auto!important;padding:28px!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:46px!important;line-height:1.35!important}
  #howToOverlay.frog-overlay .frog-panel-title,#dashboardOverlay.frog-overlay .frog-panel-title{font-size:50px!important;line-height:1.15!important}
  #howToOverlay.frog-overlay .frog-panel-section-label,#dashboardOverlay.frog-overlay .frog-panel-section-label{font-size:40px!important;line-height:1.2!important}
@@ -1229,7 +1229,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 }
 
 /* Isolated score components: same cream cards and stepped silhouette as upgrades. */
-#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:460px;max-width:92vw;max-height:92dvh;overflow:auto;box-sizing:border-box;background:#073720;padding:14px;border:0;box-shadow:5px 5px #4a7e36;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
+#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:460px;max-width:calc(92 * var(--app-vw, 1vw));max-height:92dvh;overflow:auto;box-sizing:border-box;background:#073720;padding:14px;border:0;box-shadow:5px 5px #4a7e36;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
 #leaderboardOverlay .pp-board *,#endGameSummaryOverlay .pp-board *{font-family:ReferencePixel,monospace!important;text-shadow:none!important;box-sizing:border-box}
 #leaderboardOverlay .pp-heading,#endGameSummaryOverlay .pp-heading{color:#fff8db!important;font-size:34px!important;line-height:1!important;text-align:center;margin:5px 0 18px!important;letter-spacing:1px}
 .pp-entries{padding:0;margin:0;list-style:none;display:grid;gap:8px}
@@ -1310,7 +1310,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #endGameSummaryOverlay .pp-tag button,#endGameSummaryOverlay .pp-actions .pp-play{background:transparent!important;border:0!important;box-shadow:none!important;clip-path:none!important}
 
 @media(pointer:coarse){
- #leaderboardOverlay .pp-board{width:850px;max-width:94vw;padding:26px}
+ #leaderboardOverlay .pp-board{width:850px;max-width:calc(94 * var(--app-vw, 1vw));padding:26px}
  #leaderboardOverlay .pp-heading{font-size:48px!important}
  #leaderboardOverlay .pp-entry{grid-template-columns:40px minmax(0,1fr) 115px 125px;gap:14px;padding:18px 0;min-height:72px}
  #leaderboardOverlay .pp-player strong,#leaderboardOverlay .pp-rank{font-size:36px}
@@ -1321,7 +1321,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 
 /* Build 45: readable mobile run summary; leaderboard unchanged. */
 @media(pointer:coarse){
- #endGameSummaryOverlay .pp-board{width:850px;max-width:94vw;max-height:88dvh;overflow-y:auto;padding:26px}
+ #endGameSummaryOverlay .pp-board{width:850px;max-width:calc(94 * var(--app-vw, 1vw));max-height:88dvh;overflow-y:auto;padding:26px}
  #endGameSummaryOverlay .pp-heading{font-size:48px!important;line-height:1.15!important}
  #endGameSummaryOverlay .pp-result>span{font-size:32px}
  #endGameSummaryOverlay .pp-result>strong{font-size:96px}
