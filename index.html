@@ -1173,6 +1173,10 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 .pp-help-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:18px 0 12px;font:24px ReferencePixel,monospace;color:#073720}
 .pp-help-nav button{width:auto!important;margin:0!important;min-width:80px}.pp-help-nav button:disabled{opacity:.35}
 @media(pointer:coarse){#upgradeOverlay .frog-panel{width:430px!important}#howToOverlay .frog-panel-list{min-height:190px}}
+/* Build 33: three-percent snake refinement. */
+#frog-game>.snake-head::before{width:26.9078px;height:40.7303px;top:calc(50% + 8.01705px)}
+#frog-game>.snake-body::before{width:20.273px;height:17.5085px}
+#frog-game>.snake-tail::before{width:23.31395px;height:16.7713px}
 
 /* Isolated score components: same cream cards and stepped silhouette as upgrades. */
 #leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:460px;max-width:92vw;max-height:92dvh;overflow:auto;box-sizing:border-box;background:#073720;padding:14px;border:0;box-shadow:5px 5px #4a7e36;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
@@ -5471,7 +5475,7 @@ function createFrogAt(x, y, tokenId) {
     ? Math.max(12, Math.round(SNAKE_SEGMENT_GAP * 0.85))
     : SNAKE_SEGMENT_GAP;
 
-  const SEGMENT_VISUAL_SPACING = Math.round(SNAKE_SEGMENT_SIZE * 0.46 * 0.7505); // px between segment centres — tune this to taste
+  const SEGMENT_VISUAL_SPACING = Math.round(SNAKE_SEGMENT_SIZE * 0.46 * 0.727985); // px between segment centres — tune this to taste
 
   function computeSegmentGap() {
     // Still used for path pre-fill length calculations; no longer drives visual spacing.
@@ -10595,5 +10599,5 @@ window.approvedUpgrades={"mutation": "data:image/png;base64,iVBORw0KGgoAAAANSUhE
  const close=panel.querySelector('#howToCloseBtn');panel.insertBefore(nav,close?.parentElement===panel?close:close?.parentElement||null);render();}
  new MutationObserver(paginate).observe(overlay,{childList:true,subtree:true});paginate();
 })();
-</script><div class="pocket-build-label">Build 32</div></body>
+</script><div class="pocket-build-label">Build 33</div></body>
 </html>
