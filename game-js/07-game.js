@@ -913,6 +913,7 @@ let extraUpgradeOptionActive = false;
   let soundEnabled      = true;
   let statsPanelVisible = true;
   let mainMenuActive    = false;
+  let hasShownInitialMenuFrogs = false;
 
   let lastRunScore  = 0;
   let lastRunTime   = 0;
@@ -5050,7 +5051,8 @@ function closeAnimatedOverlay(overlayEl) {
 
     hideUpgradeOverlayForMenu();
 
-    if (MAIN_MENU_BACKGROUND_ENABLED) {
+    if (MAIN_MENU_BACKGROUND_ENABLED && !hasShownInitialMenuFrogs) {
+      hasShownInitialMenuFrogs = true;
       startMainMenuBackground();
     } else {
       stopMainMenuBackground();

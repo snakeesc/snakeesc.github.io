@@ -1382,14 +1382,23 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji { left: 36px !important; }
 }
 
-/* My Stats tag input never got the same treatment as the end-game one —
-   matching it now: same border color, radius, background, pixel font. */
+/* My Stats tag input exactly matching #endSummaryTagInput's final computed
+   style (traced property-by-property from its own cascade, not guessed):
+   no border at all, #fff8db background, 9px/12px padding, 44px min-height
+   desktop / 64px mobile. A previous attempt here only matched font/color/
+   radius and left padding + min-height on the original inline style, and
+   incorrectly added a border the reference input doesn't have. */
 #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput {
   font-family: ReferencePixel, Pocket, monospace !important;
-  border: 2px solid #497b36 !important;
+  border: 0 !important;
   border-radius: 7px !important;
-  background: #fffbed !important;
+  background: #fff8db !important;
   color: #073720 !important;
+  padding: 9px 12px !important;
+  min-height: 44px !important;
+}
+@media (pointer: coarse), (max-width: 600px) {
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput { min-height: 64px !important; }
 }
 
 /* Desktop/laptop upgrade panel readability — three earlier passes each
