@@ -1377,3 +1377,18 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-title { font-size: 30px !important; }
   #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-desc, #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-desc * { font-size: 24px !important; }
 }
+
+/* Rounded corners everywhere, consistently — user preference is the
+   leaderboard's original rounded style, not the sharp corners other
+   panels had drifted to. clip-path is reset to none where a notched/
+   stepped shape from an earlier design pass would otherwise mask the
+   border-radius entirely. */
+#mainMenuOverlay#mainMenuOverlay#mainMenuOverlay .pocket-menu,
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel,
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice,
+.frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel,
+#leaderboardOverlay#leaderboardOverlay#leaderboardOverlay .pp-board,
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .pp-board {
+  border-radius: 14px !important;
+  clip-path: none !important;
+}
