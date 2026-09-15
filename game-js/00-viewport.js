@@ -3,9 +3,7 @@
   var isPhoneScreen = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) <= 600;
   var isApp = typeof window.Capacitor !== 'undefined';
 
-  if (!isPhoneScreen) return;
-
-  if (!isApp) {
+  if (isPhoneScreen && !isApp) {
     // Website, real mobile browser: the original, working approach. Setting
     // width=980 on the viewport meta makes real mobile browsers report
     // window.innerWidth as ~980 too, so gameplay math (which reads
@@ -23,34 +21,45 @@
     return;
   }
 
-  // Native app (Capacitor/Android WebView): neither the viewport-meta trick
-  // nor CSS zoom changes what window.innerWidth or vw/vh units resolve
-  // against in this WebView (both confirmed not to work), so nothing render
-  // at the intended ~980-wide design size automatically. Fixed directly:
+  // Everything below covers two cases that share the same underlying
+  // problem: fixed-pixel sprite/UI sizes and CSS vw/vh units render at the
+  // true screen size instead of the ~980-1920-wide size the layout is
+  // tuned for, whenever the browser/WebView won't apply an optical page
+  // zoom for us (confirmed true for the Capacitor/Android WebView app, and
+  // true here for real desktop browsers too — initial-scale and CSS zoom
+  // are both mobile-only/unreliable there). Fixed directly instead of
+  // relying on the browser:
   //   1. Override window.innerWidth/innerHeight so gameplay math (which
-  //      reads them directly) sees the design size.
+  //      reads them directly) sees the intended design size.
   //   2. Every vw/vh in game-css/*.css was rewritten to
-  //      calc(N * var(--app-vw/--app-vh, 1vw/1vh)) — on the website that
-  //      custom property is unset so it falls back to plain vw/vh
-  //      (no change there); here we set it to 1% of the design size, so
-  //      those rules resolve against ~980 instead of the true screen.
+  //      calc(N * var(--app-vw/--app-vh, 1vw/1vh)) — normally that custom
+  //      property is unset, so it falls back to plain vw/vh (no change);
+  //      here it's set to 1% of the design size, so those rules resolve
+  //      against the design width instead of the true screen.
   //   3. body gets set to the design size and visually shrunk with a real
-  //      CSS transform (not zoom, which is what didn't work) to fit the
-  //      true screen. Real DOM elements (menu buttons etc.) automatically
-  //      get correct, transform-aware click/tap hit-testing — only the
-  //      custom-drawn gameplay (mouse.x/y in game-js/07-game.js) needed the
-  //      manual window.__escapeSnakeRenderScale correction, already in place.
-  var BASELINE = 980;
+  //      CSS transform to fit the true screen. Real DOM elements (menu
+  //      buttons etc.) automatically get correct, transform-aware
+  //      click/tap hit-testing — only the custom-drawn gameplay (mouse.x/y
+  //      in game-js/07-game.js) needs the manual
+  //      window.__escapeSnakeRenderScale correction, already in place there.
+  var designWidth;
+  if (isPhoneScreen && isApp) {
+    designWidth = 980; // phone-sized screen, inside the native app wrapper
+  } else if (!isPhoneScreen && screen.width < 1920) {
+    designWidth = 1920; // laptop/small desktop monitor, website or app
+  } else {
+    return; // normal-sized desktop monitor — nothing to fix
+  }
+
   var styleTag = document.createElement('style');
-  styleTag.id = 'escape-snake-app-scale-style';
+  styleTag.id = 'escape-snake-scale-style';
   document.head.appendChild(styleTag);
 
   function apply() {
     var landscape = matchMedia('(orientation: landscape)').matches;
     var deviceWidth = landscape ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
     var deviceHeight = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
-    var designWidth = BASELINE;
-    var designHeight = deviceHeight * (BASELINE / deviceWidth);
+    var designHeight = deviceHeight * (designWidth / deviceWidth);
     var renderScale = deviceWidth / designWidth;
 
     try {
@@ -68,4 +77,5 @@
   apply();
   if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', apply);
   else window.addEventListener('orientationchange', apply);
+  window.addEventListener('resize', apply); // e.g. connecting/disconnecting an external monitor
 })();
