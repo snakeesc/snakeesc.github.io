@@ -1397,11 +1397,16 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
    292px) without anyone increasing it back; the panel had drifted much
    smaller than every other overlay's panel (which range 400-880px). */
 @media (pointer: fine) {
-  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel { width: 560px !important; }
-  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { min-height: 140px !important; padding: 16px 18px 16px 90px !important; }
-  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji { width: 52px !important; height: 52px !important; left: 16px !important; }
-  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-title { font-size: 30px !important; }
-  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-desc, #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-desc * { font-size: 24px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel { width: 440px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { min-height: 110px !important; padding: 13px 15px 13px 78px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji { width: 44px !important; height: 44px !important; left: 14px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-title { font-size: 25px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-desc, #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-desc * { font-size: 20px !important; }
+}
+
+/* Desktop main menu was a touch too small. */
+@media (pointer: fine) {
+  #mainMenuOverlay#mainMenuOverlay#mainMenuOverlay .pocket-menu { width: 460px !important; max-width: 460px !important; }
 }
 
 /* Rounded corners everywhere, consistently — user preference is the
@@ -1469,6 +1474,6 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
    this is the real mobile-browser path, where vw already ties correctly
    to the virtual viewport the meta-viewport trick establishes. */
 @media (pointer: coarse), (max-width: 600px) {
-  #mainMenuOverlay#mainMenuOverlay#mainMenuOverlay .pocket-menu { width: 92vw !important; max-width: 380px !important; }
-  #dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel { width: 92vw !important; max-width: 420px !important; }
+  #mainMenuOverlay#mainMenuOverlay#mainMenuOverlay .pocket-menu { width: calc(92 * var(--app-vw, 1vw)) !important; max-width: 380px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel { width: calc(92 * var(--app-vw, 1vw)) !important; max-width: 420px !important; }
 }
