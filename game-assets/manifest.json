@@ -1,0 +1,658 @@
+{
+  "game-assets/fonts/pixel.ttf": {
+    "mime": "font/ttf",
+    "bytes": 79160
+  },
+  "game-assets/sprites/orb-simple.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 366
+  },
+  "game-assets/fonts/jersey10.ttf": {
+    "mime": "font/ttf",
+    "bytes": 77732
+  },
+  "game-assets/sprites/snake-head.png": {
+    "mime": "image/png",
+    "bytes": 17414
+  },
+  "game-assets/sprites/snake-body.png": {
+    "mime": "image/png",
+    "bytes": 24409
+  },
+  "game-assets/sprites/snake-tail.png": {
+    "mime": "image/png",
+    "bytes": 17678
+  },
+  "game-assets/sprites/reference-title.webp": {
+    "mime": "image/webp",
+    "bytes": 35668
+  },
+  "game-assets/sprites/reference-menu.webp": {
+    "mime": "image/webp",
+    "bytes": 27694
+  },
+  "game-assets/sprites/reference-upgrade-title.webp": {
+    "mime": "image/webp",
+    "bytes": 8964
+  },
+  "game-assets/sprites/reference-grass.webp": {
+    "mime": "image/webp",
+    "bytes": 5670
+  },
+  "game-assets/sprites/reference-ground.webp": {
+    "mime": "image/webp",
+    "bytes": 1458
+  },
+  "game-assets/sprites/menu-play.png": {
+    "mime": "image/png",
+    "bytes": 12761
+  },
+  "game-assets/sprites/menu-upgrades.png": {
+    "mime": "image/png",
+    "bytes": 18329
+  },
+  "game-assets/sprites/menu-scores.png": {
+    "mime": "image/png",
+    "bytes": 13912
+  },
+  "game-assets/sprites/menu-help.png": {
+    "mime": "image/png",
+    "bytes": 20112
+  },
+  "game-assets/images/snake-icon-32.png": {
+    "mime": "image/png",
+    "bytes": 426
+  },
+  "game-assets/images/head.png": {
+    "mime": "image/png",
+    "bytes": 393
+  },
+  "game-assets/images/frog-sprites.png": {
+    "mime": "image/png",
+    "bytes": 5868
+  },
+  "game-assets/images/body2.png": {
+    "mime": "image/png",
+    "bytes": 315
+  },
+  "game-assets/images/snake-icon-64.png": {
+    "mime": "image/png",
+    "bytes": 639
+  },
+  "game-assets/images/head2.png": {
+    "mime": "image/png",
+    "bytes": 483
+  },
+  "game-assets/images/tail3.png": {
+    "mime": "image/png",
+    "bytes": 369
+  },
+  "game-assets/images/tail2.png": {
+    "mime": "image/png",
+    "bytes": 396
+  },
+  "game-assets/images/tail.png": {
+    "mime": "image/png",
+    "bytes": 288
+  },
+  "game-assets/images/orb.gif": {
+    "mime": "image/gif",
+    "bytes": 12117
+  },
+  "game-assets/images/orb2.gif": {
+    "mime": "image/gif",
+    "bytes": 11163
+  },
+  "game-assets/images/tail_2.png": {
+    "mime": "image/png",
+    "bytes": 348
+  },
+  "game-assets/images/body_2.png": {
+    "mime": "image/png",
+    "bytes": 273
+  },
+  "game-assets/images/body3.png": {
+    "mime": "image/png",
+    "bytes": 486
+  },
+  "game-assets/images/body.png": {
+    "mime": "image/png",
+    "bytes": 282
+  },
+  "game-assets/images/head3.png": {
+    "mime": "image/png",
+    "bytes": 489
+  },
+  "game-assets/images/build_files/Frog/frog_07.png": {
+    "mime": "image/png",
+    "bytes": 762
+  },
+  "game-assets/images/build_files/Frog/frog_10.png": {
+    "mime": "image/png",
+    "bytes": 752
+  },
+  "game-assets/images/build_files/Frog/frog_02.png": {
+    "mime": "image/png",
+    "bytes": 783
+  },
+  "game-assets/images/build_files/Frog/frog_08.png": {
+    "mime": "image/png",
+    "bytes": 832
+  },
+  "game-assets/images/build_files/Frog/frog_16.png": {
+    "mime": "image/png",
+    "bytes": 817
+  },
+  "game-assets/images/build_files/Frog/frog_03.png": {
+    "mime": "image/png",
+    "bytes": 903
+  },
+  "game-assets/images/build_files/Frog/frog_06.png": {
+    "mime": "image/png",
+    "bytes": 839
+  },
+  "game-assets/images/build_files/Frog/frog_14.png": {
+    "mime": "image/png",
+    "bytes": 742
+  },
+  "game-assets/images/build_files/Frog/frog_00.png": {
+    "mime": "image/png",
+    "bytes": 858
+  },
+  "game-assets/images/build_files/Frog/frog_13.png": {
+    "mime": "image/png",
+    "bytes": 935
+  },
+  "game-assets/images/build_files/Frog/frog_04.png": {
+    "mime": "image/png",
+    "bytes": 824
+  },
+  "game-assets/images/build_files/Frog/frog_15.png": {
+    "mime": "image/png",
+    "bytes": 964
+  },
+  "game-assets/images/build_files/Frog/frog_12.png": {
+    "mime": "image/png",
+    "bytes": 902
+  },
+  "game-assets/images/build_files/Frog/frog_01.png": {
+    "mime": "image/png",
+    "bytes": 942
+  },
+  "game-assets/images/build_files/Frog/frog_11.png": {
+    "mime": "image/png",
+    "bytes": 920
+  },
+  "game-assets/images/build_files/Frog/frog_09.png": {
+    "mime": "image/png",
+    "bytes": 807
+  },
+  "game-assets/images/build_files/Frog/frog_05.png": {
+    "mime": "image/png",
+    "bytes": 852
+  },
+  "game-assets/images/build_files/Hat/hat_0.png": {
+    "mime": "image/png",
+    "bytes": 411
+  },
+  "game-assets/images/build_files/Hat/hat_2.png": {
+    "mime": "image/png",
+    "bytes": 345
+  },
+  "game-assets/images/build_files/Hat/hat_5.png": {
+    "mime": "image/png",
+    "bytes": 483
+  },
+  "game-assets/images/build_files/Hat/hat_4.png": {
+    "mime": "image/png",
+    "bytes": 343
+  },
+  "game-assets/images/build_files/Hat/hat_1.png": {
+    "mime": "image/png",
+    "bytes": 529
+  },
+  "game-assets/images/build_files/Hat/hat_7.png": {
+    "mime": "image/png",
+    "bytes": 456
+  },
+  "game-assets/images/build_files/Hat/hat_3.png": {
+    "mime": "image/png",
+    "bytes": 345
+  },
+  "game-assets/images/build_files/Hat/hat_6.png": {
+    "mime": "image/png",
+    "bytes": 496
+  },
+  "game-assets/images/build_files/Eyes/eyes_03.png": {
+    "mime": "image/png",
+    "bytes": 310
+  },
+  "game-assets/images/build_files/Eyes/eyes_00.png": {
+    "mime": "image/png",
+    "bytes": 346
+  },
+  "game-assets/images/build_files/Eyes/eyes_02.png": {
+    "mime": "image/png",
+    "bytes": 331
+  },
+  "game-assets/images/build_files/Eyes/eyes_04.png": {
+    "mime": "image/png",
+    "bytes": 313
+  },
+  "game-assets/images/build_files/Eyes/eyes_01.png": {
+    "mime": "image/png",
+    "bytes": 333
+  },
+  "game-assets/images/build_files/Skins/skin_09.png": {
+    "mime": "image/png",
+    "bytes": 454
+  },
+  "game-assets/images/build_files/Skins/skin_17.png": {
+    "mime": "image/png",
+    "bytes": 442
+  },
+  "game-assets/images/build_files/Skins/skin_10.png": {
+    "mime": "image/png",
+    "bytes": 447
+  },
+  "game-assets/images/build_files/Skins/skin_07.png": {
+    "mime": "image/png",
+    "bytes": 467
+  },
+  "game-assets/images/build_files/Skins/skin_15.png": {
+    "mime": "image/png",
+    "bytes": 503
+  },
+  "game-assets/images/build_files/Skins/skin_12.png": {
+    "mime": "image/png",
+    "bytes": 420
+  },
+  "game-assets/images/build_files/Skins/skin_00.png": {
+    "mime": "image/png",
+    "bytes": 464
+  },
+  "game-assets/images/build_files/Skins/skin_02.png": {
+    "mime": "image/png",
+    "bytes": 446
+  },
+  "game-assets/images/build_files/Skins/skin_03.png": {
+    "mime": "image/png",
+    "bytes": 453
+  },
+  "game-assets/images/build_files/Skins/skin_05.png": {
+    "mime": "image/png",
+    "bytes": 457
+  },
+  "game-assets/images/build_files/Skins/skin_06.png": {
+    "mime": "image/png",
+    "bytes": 468
+  },
+  "game-assets/images/build_files/Skins/skin_01.png": {
+    "mime": "image/png",
+    "bytes": 477
+  },
+  "game-assets/images/build_files/Skins/skin_13.png": {
+    "mime": "image/png",
+    "bytes": 228
+  },
+  "game-assets/images/build_files/Skins/skin_16.png": {
+    "mime": "image/png",
+    "bytes": 402
+  },
+  "game-assets/images/build_files/Skins/skin_08.png": {
+    "mime": "image/png",
+    "bytes": 470
+  },
+  "game-assets/images/build_files/Skins/skin_14.png": {
+    "mime": "image/png",
+    "bytes": 460
+  },
+  "game-assets/images/build_files/Skins/skin_04.png": {
+    "mime": "image/png",
+    "bytes": 444
+  },
+  "game-assets/audio/zombieFrog.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 79104
+  },
+  "game-assets/audio/frogShield.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 52992
+  },
+  "game-assets/audio/orbSpawn.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 44544
+  },
+  "game-assets/audio/frogDeath2.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 42240
+  },
+  "game-assets/audio/megaSpawn.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 52224
+  },
+  "game-assets/audio/ribbitTwo.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 37632
+  },
+  "game-assets/audio/snakeSlow.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 66816
+  },
+  "game-assets/audio/ribbitBase.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 37632
+  },
+  "game-assets/audio/orbMagnet.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 58368
+  },
+  "game-assets/audio/munch3.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 33024
+  },
+  "game-assets/audio/munch4.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 26880
+  },
+  "game-assets/audio/snakeConfuse.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 89856
+  },
+  "game-assets/audio/buttonClick3.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 21504
+  },
+  "game-assets/audio/snakeShrink.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 69120
+  },
+  "game-assets/audio/cloneSwarm.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 74496
+  },
+  "game-assets/audio/magnetFrog.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 89856
+  },
+  "game-assets/audio/permanentBuffChoice.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 63744
+  },
+  "game-assets/audio/ribbitFive.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 33792
+  },
+  "game-assets/audio/superSpeed.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 66816
+  },
+  "game-assets/audio/timeSlow.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 72960
+  },
+  "game-assets/audio/panicHop.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 41472
+  },
+  "game-assets/audio/frogDeath.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 39168
+  },
+  "game-assets/audio/ribbitTwo2.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 33792
+  },
+  "game-assets/audio/auraFrog.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 77568
+  },
+  "game-assets/audio/lifeSteal.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 57600
+  },
+  "game-assets/audio/championFrog.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 89856
+  },
+  "game-assets/audio/luckyFrog.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 79104
+  },
+  "game-assets/audio/scoreMulti.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 67584
+  },
+  "game-assets/audio/slowed.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 67584
+  },
+  "game-assets/audio/ribbitThree.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 40704
+  },
+  "game-assets/audio/ribbitOne.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 37632
+  },
+  "game-assets/audio/orbSpawnTwo.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 35328
+  },
+  "game-assets/audio/shieldFrog.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 85248
+  },
+  "game-assets/audio/superJump.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 67584
+  },
+  "game-assets/audio/frogSpawn.mp3": {
+    "mime": "audio/mpeg",
+    "bytes": 56832
+  },
+  "game-assets/misc/d80b42a6ab79bcef.webp": {
+    "mime": "image/webp",
+    "bytes": 42150
+  },
+  "game-assets/sprites/upgrade-bolt.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 219
+  },
+  "game-assets/sprites/upgrade-heart.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 264
+  },
+  "game-assets/sprites/upgrade-clover.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 269
+  },
+  "game-assets/sprites/upgrade-egg.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 266
+  },
+  "game-assets/sprites/upgrade-shield.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 261
+  },
+  "game-assets/sprites/upgrade-star.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 233
+  },
+  "game-assets/sprites/upgrade-scissors.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 235
+  },
+  "game-assets/sprites/upgrade-orb.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 431
+  },
+  "game-assets/sprites/upgrade-bow.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 267
+  },
+  "game-assets/sprites/upgrade-skull.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 264
+  },
+  "game-assets/sprites/upgrade-magnet.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 242
+  },
+  "game-assets/sprites/upgrade-moon.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 213
+  },
+  "game-assets/sprites/upgrade-dice.svg": {
+    "mime": "image/svg+xml",
+    "bytes": 261
+  },
+  "game-assets/sprites/approved/frog-crowned.png": {
+    "mime": "image/png",
+    "bytes": 20649
+  },
+  "game-assets/sprites/approved/frog-champion.png": {
+    "mime": "image/png",
+    "bytes": 22374
+  },
+  "game-assets/sprites/approved/frog-aura.png": {
+    "mime": "image/png",
+    "bytes": 19368
+  },
+  "game-assets/sprites/approved/frog-shield.png": {
+    "mime": "image/png",
+    "bytes": 19869
+  },
+  "game-assets/sprites/approved/frog-magnet.png": {
+    "mime": "image/png",
+    "bytes": 20325
+  },
+  "game-assets/sprites/approved/frog-lucky.png": {
+    "mime": "image/png",
+    "bytes": 21087
+  },
+  "game-assets/sprites/approved/frog-zombie.png": {
+    "mime": "image/png",
+    "bytes": 18939
+  },
+  "game-assets/sprites/approved/frog-cannibal.png": {
+    "mime": "image/png",
+    "bytes": 19649
+  },
+  "game-assets/sprites/approved/frog-necromancer.png": {
+    "mime": "image/png",
+    "bytes": 20849
+  },
+  "game-assets/sprites/approved/frog-alchemist.png": {
+    "mime": "image/png",
+    "bytes": 22592
+  },
+  "game-assets/sprites/approved/upgrade-mutation.png": {
+    "mime": "image/png",
+    "bytes": 19218
+  },
+  "game-assets/sprites/approved/upgrade-role-draft.png": {
+    "mime": "image/png",
+    "bytes": 13961
+  },
+  "game-assets/sprites/approved/upgrade-double-yolker.png": {
+    "mime": "image/png",
+    "bytes": 17886
+  },
+  "game-assets/sprites/approved/upgrade-spawn-frogs.png": {
+    "mime": "image/png",
+    "bytes": 15302
+  },
+  "game-assets/sprites/approved/upgrade-orb-flow.png": {
+    "mime": "image/png",
+    "bytes": 13976
+  },
+  "game-assets/sprites/approved/upgrade-orb-whisperer.png": {
+    "mime": "image/png",
+    "bytes": 16111
+  },
+  "game-assets/sprites/approved/upgrade-ouroboros-pact.png": {
+    "mime": "image/png",
+    "bytes": 26518
+  },
+  "game-assets/sprites/approved/upgrade-luck.png": {
+    "mime": "image/png",
+    "bytes": 23220
+  },
+  "game-assets/sprites/approved/upgrade-deathrattle.png": {
+    "mime": "image/png",
+    "bytes": 21939
+  },
+  "game-assets/sprites/approved/upgrade-last-stand.png": {
+    "mime": "image/png",
+    "bytes": 19516
+  },
+  "game-assets/sprites/approved/upgrade-survival-instinct.png": {
+    "mime": "image/png",
+    "bytes": 22445
+  },
+  "game-assets/sprites/approved/upgrade-lucky-roll.png": {
+    "mime": "image/png",
+    "bytes": 21437
+  },
+  "game-assets/sprites/approved/upgrade-pair-of-scissors.png": {
+    "mime": "image/png",
+    "bytes": 20064
+  },
+  "game-assets/sprites/approved/upgrade-orb-storm.png": {
+    "mime": "image/png",
+    "bytes": 24463
+  },
+  "game-assets/sprites/approved/upgrade-chain-reaction.png": {
+    "mime": "image/png",
+    "bytes": 12410
+  },
+  "game-assets/sprites/approved/upgrade-snake-egg.png": {
+    "mime": "image/png",
+    "bytes": 22995
+  },
+  "game-assets/sprites/approved/upgrade-loaded-hand.png": {
+    "mime": "image/png",
+    "bytes": 18229
+  },
+  "game-assets/sprites/approved/upgrade-night-bloom.png": {
+    "mime": "image/png",
+    "bytes": 27334
+  },
+  "game-assets/sprites/approved/upgrade-tidal-wave.png": {
+    "mime": "image/png",
+    "bytes": 19145
+  },
+  "game-assets/sprites/approved/upgrade-epic-deathrattle.png": {
+    "mime": "image/png",
+    "bytes": 17449
+  },
+  "game-assets/sprites/approved/upgrade-orb-specialist.png": {
+    "mime": "image/png",
+    "bytes": 18580
+  },
+  "game-assets/sprites/approved/upgrade-second-wind.png": {
+    "mime": "image/png",
+    "bytes": 16602
+  },
+  "game-assets/sprites/approved/upgrade-grave-wave.png": {
+    "mime": "image/png",
+    "bytes": 16036
+  },
+  "game-assets/sprites/approved/upgrade-poisonous-skin.png": {
+    "mime": "image/png",
+    "bytes": 20633
+  },
+  "game-assets/sprites/approved/upgrade-promotion.png": {
+    "mime": "image/png",
+    "bytes": 22289
+  },
+  "game-assets/sprites/approved/upgrade-frog-scatter.png": {
+    "mime": "image/png",
+    "bytes": 15493
+  },
+  "game-assets/sprites/approved/upgrade-molt-fortune.png": {
+    "mime": "image/png",
+    "bytes": 18152
+  }
+}
