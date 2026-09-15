@@ -1,4 +1,4 @@
-ESCAPE THE SNAKE — BUILD 42 — WEBSITE ROOT PACKAGE
+ESCAPE THE SNAKE — BUILD 43 — WEBSITE ROOT PACKAGE
 
 Restores the exact Build 33 snake artwork, size, spacing and upright head.
 Keeps the latest menu changes. Original audio is included as separate files.
@@ -9,7 +9,7 @@ INSTALL IN YOUR EXISTING GITHUB WEBSITE FOLDER
    Replace index.html when prompted. Do not create another game/ subfolder.
 3. Add index.html, game-js/, game-css/, game-assets/ and the license files to Git.
 4. Commit and push using your usual website deployment process.
-5. Reload the website without cached content; the corner label should say Build 42.
+5. Reload the website without cached content; the corner label should say Build 43.
 
 DO NOT DELETE EVERYTHING.
 Keep .git/, .github/, CNAME, .nojekyll and any other hosting configuration present.

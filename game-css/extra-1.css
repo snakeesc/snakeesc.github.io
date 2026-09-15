@@ -1205,6 +1205,13 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #frog-game>.snake-body::before{width:20.273px;height:17.5085px}
 #frog-game>.snake-tail::before{width:23.31395px;height:16.7713px}
 
+/* Build 43: continuous mobile help, larger readable surface. */
+@media(pointer:coarse){
+ #howToOverlay.frog-overlay .frog-panel{width:880px!important;max-width:94vw!important;max-height:88dvh!important;overflow-y:auto!important}
+ #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:42px!important;line-height:1.3!important}
+ #howToOverlay .frog-panel-list{min-height:0!important}
+}
+
 /* Isolated score components: same cream cards and stepped silhouette as upgrades. */
 #leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:460px;max-width:92vw;max-height:92dvh;overflow:auto;box-sizing:border-box;background:#073720;padding:14px;border:0;box-shadow:5px 5px #4a7e36;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
 #leaderboardOverlay .pp-board *,#endGameSummaryOverlay .pp-board *{font-family:ReferencePixel,monospace!important;text-shadow:none!important;box-sizing:border-box}
@@ -1285,6 +1292,16 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #leaderboardOverlay .pp-me .pp-player strong{color:#245c37!important}
 #leaderboardOverlay .pp-me .pp-player strong::before{content:"";display:inline-block;width:5px;height:5px;background:#397a43;margin-right:6px;vertical-align:middle}
 #endGameSummaryOverlay .pp-tag button,#endGameSummaryOverlay .pp-actions .pp-play{background:transparent!important;border:0!important;box-shadow:none!important;clip-path:none!important}
+
+@media(pointer:coarse){
+ #leaderboardOverlay .pp-board{width:850px;max-width:94vw;padding:26px}
+ #leaderboardOverlay .pp-heading{font-size:48px!important}
+ #leaderboardOverlay .pp-entry{grid-template-columns:40px minmax(0,1fr) 115px 125px;gap:14px;padding:18px 0;min-height:72px}
+ #leaderboardOverlay .pp-player strong,#leaderboardOverlay .pp-rank{font-size:36px}
+ #leaderboardOverlay .pp-time{font-size:32px}
+ #leaderboardOverlay .pp-points strong{font-size:38px}
+ #leaderboardOverlay .pp-pager button,#leaderboardOverlay .pp-pager span,#leaderboardOverlay .pp-back{font-size:36px;min-height:60px}
+}
 
 @font-face{font-family:ReferencePixel;src:url(../game-assets/fonts/jersey10.ttf)}
 

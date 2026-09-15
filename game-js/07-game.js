@@ -2450,7 +2450,7 @@ function updateFrogRoleEmoji(frog) {
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
  const roles=[['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isChampion','champion'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
  const role=roles.find(([flag])=>frog[flag]);const key=role?role[1]:(frog.starLevel>0?'crowned':'');
- if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${window.approvedFrogs[key]}")`);}
+ if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
  else {delete frog.el.dataset.approvedRole;frog.el.style.removeProperty('--approved-frog');}
 }
 

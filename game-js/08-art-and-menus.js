@@ -1,5 +1,5 @@
 // Pocket Pixels sprite rendering. Does not change game rules.
-(()=>{document.documentElement.style.setProperty("--atlas","url(\"./game-assets/misc/d80b42a6ab79bcef.webp\")");
+(()=>{document.documentElement.style.setProperty("--atlas",`url("${new URL("./game-assets/misc/d80b42a6ab79bcef.webp",document.baseURI).href}")`);
  function decorate(el){if(el.classList.contains("frog-upgrade-choice")&&/orb|ouroboros/i.test(el.querySelector('.frog-upgrade-title')?.textContent||'')){const icon=el.querySelector(".frog-upgrade-emoji");if(icon)icon.style.backgroundPosition="0 100%";}if(el.classList.contains('frog-sprite')){const n=Number(el.dataset.pocketColor||0);el.style.setProperty('--frog-x',(n%4)*100/3+'%');el.style.setProperty('--frog-y',Math.floor(n/4)*100/3+'%')}}
  const obs=new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1){decorate(n);n.querySelectorAll('.frog-sprite').forEach(decorate)}})));obs.observe(document.body,{childList:true,subtree:true});document.querySelectorAll('.frog-sprite').forEach(decorate);
  const menu=document.querySelector('#mainMenuOverlay');[[8.5,13.5,0],[18.2,25.5,1],[4.5,48.5,2],[24.5,54.5,3],[12.5,63,0],[6,81,4],[21,82,5]].forEach(([x,y,n])=>{const e=document.createElement('div');e.className='pocket-decor';e.style.cssText=`left:${x}%;top:${y}%;background-position:${n%4*100/3}% ${Math.floor(n/4)*100/3}%`;menu.append(e)});
@@ -17,13 +17,5 @@ window.approvedUpgrades={"mutation": "./game-assets/sprites/approved/upgrade-mut
  const options=[...document.querySelectorAll('#mainMenuOverlay .frog-btn')].filter(b=>b.id!=='btnBuffGuide');
  function select(b){options.forEach(x=>x.classList.toggle('pp-selected',x===b));}
  select(document.getElementById('btnStartRun'));options.forEach(b=>{b.addEventListener('pointerenter',()=>select(b));b.addEventListener('focus',()=>select(b));});
- const overlay=document.getElementById('howToOverlay');
- function paginate(){if(!matchMedia('(pointer:coarse)').matches)return;const panel=overlay.querySelector('.frog-panel');if(!panel||panel.querySelector('.pp-help-nav'))return;
- const headings=[...panel.querySelectorAll('.frog-panel-section-label')];if(headings.length<2)return;
- const groups=headings.map(h=>[h,h.nextElementSibling]);let page=0;
- const nav=document.createElement('nav');nav.className='pp-help-nav';const prev=document.createElement('button'),label=document.createElement('span'),next=document.createElement('button');prev.textContent='Prev';next.textContent='Next';prev.className=next.className='frog-btn';nav.append(prev,label,next);
- function render(){groups.forEach((g,i)=>g.forEach(e=>e?.classList.toggle('pp-help-hidden',i!==page)));label.textContent=(page+1)+' / '+groups.length;prev.disabled=page===0;next.disabled=page===groups.length-1;panel.scrollTop=0;}
- prev.onclick=()=>{if(page>0){page--;render();}};next.onclick=()=>{if(page<groups.length-1){page++;render();}};
- const close=panel.querySelector('#howToCloseBtn');panel.insertBefore(nav,close?.parentElement===panel?close:close?.parentElement||null);render();}
- new MutationObserver(paginate).observe(overlay,{childList:true,subtree:true});paginate();
+
 })();
