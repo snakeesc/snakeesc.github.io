@@ -55,10 +55,23 @@
   styleTag.id = 'escape-snake-scale-style';
   document.head.appendChild(styleTag);
 
+  function getTrueViewportSize() {
+    // window.innerWidth/innerHeight get overridden below (own properties
+    // directly on window in this engine, so deleting them doesn't reveal
+    // a native value underneath — just leaves undefined). documentElement
+    // .clientWidth/clientHeight is a different property entirely, so it
+    // stays accurate regardless of that override or body's transform.
+    // Using screen.width/height instead would be simpler but is wrong
+    // here: on a windowed (non-fullscreen) desktop browser, the address
+    // bar/tabs eat into the vertical space, so screen.height overshoots
+    // the actual visible area and cuts content off at the bottom.
+    return { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight };
+  }
+
   function apply() {
-    var landscape = matchMedia('(orientation: landscape)').matches;
-    var deviceWidth = landscape ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
-    var deviceHeight = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+    var trueSize = getTrueViewportSize();
+    var deviceWidth = trueSize.width;
+    var deviceHeight = trueSize.height;
     var designHeight = deviceHeight * (designWidth / deviceWidth);
     var renderScale = deviceWidth / designWidth;
 
