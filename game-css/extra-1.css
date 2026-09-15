@@ -710,7 +710,6 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #mainMenuOverlay .pocket-menu{width:390px;max-width:calc(85 * var(--app-vw, 1vw));padding:22px 24px;display:flex;flex-direction:column;gap:3px;background:var(--cream)!important;border:5px solid var(--ink)!important;border-radius:0!important;box-shadow:6px 0 var(--ink),-6px 0 var(--ink),0 6px var(--ink),0 -6px var(--ink)!important;overflow:visible}
 #mainMenuOverlay .frog-btn{margin:0!important;width:100%;padding:10px 12px 10px 47px;text-align:left;font-size:38px;line-height:1.15;font-weight:700;letter-spacing:0;text-transform:none;border:none!important;box-shadow:none!important;background:none!important;position:relative}
 #mainMenuOverlay .frog-btn:hover{color:#318a35!important;transform:none}
-#mainMenuOverlay .frog-btn:hover:before,#mainMenuOverlay #btnStartRun:before{content:"";position:absolute;left:17px;top:50%;transform:translateY(-50%);border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:14px solid currentColor}
 #mainMenuOverlay #btnStartRun{font-size:44px}
 .pocket-hint{font-size:19px;font-family:Pocket,monospace;color:#17482b;text-align:center}
 .pocket-profile{position:absolute;bottom:17px;right:20px;border:0;background:transparent;font:18px Pocket,monospace;color:var(--ink);cursor:pointer;text-decoration:underline}
@@ -768,7 +767,6 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #mainMenuOverlay .pocket-menu{width:330px;padding:15px 20px;border-width:4px!important;box-shadow:4px 0 var(--ink),-4px 0 var(--ink),0 4px var(--ink),0 -4px var(--ink)!important}
 #mainMenuOverlay .frog-btn{font-size:30px;padding:9px 10px 9px 40px}
 #mainMenuOverlay #btnStartRun{font-size:35px}
-#mainMenuOverlay .frog-btn:hover:before,#mainMenuOverlay #btnStartRun:before{left:15px;border-top-width:8px;border-bottom-width:8px;border-left-width:11px}
 .pocket-hint{font-size:16px}.pocket-profile{font-size:16px}
 .pocket-decor{width:45px;height:45px}
 #pocket-hud{font-size:17px!important;padding:7px 13px!important;border-width:2px;box-shadow:2px 2px var(--ink)}
@@ -822,7 +820,6 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #mainMenuOverlay .pocket-menu{position:relative;background:transparent!important}
 #mainMenuOverlay .frog-btn{font-size:42px;line-height:1.15;padding:12px 10px 12px 52px;font-weight:700}
 #mainMenuOverlay #btnStartRun{font-size:47px}
-#mainMenuOverlay .frog-btn:hover:before,#mainMenuOverlay #btnStartRun:before{left:13px;border-top-width:12px;border-bottom-width:12px;border-left-width:17px}
 #upgradeOverlay .frog-panel{width:460px!important;border:4px solid #72a949!important;padding:12px!important;box-shadow:3px 3px 0 #083823!important;border-radius:0!important;clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px),0 12px)}
 #upgradeOverlay .frog-panel-title{font-size:29px!important;letter-spacing:.01em;margin-bottom:9px!important}
 #upgradeOverlay .frog-panel-sub{font-family:Arial,sans-serif!important;font-size:13px!important;opacity:.9;margin-bottom:12px!important}
