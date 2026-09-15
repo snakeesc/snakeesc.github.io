@@ -1451,3 +1451,15 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 @media (pointer: coarse), (max-width: 600px) {
   #howToOverlay#howToOverlay#howToOverlay .frog-scroll-hint { font-size: 34px !important; padding: 4px 24px !important; }
 }
+
+/* My Stats mobile spacing — the content is built with inline styles using
+   tight 2-6px margins between blocks (tag, level, progress bar, orbs-to-
+   next-level, run stats, tag input), which reads as cramped once scaled
+   up for mobile. Give each block real breathing room. */
+@media (pointer: coarse), (max-width: 600px) {
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardContent > div:first-child { padding-bottom: 26px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardContent > div:first-child > div { margin-bottom: 16px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardCurrentTag { margin-bottom: 12px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel-section-label { margin-top: 28px !important; margin-bottom: 14px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardContent > div:nth-child(2) { gap: 16px !important; }
+}
