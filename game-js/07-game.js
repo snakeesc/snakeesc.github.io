@@ -5101,6 +5101,7 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
+      <div class="frog-panel-close-row"><button id="howToCloseX" class="frog-panel-close-x" aria-label="Close">×</button></div>
       <div class="frog-panel-title">How to Play <span class="emoji">🐸</span></div>
       <div class="frog-panel-sub">Stay alive. Don't let the snake eat all your frogs.</div>
 
@@ -5121,22 +5122,13 @@ function closeAnimatedOverlay(overlayEl) {
       <div class="frog-panel-footer">
         <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
       </div>
-      <div class="frog-scroll-hint" id="howToScrollHint">▼</div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
 
-    const scrollHint = document.getElementById("howToScrollHint");
-    if (scrollHint) {
-      const updateHint = () => {
-        const atBottom = panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 10;
-        const scrollable = panel.scrollHeight > panel.clientHeight + 10;
-        scrollHint.style.display = scrollable && !atBottom ? "block" : "none";
-      };
-      panel.addEventListener("scroll", updateHint);
-      requestAnimationFrame(updateHint);
-    }
+    const closeX = document.getElementById("howToCloseX");
+    if (closeX) closeX.addEventListener("click", hideHowToOverlay);
 
     openAnimatedOverlay(howToOverlay);
   }
