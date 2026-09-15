@@ -1369,13 +1369,23 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   #howToOverlay#howToOverlay#howToOverlay.frog-overlay .frog-panel-section-label {
     font-size: 34px !important; line-height: 1.2 !important; margin: 24px 0 10px !important;
     color: #fff8db !important; background: #497b36 !important; display: inline-block !important;
-    padding: 4px 14px !important; border-radius: 999px !important;
+    padding: 4px 14px !important; border-radius: 4px !important;
   }
 }
 
 /* Mobile upgrade-card icon/text gap — measured 7px actual gap, too tight. */
 @media (pointer: coarse), (max-width: 600px) {
   #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { padding-left: 100px !important; }
+}
+
+/* My Stats tag input never got the same treatment as the end-game one —
+   matching it now: same border color, radius, background, pixel font. */
+#dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput {
+  font-family: ReferencePixel, Pocket, monospace !important;
+  border: 2px solid #497b36 !important;
+  border-radius: 7px !important;
+  background: #fffbed !important;
+  color: #073720 !important;
 }
 
 /* Desktop/laptop upgrade panel readability — three earlier passes each
