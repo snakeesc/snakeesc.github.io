@@ -38,8 +38,8 @@
       }
       #frog-game #pocket-hud span {font-size:inherit!important;color:#073720!important;}
       #frog-game #pocket-controls {
-        position:absolute!important;bottom:auto!important;right:auto!important;flex-direction:column!important;
-        top:calc(${px(40)} + ${safeTop})!important;left:calc(${px(8)} + ${safeLeft})!important;gap:${px(4)}!important;align-items:flex-start!important;
+        position:absolute!important;bottom:auto!important;right:auto!important;flex-direction:row!important;
+        top:calc(${px(40)} + ${safeTop})!important;left:calc(${px(8)} + ${safeLeft})!important;gap:${px(6)}!important;align-items:center!important;
       }
       #frog-game #pocket-controls button {
         min-height:0!important;min-width:0!important;width:auto!important;height:auto!important;
