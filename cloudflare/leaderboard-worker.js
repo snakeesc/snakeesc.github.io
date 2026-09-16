@@ -10,8 +10,7 @@ const CORS = {
 
 const LEADERBOARD_KEY = "leaderboard";
 const SUMMARY_KEY     = "summary:global";
-const MAX_ENTRIES     = 50;   // public/displayed top-N board
-const STORAGE_CAP     = 5000; // everyone else: kept so every player gets a unique tag, just not shown on the board
+const MAX_ENTRIES     = 50;
 const RECENT_RUNS_KEY = "recent-runs:global";
 const MAX_RECENT_RUNS = 100;
 
@@ -417,7 +416,7 @@ function normalizeLeaderboard(list) {
 
   const deduped = Array.from(byUser.values());
   sortLeaderboard(deduped);
-  return deduped.slice(0, STORAGE_CAP);
+  return deduped.slice(0, MAX_ENTRIES);
 }
 
 async function getUserId(request, body = null) {
@@ -451,13 +450,11 @@ async function getLeaderboard(request, env) {
   let myEntry = null;
   try {
     const userId = await getUserId(request);
-    // Look up myEntry against the full pool, not just the public board — a
-    // player outside the top 50 should still see their own tag/entry.
     const found = list.find(e => e.userId === userId);
     if (found) myEntry = { ...found, isMe: true };
   } catch {}
 
-  return json({ entries: list.slice(0, MAX_ENTRIES), myEntry });
+  return json({ entries: list, myEntry });
 }
 
 // --------------------------------------------------
@@ -548,9 +545,7 @@ async function submitScore(request, env) {
   }
 
   sortLeaderboard(leaderboard);
-  // Keep everyone (up to the safety cap) so every player gets a persisted,
-  // unique tag — only the public-facing response is trimmed to the board size.
-  const trimmed = leaderboard.slice(0, STORAGE_CAP);
+  const trimmed = leaderboard.slice(0, MAX_ENTRIES);
 
   await saveLeaderboard(env, trimmed);
 
@@ -569,7 +564,7 @@ async function submitScore(request, env) {
 
   const myEntry = trimmed.find(e => e.userId === userId);
   return json({
-    entries: trimmed.slice(0, MAX_ENTRIES),
+    entries: trimmed,
     myEntry: myEntry ? { ...myEntry, isMe: true } : null,
   });
 }
