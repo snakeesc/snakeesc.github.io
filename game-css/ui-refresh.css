@@ -57,3 +57,21 @@
  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:hover .frog-upgrade-desc{transform:translateX(4px)!important}
 }
 @media(prefers-reduced-motion:reduce){#upgradeOverlay .frog-upgrade-title,#upgradeOverlay .frog-upgrade-desc{transition:none!important;transform:none!important}}
+
+/* Compact personal stats, readable level details, stepped progress meter. */
+#dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-profile-heading p{font:27px/1.25 ReferencePixel,monospace!important;color:#35553a!important}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-progress-caption{font:25px/1.25 ReferencePixel,monospace!important;color:#35553a!important;margin:10px 0 16px!important}
+.ui-progress{max-width:100%;height:14px;border:2px solid #073720;border-radius:0;background:#dbe5bf;position:relative}
+.ui-progress i{border-radius:0;background:#6ba74c;box-shadow:inset 0 3px #97c969}
+.ui-progress:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(5% - 2px),#073720 calc(5% - 2px),#073720 5%);pointer-events:none}
+.ui-records{display:flex;flex-direction:column;gap:0;padding:8px 0;margin-bottom:16px}
+.ui-records>div{display:flex;flex-direction:row;justify-content:space-between;align-items:baseline;gap:18px;padding:5px 0}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span{font-size:23px!important}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong{font-size:27px!important;text-align:right}
+@media(pointer:coarse),(max-width:600px){
+ #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-profile-heading p{font-size:40px!important}
+ #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-progress-caption{font-size:38px!important}
+ .ui-progress{height:20px}.ui-records{gap:0;padding:12px 0}.ui-records>div{padding:7px 0}
+ #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span{font-size:34px!important}
+ #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong{font-size:38px!important}
+}
