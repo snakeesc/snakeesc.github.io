@@ -1,6 +1,15 @@
 
 (function () {
-  var isPhoneScreen = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) <= 600;
+  // matchMedia('(pointer: coarse)') is the primary signal, but some Android
+  // WebView configurations (confirmed on at least one emulator profile,
+  // possibly real devices too) report pointer:fine/hover:none instead, even
+  // on an actual touchscreen phone. That silently sent phones down the
+  // desktop/laptop branch below (1920px design width instead of 980px),
+  // squashing the whole page — including panels that then needed scrolling
+  // for content that fits fine in a real mobile browser. Falling back to
+  // direct touch-capability checks catches that case.
+  var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  var isPhoneScreen = (matchMedia('(pointer: coarse)').matches || hasTouch) && Math.min(screen.width, screen.height) <= 600;
   var isApp = typeof window.Capacitor !== 'undefined';
 
   if (isPhoneScreen && !isApp) {

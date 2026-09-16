@@ -1026,7 +1026,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #endGameSummaryOverlay .frog-panel-section-label,#leaderboardOverlay .frog-panel-section-label{font-size:22px!important;letter-spacing:.06em!important}
 @media(min-width:601px) and (pointer:fine){.pocket-title{width:calc(19.2 * var(--app-vw, 1vw));max-width:342px}#mainMenuOverlay .pocket-menu{width:calc(15.4 * var(--app-vw, 1vw));max-width:274px}#upgradeOverlay .frog-panel{width:320px!important}#upgradeOverlay .frog-upgrade-choice{min-height:70px!important;padding-left:62px!important}#upgradeOverlay .frog-upgrade-title{font-size:24px!important}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:20px!important}#upgradeOverlay .frog-upgrade-emoji{width:38px!important;height:38px!important}}
 /* Keep phone controls visible at the top, independent of playfield height. */
-@media(pointer:coarse){
+@media(pointer:coarse),(max-width:600px){
  #pocket-controls{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(12px + env(safe-area-inset-left))!important;bottom:auto!important;right:auto!important;flex-direction:column!important;gap:8px!important;z-index:120!important}
  #pocket-controls button{min-width:108px!important;min-height:60px!important;font-size:28px!important;padding:10px 12px!important}
  #pocket-hud{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(140px + env(safe-area-inset-left))!important;right:12px!important;transform:none!important;width:max-content!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 156px)!important;font-size:25px!important;white-space:normal!important;flex-wrap:wrap!important}
@@ -1052,8 +1052,8 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #leaderboardOverlay .player-row,#leaderboardOverlay .player-row:first-child,#endGameSummaryContent .player-row,#endGameSummaryContent .player-row:first-child{background:#dbedb4!important;border:2px solid #497b36!important;border-left:6px solid #006b83!important}
 #leaderboardOverlay .player-row::after,#endGameSummaryContent .player-row::after{content:"YOU";display:inline-block;margin-left:8px;font:16px ReferencePixel,monospace;color:#006b83}
 #leaderboardOverlay .frog-panel,#endGameSummaryOverlay .frog-panel{border-radius:0!important;background:#fff8db!important;box-shadow:4px 4px 0 #073720!important}
-@media(pointer:fine){#leaderboardOverlay.frog-overlay .frog-panel{width:540px!important}#endGameSummaryOverlay.frog-overlay .frog-panel{width:410px!important}.pocket-title{max-width:325px;width:calc(18.2 * var(--app-vw, 1vw))}#mainMenuOverlay .pocket-menu{max-width:260px;width:calc(14.6 * var(--app-vw, 1vw))}#upgradeOverlay .frog-panel{width:305px!important}}
-@media(pointer:coarse){#mainMenuOverlay .pocket-menu{width:310px!important;max-width:calc(90 * var(--app-vw, 1vw))}.pocket-title{width:380px!important;max-width:calc(80 * var(--app-vw, 1vw))}#upgradeOverlay .frog-panel{width:380px!important}#leaderboardOverlay.frog-overlay .frog-panel{width:620px!important}#endGameSummaryOverlay.frog-overlay .frog-panel{width:490px!important}}
+@media(min-width:601px) and (pointer:fine){#leaderboardOverlay.frog-overlay .frog-panel{width:540px!important}#endGameSummaryOverlay.frog-overlay .frog-panel{width:410px!important}.pocket-title{max-width:325px;width:calc(18.2 * var(--app-vw, 1vw))}#mainMenuOverlay .pocket-menu{max-width:260px;width:calc(14.6 * var(--app-vw, 1vw))}#upgradeOverlay .frog-panel{width:305px!important}}
+@media(pointer:coarse),(max-width:600px){#mainMenuOverlay .pocket-menu{width:310px!important;max-width:calc(90 * var(--app-vw, 1vw))}.pocket-title{width:380px!important;max-width:calc(80 * var(--app-vw, 1vw))}#upgradeOverlay .frog-panel{width:380px!important}#leaderboardOverlay.frog-overlay .frog-panel{width:620px!important}#endGameSummaryOverlay.frog-overlay .frog-panel{width:490px!important}}
 /* Five-percent snake size refinement. */
 #frog-game>.snake-head::before{width:27.74px;height:41.99px;top:calc(50% + 8.265px)}
 #frog-game>.snake-body::before{width:20.9px;height:18.05px}
@@ -1087,7 +1087,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #frog-scoreboard-overlay .scoreboard-row--me td{background:#d9edb0!important}
 #frog-scoreboard-overlay button{font-size:22px!important;background:#e3ecc8!important;border:2px solid #527f36!important;border-radius:0!important;padding:6px 12px!important;box-shadow:none!important}
 #leaderboardOverlay#leaderboardOverlay .frog-panel-list li,#endGameSummaryOverlay#endGameSummaryOverlay .frog-panel-list li{box-shadow:inset 0 -2px #bed09a!important}
-@media(pointer:fine){#mainMenuOverlay .pocket-menu{width:calc(14 * var(--app-vw, 1vw));max-width:248px}.pocket-title{width:calc(17.4 * var(--app-vw, 1vw));max-width:310px}#upgradeOverlay .frog-panel{width:292px!important}}
+@media(min-width:601px) and (pointer:fine){#mainMenuOverlay .pocket-menu{width:calc(14 * var(--app-vw, 1vw));max-width:248px}.pocket-title{width:calc(17.4 * var(--app-vw, 1vw));max-width:310px}#upgradeOverlay .frog-panel{width:292px!important}}
 /* New score layouts use their own components instead of legacy panel rules. */
 .score-surface{width:520px;max-width:calc(92 * var(--app-vw, 1vw));max-height:92dvh;overflow:auto;padding:22px;background:#fff8db;color:#073720;border:6px solid #073720;box-shadow:5px 5px #53823a;font:24px/1.2 ReferencePixel,monospace;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
 .score-surface .frog-panel-title,.score-heading{font:36px/1 ReferencePixel,monospace!important;color:#073720!important;background:none!important;border:0!important;margin:0 0 22px!important;padding:0!important;text-align:center}
@@ -1103,7 +1103,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #endGameSummaryContent:before{display:none!important}.score-hero{display:flex;flex-direction:column;text-align:center;background:#e4edc3;padding:18px 12px;margin-bottom:16px}.score-hero>span{font-size:19px;letter-spacing:2px}.score-hero>strong{font-size:68px;line-height:1;color:#006b83}.score-hero>small{font-size:20px;margin-top:6px}
 .run-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin:0 0 22px}.run-metrics div{display:flex;flex-direction:column;gap:4px}.run-metrics span{font-size:15px;color:#426535}.run-metrics strong{font-size:25px}
 .score-tag-label{font-size:18px;letter-spacing:1px}.score-tag{display:flex;gap:8px;margin-top:6px}.score-tag input{flex:1;width:0}.score-actions{display:grid;grid-template-columns:1fr 1fr;text-align:center;border-top:2px solid #94b16b;padding-top:10px;margin-top:12px}.score-actions button:first-child{grid-column:1/-1;font-size:32px!important}
-@media(pointer:coarse){.score-surface{width:580px}}
+@media(pointer:coarse),(max-width:600px){.score-surface{width:580px}}
 #endGameSummaryContent>.run-metrics{background:transparent!important;border:0!important;padding:0!important;clip-path:none!important;gap:8px!important}
 #endGameSummaryContent>.run-metrics>div{padding:0!important;border:0!important}
 #endGameSummaryContent>.run-metrics>div>span{font-size:15px!important}
@@ -1111,12 +1111,12 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #endGameSummaryContent>.score-tag{background:transparent!important;border:0!important;padding:0!important;clip-path:none!important}
 #pocket-controls button,#pocket-hud,.frog-overlay .frog-btn,#frog-scoreboard-overlay button{border-radius:7px!important}
 .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-btn{clip-path:none!important}
-@media(pointer:fine){.pocket-title{width:calc(15.6 * var(--app-vw, 1vw))!important;max-width:280px!important}#mainMenuOverlay .pocket-menu{width:calc(12.6 * var(--app-vw, 1vw))!important;max-width:224px!important}}
+@media(min-width:601px) and (pointer:fine){.pocket-title{width:calc(15.6 * var(--app-vw, 1vw))!important;max-width:280px!important}#mainMenuOverlay .pocket-menu{width:calc(12.6 * var(--app-vw, 1vw))!important;max-width:224px!important}}
 .pp-frog-badge{position:absolute;left:50%;top:70%;display:flex;gap:2px;transform:translateX(-50%);pointer-events:none}
 .frog-sprite .pp-frog-badge img{position:static!important;inset:auto!important;width:10px!important;height:10px!important;image-rendering:pixelated;display:block!important}
 .pp-frog-badge i{width:4px;height:4px;background:#f4df76;border:1px solid #073720;box-shadow:0 1px #073720}
 /* Modest phone readability increase without changing the playfield scale. */
-@media(pointer:coarse){
+@media(pointer:coarse),(max-width:600px){
  #howToOverlay.frog-overlay .frog-panel{width:560px!important;max-width:calc(92 * var(--app-vw, 1vw))!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li){font-size:25px!important;line-height:1.3!important}
  #howToOverlay.frog-overlay .frog-panel-title{font-size:36px!important}
@@ -1128,7 +1128,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 }
 .frog-sprite[data-approved-role]::before{background:var(--approved-frog) center/contain no-repeat!important;image-rendering:pixelated}
 #frog-game #pocket-controls button{border-radius:7px!important;clip-path:none!important}
-@media(pointer:fine){.pocket-title{width:calc(14.4 * var(--app-vw, 1vw))!important;max-width:258px!important}#mainMenuOverlay .pocket-menu{width:calc(11.6 * var(--app-vw, 1vw))!important;max-width:206px!important}}
+@media(min-width:601px) and (pointer:fine){.pocket-title{width:calc(14.4 * var(--app-vw, 1vw))!important;max-width:258px!important}#mainMenuOverlay .pocket-menu{width:calc(11.6 * var(--app-vw, 1vw))!important;max-width:206px!important}}
 /* Hide the baked Play arrow, replacing it with a movable pixel pointer. */
 #mainMenuOverlay #btnStartRun:after{clip-path:inset(0 0 0 12%)}
 #mainMenuOverlay .frog-btn:before{display:none!important;content:"";position:absolute;left:0;top:50%;width:13px;height:19px;background:#073720;border:0!important;transform:translateY(-50%);clip-path:polygon(0 0,35% 0,35% 18%,65% 18%,65% 35%,100% 35%,100% 65%,65% 65%,65% 82%,35% 82%,35% 100%,0 100%);z-index:2}
@@ -1137,7 +1137,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 .pp-help-hidden{display:none!important}
 .pp-help-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:18px 0 12px;font:24px ReferencePixel,monospace;color:#073720}
 .pp-help-nav button{width:auto!important;margin:0!important;min-width:80px}.pp-help-nav button:disabled{opacity:.35}
-@media(pointer:coarse){#upgradeOverlay .frog-panel{width:430px!important}#howToOverlay .frog-panel-list{min-height:190px}}
+@media(pointer:coarse),(max-width:600px){#upgradeOverlay .frog-panel{width:430px!important}#howToOverlay .frog-panel-list{min-height:190px}}
 /* Build 33: three-percent snake refinement. */
 #frog-game>.snake-head::before{width:26.9078px;height:40.7303px;top:calc(50% + 8.01705px)}
 #frog-game>.snake-body::before{width:20.273px;height:17.5085px}
@@ -1150,7 +1150,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #howToOverlay.frog-overlay .frog-panel{background:#fff8db!important;color:#073720!important;border:4px solid #073720!important;border-radius:7px!important;clip-path:none!important}
 #howToOverlay.frog-overlay .frog-panel-title{color:#073720!important;background:none!important}
 #howToOverlay.frog-overlay .frog-btn{background:transparent!important;color:#073720!important;border:1px solid #9ab47b!important;border-radius:7px!important;clip-path:none!important;box-shadow:none!important;font:24px/1.2 ReferencePixel,monospace!important;padding:8px 16px!important}
-@media(pointer:coarse){
+@media(pointer:coarse),(max-width:600px){
  #upgradeOverlay .frog-panel{width:650px!important;max-width:calc(92 * var(--app-vw, 1vw))!important}
  #upgradeOverlay .frog-upgrade-choice{min-height:116px!important;padding-top:16px!important;padding-bottom:16px!important}
  #upgradeOverlay .frog-upgrade-title{font-size:40px!important;line-height:1.12!important}
@@ -1175,7 +1175,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
  #howToOverlay.frog-overlay .frog-panel button:not(:disabled):hover,#dashboardOverlay.frog-overlay .frog-panel button:not(:disabled):hover{background:transparent!important;color:#277241!important;transform:translateY(-2px)}
 }
 #howToOverlay.frog-overlay .frog-panel button:focus-visible,#dashboardOverlay.frog-overlay .frog-panel button:focus-visible{outline:2px solid #397a43!important;outline-offset:2px}
-@media(pointer:coarse){#howToOverlay.frog-overlay .frog-panel button,#dashboardOverlay.frog-overlay .frog-panel button{font-size:36px!important;min-height:64px!important}}
+@media(pointer:coarse),(max-width:600px){#howToOverlay.frog-overlay .frog-panel button,#dashboardOverlay.frog-overlay .frog-panel button{font-size:36px!important;min-height:64px!important}}
 
 /* Build 38: restore exact Build 33 snake dimensions. */
 #frog-game>.snake-head::before{width:26.9078px;height:40.7303px;top:calc(50% + 8.01705px)}
@@ -1203,17 +1203,17 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #frog-game>.snake-tail::before{width:23.31395px;height:16.7713px}
 
 /* Build 43: continuous mobile help, larger readable surface. */
-@media(pointer:coarse){
+@media(pointer:coarse),(max-width:600px){
  #howToOverlay.frog-overlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;max-height:88dvh!important;overflow-y:auto!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:42px!important;line-height:1.3!important}
  #howToOverlay .frog-panel-list{min-height:0!important}
 }
 
 /* Build 44: larger upgrade artwork on mobile only. */
-@media(pointer:coarse){#upgradeOverlay .frog-upgrade-emoji{width:50px!important;height:50px!important}}
+@media(pointer:coarse),(max-width:600px){#upgradeOverlay .frog-upgrade-emoji{width:50px!important;height:50px!important}}
 
 /* Build 45: mobile help and profile readability. */
-@media(pointer:coarse){
+@media(pointer:coarse),(max-width:600px){
  #howToOverlay.frog-overlay .frog-panel,#dashboardOverlay.frog-overlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;max-height:88dvh!important;overflow-y:auto!important;padding:28px!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:46px!important;line-height:1.35!important}
  #howToOverlay.frog-overlay .frog-panel-title,#dashboardOverlay.frog-overlay .frog-panel-title{font-size:50px!important;line-height:1.15!important}
@@ -1237,8 +1237,8 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #endGameSummaryContent:before{display:none!important}
 #endGameSummaryOverlay .pp-result{background:#fff8db;display:flex;flex-direction:column;align-items:center;padding:16px 10px;gap:5px;color:#073720;clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)}
 .pp-result span{font-size:19px;letter-spacing:2px}.pp-result strong{font-size:70px;line-height:1;font-weight:400}.pp-result small{font-size:18px}.pp-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:8px 0 14px}.pp-metrics article{background:#fff8db;color:#073720;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}.pp-metrics span{font-size:16px}.pp-metrics strong{font-size:25px;font-weight:400}.pp-tag label{color:#fff8db;font-size:18px}.pp-tag>div{display:flex;gap:8px;margin-top:6px}.pp-tag input{flex:1;min-width:0}.pp-tag p{font-size:18px;color:#fff8db;margin:4px 0;min-height:0}.pp-actions{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:10px}.pp-actions .pp-play{grid-column:1/-1;background:#fff8db;color:#073720;font-size:32px;padding:12px;clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)}
-@media(pointer:coarse){#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:540px}}
-@media(pointer:coarse){#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:580px}}
+@media(pointer:coarse),(max-width:600px){#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:540px}}
+@media(pointer:coarse),(max-width:600px){#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:580px}}
 /* Score menu polish: consistent spacing, readable secondary text and clear actions. */
 #leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{padding:18px;scrollbar-width:thin;scrollbar-color:#a6c27a #073720}
 #leaderboardOverlay .pp-heading,#endGameSummaryOverlay .pp-heading{margin:4px 0 20px!important;font-size:36px!important;letter-spacing:.5px}
@@ -1306,7 +1306,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #leaderboardOverlay .pp-me .pp-player strong::before{content:"";display:inline-block;width:5px;height:5px;background:#397a43;margin-right:6px;vertical-align:middle}
 #endGameSummaryOverlay .pp-tag button,#endGameSummaryOverlay .pp-actions .pp-play{background:transparent!important;border:0!important;box-shadow:none!important;clip-path:none!important}
 
-@media(pointer:coarse){
+@media(pointer:coarse),(max-width:600px){
  #leaderboardOverlay .pp-board{width:850px;max-width:calc(94 * var(--app-vw, 1vw));padding:26px}
  #leaderboardOverlay .pp-heading{font-size:48px!important}
  #leaderboardOverlay .pp-entry{grid-template-columns:40px minmax(0,1fr) 115px 125px;gap:14px;padding:18px 0;min-height:72px}
@@ -1317,7 +1317,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 }
 
 /* Build 45: readable mobile run summary; leaderboard unchanged. */
-@media(pointer:coarse){
+@media(pointer:coarse),(max-width:600px){
  #endGameSummaryOverlay .pp-board{width:850px;max-width:calc(94 * var(--app-vw, 1vw));max-height:88dvh;overflow-y:auto;padding:26px}
  #endGameSummaryOverlay .pp-heading{font-size:48px!important;line-height:1.15!important}
  #endGameSummaryOverlay .pp-result>span{font-size:32px}
@@ -1415,7 +1415,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
    shrank #upgradeOverlay .frog-panel further (320px, then 305px, then
    292px) without anyone increasing it back; the panel had drifted much
    smaller than every other overlay's panel (which range 400-880px). */
-@media (pointer: fine) {
+@media (pointer: fine) and (min-width: 601px) {
   #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel { width: 380px !important; }
   #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { min-height: 90px !important; padding: 12px 14px 12px 74px !important; }
   #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji { width: 42px !important; height: 42px !important; left: 14px !important; }
@@ -1424,7 +1424,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 }
 
 /* Desktop main menu was a touch too small (original was 248px). */
-@media (pointer: fine) {
+@media (pointer: fine) and (min-width: 601px) {
   #mainMenuOverlay#mainMenuOverlay#mainMenuOverlay .pocket-menu { width: 300px !important; max-width: 300px !important; }
 }
 
@@ -1546,4 +1546,26 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice {
   border: 2px solid #073720 !important;
   box-shadow: 2px 2px 0 #073720 !important;
+}
+
+/* A little more breathing room around How to Play / My Stats content,
+   per user request — a small bump over the existing padding, not a
+   redesign. */
+#howToOverlay#howToOverlay#howToOverlay .frog-panel,
+#dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel {
+  padding: 22px 26px 20px !important;
+}
+@media (pointer: coarse), (max-width: 600px) {
+  #howToOverlay#howToOverlay#howToOverlay .frog-panel,
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel {
+    padding: 32px !important;
+  }
+}
+
+/* Upgrade card icons bumped a smidge larger per user request, with the
+   card's left padding nudged to match so the icon-to-text gap stays
+   balanced (see "Mobile upgrade-card icon spacing" above). */
+@media (pointer: coarse), (max-width: 600px) {
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji { width: 56px !important; height: 56px !important; }
+  #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice { padding-left: 128px !important; }
 }
