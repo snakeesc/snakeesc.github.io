@@ -1,7 +1,5 @@
 /* Presentation only. Viewport, input coordinates and game rules remain unchanged. */
 #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice{border:0!important;box-shadow:none!important;clip-path:none!important}
-#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title{height:auto!important;display:flex!important;align-items:center;justify-content:center;gap:10px;padding:8px 0!important;font-size:30px!important;line-height:1.1!important}
-#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title::before,#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title::after{content:""!important;display:block!important;position:static!important;width:24px!important;height:24px!important;flex:0 0 24px;background:#497b36!important;clip-path:polygon(0 40%,20% 40%,20% 65%,40% 65%,40% 10%,60% 10%,60% 65%,80% 65%,80% 35%,100% 35%,100% 55%,85% 55%,85% 85%,65% 85%,65% 100%,35% 100%,35% 85%,15% 85%,15% 60%,0 60%)!important;image-rendering:pixelated;border:0!important;transform:none!important}
 @media(hover:hover){#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:hover{background:#edf0d5!important;outline:none!important;transform:translateX(2px)!important}}
 #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:focus-visible{outline:2px solid #497b36!important;outline-offset:2px}
 #howToOverlay#howToOverlay#howToOverlay .frog-panel{width:540px!important}
@@ -32,8 +30,6 @@
 #dashboardTagMessage{font-size:20px!important;margin:6px 0!important;color:#35553a!important}
 @media(pointer:coarse),(max-width:600px){
  #howToOverlay#howToOverlay#howToOverlay .frog-panel,#dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw,1vw))!important}
- #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title{font-size:44px!important;gap:18px}
- #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title::before,#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title::after{width:36px!important;height:36px!important;flex-basis:36px}
  #howToOverlay#howToOverlay#howToOverlay .ui-help-intro{font-size:36px!important}
  .ui-help-steps{gap:28px}.ui-help-steps section{grid-template-columns:76px minmax(0,1fr);gap:24px}.ui-help-steps img{width:70px;height:70px}
  #howToOverlay#howToOverlay#howToOverlay .ui-help-steps h3{font-size:42px!important}
