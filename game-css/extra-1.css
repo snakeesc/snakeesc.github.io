@@ -1028,8 +1028,8 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 /* Keep phone controls visible at the top, independent of playfield height. */
 @media(pointer:coarse),(max-width:600px){
  #pocket-controls{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(12px + env(safe-area-inset-left))!important;bottom:auto!important;right:auto!important;flex-direction:column!important;gap:10px!important;z-index:120!important}
- #pocket-controls button{min-width:0!important;min-height:0!important;font-size:60px!important;padding:14px 22px!important;line-height:1.15!important}
- #pocket-hud{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(370px + env(safe-area-inset-left))!important;right:12px!important;transform:none!important;width:max-content!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 386px)!important;font-size:25px!important;white-space:normal!important;flex-wrap:wrap!important}
+ #pocket-controls button{min-width:0!important;min-height:0!important;font-size:100px!important;padding:16px 24px!important;line-height:1.15!important}
+ #pocket-hud{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(460px + env(safe-area-inset-left))!important;right:12px!important;transform:none!important;width:max-content!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 476px)!important;font-size:25px!important;white-space:normal!important;flex-wrap:wrap!important}
 }
 /* Readable score panels: neutral rows, compact pagination, explicit title contrast. */
 #leaderboardOverlay.frog-overlay .frog-panel{width:580px!important;max-height:calc(92 * var(--app-vh, 1vh))!important}
