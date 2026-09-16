@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape the Snake — Audio Review</title>
+<style>
+  body {
+    font-family: monospace;
+    max-width: 640px;
+    margin: 32px auto;
+    padding: 0 16px 60px;
+    line-height: 1.4;
+  }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #666; margin-bottom: 24px; }
+  h2 { font-size: 15px; margin: 28px 0 4px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  .note { font-size: 12px; color: #666; margin: 0 0 8px; }
+  .row { display: flex; align-items: baseline; gap: 10px; padding: 3px 0; }
+  .play-btn {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid #333;
+    background: #fff;
+  }
+  .play-btn.is-playing { background: #333; color: #fff; }
+  .filename { font-weight: bold; }
+  .desc { color: #444; }
+  .missing-row { padding: 4px 0; }
+  .missing-row .filename { color: #a33; }
+</style>
+</head>
+<body>
+  <h1>Escape the Snake — Audio Review</h1>
+  <p class="subtitle">Independent review of d92b294. Original audio-list.html is unchanged. Suggestions below are not implemented.</p>
+
+  <h2>Ribbits</h2>
+  <p class="note">One of these four plays at random on frog hops.</p>
+  <div class="row"><button class="play-btn" data-src="audio/ribbitOne.mp3">▶</button><span class="filename">ribbitOne.mp3</span><span class="desc">— Random ribbit variant 1</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/ribbitTwo.mp3">▶</button><span class="filename">ribbitTwo.mp3</span><span class="desc">— Random ribbit variant 2</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/ribbitThree.mp3">▶</button><span class="filename">ribbitThree.mp3</span><span class="desc">— Random ribbit variant 3</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/ribbitBase.mp3">▶</button><span class="filename">ribbitBase.mp3</span><span class="desc">— Random ribbit variant 4 (base/default)</span></div>
+
+  <h2>Core Gameplay</h2>
+  <div class="row"><button class="play-btn" data-src="audio/frogDeath.mp3">▶</button><span class="filename">frogDeath.mp3</span><span class="desc">— A frog is eaten by the snake</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/munch.mp3">▶</button><span class="filename">munch.mp3</span><span class="desc">— Snake bite/munch sound</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/buttonClick3.mp3">▶</button><span class="filename">buttonClick3.mp3</span><span class="desc">— Existing click sound; main-menu buttons are NOT currently wired to it</span></div>
+
+  <h2>Orbs</h2>
+  <div class="row"><button class="play-btn" data-src="audio/orbSpawn.mp3">▶</button><span class="filename">orbSpawn.mp3</span><span class="desc">— Orb spawn sound, variant 1 (random pick)</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/orbSpawnTwo.mp3">▶</button><span class="filename">orbSpawnTwo.mp3</span><span class="desc">— Orb spawn sound, variant 2 (random pick)</span></div>
+
+  <h2>Temporary Buffs</h2>
+  <p class="note">Picked up from orbs, time-limited effects.</p>
+  <div class="row"><button class="play-btn" data-src="audio/superSpeed.mp3">▶</button><span class="filename">superSpeed.mp3</span><span class="desc">— Speed Boost buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/superJump.mp3">▶</button><span class="filename">superJump.mp3</span><span class="desc">— Jump Surge buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/frogSpawn.mp3">▶</button><span class="filename">frogSpawn.mp3</span><span class="desc">— Spawn Orb buff (instant frog spawn)</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/snakeSlow.mp3">▶</button><span class="filename">snakeSlow.mp3</span><span class="desc">— Snake Slow buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/snakeConfuse.mp3">▶</button><span class="filename">snakeConfuse.mp3</span><span class="desc">— Snake Confuse buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/snakeShrink.mp3">▶</button><span class="filename">snakeShrink.mp3</span><span class="desc">— Snake Shrink buff (bite radius shrinks)</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/frogShield.mp3">▶</button><span class="filename">frogShield.mp3</span><span class="desc">— Frog Shield buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/timeSlow.mp3">▶</button><span class="filename">timeSlow.mp3</span><span class="desc">— Time Slow buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/orbMagnet.mp3">▶</button><span class="filename">orbMagnet.mp3</span><span class="desc">— Orb Magnet buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/megaSpawn.mp3">▶</button><span class="filename">megaSpawn.mp3</span><span class="desc">— Mega Spawn buff (large frog wave)</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/scoreMulti.mp3">▶</button><span class="filename">scoreMulti.mp3</span><span class="desc">— Score Multiplier buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/panicHop.mp3">▶</button><span class="filename">panicHop.mp3</span><span class="desc">— Panic Hop buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/cloneSwarm.mp3">▶</button><span class="filename">cloneSwarm.mp3</span><span class="desc">— Clone Swarm buff</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/lifeSteal.mp3">▶</button><span class="filename">lifeSteal.mp3</span><span class="desc">— Life Steal buff</span></div>
+
+  <h2>Permanent Upgrades</h2>
+  <div class="row"><button class="play-btn" data-src="audio/permanentBuffChoice.mp3">▶</button><span class="filename">permanentBuffChoice.mp3</span><span class="desc">— Picking any permanent upgrade at an orb/run-start choice</span></div>
+
+  <h2>Per-Frog Role Upgrades</h2>
+  <p class="note">A frog gains a special role.</p>
+  <div class="row"><button class="play-btn" data-src="audio/championFrog.mp3">▶</button><span class="filename">championFrog.mp3</span><span class="desc">— Champion role granted</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/auraFrog.mp3">▶</button><span class="filename">auraFrog.mp3</span><span class="desc">— Aura role granted</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/shieldFrog.mp3">▶</button><span class="filename">shieldFrog.mp3</span><span class="desc">— Shield role granted</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/magnetFrog.mp3">▶</button><span class="filename">magnetFrog.mp3</span><span class="desc">— Magnet role granted</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/luckyFrog.mp3">▶</button><span class="filename">luckyFrog.mp3</span><span class="desc">— Lucky role granted</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/zombieFrog.mp3">▶</button><span class="filename">zombieFrog.mp3</span><span class="desc">— Zombie role granted</span></div>
+
+  <h2>Not Currently Used</h2>
+  <p class="note">Present in audio/ but not referenced by any play call in game-js/04-audio.js, the main game, or the /arcade/ variant. Still playable here.</p>
+  <div class="row"><button class="play-btn" data-src="audio/frogDeath2.mp3">▶</button><span class="filename">frogDeath2.mp3</span><span class="desc">— Alternate frog-death sound, unused</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/munch3.mp3">▶</button><span class="filename">munch3.mp3</span><span class="desc">— Alternate snake-munch sound, unused</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/munch4.mp3">▶</button><span class="filename">munch4.mp3</span><span class="desc">— Alternate snake-munch sound (used by the Android app in place of munch.mp3, see note below)</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/ribbitFive.mp3">▶</button><span class="filename">ribbitFive.mp3</span><span class="desc">— Extra ribbit variant, unused</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/ribbitTwo2.mp3">▶</button><span class="filename">ribbitTwo2.mp3</span><span class="desc">— Alternate take on ribbitTwo, unused</span></div>
+  <div class="row"><button class="play-btn" data-src="audio/slowed.mp3">▶</button><span class="filename">slowed.mp3</span><span class="desc">— Unused (no matching buff/effect currently wired to it)</span></div>
+  <p class="note">Runtime correction: both the website and app use assetURL() and the same asset-paths map. A munch.mp3 request resolves to game-assets/audio/munch4.mp3. The players above preview the original audio/ files, not necessarily the current runtime file. Change the mapped file to change the live sound.</p>
+
+  <h2>Recommended additions — in priority order</h2>
+  <p class="note">Code review, not a listening test. “No dedicated cue” does not mean the event cannot overlap other sounds. These are design recommendations, not new audio files or implemented features.</p>
+  <h2>1. Finish the existing button-click wiring</h2>
+  <div class="missing-row"><strong>High priority · reuse buttonClick3.mp3</strong> — Play, Scores, How to Play and My Frogs &amp; Stats currently omit playButtonClick(). Add consistent feedback to navigation, Close/Back, pagination, Save and Play Again where missing. Existing upgrade clicks already have feedback: avoid doubling it.</div>
+  <p class="note">Use a quieter, short click on activation, not on hover. Respect mute. Verify the first tap works on Android; catch blocked playback without breaking the button. Save should click immediately, with success/error feedback only after the result.</p>
+  <h2>2. Communicate important changes</h2>
+  <div class="missing-row"><strong>Snake shed — high priority.</strong> A short rising hiss/rattle when the snake sheds and speeds up. The existing shed routine has no dedicated audio call. It matters more than another decorative sound.</div>
+  <div class="missing-row"><strong>Additional snake — high priority.</strong> A distinct brief danger cue. Despite the name handleFourthShed(), the timer invokes it every THIRD shed interval. Avoid piling a shed cue, spawn warning and upgrade cue on top of each other.</div>
+  <div class="missing-row"><strong>Run complete — high priority.</strong> A short closing sting separates game over from ordinary frog deaths. The end-run flow has no dedicated completion cue; play once, not every time someone reopens the summary.</div>
+  <div class="missing-row"><strong>Personal best — optional.</strong> A modest celebratory variation on run complete when a saved best is genuinely beaten; do not announce it before a score is accepted.</div>
+  <h2>3. Fill the upgrade/role gaps</h2>
+  <div class="missing-row"><strong>Crowned frog upgrade — medium priority.</strong> grantStarUpgrade() lacks a dedicated cue. Add a small ascending chime so it feels like a reward, matching the other audible orb outcomes.</div>
+  <div class="missing-row"><strong>Cannibal, Necromancer and Alchemist — medium priority.</strong> Their role-grant functions lack the dedicated grant sounds provided for Champion, Aura, Shield, Magnet, Lucky and Zombie. Distinct short variants would help identify what happened.</div>
+  <div class="missing-row"><strong>Grave Wave — medium priority.</strong> One spectral arrival cue per wave, rather than one sound per ghost. Prioritize it below menu and danger feedback.</div>
+  <div class="missing-row"><strong>Special upgrade selection — optional.</strong> Current choices reuse permanentBuffChoice.mp3. A richer variation for shed/epic rewards could distinguish them, but every individual upgrade does not need its own sound.</div>
+  <h2>4. Consider only after the essentials</h2>
+  <div class="missing-row"><strong>Shield break or final-frog danger.</strong> Brief cues can help players notice a survival change. Add a cooldown and trigger on the transition, not every frame or bite.</div>
+  <div class="missing-row"><strong>Buff expiry.</strong> Consider one subtle cue for a major defensive buff ending. Avoid sounds for every timer: overlaps would quickly become noise.</div>
+  <div class="missing-row"><strong>Save error / success.</strong> Pair quiet confirmation with visible text. Distinguish a rejected name or connection error from a successful save.</div>
+  <h2>What I would leave quiet</h2>
+  <p>Mouse hover, passive aura/magnet effects, every repeated Alchemist orb tick, and individual ghost spawns. Existing orb-spawn and buff sounds may already cover part of these events. Add ambient music only as a separate creative decision, not to fill a supposed missing-file requirement.</p>
+  <h2>Suggested first pass</h2>
+  <p><strong>Wire existing menu clicks, then add shed, additional-snake and run-complete cues.</strong> Test the mix at a busy late-game moment with sound enabled and muted. Afterwards, fill the missing role/crown cues. This provides useful feedback without making the swarm exhausting to listen to.</p>
+<script>
+(function () {
+  var current = null;
+
+  function stopCurrent() {
+    if (!current) return;
+    current.audio.pause();
+    current.audio.currentTime = 0;
+    current.btn.textContent = "▶";
+    current.btn.classList.remove("is-playing");
+    current = null;
+  }
+
+  document.querySelectorAll(".play-btn").forEach(function (btn) {
+    var src = btn.getAttribute("data-src");
+    var audio = new Audio(src);
+
+    audio.addEventListener("ended", function () {
+      btn.textContent = "▶";
+      btn.classList.remove("is-playing");
+      if (current && current.audio === audio) current = null;
+    });
+
+    btn.addEventListener("click", function () {
+      var wasPlaying = current && current.audio === audio;
+      stopCurrent();
+      if (wasPlaying) return;
+
+      audio.currentTime = 0;
+      audio.play().catch(function () {});
+      btn.textContent = "❚❚";
+      btn.classList.add("is-playing");
+      current = { audio: audio, btn: btn };
+    });
+  });
+})();
+</script>
+</body>
+</html>

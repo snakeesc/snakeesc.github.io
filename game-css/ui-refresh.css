@@ -48,3 +48,12 @@
  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput,#dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardSaveTagBtn{font-size:38px!important;min-height:64px!important}
  #dashboardOverlay #dashboardTagMessage{font-size:30px!important}
 }
+
+/* Upgrade feedback: move lettering only, leave row and icon stationary. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:is(:hover,:active){background:transparent!important;transform:none!important;box-shadow:none!important}
+#upgradeOverlay .frog-upgrade-title,#upgradeOverlay .frog-upgrade-desc{transition:transform 120ms ease-out}
+@media(hover:hover) and (pointer:fine){
+ #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:hover .frog-upgrade-title,
+ #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:hover .frog-upgrade-desc{transform:translateX(4px)!important}
+}
+@media(prefers-reduced-motion:reduce){#upgradeOverlay .frog-upgrade-title,#upgradeOverlay .frog-upgrade-desc{transition:none!important;transform:none!important}}
