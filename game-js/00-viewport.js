@@ -54,8 +54,8 @@
   var designWidth;
   if (isPhoneScreen && isApp) {
     designWidth = 980; // phone-sized screen, inside the native app wrapper
-  } else if (!isPhoneScreen && screen.width < 1920) {
-    designWidth = 1920; // laptop/small desktop monitor, website or app
+  } else if (!isPhoneScreen) {
+    designWidth = 2160; // One desktop/laptop design width; ~11% smaller than 1920.
   } else {
     return; // normal-sized desktop monitor — nothing to fix
   }
