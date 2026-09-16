@@ -5103,7 +5103,6 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-close-row"><button id="howToCloseX" class="frog-panel-close-x" aria-label="Close">×</button></div>
       <div class="frog-panel-title">How to Play <span class="emoji">🐸</span></div>
       <div class="frog-panel-sub">Stay alive. Don't let the snake eat all your frogs.</div>
 
@@ -5128,9 +5127,6 @@ function closeAnimatedOverlay(overlayEl) {
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
-
-    const closeX = document.getElementById("howToCloseX");
-    if (closeX) closeX.addEventListener("click", hideHowToOverlay);
 
     openAnimatedOverlay(howToOverlay);
   }

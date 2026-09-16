@@ -1,0 +1,54 @@
+ESCAPE THE SNAKE — AUDIO FILE LIST
+(audio/ directory, wired up in game-js/04-audio.js)
+
+RIBBITS (one of these four plays at random on frog hops)
+  ribbitOne.mp3          Random ribbit variant 1
+  ribbitTwo.mp3          Random ribbit variant 2
+  ribbitThree.mp3        Random ribbit variant 3
+  ribbitBase.mp3         Random ribbit variant 4 (base/default)
+
+CORE GAMEPLAY
+  frogDeath.mp3          A frog is eaten by the snake
+  munch.mp3              Snake bite/munch sound
+  buttonClick3.mp3       UI button click (menus, overlays)
+
+ORBS
+  orbSpawn.mp3           Orb spawn sound, variant 1 (random pick)
+  orbSpawnTwo.mp3        Orb spawn sound, variant 2 (random pick)
+
+TEMPORARY BUFFS (picked up from orbs, time-limited effects)
+  superSpeed.mp3         Speed Boost buff
+  superJump.mp3          Jump Surge buff
+  frogSpawn.mp3          Spawn Orb buff (instant frog spawn)
+  snakeSlow.mp3          Snake Slow buff
+  snakeConfuse.mp3       Snake Confuse buff
+  snakeShrink.mp3        Snake Shrink buff (bite radius shrinks)
+  frogShield.mp3         Frog Shield buff
+  timeSlow.mp3           Time Slow buff
+  orbMagnet.mp3          Orb Magnet buff
+  megaSpawn.mp3          Mega Spawn buff (large frog wave)
+  scoreMulti.mp3         Score Multiplier buff
+  panicHop.mp3           Panic Hop buff
+  cloneSwarm.mp3         Clone Swarm buff
+  lifeSteal.mp3          Life Steal buff
+
+PERMANENT UPGRADES
+  permanentBuffChoice.mp3   Picking any permanent upgrade at an orb/run-start choice
+
+PER-FROG ROLE UPGRADES (a frog gains a special role)
+  championFrog.mp3       Champion role granted
+  auraFrog.mp3            Aura role granted
+  shieldFrog.mp3          Shield role granted
+  magnetFrog.mp3          Magnet role granted
+  luckyFrog.mp3           Lucky role granted
+  zombieFrog.mp3          Zombie role granted
+
+NOT CURRENTLY USED
+(present in audio/ but not referenced by any play call in game-js/04-audio.js,
+ the main game, or the /arcade/ variant — leftover/spare assets)
+  frogDeath2.mp3          Alternate frog-death sound, unused
+  munch3.mp3              Alternate snake-munch sound, unused
+  munch4.mp3              Alternate snake-munch sound, unused
+  ribbitFive.mp3          Extra ribbit variant, unused
+  ribbitTwo2.mp3          Alternate take on ribbitTwo, unused
+  slowed.mp3              Unused (no matching buff/effect currently wired to it)

@@ -1368,8 +1368,6 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   #howToOverlay#howToOverlay#howToOverlay.frog-overlay .frog-panel-sub { font-size: 34px !important; line-height: 1.3 !important; opacity: .8; margin-bottom: 18px !important; }
   #howToOverlay#howToOverlay#howToOverlay.frog-overlay .frog-panel-section-label {
     font-size: 34px !important; line-height: 1.2 !important; margin: 24px 0 10px !important;
-    color: #fff8db !important; background: #497b36 !important; display: inline-block !important;
-    padding: 4px 14px !important; border-radius: 4px !important;
   }
 }
 
@@ -1387,15 +1385,27 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
    no border at all, #fff8db background, 9px/12px padding, 44px min-height
    desktop / 64px mobile. A previous attempt here only matched font/color/
    radius and left padding + min-height on the original inline style, and
-   incorrectly added a border the reference input doesn't have. */
+   incorrectly added a border the reference input doesn't have.
+   That attempt also missed font-size: an older, un-migrated rule
+   (#dashboardTagInput{font-size:20px}) kept setting it to 20px against
+   the reference input's 24px, invisibly undoing the "exact match" this
+   block was meant to guarantee — confirmed by reading both elements'
+   actual computed styles side by side, not by re-reading the cascade. */
 #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput {
   font-family: ReferencePixel, Pocket, monospace !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
   border: 0 !important;
   border-radius: 7px !important;
   background: #fff8db !important;
   color: #073720 !important;
   padding: 9px 12px !important;
   min-height: 44px !important;
+}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput::placeholder {
+  font: inherit !important;
+  color: #547047 !important;
+  opacity: 1;
 }
 @media (pointer: coarse), (max-width: 600px) {
   #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput { min-height: 64px !important; }
@@ -1433,41 +1443,16 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   clip-path: none !important;
 }
 
-/* How-to-play close button — a sticky X in the top-right corner, always
-   reachable without scrolling (replaces an earlier "scroll hint" arrow,
-   which looked like smooth modern UI next to the game's blocky pixel
-   art everywhere else). No visible scrollbar either. */
+/* How-to-play: no visible scrollbar (matches the game's blocky pixel-art
+   look elsewhere; a native scrollbar reads as generic browser chrome).
+   Closing is via the "Close" button in the footer only — a top-right X
+   was tried and removed, it didn't fit the rest of the panel. */
 #howToOverlay .frog-panel {
   position: relative;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 #howToOverlay .frog-panel::-webkit-scrollbar { display: none; }
-#howToOverlay .frog-panel-close-row {
-  /* No longer used for layout — position:sticky reserved its own row of
-     space in normal flow regardless of the negative-margin cancellation
-     attempted here previously, which is what caused the gap above the
-     title. The button below is taken out of flow entirely instead. */
-  display: contents;
-}
-#howToOverlay .frog-panel-close-x {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  font-family: Pocket, monospace;
-  font-size: 26px;
-  line-height: 1;
-  background: none;
-  border: none;
-  color: #073720;
-  cursor: pointer;
-  padding: 4px 8px;
-  z-index: 5;
-}
-#howToOverlay .frog-panel-close-x:hover { color: #497b36; }
-@media (pointer: coarse), (max-width: 600px) {
-  #howToOverlay#howToOverlay#howToOverlay .frog-panel-close-x { font-size: 48px !important; padding: 8px 14px !important; }
-}
 
 /* My Stats mobile spacing — the content is built with inline styles using
    tight 2-6px margins between blocks (tag, level, progress bar, orbs-to-
@@ -1522,21 +1507,43 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 
 /* How to Play brought in line with the leaderboard/my stats family —
    confirmed via computed styles that its border/shadow/radius already
-   matched, but two things didn't: its title rendered at the browser's
-   plain 400 weight where the leaderboard's <h2> heading is bold by
-   default, and it had a divider line under the title that no other
-   panel in the family has. Also promoting the pill-style section labels
-   (already used successfully on mobile only) to desktop too, instead of
-   the plain small-caps text desktop was still showing. */
+   matched, but its title rendered at the browser's plain 400 weight
+   where the leaderboard's <h2> heading is bold by default, and it had a
+   divider line under the title that no other panel in the family has.
+   (The section labels also used to get a green pill/badge treatment on
+   mobile only — removed below, along with promoting it to desktop; it
+   didn't read as fitting the panel either way, so now both sizes use
+   the same plain small-caps green text as My Stats' section labels.) */
 #howToOverlay#howToOverlay#howToOverlay .frog-panel-title {
   font-weight: 700 !important;
   border-bottom: 0 !important;
   padding-bottom: 0 !important;
 }
-#howToOverlay#howToOverlay#howToOverlay .frog-panel-section-label {
-  color: #fff8db !important;
-  background: #497b36 !important;
-  display: inline-block !important;
-  padding: 4px 14px !important;
-  border-radius: 4px !important;
+
+/* Upgrade panel background changed to the same cream fill as every
+   other panel (main menu, leaderboard, how-to-play, my stats) — it was
+   the one holdout with a dark ink fill. The title used to be baked into
+   image artwork (reference-upgrade-title.webp) with its own dark green
+   backing baked in, which would now show up as a mismatched dark banner
+   on the new cream panel, so it's switched to live text in the shared
+   ink color/weight instead — that also makes the title color something
+   we can actually control going forward, instead of fixed pixels in an
+   image file.
+   The individual upgrade cards were always cream already (to pop
+   against the old dark panel) but relied on that dark backdrop for
+   contrast, with no border of their own; now that the panel behind them
+   is the same cream, they get a thin ink border so they still read as
+   distinct cards. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel {
+  background: #fff8db !important;
+}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title {
+  background: none !important;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  color: #073720 !important;
+}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice {
+  border: 2px solid #073720 !important;
+  box-shadow: 2px 2px 0 #073720 !important;
 }
