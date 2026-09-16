@@ -36,14 +36,14 @@
         box-shadow:none!important;text-shadow:none!important;clip-path:none!important;
       }
       #frog-game #pocket-hud {
-        position:absolute!important;top:calc(${px(6)} + ${topInset})!important;left:50%!important;right:auto!important;
-        transform:translateX(-50%)!important;gap:${px(6)}!important;
+        position:absolute!important;top:calc(${px(6)} + ${topInset})!important;left:auto!important;right:calc(${px(8)} + ${rightInset})!important;
+        transform:none!important;gap:${px(6)}!important;
         width:max-content!important;max-width:calc(100% - ${px(16)} - ${leftInset} - ${rightInset})!important;
       }
       #frog-game #pocket-hud span {font-size:inherit!important;color:#073720!important;}
       #frog-game #pocket-controls {
-        position:absolute!important;bottom:auto!important;right:auto!important;flex-direction:column!important;
-        top:calc(${px(38)} + ${topInset})!important;left:calc(${px(8)} + ${leftInset})!important;gap:${px(6)}!important;align-items:center!important;
+        position:absolute!important;bottom:auto!important;right:auto!important;flex-direction:row!important;
+        top:calc(${px(6)} + ${topInset})!important;left:calc(${px(8)} + ${leftInset})!important;gap:${px(6)}!important;align-items:center!important;
       }
       #frog-game #pocket-controls button {
         min-height:0!important;min-width:0!important;width:auto!important;height:auto!important;
