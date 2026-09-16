@@ -58,7 +58,7 @@ function makeRandomTag() {
     if (tag.length >= 4 && tag.length <= TAG_MAX_LEN) return tag;
   }
 
-  const shortLeads = ["Orb", "Neo", "Jade", "Moss", "Frog", "Lily", "Void", "Star"];
+  const shortLeads  = ["Orb", "Neo", "Jade", "Moss", "Frog", "Lily", "Void", "Star"];
   const shortTrails = ["Lord", "Run", "Hop", "Pad", "Rib", "Rex", "Kid", "Fox"];
   for (let i = 0; i < 30; i++) {
     const a = shortLeads[Math.floor(Math.random() * shortLeads.length)];
@@ -67,9 +67,7 @@ function makeRandomTag() {
     if (tag.length >= TAG_MIN_LEN && tag.length <= TAG_MAX_LEN) return tag;
   }
 
-  const suffix = String(Math.floor(Math.random() * 10));
-  const base = "Hopper";
-  return (base + suffix).slice(0, TAG_MAX_LEN);
+  return ("Hopper" + String(Math.floor(Math.random() * 10))).slice(0, TAG_MAX_LEN);
 }
 
 // --------------------------------------------------
@@ -115,7 +113,7 @@ function json(data, status = 200) {
 }
 
 // --------------------------------------------------
-// KV HELPERS  (2 helpers, used everywhere)
+// KV HELPERS
 // --------------------------------------------------
 async function loadLeaderboard(env) {
   const raw = await env.FROG_SCORES.get(LEADERBOARD_KEY);
@@ -123,7 +121,9 @@ async function loadLeaderboard(env) {
   try {
     const p = JSON.parse(raw);
     return Array.isArray(p) ? p : [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 async function saveLeaderboard(env, list) {
@@ -132,7 +132,15 @@ async function saveLeaderboard(env, list) {
 
 async function loadSummary(env) {
   const raw = await env.FROG_SCORES.get(SUMMARY_KEY);
-  if (!raw) return { totalUsers: 0, totalRuns: 0, totalPlaytime: 0, totalFrogsEaten: 0, totalScore: 0 };
+  if (!raw) {
+    return {
+      totalUsers: 0,
+      totalRuns: 0,
+      totalPlaytime: 0,
+      totalFrogsEaten: 0,
+      totalScore: 0
+    };
+  }
   try {
     const p = JSON.parse(raw);
     return {
@@ -143,7 +151,13 @@ async function loadSummary(env) {
       totalScore:      p.totalScore      || 0,
     };
   } catch {
-    return { totalUsers: 0, totalRuns: 0, totalPlaytime: 0, totalFrogsEaten: 0, totalScore: 0 };
+    return {
+      totalUsers: 0,
+      totalRuns: 0,
+      totalPlaytime: 0,
+      totalFrogsEaten: 0,
+      totalScore: 0
+    };
   }
 }
 
@@ -295,13 +309,12 @@ function hashToAlnum(seed, len) {
   let out = "";
   let x = h >>> 0;
   for (let j = 0; j < len; j++) {
-    x = Math.imul(x, 1103515245) + 12345 >>> 0;
+    x = (Math.imul(x, 1103515245) + 12345) >>> 0;
     out += chars[x % 36];
   }
   return out;
 }
 
-/** Unique tag vs current KV rows; rejects profanity; falls back to Hop + hash suffix. */
 function assignUniqueTag(usedTags, userId) {
   for (let attempt = 0; attempt < 400; attempt++) {
     const candidate = makeRandomTag();
@@ -325,15 +338,24 @@ function assignUniqueTag(usedTags, userId) {
       return candidate;
     }
   }
-  const last = (`Hop${hashToAlnum(userId, 5)}`).slice(0, TAG_MAX_LEN);
-  return last;
+  return (`Hop${hashToAlnum(userId, 5)}`).slice(0, TAG_MAX_LEN);
 }
 
 function validateTag(tag) {
   const clean = sanitizeTag(tag);
-  if (!clean)                  return { ok: false, error: "invalid_tag", message: "Enter a player tag." };
-  if (!isValidTagShape(clean)) return { ok: false, error: "invalid_tag", message: "Tag must be 2-12 chars: letters, numbers, spaces, _ or -." };
-  if (isProfane(clean))        return { ok: false, error: "invalid_tag", message: "That tag is not allowed." };
+  if (!clean) {
+    return { ok: false, error: "invalid_tag", message: "Enter a player tag." };
+  }
+  if (!isValidTagShape(clean)) {
+    return {
+      ok: false,
+      error: "invalid_tag",
+      message: "Tag must be 2-12 chars: letters, numbers, spaces, _ or -."
+    };
+  }
+  if (isProfane(clean)) {
+    return { ok: false, error: "invalid_tag", message: "That tag is not allowed." };
+  }
   return { ok: true, cleanedTag: clean };
 }
 
@@ -349,26 +371,45 @@ function sortLeaderboard(list) {
   return list;
 }
 
-// Dedupe by userId, keeping best score per user. Returns sorted, capped list.
 function normalizeLeaderboard(list) {
   const byUser = new Map();
+  const usedTags = new Set();
 
+  // First pass: reserve all real tags already present.
+  for (const raw of Array.isArray(list) ? list : []) {
+    if (!raw || typeof raw.userId !== "string" || !raw.userId.trim()) continue;
+    const rawTag = sanitizeTag(raw.tag);
+    const tag = (rawTag && rawTag.toLowerCase() !== "frog") ? rawTag : null;
+    if (tag) usedTags.add(normalizeTag(tag));
+  }
+
+  // Second pass: normalize and dedupe by userId.
   for (const raw of Array.isArray(list) ? list : []) {
     if (!raw || typeof raw.userId !== "string" || !raw.userId.trim()) continue;
 
     const userId = raw.userId.trim();
+    const rawTag = sanitizeTag(raw.tag);
+    const tag = (rawTag && rawTag.toLowerCase() !== "frog") ? rawTag : null;
+
     const entry = {
       userId,
-      tag:          sanitizeTag(raw.tag) || "Frog",
-      bestScore:    Math.max(0, Math.floor(Number(raw.bestScore  || 0))),
-      bestTime:     Math.max(0, Number(raw.bestTime   || 0)),
-      lastUpdated:  Math.max(0, Number(raw.lastUpdated || 0)),
+      tag:         tag || assignUniqueTag(usedTags, userId),
+      bestScore:   Math.max(0, Math.floor(Number(raw.bestScore || 0))),
+      bestTime:    Math.max(0, Number(raw.bestTime || 0)),
+      lastUpdated: Math.max(0, Number(raw.lastUpdated || 0)),
     };
 
     const existing = byUser.get(userId);
-    if (!existing ||
-        entry.bestScore > existing.bestScore ||
-        (entry.bestScore === existing.bestScore && entry.bestTime > existing.bestTime)) {
+    if (
+      !existing ||
+      entry.bestScore > existing.bestScore ||
+      (entry.bestScore === existing.bestScore && entry.bestTime > existing.bestTime) ||
+      (
+        entry.bestScore === existing.bestScore &&
+        entry.bestTime === existing.bestTime &&
+        entry.lastUpdated > existing.lastUpdated
+      )
+    ) {
       byUser.set(userId, entry);
     }
   }
@@ -378,9 +419,20 @@ function normalizeLeaderboard(list) {
   return deduped.slice(0, MAX_ENTRIES);
 }
 
-async function hashUserId(request) {
+async function getUserId(request, body = null) {
+  try {
+    if (body && typeof body.clientId === "string" && body.clientId.trim()) {
+      return `cid:${body.clientId.trim()}`;
+    }
+    const url = new URL(request.url);
+    const qp = url.searchParams.get("clientId");
+    if (qp && qp.trim()) {
+      return `cid:${qp.trim()}`;
+    }
+  } catch (e) {}
+
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-  const ua = request.headers.get("User-Agent")       || "unknown";
+  const ua = request.headers.get("User-Agent") || "unknown";
   const enc = new TextEncoder();
   const buf = await crypto.subtle.digest("SHA-256", enc.encode(ip + "|" + ua));
   return Array.from(new Uint8Array(buf))
@@ -391,14 +443,13 @@ async function hashUserId(request) {
 
 // --------------------------------------------------
 // GET /leaderboard
-// KEY CHANGE: no write-back on read. Pure read = 1 KV op instead of 2.
 // --------------------------------------------------
 async function getLeaderboard(request, env) {
   const list = normalizeLeaderboard(await loadLeaderboard(env));
 
   let myEntry = null;
   try {
-    const userId = await hashUserId(request);
+    const userId = await getUserId(request);
     const found = list.find(e => e.userId === userId);
     if (found) myEntry = { ...found, isMe: true };
   } catch {}
@@ -408,15 +459,16 @@ async function getLeaderboard(request, env) {
 
 // --------------------------------------------------
 // POST /leaderboard
-// KV ops: 1 read (leaderboard) + 1 write (leaderboard) + 1 read (summary) + 1 write (summary) = 4
-// Down from 5 — we eliminated the redundant second normalize pass.
 // --------------------------------------------------
 async function submitScore(request, env) {
   let body;
-  try { body = await request.json(); }
-  catch { return json({ error: "invalid_body", message: "Invalid JSON." }, 400); }
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "invalid_body", message: "Invalid JSON." }, 400);
+  }
 
-  const { score, time, tag } = body;
+  const { score, time, tag, previousTag } = body;
 
   if (typeof score !== "number" || typeof time !== "number") {
     return json({ error: "invalid_body", message: "score and time are required numbers." }, 400);
@@ -425,7 +477,6 @@ async function submitScore(request, env) {
   const safeScore = Math.max(0, Math.floor(score));
   const safeTime  = Math.max(0, Number(time));
 
-  // Only validate tag if one was actually sent
   let cleanedTag = null;
   if (typeof tag === "string" && tag.trim() !== "") {
     const v = validateTag(tag);
@@ -433,20 +484,41 @@ async function submitScore(request, env) {
     cleanedTag = v.cleanedTag;
   }
 
-  const userId = await hashUserId(request);
+  let cleanedPreviousTag = null;
+  if (typeof previousTag === "string" && previousTag.trim() !== "") {
+    cleanedPreviousTag = sanitizeTag(previousTag);
+  }
 
-  // --- 1 KV read (full list for tag-uniqueness; then normalize for top 50) ---
+  const userId = await getUserId(request, body);
+
   const rawBoard = await loadLeaderboard(env);
   const usedTags = collectUsedTags(rawBoard);
   const leaderboard = normalizeLeaderboard(rawBoard);
 
-  let entry    = leaderboard.find(e => e.userId === userId) || null;
+  let entry = leaderboard.find(e => e.userId === userId) || null;
   let isNewUser = !entry;
 
-  // Block tag theft
+  // If this looks like a rename from an older identity, reclaim that old row first.
+  if (!entry && cleanedPreviousTag) {
+    const prevKey = normalizeTag(cleanedPreviousTag);
+
+    const previousEntry = leaderboard.find(
+      e => e && typeof e.userId === "string" && normalizeTag(e.tag) === prevKey
+    );
+
+    if (previousEntry) {
+      previousEntry.userId = userId;
+      entry = previousEntry;
+      isNewUser = false;
+    }
+  }
+
+  // Block tag theft against the normalized board.
   if (cleanedTag) {
     const tagKey = normalizeTag(cleanedTag);
-    const owner  = leaderboard.find(e => normalizeTag(e.tag) === tagKey);
+    const owner = leaderboard.find(
+      e => e && typeof e.userId === "string" && normalizeTag(e.tag) === tagKey
+    );
     if (owner && owner.userId !== userId) {
       return json({ error: "tag_taken", message: "That tag is already in use." }, 409);
     }
@@ -475,18 +547,18 @@ async function submitScore(request, env) {
   sortLeaderboard(leaderboard);
   const trimmed = leaderboard.slice(0, MAX_ENTRIES);
 
-  // --- 1 KV write ---
   await saveLeaderboard(env, trimmed);
 
-  // --- 1 KV read + 1 KV write (summary) ---
   const summary = await loadSummary(env);
-  if (isNewUser)  summary.totalUsers    += 1;
-  summary.totalRuns       += 1;
-  summary.totalPlaytime   += safeTime;
-  summary.totalScore      += safeScore;
-  // frogsEaten: only add if sent, avoids inflating with 0s
+  if (isNewUser) summary.totalUsers += 1;
+  summary.totalRuns += 1;
+  summary.totalPlaytime += safeTime;
+  summary.totalScore += safeScore;
+
   const frogsEaten = typeof body.stats?.frogsEaten === "number"
-    ? Math.max(0, Math.floor(body.stats.frogsEaten)) : 0;
+    ? Math.max(0, Math.floor(body.stats.frogsEaten))
+    : 0;
+
   if (frogsEaten > 0) summary.totalFrogsEaten += frogsEaten;
   await saveSummary(env, summary);
 
@@ -499,7 +571,6 @@ async function submitScore(request, env) {
 
 // --------------------------------------------------
 // GET /updates-summary
-// 1 KV read (leaderboard) + 1 KV read (summary) = 2 ops. No writes.
 // --------------------------------------------------
 async function getUpdatesSummary(env) {
   const [leaderboard, summary] = await Promise.all([
@@ -525,7 +596,9 @@ async function getUpdatesSummary(env) {
 async function getRecentRuns(env) {
   const raw = await env.FROG_SCORES.get(RECENT_RUNS_KEY);
   let runs = [];
-  try { runs = raw ? JSON.parse(raw) : []; } catch {}
+  try {
+    runs = raw ? JSON.parse(raw) : [];
+  } catch {}
   return json({ runs: Array.isArray(runs) ? runs : [] });
 }
 
@@ -534,8 +607,11 @@ async function getRecentRuns(env) {
 // --------------------------------------------------
 async function submitRecentRun(request, env) {
   let body;
-  try { body = await request.json(); }
-  catch { return json({ error: "invalid_body" }, 400); }
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "invalid_body" }, 400);
+  }
 
   const { score, time, orbs, frogsLost, sheds, tag } = body;
   if (typeof score !== "number" || typeof time !== "number") {
@@ -544,11 +620,18 @@ async function submitRecentRun(request, env) {
 
   const raw = await env.FROG_SCORES.get(RECENT_RUNS_KEY);
   let runs = [];
-  try { runs = raw ? JSON.parse(raw) : []; } catch {}
+  try {
+    runs = raw ? JSON.parse(raw) : [];
+  } catch {}
   if (!Array.isArray(runs)) runs = [];
 
+  const incomingTag = sanitizeTag(tag);
+  const safeTag = (incomingTag && incomingTag.toLowerCase() !== "frog")
+    ? incomingTag
+    : makeRandomTag();
+
   runs.unshift({
-    tag:       sanitizeTag(tag) || "Frog",
+    tag:       safeTag,
     score:     Math.max(0, Math.floor(Number(score) || 0)),
     time:      Math.max(0, Number(time) || 0),
     orbs:      Math.max(0, Math.floor(Number(orbs) || 0)),
@@ -557,6 +640,10 @@ async function submitRecentRun(request, env) {
     at:        Date.now(),
   });
 
-  await env.FROG_SCORES.put(RECENT_RUNS_KEY, JSON.stringify(runs.slice(0, MAX_RECENT_RUNS)));
+  await env.FROG_SCORES.put(
+    RECENT_RUNS_KEY,
+    JSON.stringify(runs.slice(0, MAX_RECENT_RUNS))
+  );
+
   return json({ ok: true });
 }
