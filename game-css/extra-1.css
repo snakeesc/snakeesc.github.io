@@ -1520,33 +1520,16 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
   padding-bottom: 0 !important;
 }
 
-/* Upgrade panel background changed to the same cream fill as every
-   other panel (main menu, leaderboard, how-to-play, my stats) — it was
-   the one holdout with a dark ink fill. The title used to be baked into
-   image artwork (reference-upgrade-title.webp) with its own dark green
-   backing baked in, which would now show up as a mismatched dark banner
-   on the new cream panel, so it's switched to live text in the shared
-   ink color/weight instead — that also makes the title color something
-   we can actually control going forward, instead of fixed pixels in an
-   image file.
-   The individual upgrade cards were always cream already (to pop
-   against the old dark panel) but relied on that dark backdrop for
-   contrast, with no border of their own; now that the panel behind them
-   is the same cream, they get a thin ink border so they still read as
-   distinct cards. */
-#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel {
-  background: #fff8db !important;
-}
-#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title {
-  background: none !important;
-  font-size: 30px !important;
-  font-weight: 700 !important;
-  color: #073720 !important;
-}
-#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice {
-  border: 2px solid #073720 !important;
-  box-shadow: 2px 2px 0 #073720 !important;
-}
+/* Upgrade panel background/title/card-border reverted back to the
+   original dark-ink-panel look (baked banner title, borderless cream
+   cards popping against the dark backdrop) per user request — the
+   cream-background experiment above didn't stick. The border-color fix
+   (ink instead of the old mismatched #72a949) and all sizing/spacing/
+   icon-size changes made since are kept; only background/title/card-
+   border are reverted, by simply not overriding them — the earlier,
+   still-present rules (var(--ink) panel background, the baked
+   reference-upgrade-title.webp title, borderless cards) take back over
+   on their own. */
 
 /* A little more breathing room around How to Play / My Stats content,
    per user request — a small bump over the existing padding, not a
