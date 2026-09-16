@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Escape the Snake — Audio List</title>
+<style>
+  :root {
+    --ink: #073720;
+    --cream: #fff8db;
+    --grass: #a8d96e;
+    --accent: #497b36;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: var(--grass);
+    color: var(--ink);
+    font-family: "Courier New", monospace;
+  }
+  h1 {
+    text-align: center;
+    margin: 0 0 4px;
+    font-size: 28px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    opacity: 0.75;
+    margin-bottom: 28px;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  section {
+    background: var(--cream);
+    border: 4px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px 18px;
+    margin-bottom: 22px;
+  }
+  section h2 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    letter-spacing: 0.03em;
+  }
+  section .note {
+    font-size: 12px;
+    opacity: 0.75;
+    margin: 0 0 12px;
+    line-height: 1.4;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid #d8d1a3;
+  }
+  .row:first-of-type { border-top: none; }
+  .play-btn {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.08s ease, filter 0.12s ease;
+  }
+  .play-btn:hover { filter: brightness(1.2); }
+  .play-btn:active { transform: scale(0.94); }
+  .play-btn.is-playing { background: var(--accent); border-color: var(--accent); }
+  .row-text { flex: 1; min-width: 0; }
+  .filename {
+    font-weight: bold;
+    font-size: 13px;
+    display: block;
+  }
+  .desc {
+    font-size: 12px;
+    opacity: 0.85;
+    display: block;
+    margin-top: 2px;
+  }
+  .missing-row {
+    padding: 8px 0;
+    border-top: 1px solid #d8d1a3;
+    font-size: 13px;
+  }
+  .missing-row:first-of-type { border-top: none; }
+  .missing-row .filename { color: #8a3a1f; }
+  .missing-row .desc { opacity: 0.85; }
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #8a3a1f;
+    color: var(--cream);
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  section.missing {
+    border-color: #8a3a1f;
+    box-shadow: 4px 4px 0 #8a3a1f;
+  }
+  section.missing h2 { color: #8a3a1f; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Escape the Snake — Audio List</h1>
+  <p class="subtitle">audio/ directory, wired up in game-js/04-audio.js</p>
+
+  <section>
+    <h2>Ribbits</h2>
+    <p class="note">One of these four plays at random on frog hops.</p>
+    <div class="row"><button class="play-btn" data-src="audio/ribbitOne.mp3">▶</button><div class="row-text"><span class="filename">ribbitOne.mp3</span><span class="desc">Random ribbit variant 1</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/ribbitTwo.mp3">▶</button><div class="row-text"><span class="filename">ribbitTwo.mp3</span><span class="desc">Random ribbit variant 2</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/ribbitThree.mp3">▶</button><div class="row-text"><span class="filename">ribbitThree.mp3</span><span class="desc">Random ribbit variant 3</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/ribbitBase.mp3">▶</button><div class="row-text"><span class="filename">ribbitBase.mp3</span><span class="desc">Random ribbit variant 4 (base/default)</span></div></div>
+  </section>
+
+  <section>
+    <h2>Core Gameplay</h2>
+    <div class="row"><button class="play-btn" data-src="audio/frogDeath.mp3">▶</button><div class="row-text"><span class="filename">frogDeath.mp3</span><span class="desc">A frog is eaten by the snake</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/munch.mp3">▶</button><div class="row-text"><span class="filename">munch.mp3</span><span class="desc">Snake bite/munch sound</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/buttonClick3.mp3">▶</button><div class="row-text"><span class="filename">buttonClick3.mp3</span><span class="desc">UI button click (menus, overlays)</span></div></div>
+  </section>
+
+  <section>
+    <h2>Orbs</h2>
+    <div class="row"><button class="play-btn" data-src="audio/orbSpawn.mp3">▶</button><div class="row-text"><span class="filename">orbSpawn.mp3</span><span class="desc">Orb spawn sound, variant 1 (random pick)</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/orbSpawnTwo.mp3">▶</button><div class="row-text"><span class="filename">orbSpawnTwo.mp3</span><span class="desc">Orb spawn sound, variant 2 (random pick)</span></div></div>
+  </section>
+
+  <section>
+    <h2>Temporary Buffs</h2>
+    <p class="note">Picked up from orbs, time-limited effects.</p>
+    <div class="row"><button class="play-btn" data-src="audio/superSpeed.mp3">▶</button><div class="row-text"><span class="filename">superSpeed.mp3</span><span class="desc">Speed Boost buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/superJump.mp3">▶</button><div class="row-text"><span class="filename">superJump.mp3</span><span class="desc">Jump Surge buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/frogSpawn.mp3">▶</button><div class="row-text"><span class="filename">frogSpawn.mp3</span><span class="desc">Spawn Orb buff (instant frog spawn)</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/snakeSlow.mp3">▶</button><div class="row-text"><span class="filename">snakeSlow.mp3</span><span class="desc">Snake Slow buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/snakeConfuse.mp3">▶</button><div class="row-text"><span class="filename">snakeConfuse.mp3</span><span class="desc">Snake Confuse buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/snakeShrink.mp3">▶</button><div class="row-text"><span class="filename">snakeShrink.mp3</span><span class="desc">Snake Shrink buff (bite radius shrinks)</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/frogShield.mp3">▶</button><div class="row-text"><span class="filename">frogShield.mp3</span><span class="desc">Frog Shield buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/timeSlow.mp3">▶</button><div class="row-text"><span class="filename">timeSlow.mp3</span><span class="desc">Time Slow buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/orbMagnet.mp3">▶</button><div class="row-text"><span class="filename">orbMagnet.mp3</span><span class="desc">Orb Magnet buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/megaSpawn.mp3">▶</button><div class="row-text"><span class="filename">megaSpawn.mp3</span><span class="desc">Mega Spawn buff (large frog wave)</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/scoreMulti.mp3">▶</button><div class="row-text"><span class="filename">scoreMulti.mp3</span><span class="desc">Score Multiplier buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/panicHop.mp3">▶</button><div class="row-text"><span class="filename">panicHop.mp3</span><span class="desc">Panic Hop buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/cloneSwarm.mp3">▶</button><div class="row-text"><span class="filename">cloneSwarm.mp3</span><span class="desc">Clone Swarm buff</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/lifeSteal.mp3">▶</button><div class="row-text"><span class="filename">lifeSteal.mp3</span><span class="desc">Life Steal buff</span></div></div>
+  </section>
+
+  <section>
+    <h2>Permanent Upgrades</h2>
+    <div class="row"><button class="play-btn" data-src="audio/permanentBuffChoice.mp3">▶</button><div class="row-text"><span class="filename">permanentBuffChoice.mp3</span><span class="desc">Picking any permanent upgrade at an orb/run-start choice</span></div></div>
+  </section>
+
+  <section>
+    <h2>Per-Frog Role Upgrades</h2>
+    <p class="note">A frog gains a special role.</p>
+    <div class="row"><button class="play-btn" data-src="audio/championFrog.mp3">▶</button><div class="row-text"><span class="filename">championFrog.mp3</span><span class="desc">Champion role granted</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/auraFrog.mp3">▶</button><div class="row-text"><span class="filename">auraFrog.mp3</span><span class="desc">Aura role granted</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/shieldFrog.mp3">▶</button><div class="row-text"><span class="filename">shieldFrog.mp3</span><span class="desc">Shield role granted</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/magnetFrog.mp3">▶</button><div class="row-text"><span class="filename">magnetFrog.mp3</span><span class="desc">Magnet role granted</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/luckyFrog.mp3">▶</button><div class="row-text"><span class="filename">luckyFrog.mp3</span><span class="desc">Lucky role granted</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/zombieFrog.mp3">▶</button><div class="row-text"><span class="filename">zombieFrog.mp3</span><span class="desc">Zombie role granted</span></div></div>
+  </section>
+
+  <section>
+    <h2>Not Currently Used</h2>
+    <p class="note">Present in audio/ but not referenced by any play call in game-js/04-audio.js, the main game, or the /arcade/ variant — leftover/spare assets. Still playable here.</p>
+    <div class="row"><button class="play-btn" data-src="audio/frogDeath2.mp3">▶</button><div class="row-text"><span class="filename">frogDeath2.mp3</span><span class="desc">Alternate frog-death sound, unused</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/munch3.mp3">▶</button><div class="row-text"><span class="filename">munch3.mp3</span><span class="desc">Alternate snake-munch sound, unused</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/munch4.mp3">▶</button><div class="row-text"><span class="filename">munch4.mp3</span><span class="desc">Alternate snake-munch sound, unused</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/ribbitFive.mp3">▶</button><div class="row-text"><span class="filename">ribbitFive.mp3</span><span class="desc">Extra ribbit variant, unused</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/ribbitTwo2.mp3">▶</button><div class="row-text"><span class="filename">ribbitTwo2.mp3</span><span class="desc">Alternate take on ribbitTwo, unused</span></div></div>
+    <div class="row"><button class="play-btn" data-src="audio/slowed.mp3">▶</button><div class="row-text"><span class="filename">slowed.mp3</span><span class="desc">Unused (no matching buff/effect currently wired to it)</span></div></div>
+  </section>
+
+  <section class="missing">
+    <h2>Missing Audio (no file exists)</h2>
+    <p class="note">Found by reading every game event that has a sound, then checking which comparable events don't. These are real gaps in game-js/07-game.js, confirmed by reading the actual trigger functions — not guesses.</p>
+    <div class="missing-row">
+      <span class="badge">confirmed</span><span class="filename">Snake shed (snakeShed())</span>
+      <div class="desc">The snake growing faster and changing color stage — one of the most dramatic recurring events in the game — has no sound at all, even though the much smaller "snake bites a frog" event does.</div>
+    </div>
+    <div class="missing-row">
+      <span class="badge">confirmed</span><span class="filename">Second snake spawns (handleFourthShed())</span>
+      <div class="desc">Part of the same shed mechanic (triggers on the 4th shed) — a whole extra snake appearing on screen, also silent.</div>
+    </div>
+    <div class="missing-row">
+      <span class="badge">confirmed</span><span class="filename">Permanent star-upgrade orb pickup (grantStarUpgrade())</span>
+      <div class="desc">Orbs that level up a frog's star rank (speed/jump boost) play no sound on pickup, unlike every other orb outcome — temporary buffs play a buff sound immediately, and permanent build choices play permanentBuffChoice.mp3.</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  var current = null; // { audio, btn }
+
+  function stopCurrent() {
+    if (!current) return;
+    current.audio.pause();
+    current.audio.currentTime = 0;
+    current.btn.textContent = "▶";
+    current.btn.classList.remove("is-playing");
+    current = null;
+  }
+
+  document.querySelectorAll(".play-btn").forEach(function (btn) {
+    var src = btn.getAttribute("data-src");
+    var audio = new Audio(src);
+
+    audio.addEventListener("ended", function () {
+      btn.textContent = "▶";
+      btn.classList.remove("is-playing");
+      if (current && current.audio === audio) current = null;
+    });
+
+    btn.addEventListener("click", function () {
+      var wasPlaying = current && current.audio === audio;
+      stopCurrent();
+      if (wasPlaying) return; // clicking the same button again just stops it
+
+      audio.currentTime = 0;
+      audio.play().catch(function () {});
+      btn.textContent = "⏸";
+      btn.classList.add("is-playing");
+      current = { audio: audio, btn: btn };
+    });
+  });
+})();
+</script>
+</body>
+</html>
