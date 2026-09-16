@@ -5103,26 +5103,15 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-title">How to Play <span class="emoji">🐸</span></div>
-      <div class="frog-panel-sub">Stay alive. Don't let the snake eat all your frogs.</div>
-
-      <div class="frog-panel-section-label">Basics</div>
-      <ul class="frog-panel-list">
-        <li>Move your mouse or finger — frogs follow your cursor.</li>
-        <li>When all frogs are gone, the run ends.</li>
-        <li>Collect orbs for temporary buffs and upgrade choices.</li>
-      </ul>
-
-      <div class="frog-panel-section-label">The Snake</div>
-      <ul class="frog-panel-list">
-        <li>It chases your frogs and speeds up every shed.</li>
-        <li>After 3 sheds a second snake spawns.</li>
-        <li>Plan your escape route before each shed hits.</li>
-      </ul>
-
-      <div class="frog-panel-footer">
-        <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Close</button>
+      <div class="frog-panel-title">How to Play</div>
+      <p class="ui-help-intro">Keep your frogs alive. Keep moving.</p>
+      <div class="ui-help-steps">
+        <section><img src="game-assets/sprites/approved/frog-crowned.png" alt=""><div><h3>Lead your frogs</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
+        <section><img src="game-assets/sprites/snake-head.png" alt=""><div><h3>Stay ahead</h3><p>The snake chases your frogs. Lose them all and the run ends.</p></div></section>
+        <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
+      <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
+      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
@@ -5728,36 +5717,20 @@ async function showDashboardOverlay(cachedLeaderboard) {
     : "";
 
   content.innerHTML = `
-    <div style="text-align:center;padding-bottom:14px;border-bottom:1px solid #292524;margin-bottom:2px;">
-      <div style="font-size:15px;font-weight:bold;color:#bef264;margin-bottom:2px;" id="dashboardCurrentTag">${currentTag || "No tag set"}</div>
-      <div style="color:#a3e635;margin-bottom:6px;">Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · <span style="color:#a8a29e;">#${bestRecordRank + 1} ranked</span>` : ""}</div>
-      <div style="width:120px;height:5px;background:#292524;border-radius:999px;overflow:hidden;margin:0 auto 3px;">
-        <div style="width:${levelData.progressPercent}%;height:100%;background:#bef264;border-radius:999px;"></div>
+    <section class="ui-profile">
+      <div class="ui-profile-heading"><img src="game-assets/sprites/approved/frog-crowned.png" alt=""><div><div id="dashboardCurrentTag">${String(currentTag || "Your frogs").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div><p>Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #${bestRecordRank + 1}` : ""}</p></div></div>
+      <div class="ui-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}"><i style="width:${levelData.progressPercent}%"></i></div>
+      <p class="ui-progress-caption">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</p>
+      <div class="ui-records">
+        <div><span>Personal best</span><strong>${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong></div>
+        <div><span>Runs played</span><strong>${localStats.totalRuns || 0}</strong></div>
+        <div><span>Orbs collected</span><strong>${localStats.totalOrbsCollected || 0}</strong></div>
+        <div><span>Time played</span><strong>${formatDashboardDuration(localStats.totalPlayTime || 0)}</strong></div>
       </div>
-      <div style="color:#a8a29e;margin-bottom:6px;">${levelData.orbsNeededForNextLevel} orbs to level ${levelData.nextLevel}</div>
-      <div style="color:#f5f5f4;">
-        <strong style="color:#bef264;">${leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : "—"}</strong> best
-        · <strong style="color:#bef264;">${localStats.totalRuns || 0}</strong> runs
-        · <strong style="color:#bef264;">${localStats.totalOrbsCollected || 0}</strong> orbs
-        · <strong style="color:#bef264;">${formatDashboardDuration(localStats.totalPlayTime || 0)}</strong>
-      </div>
-    </div>
-
-    <div class="frog-panel-section-label" style="margin-top:14px;">Leaderboard Tag</div>
-    <div style="display:flex;gap:6px;margin-bottom:4px;">
-      <input
-        id="dashboardTagInput"
-        type="text"
-        maxlength="12"
-        value="${String(currentTag).replace(/"/g, "&quot;")}"
-        placeholder="Enter player tag"
-        style="flex:1;padding:6px 9px;border-radius:8px;border:1px solid #44403c;background:#292524;color:white;font-family:inherit;font-size:12px;"
-      />
-      <button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary" style="width:auto;padding:6px 10px;font-size:12px;margin-bottom:0;">Save</button>
-    </div>
-
-    
-    
+      <label class="ui-tag-label" for="dashboardTagInput">Your name on the board</label>
+      <div class="ui-tag-editor"><input id="dashboardTagInput" type="text" maxlength="12" value="${String(currentTag).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}" placeholder="Player tag"><button id="dashboardSaveTagBtn" class="frog-btn frog-btn-secondary">Save</button></div>
+      <p id="dashboardTagMessage" role="status" aria-live="polite"></p>
+    </section>
   `;
 
   const tagInput = document.getElementById("dashboardTagInput");

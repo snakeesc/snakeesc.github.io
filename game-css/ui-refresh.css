@@ -1,0 +1,50 @@
+/* Presentation only. Viewport, input coordinates and game rules remain unchanged. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice{border:0!important;box-shadow:none!important;background:transparent!important;clip-path:none!important}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title{height:auto!important;display:flex!important;align-items:center;justify-content:center;gap:10px;padding:8px 0!important;font-size:30px!important;line-height:1.1!important}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title::before,#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title::after{content:""!important;display:block!important;position:static!important;width:24px!important;height:24px!important;flex:0 0 24px;background:#497b36!important;clip-path:polygon(0 40%,20% 40%,20% 65%,40% 65%,40% 10%,60% 10%,60% 65%,80% 65%,80% 35%,100% 35%,100% 55%,85% 55%,85% 85%,65% 85%,65% 100%,35% 100%,35% 85%,15% 85%,15% 60%,0 60%)!important;image-rendering:pixelated;border:0!important;transform:none!important}
+@media(hover:hover){#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:hover{background:#edf0d5!important;outline:none!important;transform:translateX(2px)!important}}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:focus-visible{outline:2px solid #497b36!important;outline-offset:2px}
+#howToOverlay#howToOverlay#howToOverlay .frog-panel{width:540px!important}
+#howToOverlay .ui-help-intro{font:24px/1.25 ReferencePixel,monospace!important;text-align:center;color:#497b36!important;margin:8px 0 20px!important}
+.ui-help-steps{display:grid;gap:18px}
+.ui-help-steps section{display:grid;grid-template-columns:54px minmax(0,1fr);gap:18px;align-items:center}
+.ui-help-steps img{width:48px;height:48px;object-fit:contain;image-rendering:pixelated}
+#howToOverlay#howToOverlay#howToOverlay .ui-help-steps h3{font:28px/1.1 ReferencePixel,monospace!important;margin:0 0 5px!important;color:#073720!important}
+#howToOverlay#howToOverlay#howToOverlay .ui-help-steps p{font:23px/1.25 ReferencePixel,monospace!important;margin:0!important;color:#35553a!important}
+#howToOverlay#howToOverlay#howToOverlay .ui-help-note{font:21px/1.3 ReferencePixel,monospace!important;color:#35553a!important;border-top:1px solid #bdcb9e;margin:22px 0 8px!important;padding-top:14px}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel{width:500px!important}
+.ui-profile{font-family:ReferencePixel,monospace;color:#073720}
+.ui-profile-heading{display:flex;align-items:center;justify-content:center;gap:18px;margin:4px 0 18px}
+.ui-profile-heading img{width:56px;height:56px;object-fit:contain;image-rendering:pixelated}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardCurrentTag{font-size:32px!important;margin:0!important;overflow-wrap:anywhere}
+.ui-profile-heading p{margin:4px 0 0!important;font-size:23px!important;color:#497b36!important}
+.ui-progress{height:9px;background:#dbe5bf;border-radius:7px;overflow:hidden;max-width:300px;margin:auto}
+.ui-progress i{display:block;height:100%;background:#6ba74c;border-radius:inherit}
+#dashboardOverlay .ui-progress-caption{font-size:21px!important;text-align:center;margin:8px 0 20px!important;color:#497b36!important}
+.ui-records{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px;border-top:1px solid #bdcb9e;border-bottom:1px solid #bdcb9e;padding:18px 0;margin-bottom:22px}
+.ui-records>div{display:flex;flex-direction:column;gap:4px}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span{font-size:20px!important;color:#497b36!important}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong{font-size:32px!important;font-weight:400!important;color:#006b83!important;line-height:1.1!important}
+.ui-tag-label{display:block;font-size:20px!important;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.ui-tag-editor{display:flex;gap:8px;align-items:center}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput{flex:1;min-width:0!important;min-height:44px!important;font:24px/1.2 ReferencePixel,monospace!important;padding:9px 12px!important;border:0!important;border-radius:7px!important;background:#fff8db!important;color:#073720!important}
+#dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardSaveTagBtn{width:auto!important;margin:0!important;font:24px/1.2 ReferencePixel,monospace!important;padding:8px 14px!important;min-height:44px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#073720!important}
+#dashboardTagMessage{font-size:20px!important;margin:6px 0!important;color:#35553a!important}
+@media(pointer:coarse),(max-width:600px){
+ #howToOverlay#howToOverlay#howToOverlay .frog-panel,#dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw,1vw))!important}
+ #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title{font-size:44px!important;gap:18px}
+ #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title::before,#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-panel-title::after{width:36px!important;height:36px!important;flex-basis:36px}
+ #howToOverlay#howToOverlay#howToOverlay .ui-help-intro{font-size:36px!important}
+ .ui-help-steps{gap:28px}.ui-help-steps section{grid-template-columns:76px minmax(0,1fr);gap:24px}.ui-help-steps img{width:70px;height:70px}
+ #howToOverlay#howToOverlay#howToOverlay .ui-help-steps h3{font-size:42px!important}
+ #howToOverlay#howToOverlay#howToOverlay .ui-help-steps p{font-size:38px!important;line-height:1.25!important}
+ #howToOverlay#howToOverlay#howToOverlay .ui-help-note{font-size:34px!important}
+ .ui-profile-heading img{width:80px;height:80px}
+ #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardCurrentTag{font-size:46px!important}
+ #dashboardOverlay .ui-profile-heading p,#dashboardOverlay .ui-progress-caption{font-size:34px!important}
+ .ui-progress{max-width:520px;height:12px}.ui-records{gap:24px;padding:24px 0}
+ #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span,#dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-tag-label{font-size:32px!important}
+ #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong{font-size:46px!important}
+ #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardTagInput,#dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardSaveTagBtn{font-size:38px!important;min-height:64px!important}
+ #dashboardOverlay #dashboardTagMessage{font-size:30px!important}
+}
