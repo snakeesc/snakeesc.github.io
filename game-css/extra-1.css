@@ -715,7 +715,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 .pocket-profile{position:absolute;bottom:17px;right:20px;border:0;background:transparent;font:18px Pocket,monospace;color:var(--ink);cursor:pointer;text-decoration:underline}
 #pocket-hud{background:var(--cream)!important;color:var(--ink)!important;border:3px solid var(--ink);border-radius:0!important;padding:9px 20px!important;box-shadow:3px 3px 0 var(--ink);font:20px Pocket,monospace!important;top:15px!important}
 #pocket-hud span{color:var(--ink)!important}
-#pocket-controls button{font-family:Pocket,monospace!important;background:var(--cream)!important;color:var(--ink)!important;border:2px solid var(--ink)!important;box-shadow:2px 2px 0 var(--ink)!important;text-shadow:none!important}
+#pocket-controls button{font-family:Pocket,monospace!important;background:#ff00ff!important;color:#000!important;border:6px solid red!important;box-shadow:none!important;text-shadow:none!important}
 #pocket-controls button:hover{background:#e6efa9!important}
 #frog-mini-leaderboard{display:none!important}
 #frog-stats-panel{color:var(--ink)!important;font-family:Pocket,monospace!important}
