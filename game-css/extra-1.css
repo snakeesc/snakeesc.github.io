@@ -1027,9 +1027,9 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 @media(min-width:601px) and (pointer:fine){.pocket-title{width:calc(19.2 * var(--app-vw, 1vw));max-width:342px}#mainMenuOverlay .pocket-menu{width:calc(15.4 * var(--app-vw, 1vw));max-width:274px}#upgradeOverlay .frog-panel{width:320px!important}#upgradeOverlay .frog-upgrade-choice{min-height:70px!important;padding-left:62px!important}#upgradeOverlay .frog-upgrade-title{font-size:24px!important}#upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:20px!important}#upgradeOverlay .frog-upgrade-emoji{width:38px!important;height:38px!important}}
 /* Keep phone controls visible at the top, independent of playfield height. */
 @media(pointer:coarse),(max-width:600px){
- #pocket-controls{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(12px + env(safe-area-inset-left))!important;bottom:auto!important;right:auto!important;flex-direction:column!important;gap:8px!important;z-index:120!important}
- #pocket-controls button{min-width:108px!important;min-height:60px!important;font-size:28px!important;padding:10px 12px!important}
- #pocket-hud{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(140px + env(safe-area-inset-left))!important;right:12px!important;transform:none!important;width:max-content!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 156px)!important;font-size:25px!important;white-space:normal!important;flex-wrap:wrap!important}
+ #pocket-controls{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(12px + env(safe-area-inset-left))!important;bottom:auto!important;right:auto!important;flex-direction:column!important;gap:10px!important;z-index:120!important}
+ #pocket-controls button{min-width:200px!important;min-height:120px!important;font-size:50px!important;padding:18px 24px!important}
+ #pocket-hud{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(340px + env(safe-area-inset-left))!important;right:12px!important;transform:none!important;width:max-content!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 356px)!important;font-size:25px!important;white-space:normal!important;flex-wrap:wrap!important}
 }
 /* Readable score panels: neutral rows, compact pagination, explicit title contrast. */
 #leaderboardOverlay.frog-overlay .frog-panel{width:580px!important;max-height:calc(92 * var(--app-vh, 1vh))!important}
