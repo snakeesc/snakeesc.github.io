@@ -72,37 +72,28 @@
  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong{font-size:38px!important}
 }
 
-/* Desktop How to Play / My Stats dialed back down — the sizing above
-   (panel width 540/500px, body text in the 20-32px range) was roughly
-   double the rest of the game's desktop UI and made both panels look
-   oversized on a normal monitor. Mobile/app sizing above is untouched.
+/* Desktop How to Play / My Stats — panel width dialed back down from
+   ChatGPT's original 540/500px (confirmed too big on a normal 1920px
+   monitor), but font-sizes are kept close to original. Two earlier
+   attempts here also shrank the fonts along with the width and both
+   came back reported as too small — on a real 1920x1080 monitor AND on
+   a smaller/scaled laptop — so the width reduction alone was likely
+   the whole fix needed; font-size didn't need to shrink this much (if
+   at all). Erring toward the larger/original side this time rather
+   than risk a third "too small" report.
    dashboardTagInput/SaveTagBtn are intentionally left alone — their
-   24px already exact-matches #endSummaryTagInput from an earlier fix.
-
-   First attempt at this undershot: it was only tested at exactly
-   1920x1080, the one width where this game's design-width scaling
-   (00-viewport.js) does nothing. Any real screen narrower than that —
-   most actual laptops (1440, 1536, 1366px...) — gets the whole page
-   scaled down by a CSS transform, so those smaller font-sizes got
-   shrunk a second time on top of the transform and came out too small
-   to read comfortably. Sizes below are picked to stay readable after
-   that scaling too, verified at both 1920x1080 (unscaled) and 1440x900
-   (scaled ~0.75x). */
+   24px already exact-matches #endSummaryTagInput from an earlier fix. */
 @media (min-width: 601px) and (pointer: fine) {
-  #howToOverlay#howToOverlay#howToOverlay .frog-panel { width: 480px !important; }
-  #howToOverlay#howToOverlay#howToOverlay .ui-help-intro { font-size: 17px !important; }
-  #howToOverlay#howToOverlay#howToOverlay .ui-help-steps h3 { font-size: 19px !important; }
-  #howToOverlay#howToOverlay#howToOverlay .ui-help-steps p { font-size: 17px !important; }
-  #howToOverlay#howToOverlay#howToOverlay .ui-help-note { font-size: 15px !important; }
-  #howToOverlay .ui-help-steps img { width: 46px !important; height: 46px !important; }
-  #howToOverlay .ui-help-steps section { grid-template-columns: 52px minmax(0, 1fr) !important; gap: 16px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .frog-panel { width: 490px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .ui-help-intro { font-size: 21px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .ui-help-steps h3 { font-size: 24px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .ui-help-steps p { font-size: 20px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .ui-help-note { font-size: 18px !important; }
 
-  #dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel { width: 460px !important; }
-  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardCurrentTag { font-size: 24px !important; }
-  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-profile-heading p { font-size: 16px !important; }
-  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-progress-caption { font-size: 15px !important; }
-  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span { font-size: 14px !important; }
-  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong { font-size: 18px !important; }
-  .ui-profile-heading img { width: 50px !important; height: 50px !important; }
-  .ui-profile-heading { gap: 16px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel { width: 470px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardCurrentTag { font-size: 26px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-profile-heading p { font-size: 21px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-progress-caption { font-size: 20px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span { font-size: 19px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong { font-size: 22px !important; }
 }
