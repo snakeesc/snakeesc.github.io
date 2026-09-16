@@ -1262,7 +1262,7 @@ function hideEndGameSummaryOverlay() {
   }
 }
 
-function showEndGameSummaryOverlay(cachedLeaderboard) {
+function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
   if (!endGameSummaryOverlay) initEndGameSummaryOverlay();
   if (!endGameSummaryOverlay) return;
 
@@ -1382,6 +1382,11 @@ function showEndGameSummaryOverlay(cachedLeaderboard) {
   const tagInput = document.getElementById("endSummaryTagInput");
   const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
   const tagMsg = document.getElementById("endSummaryTagMsg");
+
+  if (submitError && tagMsg && !currentTag) {
+    tagMsg.textContent = "Couldn't reach the leaderboard, so no tag was assigned. Check your connection and try again next run, or set one yourself above.";
+    tagMsg.style.color = "#fca5a5";
+  }
 
   if (tagSaveBtn && tagInput) {
     tagSaveBtn.addEventListener("click", async () => {
@@ -6896,6 +6901,7 @@ function startRunFromMenu() {
     });
 
     let leaderboardEntries = [];
+    let submitFailed = false;
 
     try {
       const submitted = await submitScoreToServer(
@@ -6914,6 +6920,7 @@ function startRunFromMenu() {
       if (Array.isArray(submitted)) {
         leaderboardEntries = submitted;
       } else {
+        submitFailed = true;
         const fetched = await fetchLeaderboard();
         leaderboardEntries = Array.isArray(fetched) ? fetched : [];
       }
@@ -6923,12 +6930,13 @@ function startRunFromMenu() {
       pushRecentRunToServer();
     } catch (err) {
       console.error("endGame summary flow failed", err);
+      submitFailed = true;
       pushRecentRunToServer();
     } finally {
       summaryPending = false;
     }
 
-    showEndGameSummaryOverlay(leaderboardEntries);
+    showEndGameSummaryOverlay(leaderboardEntries, submitFailed);
   }
 
   function restartGame() {
