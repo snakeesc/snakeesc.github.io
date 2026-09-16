@@ -12,13 +12,6 @@
     const viewportScale = window.visualViewport ? window.visualViewport.scale : 1;
     const unit = phone ? 1 / (bodyScale * viewportScale) : 1;
     const px = n => (n * unit).toFixed(3) + 'px';
-    const hud = document.getElementById('pocket-hud');
-    const game = document.getElementById('frog-game');
-    const hudRect = hud && hud.getBoundingClientRect();
-    const gameRect = game && game.getBoundingClientRect();
-    const top = hudRect && hudRect.height && gameRect
-      ? Math.max(28 * unit, (hudRect.bottom - gameRect.top) / bodyScale + 6 * unit)
-      : 28 * unit;
     style.textContent = `
       #frog-game #pocket-hud {
         position:absolute!important;top:${px(6)}!important;left:50%!important;right:auto!important;
@@ -31,7 +24,7 @@
       }
       #frog-game #pocket-hud span {font-size:inherit!important;color:#073720!important;}
 
-      #frog-game #pocket-controls {position:absolute!important;bottom:auto!important;right:auto!important;flex-direction:column!important;top:${top.toFixed(3)}px!important;left:${px(8)}!important;gap:${px(4)}!important;align-items:flex-start!important;}
+      #frog-game #pocket-controls {position:absolute!important;bottom:auto!important;right:auto!important;flex-direction:column!important;top:${px(6)}!important;left:${px(8)}!important;gap:${px(4)}!important;align-items:flex-start!important;}
       #frog-game #pocket-controls button {
         box-sizing:border-box!important;font-family:ReferencePixel,monospace!important;
         font-size:${px(phone ? 15 : 18)}!important;line-height:1.15!important;
@@ -45,8 +38,6 @@
     `;
   }
   update();
-  const hud = document.getElementById('pocket-hud');
-  if (hud && window.ResizeObserver) new ResizeObserver(update).observe(hud);
   window.addEventListener('resize', update);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', update);
   if (screen.orientation) screen.orientation.addEventListener('change', () => requestAnimationFrame(update));
