@@ -12,6 +12,14 @@
     const viewportScale = window.visualViewport ? window.visualViewport.scale : 1;
     const unit = phone ? 1 / (bodyScale * viewportScale) : 1;
     const px = n => (n * unit).toFixed(3) + 'px';
+    // Safe-area insets are reported in the true (unscaled) viewport, but these
+    // elements live inside the game's scaled coordinate space, so the inset
+    // has to be scaled by the same `unit` to land in the right spot — same
+    // idea as `px()` above, just added on top of a base offset instead of
+    // being the whole value.
+    const safeTop = `env(safe-area-inset-top, 0px) * ${unit}`;
+    const safeLeft = `env(safe-area-inset-left, 0px) * ${unit}`;
+    const safeRight = `env(safe-area-inset-right, 0px) * ${unit}`;
     style.textContent = `
       #frog-game #pocket-hud,
       #frog-game #pocket-controls button {
@@ -24,14 +32,14 @@
         box-shadow:none!important;text-shadow:none!important;clip-path:none!important;
       }
       #frog-game #pocket-hud {
-        position:absolute!important;top:${px(6)}!important;left:50%!important;right:auto!important;
+        position:absolute!important;top:calc(${px(6)} + ${safeTop})!important;left:50%!important;right:auto!important;
         transform:translateX(-50%)!important;gap:${px(6)}!important;
-        width:max-content!important;max-width:calc(100% - ${px(16)})!important;
+        width:max-content!important;max-width:calc(100% - ${px(16)} - ${safeLeft} - ${safeRight})!important;
       }
       #frog-game #pocket-hud span {font-size:inherit!important;color:#073720!important;}
       #frog-game #pocket-controls {
         position:absolute!important;bottom:auto!important;right:auto!important;flex-direction:column!important;
-        top:${px(6)}!important;left:${px(8)}!important;gap:${px(4)}!important;align-items:flex-start!important;
+        top:calc(${px(6)} + ${safeTop})!important;left:calc(${px(8)} + ${safeLeft})!important;gap:${px(4)}!important;align-items:flex-start!important;
       }
       #frog-game #pocket-controls button {
         min-height:0!important;min-width:0!important;width:auto!important;height:auto!important;
