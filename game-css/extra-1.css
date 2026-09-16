@@ -987,8 +987,8 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
  #pocket-hud{top:calc(8px + env(safe-area-inset-top))!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 16px);padding:6px 10px!important;gap:6px!important}
  #frog-stats-panel{bottom:calc(62px + env(safe-area-inset-bottom))!important}
  .frog-overlay:not(#mainMenuOverlay) .frog-btn{min-height:44px!important}
- #upgradeOverlay .frog-panel{max-height:calc(100dvh - 32px)!important;overflow-y:auto!important;box-sizing:border-box}
- .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{max-height:calc(100dvh - 32px)!important}
+ #upgradeOverlay .frog-panel{max-height:calc(100 * var(--app-vh, 1vh) - 32px)!important;overflow-y:auto!important;box-sizing:border-box}
+ .frog-overlay:not(#mainMenuOverlay):not(#upgradeOverlay) .frog-panel{max-height:calc(100 * var(--app-vh, 1vh) - 32px)!important}
  #mainMenuOverlay .pocket-menu{width:clamp(260px,calc(65 * var(--app-vw, 1vw)),300px);max-width:calc(90 * var(--app-vw, 1vw))}
  .pocket-profile{bottom:calc(12px + env(safe-area-inset-bottom));min-height:44px}
 }
@@ -997,7 +997,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
  .pocket-title{width:240px;max-width:calc(40 * var(--app-vw, 1vw))}
  #mainMenuOverlay .pocket-menu{width:260px;max-width:calc(45 * var(--app-vw, 1vw))}
  #mainMenuOverlay .pocket-hint{display:none}
- #upgradeOverlay .frog-panel{max-height:calc(100dvh - 24px)!important;overflow-y:auto!important}
+ #upgradeOverlay .frog-panel{max-height:calc(100 * var(--app-vh, 1vh) - 24px)!important;overflow-y:auto!important}
 }
 /* Compact profile layout without legacy portrait or skin picker. */
 #dashboardOverlay .frog-panel{width:400px!important}
@@ -1032,7 +1032,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
  #pocket-hud{position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;left:calc(140px + env(safe-area-inset-left))!important;right:12px!important;transform:none!important;width:max-content!important;max-width:calc(calc(100 * var(--app-vw, 1vw)) - 156px)!important;font-size:25px!important;white-space:normal!important;flex-wrap:wrap!important}
 }
 /* Readable score panels: neutral rows, compact pagination, explicit title contrast. */
-#leaderboardOverlay.frog-overlay .frog-panel{width:580px!important;max-height:92dvh!important}
+#leaderboardOverlay.frog-overlay .frog-panel{width:580px!important;max-height:calc(92 * var(--app-vh, 1vh))!important}
 #leaderboardOverlay.frog-overlay .frog-panel .frog-panel-title{color:#fff8db!important;background:#073720!important;font-size:36px!important;line-height:1.2!important;letter-spacing:0!important;text-shadow:none!important}
 #leaderboardOverlay .frog-panel-sub{font-size:22px!important;margin-bottom:12px!important}
 #leaderboardOverlay .frog-panel-list li,#leaderboardOverlay .frog-panel-list li:first-child,#endGameSummaryContent .frog-panel-list li:first-child{background:#f8f5dd!important;border:1px solid #adc18a!important;border-left:3px solid #729452!important}
@@ -1089,7 +1089,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 #leaderboardOverlay#leaderboardOverlay .frog-panel-list li,#endGameSummaryOverlay#endGameSummaryOverlay .frog-panel-list li{box-shadow:inset 0 -2px #bed09a!important}
 @media(min-width:601px) and (pointer:fine){#mainMenuOverlay .pocket-menu{width:calc(14 * var(--app-vw, 1vw));max-width:248px}.pocket-title{width:calc(17.4 * var(--app-vw, 1vw));max-width:310px}#upgradeOverlay .frog-panel{width:292px!important}}
 /* New score layouts use their own components instead of legacy panel rules. */
-.score-surface{width:520px;max-width:calc(92 * var(--app-vw, 1vw));max-height:92dvh;overflow:auto;padding:22px;background:#fff8db;color:#073720;border:6px solid #073720;box-shadow:5px 5px #53823a;font:24px/1.2 ReferencePixel,monospace;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
+.score-surface{width:520px;max-width:calc(92 * var(--app-vw, 1vw));max-height:calc(92 * var(--app-vh, 1vh));overflow:auto;padding:22px;background:#fff8db;color:#073720;border:6px solid #073720;box-shadow:5px 5px #53823a;font:24px/1.2 ReferencePixel,monospace;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
 .score-surface .frog-panel-title,.score-heading{font:36px/1 ReferencePixel,monospace!important;color:#073720!important;background:none!important;border:0!important;margin:0 0 22px!important;padding:0!important;text-align:center}
 .score-surface .frog-panel-sub{display:none}.score-surface .emoji{display:none}
 #leaderboardOverlay .score-surface .frog-panel-list li,#leaderboardOverlay .score-surface .rank-labels{display:grid!important;grid-template-columns:32px minmax(0,1fr) 74px 80px;gap:10px;align-items:center}
@@ -1156,7 +1156,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
  #upgradeOverlay .frog-upgrade-title{font-size:40px!important;line-height:1.12!important}
  #upgradeOverlay .frog-upgrade-desc,#upgradeOverlay .frog-upgrade-desc *{font-size:36px!important;line-height:1.2!important}
  #upgradeOverlay .frog-panel-sub{font-size:30px!important}
- #howToOverlay.frog-overlay .frog-panel{width:760px!important;max-width:calc(92 * var(--app-vw, 1vw))!important;max-height:88dvh!important;overflow:auto!important;padding:28px!important}
+ #howToOverlay.frog-overlay .frog-panel{width:760px!important;max-width:calc(92 * var(--app-vw, 1vw))!important;max-height:calc(88 * var(--app-vh, 1vh))!important;overflow:auto!important;padding:28px!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:38px!important;line-height:1.3!important}
  #howToOverlay.frog-overlay .frog-panel-title{font-size:46px!important}
  #howToOverlay.frog-overlay .frog-panel-section-label{font-size:40px!important}
@@ -1204,7 +1204,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 
 /* Build 43: continuous mobile help, larger readable surface. */
 @media(pointer:coarse),(max-width:600px){
- #howToOverlay.frog-overlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;max-height:88dvh!important;overflow-y:auto!important}
+ #howToOverlay.frog-overlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;max-height:calc(88 * var(--app-vh, 1vh))!important;overflow-y:auto!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:42px!important;line-height:1.3!important}
  #howToOverlay .frog-panel-list{min-height:0!important}
 }
@@ -1214,7 +1214,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 
 /* Build 45: mobile help and profile readability. */
 @media(pointer:coarse),(max-width:600px){
- #howToOverlay.frog-overlay .frog-panel,#dashboardOverlay.frog-overlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;max-height:88dvh!important;overflow-y:auto!important;padding:28px!important}
+ #howToOverlay.frog-overlay .frog-panel,#dashboardOverlay.frog-overlay .frog-panel{width:880px!important;max-width:calc(94 * var(--app-vw, 1vw))!important;max-height:calc(88 * var(--app-vh, 1vh))!important;overflow-y:auto!important;padding:28px!important}
  #howToOverlay.frog-overlay .frog-panel :is(p,li,li span,li strong){font-size:46px!important;line-height:1.35!important}
  #howToOverlay.frog-overlay .frog-panel-title,#dashboardOverlay.frog-overlay .frog-panel-title{font-size:50px!important;line-height:1.15!important}
  #howToOverlay.frog-overlay .frog-panel-section-label,#dashboardOverlay.frog-overlay .frog-panel-section-label{font-size:40px!important;line-height:1.2!important}
@@ -1226,7 +1226,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 }
 
 /* Isolated score components: same cream cards and stepped silhouette as upgrades. */
-#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:460px;max-width:calc(92 * var(--app-vw, 1vw));max-height:92dvh;overflow:auto;box-sizing:border-box;background:#073720;padding:14px;border:0;box-shadow:5px 5px #4a7e36;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
+#leaderboardOverlay .pp-board,#endGameSummaryOverlay .pp-board{width:460px;max-width:calc(92 * var(--app-vw, 1vw));max-height:calc(92 * var(--app-vh, 1vh));overflow:auto;box-sizing:border-box;background:#073720;padding:14px;border:0;box-shadow:5px 5px #4a7e36;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
 #leaderboardOverlay .pp-board *,#endGameSummaryOverlay .pp-board *{font-family:ReferencePixel,monospace!important;text-shadow:none!important;box-sizing:border-box}
 #leaderboardOverlay .pp-heading,#endGameSummaryOverlay .pp-heading{color:#fff8db!important;font-size:34px!important;line-height:1!important;text-align:center;margin:5px 0 18px!important;letter-spacing:1px}
 .pp-entries{padding:0;margin:0;list-style:none;display:grid;gap:8px}
@@ -1318,7 +1318,7 @@ button:focus-visible{outline:3px solid #e4a42c!important;outline-offset:5px}
 
 /* Build 45: readable mobile run summary; leaderboard unchanged. */
 @media(pointer:coarse),(max-width:600px){
- #endGameSummaryOverlay .pp-board{width:850px;max-width:calc(94 * var(--app-vw, 1vw));max-height:88dvh;overflow-y:auto;padding:26px}
+ #endGameSummaryOverlay .pp-board{width:850px;max-width:calc(94 * var(--app-vw, 1vw));max-height:calc(88 * var(--app-vh, 1vh));overflow-y:auto;padding:26px}
  #endGameSummaryOverlay .pp-heading{font-size:48px!important;line-height:1.15!important}
  #endGameSummaryOverlay .pp-result>span{font-size:32px}
  #endGameSummaryOverlay .pp-result>strong{font-size:96px}
