@@ -71,3 +71,28 @@
  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span{font-size:34px!important}
  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong{font-size:38px!important}
 }
+
+/* Desktop How to Play / My Stats dialed back down — the sizing above
+   (panel width 540/500px, body text in the 20-32px range) was roughly
+   double the rest of the game's desktop UI and made both panels look
+   oversized on a normal monitor. Mobile/app sizing above is untouched.
+   dashboardTagInput/SaveTagBtn are intentionally left alone — their
+   24px already exact-matches #endSummaryTagInput from an earlier fix. */
+@media (min-width: 601px) and (pointer: fine) {
+  #howToOverlay#howToOverlay#howToOverlay .frog-panel { width: 460px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .ui-help-intro { font-size: 15px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .ui-help-steps h3 { font-size: 16px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .ui-help-steps p { font-size: 14px !important; }
+  #howToOverlay#howToOverlay#howToOverlay .ui-help-note { font-size: 13px !important; }
+  #howToOverlay .ui-help-steps img { width: 40px !important; height: 40px !important; }
+  #howToOverlay .ui-help-steps section { grid-template-columns: 46px minmax(0, 1fr) !important; gap: 14px !important; }
+
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .frog-panel { width: 440px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay #dashboardCurrentTag { font-size: 20px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-profile-heading p { font-size: 14px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-progress-caption { font-size: 13px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span { font-size: 12px !important; }
+  #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong { font-size: 15px !important; }
+  .ui-profile-heading img { width: 44px !important; height: 44px !important; }
+  .ui-profile-heading { gap: 14px !important; }
+}
