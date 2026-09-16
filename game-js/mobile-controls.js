@@ -32,9 +32,9 @@
         box-shadow:none!important;text-shadow:none!important;clip-path:none!important;
       }
       #frog-game #pocket-hud {
-        position:absolute!important;top:calc(${px(6)} + ${safeTop})!important;left:auto!important;right:calc(${px(8)} + ${safeRight})!important;
+        position:absolute!important;top:calc(${px(40)} + ${safeTop})!important;left:calc(${px(8)} + ${safeLeft})!important;right:auto!important;
         transform:none!important;gap:${px(6)}!important;
-        width:max-content!important;max-width:calc(100% - ${px(16)} - ${safeLeft} - ${safeRight})!important;
+        width:max-content!important;max-width:calc(50% - ${px(8)} - ${safeLeft})!important;
       }
       #frog-game #pocket-hud span {font-size:inherit!important;color:#073720!important;}
       #frog-game #pocket-controls {
