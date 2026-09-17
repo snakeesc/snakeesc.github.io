@@ -16,7 +16,6 @@
   const playBuffSound            = AudioMod.playBuffSound            || function(){};
   const playPermanentChoiceSound = AudioMod.playPermanentChoiceSound || function(){};
   const playPerFrogUpgradeSound  = AudioMod.playPerFrogUpgradeSound  || function(){};
-  const playButtonClick          = AudioMod.playButtonClick          || function(){};
 
   const LMod = window.FrogGameLeaderboard || {};
   const initLeaderboard        = LMod.initLeaderboard        || function(){};
@@ -1189,10 +1188,9 @@ const MAX_LUCK = 30;
   }
 
 
-  if (btnSound) btnSound.onclick = () => { toggleSound(); if (soundEnabled) playButtonClick(); };
+  if (btnSound) btnSound.onclick = () => { toggleSound(); };
   if (btnEnd)   btnEnd.onclick   = (ev) => {
       ev.stopPropagation();
-      if (soundEnabled) playButtonClick();
       if (!gameOver) {
         if (confirm("End the current run?")) endGame();
       }
@@ -1451,7 +1449,9 @@ function getLuckBiasedInt(min, max) {
   const luckWeight = Math.min(0.75, luckStat / MAX_LUCK * 0.75);
 
   const roll = Math.random();
-  const biased = roll * (1 - luckWeight) + (1 - Math.random()) * luckWeight;
+  // Blend toward the better of two rolls: Luck can improve a reward, never lower it.
+  const betterRoll = Math.max(roll, Math.random());
+  const biased = roll + (betterRoll - roll) * luckWeight;
 
   return min + Math.round(biased * span);
 }
@@ -1607,6 +1607,99 @@ function seedMatchGrass() {
     makeBackgroundGrass(x, y, scale);
   }
 }
+// A short visual interlude: world timers and collisions wait until it finishes.
+let shedSequence = null;
+function clearShedSequence() {
+  if (!shedSequence) return;
+  for (const part of shedSequence.parts) {
+    part.el.style.transform = part.transform;
+    part.el.style.filter = part.filter;
+    part.skin.remove();
+  }
+  shedSequence = null;
+}
+function beginShedSequence(cycle) {
+  if (!snake || !snake.head || shedSequence) return;
+  const nodes = [snake.head, ...snake.segments];
+  const points = nodes.map(n => ({x:n.x,y:n.y}));
+  let length = 0;
+  const distances = points.map((point,i) => { if(i) length += Math.hypot(point.x-points[i-1].x,point.y-points[i-1].y); return length; });
+  const angle = snake.head.angle || 0;
+  const dx = Math.cos(angle), dy = Math.sin(angle);
+  let travel = 80;
+  if(dx>0) travel=Math.min(travel,(window.innerWidth-SNAKE_SEGMENT_SIZE-points[0].x)/dx);
+  if(dx<0) travel=Math.min(travel,(8-points[0].x)/dx);
+  if(dy>0) travel=Math.min(travel,(window.innerHeight-SNAKE_SEGMENT_SIZE-points[0].y)/dy);
+  if(dy<0) travel=Math.min(travel,(8-points[0].y)/dy);
+  travel=Math.max(0,travel);
+  function sample(distance) {
+    if(distance<=0)return {x:points[0].x-dx*distance,y:points[0].y-dy*distance};
+    for(let i=1;i<points.length;i++) if(distance<=distances[i]) {
+      const f=(distance-distances[i-1])/Math.max(.001,distances[i]-distances[i-1]);
+      return {x:points[i-1].x+(points[i].x-points[i-1].x)*f,y:points[i-1].y+(points[i].y-points[i-1].y)*f};
+    }
+    return points[points.length-1];
+  }
+  const elements = nodes.map(n=>n.el);
+  const parts = elements.map(el => {
+    const skin = el.cloneNode(true);
+    skin.removeAttribute("id");
+    skin.style.pointerEvents = "none";
+    skin.style.filter = "grayscale(1) sepia(0.5) brightness(1.2) contrast(1.3)";
+    skin.style.opacity = "0";
+    skin.style.zIndex = "28";
+    skin.setAttribute("aria-hidden", "true");
+    container.appendChild(skin);
+    return {el, skin, transform: el.style.transform, filter: el.style.filter};
+  });
+  shedSequence = {parts, nodes, points, distances, sample, travel, dx, dy, cycle, time:0, reduced:window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches};
+}
+function updateShedSequence(dt) {
+  const seq = shedSequence;
+  if (!seq) return;
+  seq.time += dt;
+  // Hold discrete poses at 12 fps, like the game's low-resolution sprites.
+  const frameTime = Math.floor(seq.time * 12) / 12;
+  const t = Math.min(1, frameTime / 5);
+  const emerge = Math.max(0, Math.min(1, (t - 0.2) / 0.55));
+  seq.parts.forEach((part, i) => {
+    const position = i / Math.max(1, seq.parts.length - 1);
+    const wave = Math.sin(t * Math.PI * 10 - position * 7);
+    const progress = Math.max(0,Math.min(1,(t-.12)/.7));
+    // Short forward pulls with a tiny recovery hold, rather than a smooth glide.
+    const pull = progress * 6;
+    const pullPhase = pull - Math.floor(pull);
+    const advance = Math.min(1,(Math.floor(pull)+Math.min(1,pullPhase/.7))/6)*seq.travel;
+    const point = seq.sample(seq.distances[i]-advance);
+    const wriggle = seq.reduced ? 0 : wave*5*Math.sin(Math.PI*progress);
+    const x = Math.round((point.x-seq.points[i].x-seq.dy*wriggle)/2)*2;
+    const y = Math.round((point.y-seq.points[i].y+seq.dx*wriggle)/2)*2;
+    part.finalPoint=point;
+    part.finalTransform=`translate(${Math.round(point.x-seq.points[i].x)}px, ${Math.round(point.y-seq.points[i].y)}px) ${part.transform}`;
+    part.el.style.transform = `translate(${x}px, ${y}px) ${part.transform}`;
+    part.el.style.filter = emerge >= position ? getShedStageFilter(seq.cycle) : part.filter;
+    // Solid discarded skin, then irregular stair-step tears. No translucent dissolve.
+    const crumble = Math.max(0, Math.min(1, (t - .74 - (i % 3)*.025) / .18));
+    part.skin.style.opacity = t < .12 || crumble >= 1 ? "0" : "1";
+    const cut = Math.floor(crumble * 5) * 20;
+    const notch = Math.min(100,cut+20);
+    part.skin.style.clipPath = crumble > 0 ? `polygon(0 ${cut}%,20% ${cut}%,20% ${notch}%,40% ${notch}%,40% ${cut}%,60% ${cut}%,60% ${notch}%,80% ${notch}%,80% ${cut}%,100% ${cut}%,100% 100%,0 100%)` : "";
+    part.skin.style.transform = `translate(${(i % 2 ? -1 : 1) * Math.floor(crumble * 3) * 2}px, ${Math.floor(crumble * 4) * 2}px) ${part.transform}`;
+  });
+  if (t >= 1) {
+    const cycle = seq.cycle;
+    seq.parts.forEach((part,i)=>{seq.nodes[i].x=part.finalPoint.x;seq.nodes[i].y=part.finalPoint.y;part.transform=part.finalTransform;});
+    let pathDistance=0;
+    const oldPath=snake.path;
+    snake.path=oldPath.map((point,i)=>{
+      if(i)pathDistance+=Math.hypot(point.x-oldPath[i-1].x,point.y-oldPath[i-1].y);
+      return seq.sample(pathDistance-seq.travel);
+    });
+    clearShedSequence();
+    snakeShed(cycle);
+    if (cycle === 3) handleFourthShed();
+  }
+}
 function snakeShed(stage) {
     if (!snake) return;
 
@@ -1616,14 +1709,9 @@ function snakeShed(stage) {
       ? oldSnake.segments.map(seg => seg.el).filter(Boolean)
       : [];
 
-    // Despawn old snake visuals
-    if (oldHeadEl || oldSegmentEls.length) {
-      dyingSnakes.push({
-        headEl: oldHeadEl,
-        segmentEls: oldSegmentEls,
-        nextDespawnTime: 0.08
-      });
-    }
+    // The interlude has finished displaying the empty skin.
+    if (oldHeadEl) oldHeadEl.remove();
+    oldSegmentEls.forEach(el => el.remove());
 
     // Speed & Stage Logic
     let speedMult = SNAKE_SHED_SPEEDUP;
@@ -1679,17 +1767,20 @@ function snakeShed(stage) {
         ? `url(${snakeSprites.tail})`
         : `url(${snakeSprites.body})`;
       container.appendChild(segEl);
-      segments.push({ el: segEl, x: startX, y: startY });
+      const oldPart = oldSnake.segments[i];
+      if (oldPart) segEl.style.transform = oldPart.el.style.transform;
+      segments.push({ el: segEl, x: oldPart ? oldPart.x : startX, y: oldPart ? oldPart.y : startY });
     }
 
     // --- 🚨 THE FIX: PATH PRE-FILLING 🚨 ---
-    const path = [];
+    const path = (oldSnake.path || []).map(point => ({...point}));
+    headEl.style.transform = oldHeadEl ? oldHeadEl.style.transform : "";
     const segmentGap = computeSegmentGap();
     // We need enough points in the path for every segment to have a unique index
     const requiredPathLength = (newSegCount + 5) * segmentGap; 
     
-    for (let i = 0; i < requiredPathLength; i++) {
-      path.push({ x: startX, y: startY });
+    for (let i = path.length; i < requiredPathLength; i++) {
+      path.push(path.length ? {...path[path.length - 1]} : { x: startX, y: startY });
     }
 
     snake = {
@@ -2361,6 +2452,60 @@ function updateFrogRoleEmoji(frog) {
   frog.cannibalIcon = badge;
 }
 
+// Feedback shares the upgrade menu's loaded pixel font and approved artwork.
+function styleEventPanel(el) {
+  const menuTitle=document.querySelector('#upgradeOverlay .frog-upgrade-title');
+  const titleStyle=menuTitle ? getComputedStyle(menuTitle) : null;
+  const panel=document.querySelector('#upgradeOverlay .frog-panel');
+  const panelStyle=panel ? getComputedStyle(panel) : null;
+  const size=titleStyle ? parseFloat(titleStyle.fontSize) : 26;
+  Object.assign(el.style,{fontFamily:titleStyle?.fontFamily || 'ReferencePixel, Pocket, monospace',fontSize:(Number.isFinite(size)?size:26)+'px',fontWeight:'400',lineHeight:'1.1',color:'#073720',background:'#fff8db',border:'3px solid #073720',borderRadius:panelStyle?.borderRadius || '7px',boxShadow:'3px 3px 0 #497b36',padding:'8px 12px',gap:'10px',boxSizing:'border-box',maxWidth:'min(420px, 90%)'});
+}
+const eventVisuals = [];
+function clearEventVisuals(){for(const effect of eventVisuals)effect.el.remove();eventVisuals.length=0;}
+function showUpgradeFeedback(choice, sourceButton) {
+  if(choice.id === "luckyRoll") return;
+  const title = document.createElement("div");
+  title.innerHTML=String(choice.label||choice.id||"Upgrade").split(/<br\s*\/?>/i)[0];
+  const name=title.textContent.replace(/^[^\p{L}\p{N}]+/u,"").trim();
+  const url=window.approvedUpgrades?.[name.toLowerCase()] || window.approvedFrogs?.[name.toLowerCase()];
+  const el=document.createElement("div");
+  Object.assign(el.style,{position:"absolute",pointerEvents:"none",zIndex:"48",display:"flex",alignItems:"center",gap:"8px",padding:"7px 10px",background:"#fff7db",color:"#103b24",borderRadius:"7px",font:"inherit",fontWeight:"bold",maxWidth:"280px",textAlign:"center",transform:"translate(-50%,-100%)"});
+  styleEventPanel(el);
+  Object.assign(el.style,{background:"transparent",border:"0",borderRadius:"0",boxShadow:"none",padding:"0",color:"#fff8db",textShadow:"-2px -2px 0 #073720, 0 -2px 0 #073720, 2px -2px 0 #073720, -2px 0 0 #073720, 2px 0 0 #073720, -2px 2px 0 #073720, 0 2px 0 #073720, 2px 2px 0 #073720"});
+  if(url){const image=document.createElement("span");Object.assign(image.style,{width:"1.4em",height:"1.4em",flexShrink:"0",imageRendering:"pixelated",backgroundImage:`url("${url}")`,backgroundSize:"contain",backgroundRepeat:"no-repeat",backgroundPosition:"center"});el.appendChild(image);}
+  const text=document.createElement("span");text.textContent=name;el.appendChild(text);container.appendChild(el);
+  const x=frogs.length?frogs.reduce((n,f)=>n+f.x,0)/frogs.length:window.innerWidth/2;
+  const y=frogs.length?frogs.reduce((n,f)=>n+f.y,0)/frogs.length:window.innerHeight/2;
+  eventVisuals.push({el,time:0,duration:1.5,x,y,kind:"upgrade"});
+}
+function showRoleSpotlight(frog){
+  if(eventVisuals.some(e=>e.frog===frog))return;
+  const el=document.createElement("div");
+  Object.assign(el.style,{position:"absolute",width:"38px",height:"18px",background:"#fff3ad",boxShadow:"inset 0 -4px #a6cc62",clipPath:"polygon(15% 0,85% 0,85% 20%,100% 20%,100% 80%,85% 80%,85% 100%,15% 100%,15% 80%,0 80%,0 20%,15% 20%)",pointerEvents:"none",zIndex:"9"});container.appendChild(el);
+  eventVisuals.push({el,frog,time:0,duration:1.1,kind:"spotlight"});
+}
+function showLuckyShuffle(result){
+  const outcomes=["speed","jump","snakeSlow","snakeConfuse","snakeShrink","frogShield","orbMagnet","scoreMulti","lifeSteal"];
+  const labels={speed:"Speed",jump:"Jump",snakeSlow:"Snake Slow",snakeConfuse:"Snake Confusion",snakeShrink:"Snake Shrink",frogShield:"Frog Shield",orbMagnet:"Orb Magnet",scoreMulti:"Score Multiplier",lifeSteal:"Life Steal"};
+  // Orb effects do not each have their own upgrade-menu artwork. Shuffle the
+  // approved menu icons; settle on the actual Lucky Roll icon with an exact result label.
+  const rollIcon=window.approvedUpgrades?.['lucky roll'];
+  const icons=Object.values(window.approvedUpgrades || {});
+  const el=document.createElement("div"),image=document.createElement("img"),label=document.createElement("span");
+  Object.assign(el.style,{position:"absolute",left:"50%",top:"30%",transform:"translateX(-50%)",background:"#fff7db",color:"#103b24",borderRadius:"7px",padding:"8px 12px",display:"flex",alignItems:"center",gap:"8px",pointerEvents:"none",zIndex:"49",font:"inherit"});styleEventPanel(el);Object.assign(image.style,{width:"1.5em",height:"1.5em",objectFit:"contain",imageRendering:"pixelated",flexShrink:"0"});
+  const copy=document.createElement("div"),heading=document.createElement("div");heading.textContent="LUCKY ROLL";Object.assign(heading.style,{fontFamily:el.style.fontFamily,fontSize:".7em",color:"#497b36",marginBottom:"3px"});copy.append(heading,label);el.append(image,copy);container.appendChild(el);
+  eventVisuals.push({el,time:0,duration:2.1,kind:"roll",render(t){const type=t<.65?outcomes[Math.floor(t/.08)%outcomes.length]:result;const url=t<.65?icons[Math.floor(t/.08)%icons.length]:rollIcon;if(url){if(image.getAttribute("src")!==url)image.src=url;}image.style.display=url?"block":"none";label.textContent=t<.65?"Rolling…":labels[type];}});
+  eventVisuals[eventVisuals.length-1].render(0);
+}
+function updateEventVisuals(dt){
+ for(let i=eventVisuals.length-1;i>=0;i--){const e=eventVisuals[i];e.time+=dt;if(e.time>=e.duration || (e.frog&&!e.frog.el.isConnected)){e.el.remove();eventVisuals.splice(i,1);continue;}
+ const fade=Math.min(1,(e.duration-e.time)/.3);e.el.style.opacity=String(fade);
+ if(e.kind==="roll"){e.render(e.time);continue;}
+ if(e.frog){e.el.style.left=(e.frog.x+FROG_SIZE/2-19)+"px";e.el.style.top=(e.frog.baseY+FROG_SIZE-9)+"px";e.el.style.transform=`scale(${Math.min(1,e.time/.15)})`;}
+ else {e.el.style.left=Math.max(150,Math.min(window.innerWidth-150,e.x))+"px";e.el.style.top=Math.max(80,e.y-30-Math.min(e.time/.3,1)*10)+"px";}
+ }
+}
 function grantRandomPermaFrogUpgrade(frog) {
   if (!frog) return;
   const roles = ["champion", "aura", "magnet", "lucky"];
@@ -2457,6 +2602,7 @@ function updateFrogRoleEmoji(frog) {
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
  const roles=[['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isChampion','champion'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
  const role=roles.find(([flag])=>frog[flag]);const key=role?role[1]:(frog.starLevel>0?'crowned':'');
+ if(role && frog.el.dataset.approvedRole!==key)showRoleSpotlight(frog);
  if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
  else {delete frog.el.dataset.approvedRole;frog.el.style.removeProperty('--approved-frog');}
 }
@@ -2474,7 +2620,7 @@ function grantStarUpgrade(frog) {
   updateFrogRoleEmoji(frog);
 }
 
-function getRandomTriggeredOrbBuffType() {
+function getRandomTriggeredOrbBuffType(excluded = []) {
   const pool = [
     "speed",
     "jump",
@@ -2490,12 +2636,14 @@ function getRandomTriggeredOrbBuffType() {
     "lifeSteal"
   ];
 
-  return pool[Math.floor(Math.random() * pool.length)];
+  const eligible = pool.filter(type => !excluded.includes(type));
+  return eligible[Math.floor(Math.random() * eligible.length)];
 }
 
 function triggerLuckyRoll() {
-  const buffType = getRandomTriggeredOrbBuffType();
-  applyBuff(buffType, null, 1.5 * getLuckBuffDurationMultiplier());
+  const buffType = getRandomTriggeredOrbBuffType(["spawn", "megaSpawn", "panicHop"]);
+  showLuckyShuffle(buffType);
+  applyBuff(buffType, null, 1.5); // applyBuff applies Luck once.
 }
 
 function promoteAllFrogs() {
@@ -2513,7 +2661,7 @@ function promoteAllFrogs() {
 
 function triggerChainReactionBonus(frog) {
   const buffType = getRandomTriggeredOrbBuffType();
-  applyBuff(buffType, frog, getLuckBuffDurationMultiplier());
+  applyBuff(buffType, frog); // applyBuff applies Luck once.
 }
 
 function spawnTidalWave() {
@@ -2670,6 +2818,7 @@ function showRoleDraftOverlayChoices() {
   initUpgradeOverlay();
   if (!upgradeOverlayButtonsContainer) return;
 
+  if (soundEnabled) { initAudio(); playPermanentChoiceSound(); }
   roleDraftChoices = getTwoRandomRoleDraftChoices();
   roleDraftPending = true;
 
@@ -2708,10 +2857,10 @@ function showRoleDraftOverlayChoices() {
     `;
 
     btn.addEventListener("click", () => {
-      playButtonClick();
+      
       applyRoleDraft(role.id);
       roleDraftPending = false;
-      playPermanentChoiceSound();
+      
       closeUpgradeOverlay();
     });
 
@@ -3516,6 +3665,16 @@ function computeDeathRattleChanceForFrog(frog) {
 
       targetX = frog.x + stepX;
       targetBaseY = frog.baseY + stepY;
+    } else if (panicHopTime > 0) {
+      // Independent directions each hop create a scattering swarm, not idle jitter.
+      const angle = randRange(0, Math.PI * 2);
+      const distance = randRange(maxStep * 0.6, maxStep);
+      let dx = Math.cos(angle) * distance;
+      let dy = Math.sin(angle) * distance;
+      if (frog.x + dx < marginX || frog.x + dx > width - marginX - FROG_SIZE) dx = -dx;
+      if (frog.baseY + dy < marginY || frog.baseY + dy > height - marginY - FROG_SIZE) dy = -dy;
+      targetX = frog.x + dx;
+      targetBaseY = frog.baseY + dy;
     } else {
       targetX = frog.x + randRange(-12, 12);
       targetBaseY = frog.baseY + randRange(-6, 6);
@@ -4170,6 +4329,79 @@ function samplePathAtDistance(path, startIdx, dist) {
     const secondLast = path.length >= 2 ? path[path.length - 2] : null;
     return { x: last.x, y: last.y, nextStart: path.length - 1, exhausted: true, secondLast };
   }
+  // Tiny sprite cues, positioned in world space above the visible face.
+  // Separate from the head element: no inherited rotation or shed-color filter.
+  const debuffCues = new Map();
+  const debuffReduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const debuffAsset = name => new URL('game-assets/sprites/debuffs/' + name, document.baseURI).href;
+  const birdFrames = ['confusion-bird-down.svg', 'confusion-bird-up.svg'].map(debuffAsset);
+  const puffFrames = ['shrink-puff-1.svg', 'shrink-puff-2.svg', 'shrink-puff-3.svg'].map(debuffAsset);
+  const snailSprite = debuffAsset('slow-snail.svg');
+  // Preload both wing poses and all puff frames to avoid first-use flicker.
+  [...birdFrames, ...puffFrames, snailSprite].forEach(src => { const image = new Image(); image.src = src; });
+  function debuffImage(src) {
+    const image = document.createElement('img');
+    image.src = src; image.alt = ''; image.draggable = false;
+    image.style.cssText = 'display:block;width:100%;height:100%;image-rendering:pixelated;pointer-events:none;';
+    return image;
+  }
+  function updateSnakeDebuffCue(obj, dt, active, size) {
+    const head = obj.head;
+    const confused = active && snakeConfuseTime > 0;
+    const slowed = active && snakeSlowTime > 0;
+    const shrunk = active && snakeShrinkTime > 0;
+    let c = debuffCues.get(head.el);
+    if (!c && !confused && !slowed && !shrunk) return;
+    if (!c) {
+      const el = document.createElement('div');
+      el.setAttribute('aria-hidden','true');
+      el.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:32;overflow:visible;';
+      const birds = [0,1].map(() => {
+        const b=document.createElement('span'); b.appendChild(debuffImage(birdFrames[0]));
+        b.style.cssText='position:absolute;width:16px;height:10px;'; el.appendChild(b); return b;
+      });
+      const snail=document.createElement('span'); snail.appendChild(debuffImage(snailSprite));
+      snail.style.cssText='position:absolute;width:20px;height:12px;'; el.appendChild(snail);
+      const puff=document.createElement('span');
+      puff.appendChild(debuffImage(puffFrames[0]));
+      puff.style.cssText='position:absolute;width:28px;height:20px;display:none;';el.appendChild(puff);
+      container.appendChild(el);
+      c={el,birds,snail,puff,t:0,shrunk:false,puffTime:0};debuffCues.set(head.el,c);
+    }
+    if(shrunk!==c.shrunk && active) c.puffTime=.7;
+    c.shrunk=shrunk;c.t+=dt;c.puffTime=Math.max(0,c.puffTime-dt);
+    const scale=shrunk?.75:1;
+    // Build 33 face is 40.73px tall, ending 8.017px below head center.
+    const centerX=head.x+size/2;
+    const faceTop=head.y+size/2+(8.01705-40.7303)*scale;
+    const phase=debuffReduceMotion.matches?0:Math.floor(c.t*12)/12*3.8;
+    c.el.style.transform=`translate(${centerX}px,${faceTop}px)`;
+    c.birds.forEach((b,i)=>{
+      b.style.display=confused?'block':'none';
+      const a=phase+i*Math.PI;
+      const x=Math.round(Math.cos(a)*10)-8;
+      const y=Math.round(Math.sin(a)*2)-23;
+      b.style.transform=`translate(${x}px,${y}px) scaleX(${Math.sin(a)>0?-1:1})`;
+      b.style.opacity=Math.sin(a)<0?'.75':'1';
+      const wingFrame = !debuffReduceMotion.matches && Math.floor(c.t*7+i)%2 ? 1 : 0;
+      if (b.dataset.frame !== String(wingFrame)) { b.firstElementChild.src=birdFrames[wingFrame]; b.dataset.frame=String(wingFrame); }
+    });
+    c.snail.style.display=slowed?'block':'none';
+    c.snail.style.transform=`translate(${confused?18:-10}px,${-23+(debuffReduceMotion.matches?0:Math.floor(c.t*3)%2)}px)`;
+    c.puff.style.display=c.puffTime>0 && active?'block':'none';
+    const puffFrame=Math.min(2,Math.floor((.7-c.puffTime)/.7*3));
+    if(c.puff.dataset.frame!==String(puffFrame)){c.puff.firstElementChild.src=puffFrames[puffFrame];c.puff.dataset.frame=String(puffFrame);}
+    c.puff.style.opacity='1';
+    c.puff.style.transform=`translate(-14px,4px)`;
+    c.el.style.display=active?'block':'none';
+  }
+  // Head removal (death, split, restart, menu) owns effect cleanup.
+  new MutationObserver(() => {
+    for(const [head,c] of debuffCues) if(!head.isConnected){c.el.remove();debuffCues.delete(head);}
+  }).observe(container,{childList:true});
+
+
+
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
 
@@ -4270,6 +4502,8 @@ function samplePathAtDistance(path, startIdx, dist) {
       `translate3d(${head.x}px, ${head.y}px, 0) scale(${shrinkScale})`;
 
     
+    updateSnakeDebuffCue(snakeObj, dt, !isMainMenu, SNAKE_SEGMENT_SIZE);
+
     // Scale segment spacing to match visual size during shrink
     const visualSpacing = SEGMENT_VISUAL_SPACING * shrinkScale;
 
@@ -6174,7 +6408,7 @@ function getDashboardPfp() {
     prevBtn.onmouseenter = () => { prevBtn.style.background = "#333"; };
     prevBtn.onmouseleave = () => { prevBtn.style.background = "#222"; };
       prevBtn.onclick = () => {
-      playButtonClick();
+      
       setInfoPage(infoPage - 1);
     };
     infoPrevBtn = prevBtn;
@@ -6192,7 +6426,7 @@ function getDashboardPfp() {
     nextBtn.onmouseenter = () => { nextBtn.style.background = "#333"; };
     nextBtn.onmouseleave = () => { nextBtn.style.background = "#222"; };
       nextBtn.onclick = () => {
-      playButtonClick();
+      
       setInfoPage(infoPage + 1);
     };
     infoNextBtn = nextBtn;
@@ -6213,7 +6447,7 @@ function getDashboardPfp() {
     closeBtn.onmouseenter = () => { closeBtn.style.background = "#333"; };
     closeBtn.onmouseleave = () => { closeBtn.style.background = "#222"; };
     closeBtn.onclick = () => {
-      playButtonClick();
+      
       closeInfoOverlay();
     };
 
@@ -6455,7 +6689,7 @@ function initUpgradeOverlay() {
 
   function selectUpgrade(choice) {
     if (!choice) return;
-    playButtonClick();
+    
 
     try {
       if (choice && choice.opensRoleDraft) {
@@ -6465,12 +6699,13 @@ function initUpgradeOverlay() {
 
       if (typeof choice.apply === "function") {
         choice.apply();
+        showUpgradeFeedback(choice);
       }
     } catch (e) {
       console.error("Error applying upgrade:", e);
     }
 
-    playPermanentChoiceSound();
+    
     closeUpgradeOverlay();
   }
 
@@ -6585,19 +6820,16 @@ function initUpgradeOverlay() {
       `;
 
       btn.addEventListener("click", () => {
-        playButtonClick();
+        
 
         if (choice.opensRoleDraft) {
           choice.apply();
-          playPermanentChoiceSound();
+          
           return;
         }
 
         choice.apply();
-
-        if (soundEnabled) {
-          playPermanentChoiceSound();
-        }
+        showUpgradeFeedback(choice, btn);
 
         if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
           initialUpgradeDone = true;
@@ -6752,6 +6984,7 @@ function initUpgradeOverlay() {
     gamePaused = true;
     if (upgradeOverlay) {
       openAnimatedOverlay(upgradeOverlay);
+      if (soundEnabled) { initAudio(); playPermanentChoiceSound(); }
     }
   }
 
@@ -6865,6 +7098,8 @@ function startRunFromMenu() {
   }
 
   async function endGame() {
+    clearEventVisuals();
+    clearShedSequence();
     if (gameOver || summaryPending) return;
 
     gameOver = true;
@@ -6998,6 +7233,8 @@ function startRunFromMenu() {
     extraSnakes = [];
     snake = null;
 
+    clearEventVisuals();
+    clearShedSequence();
     // Remove any old shed skins still fading out
     for (const ds of dyingSnakes) {
       if (ds.headEl && ds.headEl.parentNode === container) {
@@ -7158,7 +7395,9 @@ doubleYolkerActive = false;
     // Clamp crazy tab-switch jumps so nothing explodes
     if (dt > 0.1) dt = 0.1;
 
-    if (!gameOver && !gamePaused) {
+    if (!gameOver && !gamePaused && shedSequence) {
+      updateShedSequence(dt);
+    } else if (!gameOver && !gamePaused) {
       updateDyingSnakes(dt);
       // ----- core timers -----
       elapsedTime += dt;
@@ -7180,19 +7419,12 @@ doubleYolkerActive = false;
         // 3   = final shed for the current primary + spawn a new snake
         const cycleIndex = ((snakeShedCount - 1) % 3) + 1;
 
-        if (cycleIndex <= 2) {
-          const stage = cycleIndex; // 1 or 2
-          snakeShed(stage);
-        } else {
-          // Third shed interval: finish the primary snake's final shed,
-          // then also spawn a new snake for multi-snake gameplay.
-          snakeShed(3);
-          handleFourthShed();
-        }
+        beginShedSequence(cycleIndex);
 
         nextShedTime += SHED_INTERVAL;
       }
 
+      if (!shedSequence) {
       // ----- UPGRADE TIMING (don’t open new menu if one is already open) -----
       const overlayOpen =
         upgradeOverlay && upgradeOverlay.style.display !== "none";
@@ -7223,8 +7455,10 @@ doubleYolkerActive = false;
       if (!gameOver && frogs.length === 0) {
         endGame();
       }
+      } // no world updates or upgrade panels during shedding
     }
 
+    if(!gameOver && !gamePaused)updateEventVisuals(dt);
     updateHUD();
     updateBuffsBar();
     updateStatsPanel();

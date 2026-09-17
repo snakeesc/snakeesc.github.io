@@ -52,8 +52,8 @@
    * Play from a pool with basic rate-limiting.
    * Will reuse paused/ended instances; if all are in use, it “steals” the next one.
    */
-  function playFromPool(key) {
-    if (!audioInitialized || globalMuted) return; // NEW: respect mute
+  function playFromPool(key, menuClick = false) {
+    if (!audioInitialized || (globalMuted && !menuClick)) return; // NEW: respect mute
     const pool = pools[key];
     if (!pool || !pool.players.length) return;
 
@@ -77,6 +77,7 @@
       const audio = players[idx];
       if (audio.paused || audio.ended) {
         try {
+          audio.muted = globalMuted && !menuClick;
           audio.currentTime = 0;
         } catch (e) {}
         const p = audio.play();
@@ -91,6 +92,7 @@
     // Fallback: steal one
     const audio = players[pool.index];
     try {
+      audio.muted = globalMuted && !menuClick;
       audio.currentTime = 0;
     } catch (e) {}
     const p = audio.play();
@@ -182,7 +184,7 @@
   }
 
   function playButtonClick() {
-    playFromPool("buttonClick");
+    // Button clicks are intentionally silent for now; retain the API for callers.
   }
 
   /**
