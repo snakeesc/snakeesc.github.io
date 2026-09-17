@@ -81,6 +81,14 @@
     var trueSize = getTrueViewportSize();
     var deviceWidth = trueSize.width;
     var deviceHeight = trueSize.height;
+    // Desktop: fit both axes, so short laptop windows do not magnify the UI
+    // relative to available height. Extra aspect-ratio space stays playable.
+    // Phone browser and native-phone scaling are deliberately unchanged.
+    if (!isPhoneScreen) {
+      var desktopScale = Math.min(deviceWidth / 2160, deviceHeight / 1215);
+      if (!(desktopScale > 0)) return;
+      designWidth = deviceWidth / desktopScale;
+    }
     var designHeight = deviceHeight * (designWidth / deviceWidth);
     var renderScale = deviceWidth / designWidth;
 
