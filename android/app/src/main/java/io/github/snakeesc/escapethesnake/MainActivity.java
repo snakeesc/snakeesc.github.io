@@ -5,6 +5,9 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.DisplayCutout;
 import android.os.Build;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -44,14 +47,14 @@ public class MainActivity extends BridgeActivity {
   }
 
   private void hideSystemBars() {
-    View decorView = getWindow().getDecorView();
-    decorView.setSystemUiVisibility(
-        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-      | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-      | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-      | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-      | View.SYSTEM_UI_FLAG_FULLSCREEN
-      | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-    );
+    // targetSdk 36 (Android 15+) enforces edge-to-edge and increasingly ignores the
+    // legacy View.SYSTEM_UI_FLAG_* fullscreen flags, which left a status-bar-sized gap
+    // at the top on newer devices. WindowInsetsControllerCompat is the modern
+    // replacement and reliably hides the system bars across all supported versions.
+    WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+    WindowInsetsControllerCompat controller =
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+    controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    controller.hide(WindowInsetsCompat.Type.systemBars());
   }
 }
