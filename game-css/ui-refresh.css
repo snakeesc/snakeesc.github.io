@@ -1,6 +1,6 @@
 /* Presentation only. Viewport, input coordinates and game rules remain unchanged. */
 #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice{border:0!important;box-shadow:none!important;clip-path:none!important}
-@media(hover:hover){#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:hover{background:#edf0d5!important;outline:none!important;transform:translateX(2px)!important}}
+@media(hover:hover){#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:hover{outline:none!important;transform:translateX(2px)!important}}
 #upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:focus-visible{outline:2px solid #497b36!important;outline-offset:2px}
 #howToOverlay#howToOverlay#howToOverlay .frog-panel{width:540px!important}
 #howToOverlay .ui-help-intro{font:24px/1.25 ReferencePixel,monospace!important;text-align:center;color:#497b36!important;margin:8px 0 20px!important}
@@ -96,4 +96,30 @@
   #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-progress-caption { font-size: 20px !important; }
   #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records span { font-size: 19px !important; }
   #dashboardOverlay#dashboardOverlay#dashboardOverlay .ui-records strong { font-size: 22px !important; }
+}
+
+/* Upgrade cards: clipped pixel corners; preserve existing text hover. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice {
+ border-radius:0!important;
+ clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)!important;
+}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji {image-rendering:pixelated!important}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji[data-approved="role draft"] {
+ width:64px!important;height:28px!important;left:3px!important;
+ background-size:64px 28px!important;image-rendering:pixelated!important;
+}
+
+/* Short gold pixel cue at the crowned frog; no panel or text. */
+.frog-crown-upgrade-cue{position:absolute;left:50%;top:-8px;width:0;height:0;z-index:30;pointer-events:none}
+.frog-crown-upgrade-cue i{position:absolute;width:2px;height:2px;background:#ffe885;box-shadow:0 -2px #ffe885,0 2px #ffe885,-2px 0 #ffe885,2px 0 #ffe885;left:calc(-12px + var(--spark)*12px);top:0;opacity:0;animation:crown-spark .5s steps(4,end) forwards;animation-delay:calc(var(--spark)*.06s)}
+@keyframes crown-spark{0%{opacity:1;translate:0 3px}65%{opacity:1;translate:0 -5px}100%{opacity:0;translate:0 -8px}}
+.frog-crown-pop::before{animation:crown-upgrade-pop .55s steps(5,end)}
+@keyframes crown-upgrade-pop{0%{translate:0 0}45%{translate:0 -3px}100%{translate:0 0}}
+
+/* Card surface stays identical in every interaction state; only text moves. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice,
+#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-choice:is(:hover,:focus,:active){
+ background:linear-gradient(110deg,#fffbea,#fff6d6)!important;
+ filter:none!important;box-shadow:none!important;transform:none!important;
+ -webkit-tap-highlight-color:transparent;
 }

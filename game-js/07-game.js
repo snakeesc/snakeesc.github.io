@@ -982,6 +982,7 @@ let extraUpgradeOptionActive = false;
   let speedBuffTime   = 0;
   let jumpBuffTime    = 0;
   let snakeSlowTime   = 0;
+  let snakeSlowCueTime = 0; // Non-poison slowdown indicator; independent of bite extensions.
   let snakeConfuseTime= 0;
   let snakeShrinkTime = 0;
   let frogShieldTime  = 0;
@@ -1005,6 +1006,9 @@ let extraUpgradeOptionActive = false;
 let chainReactionActive = false;
 let nightBloomActive = false;
 let luckStat = 0;
+let lingeringHexActive = false;
+let lastingLegacyActive = false;
+let brittleScalesActive = false;
 const MAX_LUCK = 30;
   let fragileRealityActive = false;
   let frogScatterUsed      = false;
@@ -1619,7 +1623,7 @@ function clearShedSequence() {
   shedSequence = null;
 }
 function beginShedSequence(cycle) {
-  if (!snake || !snake.head || shedSequence) return;
+  if (!snake || !snake.head || shedSequence || cycle > 2) return;
   const nodes = [snake.head, ...snake.segments];
   const points = nodes.map(n => ({x:n.x,y:n.y}));
   let length = 0;
@@ -1677,7 +1681,7 @@ function updateShedSequence(dt) {
     part.finalPoint=point;
     part.finalTransform=`translate(${Math.round(point.x-seq.points[i].x)}px, ${Math.round(point.y-seq.points[i].y)}px) ${part.transform}`;
     part.el.style.transform = `translate(${x}px, ${y}px) ${part.transform}`;
-    part.el.style.filter = emerge >= position ? getShedStageFilter(seq.cycle) : part.filter;
+    if (emerge >= position) { setShedPalette(part.el, seq.cycle); part.el.style.filter = ""; }
     // Solid discarded skin, then irregular stair-step tears. No translucent dissolve.
     const crumble = Math.max(0, Math.min(1, (t - .74 - (i % 3)*.025) / .18));
     part.skin.style.opacity = t < .12 || crumble >= 1 ? "0" : "1";
@@ -1697,7 +1701,7 @@ function updateShedSequence(dt) {
     });
     clearShedSequence();
     snakeShed(cycle);
-    if (cycle === 3) handleFourthShed();
+
   }
 }
 function snakeShed(stage) {
@@ -2226,6 +2230,9 @@ function createFrogAt(x, y, tokenId) {
 
     factor *= tempSpeedFactor;
 
+    // Survival Instinct affects hop duration, not jump height/reach.
+    if (survivalInstinctActive && frogs.length < 10) factor *= 0.80;
+
     // Final hard cap so orbs can't push total speed too far.
     // Remember: smaller factor = faster hops.
     if (factor < MIN_TOTAL_FROG_SPEED_FACTOR) {
@@ -2259,10 +2266,6 @@ function createFrogAt(x, y, tokenId) {
       factor = MAX_TOTAL_FROG_JUMP_FACTOR;
     }
 
-    // 🧠 Survival Instinct
-    if (survivalInstinctActive && frogs.length < 10) {
-      factor *= 0.80; // 20% faster hops
-    }
     return factor;
   }
 
@@ -2323,7 +2326,7 @@ function createFrogAt(x, y, tokenId) {
     return Math.max(
       0,
       Math.min(maxResist, extraSegments * RESIST_PER_SEGMENT + shedBonus)
-    );
+    ) * (brittleScalesActive ? 0.5 : 1);
   }
 
 function getRandomMutationUpgrade() {
@@ -2607,6 +2610,18 @@ function updateFrogRoleEmoji(frog) {
  else {delete frog.el.dataset.approvedRole;frog.el.style.removeProperty('--approved-frog');}
 }
 
+function showCrownUpgrade(frog) {
+  if (!frog?.el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cue = document.createElement('span');
+  cue.className = 'frog-crown-upgrade-cue';
+  cue.setAttribute('aria-hidden','true');
+  for (let i=0;i<3;i++) { const spark=document.createElement('i'); spark.style.setProperty('--spark',i);cue.appendChild(spark); }
+  frog.el.appendChild(cue);
+  frog.el.classList.remove('frog-crown-pop');void frog.el.offsetWidth;
+  frog.el.classList.add('frog-crown-pop');
+  setTimeout(()=>{cue.remove();frog.el?.classList.remove('frog-crown-pop');},850);
+}
+
 function grantStarUpgrade(frog) {
   if (!frog) return;
 
@@ -2618,6 +2633,7 @@ function grantStarUpgrade(frog) {
 
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
+  showCrownUpgrade(frog);
 }
 
 function getRandomTriggeredOrbBuffType(excluded = []) {
@@ -2643,7 +2659,7 @@ function getRandomTriggeredOrbBuffType(excluded = []) {
 function triggerLuckyRoll() {
   const buffType = getRandomTriggeredOrbBuffType(["spawn", "megaSpawn", "panicHop"]);
   showLuckyShuffle(buffType);
-  applyBuff(buffType, null, 1.5); // applyBuff applies Luck once.
+  applyBuff(buffType, null, 1.5, true); // applyBuff applies Luck once.
 }
 
 function promoteAllFrogs() {
@@ -2763,11 +2779,7 @@ function getTwoRandomRoleDraftChoices() {
 function applyRoleDraft(roleId) {
   const starredFrogs = frogs.filter(frog => (frog.starLevel || 0) > 0);
 
-  const rolePool = getRoleDraftPool();
-  const chosenRole = rolePool.find(role => role.id === roleId);
-  const isEpicRole = chosenRole && chosenRole.tier === "epic";
-
-  const spawnCount = isEpicRole ? randInt(1, 2) : randInt(2, 4);
+  const spawnCount = randInt(2, 4);
 
   for (let i = 0; i < spawnCount; i++) {
     spawnRoleFrog(roleId);
@@ -3221,6 +3233,29 @@ function computeDeathRattleChanceForFrog(frog) {
 }
 
 
+  // Transfer one role to an existing ordinary frog; never duplicate the dead frog.
+  function tryLastingLegacy(deadFrog, source) {
+    if (!lastingLegacyActive || source === "scatter") return;
+    const grants = [
+      ["isChampion", grantChampionFrog], ["isAura", grantAuraFrog],
+      ["hasPermaShield", grantShieldFrog], ["isMagnet", grantMagnetFrog],
+      ["isLucky", grantLuckyFrog], ["isZombie", grantZombieFrog],
+      ["isNecromancer", grantNecromancerFrog], ["isAlchemist", grantAlchemistFrog],
+      ["isCannibal", markCannibalFrog]
+    ];
+    const roles = grants.filter(([flag]) => deadFrog[flag]);
+    if (!roles.length) return;
+    const ordinary = frogs.filter(f => f !== deadFrog && f.el && f.el.isConnected &&
+      !f.isGhost && !f.isMutationZombie && !(f.starLevel > 0) &&
+      !grants.some(([flag]) => f[flag]));
+    if (!ordinary.length || Math.random() >= 0.20) return;
+    const recipient = ordinary[Math.floor(Math.random() * ordinary.length)];
+    const grant = roles[Math.floor(Math.random() * roles.length)][1];
+    grant(recipient);
+    refreshFrogPermaGlow(recipient);
+    updateFrogRoleEmoji(recipient);
+  }
+
   // Attempt to kill a frog at index `index`, with a specific source ("snake", "cannibal", etc.)
   function tryKillFrogAtIndex(index, source) {
     const frog = frogs[index];
@@ -3253,6 +3288,8 @@ function computeDeathRattleChanceForFrog(frog) {
       frog.cloneEl = null;
     }
 
+    tryLastingLegacy(frog, source);
+
     // If this frog *is* a cannibal, unmark it so global counters stay correct
     if (frog.isCannibal) {
       unmarkCannibalFrog(frog);
@@ -3275,6 +3312,7 @@ function computeDeathRattleChanceForFrog(frog) {
       spawnExtraFrogs(3);
       if (source === "snake") {
         snakeSlowTime = Math.max(snakeSlowTime, 3 * buffDurationFactor);
+        snakeSlowCueTime = Math.max(snakeSlowCueTime, 3 * buffDurationFactor);
       }
     }
 
@@ -3389,25 +3427,26 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
 
-  function applyBuff(type, frog, durationMultiplier = 1) {
+  function applyBuff(type, frog, durationMultiplier = 1, fixedDuration = false) {
     const isLuckyCollector = frog && frog.isLucky;
     const durBoost = isLuckyCollector
       ? LUCKY_BUFF_DURATION_BOOST
       : 1.0;
 
-    const durationScale =
+    const durationScale = type === "panicHop" ? 1 : fixedDuration ? durationMultiplier :
       buffDurationFactor *
       durationMultiplier *
       durBoost *
-      getLuckBuffDurationMultiplier();
+      getLuckBuffDurationMultiplier() *
+      (lingeringHexActive && ["snakeSlow", "snakeConfuse", "snakeShrink"].includes(type) ? 1.15 : 1);
 
     switch (type) {
       case "speed":
-        speedBuffTime = SPEED_BUFF_DURATION * durationScale;
+        speedBuffTime = Math.max(speedBuffTime, SPEED_BUFF_DURATION * durationScale);
         break;
 
       case "jump":
-        jumpBuffTime = JUMP_BUFF_DURATION * durationScale;
+        jumpBuffTime = Math.max(jumpBuffTime, JUMP_BUFF_DURATION * durationScale);
         break;
 
       case "spawn": {
@@ -3418,27 +3457,28 @@ function computeDeathRattleChanceForFrog(frog) {
       }
 
       case "snakeSlow":
-        snakeSlowTime = SNAKE_SLOW_DURATION * durationScale;
+        snakeSlowTime = Math.max(snakeSlowTime, SNAKE_SLOW_DURATION * durationScale);
+        snakeSlowCueTime = Math.max(snakeSlowCueTime, SNAKE_SLOW_DURATION * durationScale);
         break;
 
       case "snakeConfuse":
-        snakeConfuseTime = SNAKE_CONFUSE_DURATION * durationScale;
+        snakeConfuseTime = Math.max(snakeConfuseTime, SNAKE_CONFUSE_DURATION * durationScale);
         break;
 
       case "snakeShrink":
-        snakeShrinkTime = SNAKE_SHRINK_DURATION * durationScale;
+        snakeShrinkTime = Math.max(snakeShrinkTime, SNAKE_SHRINK_DURATION * durationScale);
         break;
 
       case "frogShield":
-        frogShieldTime = FROG_SHIELD_DURATION * durationScale;
+        frogShieldTime = Math.max(frogShieldTime, FROG_SHIELD_DURATION * durationScale);
         break;
 
       case "timeSlow":
-        timeSlowTime = TIME_SLOW_DURATION * durationScale;
+        timeSlowTime = Math.max(timeSlowTime, TIME_SLOW_DURATION * durationScale);
         break;
 
       case "orbMagnet":
-        orbMagnetTime = ORB_MAGNET_DURATION * durationScale;
+        orbMagnetTime = Math.max(orbMagnetTime, ORB_MAGNET_DURATION * durationScale);
         break;
 
       case "megaSpawn": {
@@ -3449,19 +3489,19 @@ function computeDeathRattleChanceForFrog(frog) {
       }
 
       case "scoreMulti":
-        scoreMultiTime = SCORE_MULTI_DURATION * durationScale;
+        scoreMultiTime = Math.max(scoreMultiTime, SCORE_MULTI_DURATION * durationScale);
         break;
 
       case "panicHop":
-        panicHopTime = PANIC_HOP_DURATION * durationScale;
+        panicHopTime = Math.max(panicHopTime, PANIC_HOP_DURATION * durationScale);
         break;
 
       case "cloneSwarm":
-        cloneSwarmTime = CLONE_SWARM_DURATION * durationScale;
+        cloneSwarmTime = Math.max(cloneSwarmTime, CLONE_SWARM_DURATION * durationScale);
         break;
 
       case "lifeSteal":
-        lifeStealTime = LIFE_STEAL_DURATION * durationScale;
+        lifeStealTime = Math.max(lifeStealTime, LIFE_STEAL_DURATION * durationScale);
         break;
 
       default:
@@ -3473,10 +3513,19 @@ function computeDeathRattleChanceForFrog(frog) {
     }
   }
 
-  function getShedStageFilter(stage) {
-    if(stage === 1) return 'grayscale(1) sepia(1) saturate(8) hue-rotate(15deg)';
-    if(stage >= 2) return 'grayscale(1) sepia(1) saturate(12) hue-rotate(-38deg)';
-    return '';
+  // Use pre-colored assets: no live shed filter on transformed sprites.
+  function setShedPalette(el, stage) {
+    const color = stage >= 2 ? 'red' : stage === 1 ? 'yellow' : '';
+    if (el.dataset.shedPalette === color) return;
+    el.dataset.shedPalette = color;
+    for (const [variable,part] of [['--snake-face','head'],['--snake-block','body'],['--snake-tip','tail']]) {
+      const url = new URL(`game-assets/sprites/snake-${part}${color ? '-'+color : ''}.png`, document.baseURI).href;
+      el.style.setProperty(variable, `url("${url}")`);
+    }
+    el.style.imageRendering = 'pixelated';
+  }
+  for (const color of ['yellow','red']) for (const part of ['head','body','tail']) {
+    const img = new Image(); img.src = `game-assets/sprites/snake-${part}-${color}.png`;
   }
 
   function applySnakeAppearance() {
@@ -3490,7 +3539,7 @@ function computeDeathRattleChanceForFrog(frog) {
       }
     }
 
-    let filter = getShedStageFilter(snakeShedStage);
+    let filter = '';
 
     // Legendary Frenzy overlay (red tint)
     if (snakeFrenzyTime > 0) {
@@ -3498,6 +3547,7 @@ function computeDeathRattleChanceForFrog(frog) {
     }
 
     for (const el of elements) {
+      setShedPalette(el, snakeShedStage);
       el.style.filter = filter;
     }
   }
@@ -3530,6 +3580,7 @@ function computeDeathRattleChanceForFrog(frog) {
     const snakeResist = getSnakeResistance();
     const debuffTickMultiplier = 1 + snakeResist;
 
+    if (snakeSlowCueTime > 0) snakeSlowCueTime = Math.max(0, snakeSlowCueTime - dt * debuffTickMultiplier);
     if (snakeSlowTime    > 0) snakeSlowTime    = Math.max(0, snakeSlowTime    - dt * debuffTickMultiplier);
     if (snakeConfuseTime > 0) snakeConfuseTime = Math.max(0, snakeConfuseTime - dt * debuffTickMultiplier);
     if (snakeShrinkTime  > 0) snakeShrinkTime  = Math.max(0, snakeShrinkTime  - dt * debuffTickMultiplier);
@@ -4105,8 +4156,23 @@ function computeDeathRattleChanceForFrog(frog) {
     applySnakeAppearance();
   }
 
+  function randomSnakeEntry(width, height) {
+    const edge = Math.floor(Math.random()*4);
+    const offset = SNAKE_SEGMENT_SIZE * 2;
+    const x = width * (.2 + Math.random()*.6);
+    const y = height * (.2 + Math.random()*.6);
+    return [
+      {startX:-offset,startY:y,angle:0},
+      {startX:width+offset,startY:y,angle:Math.PI},
+      {startX:x,startY:-offset,angle:Math.PI/2},
+      {startX:x,startY:height+offset,angle:-Math.PI/2}
+    ][edge];
+  }
+
   // Spawn a second active snake without touching the primary one
   function spawnAdditionalSnake(width, height, opts = {}) {
+    const entering = typeof opts.startX !== "number" && typeof opts.startY !== "number";
+    if (entering) opts = {...opts,...randomSnakeEntry(width,height)};
     const startX = typeof opts.startX === "number" ? opts.startX : width * 0.85;
     const startY = typeof opts.startY === "number" ? opts.startY : height * 0.5;
     const initialAngle = typeof opts.angle === "number" ? opts.angle : Math.PI;
@@ -4152,9 +4218,9 @@ function computeDeathRattleChanceForFrog(frog) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const maxPath = (segmentCount + 2) * segmentGap + 2;
+    const maxPath = Math.max((segmentCount + 2) * segmentGap + 2, Math.ceil((segmentCount + 3)*SEGMENT_VISUAL_SPACING));
     for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
+      path.push({ x: startX - Math.cos(initialAngle)*i, y: startY - Math.sin(initialAngle)*i });
     }
 
     // Fresh snake: base speed + base color
@@ -4162,6 +4228,8 @@ function computeDeathRattleChanceForFrog(frog) {
       head: { el: headEl, x: startX, y: startY, angle: initialAngle },
       segments,
       path,
+      entering,
+      entryAngle: initialAngle,
       isFrenzyVisual: false,
       speedFactor: typeof opts.speedFactor === "number" ? opts.speedFactor : 1.0,
       canGrow: typeof opts.canGrow === "boolean" ? opts.canGrow : true
@@ -4174,6 +4242,13 @@ function computeDeathRattleChanceForFrog(frog) {
       }
     }
 
+    // Position every part before its first paint; seed a straight trail outside.
+    headEl.style.transform = `translate3d(${startX}px,${startY}px,0)`;
+    segments.forEach((seg,i)=>{
+      seg.x=startX-Math.cos(initialAngle)*SEGMENT_VISUAL_SPACING*(i+1);
+      seg.y=startY-Math.sin(initialAngle)*SEGMENT_VISUAL_SPACING*(i+1);
+      seg.el.style.transform=`translate3d(${seg.x}px,${seg.y}px,0)`;
+    });
     return newSnake;
   }
 
@@ -4273,6 +4348,9 @@ function computeDeathRattleChanceForFrog(frog) {
       const snakeSprites = getPlayerSnakeSpriteSet();
       segEl.style.backgroundImage = `url(${snakeSprites.body})`;
 
+      if (tailSeg?.el?.dataset.shedPalette) {
+        setShedPalette(segEl, tailSeg.el.dataset.shedPalette === 'red' ? 2 : 1);
+      }
       // 🔴 KEY FIX: inherit the tail's color/filter so new segments match
       if (tailSeg && tailSeg.el && tailSeg.el.style.filter) {
         segEl.style.filter = tailSeg.el.style.filter;
@@ -4348,7 +4426,7 @@ function samplePathAtDistance(path, startIdx, dist) {
   function updateSnakeDebuffCue(obj, dt, active, size) {
     const head = obj.head;
     const confused = active && snakeConfuseTime > 0;
-    const slowed = active && snakeSlowTime > 0;
+    const slowed = active && snakeSlowTime > 0 && snakeSlowCueTime > 0;
     const shrunk = active && snakeShrinkTime > 0;
     let c = debuffCues.get(head.el);
     if (!c && !confused && !slowed && !shrunk) return;
@@ -4450,7 +4528,9 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     // 2. MOVEMENT
     let desiredAngle = head.angle;
-    if (snakeConfuseTime > 0) {
+    if (snakeObj.entering) {
+      desiredAngle = snakeObj.entryAngle;
+    } else if (snakeConfuseTime > 0) {
       desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
     } else if (targetRemnant) {
       desiredAngle = Math.atan2(
@@ -4473,6 +4553,12 @@ function samplePathAtDistance(path, startIdx, dist) {
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
 
+    if (snakeObj.entering && head.x >= marginX+SNAKE_SEGMENT_SIZE &&
+        head.x <= width-marginX-2*SNAKE_SEGMENT_SIZE &&
+        head.y >= marginY+SNAKE_SEGMENT_SIZE &&
+        head.y <= height-marginY-2*SNAKE_SEGMENT_SIZE) snakeObj.entering=false;
+    // An entering snake must cross the boundary rather than bounce/teleport onto it.
+    if (!snakeObj.entering) {
     // Boundary bounce
     if (head.x < marginX) {
       head.x = marginX;
@@ -4488,6 +4574,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     } else if (head.y > height - marginY - SNAKE_SEGMENT_SIZE) {
       head.y = height - marginY - SNAKE_SEGMENT_SIZE;
       head.angle = -head.angle;
+    }
+
     }
 
     // 3. PATH & BODY POSITIONING
@@ -4643,10 +4731,19 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
+    if (!lingeringHexActive) upgrades.push({
+      id:"lingeringHex", label:"Lingering Hex<br>Snake debuffs last <span>15%</span> longer",
+      apply:()=>{lingeringHexActive=true;}
+    });
+    if (!lastingLegacyActive) upgrades.push({
+      id:"lastingLegacy", label:"Lasting Legacy<br><span>20%</span> chance to pass a special frog’s role on death",
+      apply:()=>{lastingLegacyActive=true;}
+    });
+
 
     upgrades.push({
       id: "roleDraft",
-      label: `🎭 Role Draft<br>Choose between <span style="color:${c.role};">2</span> random frog roles`,
+      label: `🎭 Role Draft<br>Spawn <span style="color:${c.role};">2–4</span> special frogs. Crowned frogs gain the chosen role too.`,
       opensRoleDraft: true,
       apply: () => {
         roleDraftUsed = true;
@@ -4755,7 +4852,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     upgrades.push({
       id: "luckyRoll",
-      label: `🎲 Lucky Roll<br>Trigger a random orb buff instantly, with <span style="color:${c.buff};">+50%</span> duration`,
+      label: `🎲 Lucky Roll<br>Trigger a random orb buff with <span style="color:${c.buff};">+50%</span> duration`,
       apply: () => { triggerLuckyRoll(); }
     });
 
@@ -4787,6 +4884,11 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!brittleScalesActive) upgrades.push({
+      id:"brittleScales", label:"Brittle Scales<br>Halve snake debuff resistance",
+      apply:()=>{brittleScalesActive=true;}
+    });
+
 
     if (!chainReactionActive) {
       upgrades.push({
@@ -6872,6 +6974,10 @@ function initUpgradeOverlay() {
     }
 
     const items = [];
+    if (lingeringHexActive) items.push("<strong>Lingering Hex:</strong> +15% snake debuff duration, excluding Lucky Roll");
+    if (lastingLegacyActive) items.push("<strong>Lasting Legacy:</strong> 20% role inheritance chance; excludes Frog Scatter");
+    if (brittleScalesActive) items.push("<strong>Brittle Scales:</strong> Snake resistance halved");
+
 
     // Always show how many frogs you have vs cap
     items.push(
@@ -7251,6 +7357,7 @@ function startRunFromMenu() {
     dyingSnakes = [];
 
 luckStat = 0;
+lingeringHexActive = lastingLegacyActive = brittleScalesActive = false;
     // Reset game state
     elapsedTime     = 0;
     lastTime        = 0;
@@ -7324,6 +7431,7 @@ doubleYolkerActive = false;
     speedBuffTime   = 0;
     jumpBuffTime    = 0;
     snakeSlowTime   = 0;
+    snakeSlowCueTime = 0;
     snakeConfuseTime= 0;
     snakeShrinkTime = 0;
     frogShieldTime  = 0;
@@ -7416,10 +7524,11 @@ doubleYolkerActive = false;
         snakeShedCount++;
 
         // 1,2 = shed / speed up current primary snake
-        // 3   = final shed for the current primary + spawn a new snake
+        // 3 = retain the red snake and bring in a fresh green snake.
         const cycleIndex = ((snakeShedCount - 1) % 3) + 1;
 
-        beginShedSequence(cycleIndex);
+        if (cycleIndex === 3) handleFourthShed();
+        else beginShedSequence(cycleIndex);
 
         nextShedTime += SHED_INTERVAL;
       }
