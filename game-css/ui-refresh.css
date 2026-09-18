@@ -123,3 +123,17 @@
  filter:none!important;box-shadow:none!important;transform:none!important;
  -webkit-tap-highlight-color:transparent;
 }
+
+/* Approved orb preview: stationary pixel outline, brightness-only pulse. */
+#frog-game .frog-orb::after {
+ width:100%!important;height:100%!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ background:url("../game-assets/sprites/orb-pixel-ring.svg") center/contain no-repeat!important;
+ image-rendering:pixelated;
+ transform:translate(-50%,-50%)!important;
+ animation:orb-pixel-ring-pulse 1.6s steps(3,end) infinite!important;
+}
+@keyframes orb-pixel-ring-pulse {0%,100%{opacity:.45}50%{opacity:.95}}
+@media(prefers-reduced-motion:reduce){
+ #frog-game .frog-orb::after{animation:none!important;opacity:.8}
+}
