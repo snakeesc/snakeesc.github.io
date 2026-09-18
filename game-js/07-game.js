@@ -2786,6 +2786,7 @@ function applyRoleDraft(roleId) {
   }
 
   for (const frog of starredFrogs) {
+    if (Math.random() >= 0.5) continue; // Independent chance per existing crowned frog.
     const starCount = Math.max(0, frog.starLevel || 0);
 
     clearAllFrogRoles(frog);
@@ -4743,7 +4744,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     upgrades.push({
       id: "roleDraft",
-      label: `🎭 Role Draft<br>Spawn <span style="color:${c.role};">2–4</span> special frogs. Crowned frogs gain the chosen role too.`,
+      label: `🎭 Role Draft<br>Spawn <span style="color:${c.role};">2–4</span> special frogs. Crowned frogs may gain the chosen role too.`,
       opensRoleDraft: true,
       apply: () => {
         roleDraftUsed = true;
