@@ -1005,6 +1005,8 @@ let extraUpgradeOptionActive = false;
   let ouroborosPactUsed    = false;
 let chainReactionActive = false;
 let nightBloomActive = false;
+let royalApprenticeshipActive = false;
+let royalBatchActive = false;
 let luckStat = 0;
 let lingeringHexActive = false;
 let lastingLegacyActive = false;
@@ -2581,6 +2583,8 @@ function clearAllFrogRoles(frog) {
   frog.isMagnet = false;
   frog.isLucky = false;
   frog.isZombie = false;
+  frog.isBull = false;
+  frog.bullArmor = false;
   frog.isCannibal = false;
   
   // New Epic roles cleared
@@ -2603,7 +2607,7 @@ function clearAllFrogRoles(frog) {
 function updateFrogRoleEmoji(frog) {
  if (!frog || !frog.el) return;
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
- const roles=[['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isChampion','champion'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
+ const roles=[['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isChampion','champion'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
  const role=roles.find(([flag])=>frog[flag]);const key=role?role[1]:(frog.starLevel>0?'crowned':'');
  if(role && frog.el.dataset.approvedRole!==key)showRoleSpotlight(frog);
  if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
@@ -2628,8 +2632,8 @@ function grantStarUpgrade(frog) {
   frog.starLevel = Math.min(3, (frog.starLevel || 0) + 1);
 
   // exact flat totals by star count
-  frog.speedMult = 1 - (frog.starLevel * 0.10);
-  frog.jumpMult  = 1 + (frog.starLevel * 0.10);
+  frog.speedMult = 1 - (frog.starLevel * 0.12);
+  frog.jumpMult  = 1 + (frog.starLevel * 0.12);
 
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
@@ -2687,6 +2691,60 @@ function spawnTidalWave() {
   spawnExtraFrogs(Math.min(alive, room));
 }
 
+function grantBullFrog(frog) {
+  frog.isBull = true;
+  frog.bullArmor = true;
+  updateFrogRoleEmoji(frog);
+}
+
+function spawnRoleBatch(role, min, max) {
+  royalBatchActive = true;
+  let spawned = 0;
+  try {
+    const count = getLuckBiasedInt(min, max);
+    for (let i = 0; i < count; i++) if (spawnRoleFrog(role)) spawned++;
+  } finally { royalBatchActive = false; }
+  if (spawned > 0) tryRoyalApprenticeship(role);
+}
+
+// Reuse the normal frog personality ranges; only their selection odds change.
+function rerollPromotedFrogStats(frog) {
+  const luck = Math.max(0, Math.min(1, luckStat / MAX_LUCK));
+  const energeticChance = 0.35 + 0.15 * luck;
+  const roll = Math.random();
+  const profile = roll < energeticChance
+    ? [0.3, 1.0, 0.25, 0.55, 14, 32]
+    : roll < energeticChance + 0.35
+      ? [0.8, 3.0, 0.35, 0.7, 10, 26]
+      : [1.4, 3.2, 0.35, 0.7, 10, 24];
+  [frog.idleMin, frog.idleMax, frog.hopDurMin, frog.hopDurMax,
+    frog.hopHeightMin, frog.hopHeightMax] = profile;
+  frog.starLevel = 0;
+  frog.speedMult = 1;
+  frog.jumpMult = 1;
+  // Let an in-progress hop finish normally; the next hop uses the new stats.
+  if (frog.state === "idle") frog.idleTime = randRange(frog.idleMin, frog.idleMax);
+}
+
+function tryRoyalApprenticeship(role) {
+  if (!royalApprenticeshipActive) return;
+  const grants = {bull:grantBullFrog, champion:grantChampionFrog, aura:grantAuraFrog,
+    magnet:grantMagnetFrog, lucky:grantLuckyFrog, zombie:grantZombieFrog,
+    necromancer:grantNecromancerFrog, alchemist:grantAlchemistFrog, cannibal:markCannibalFrog};
+  if (!grants[role]) return;
+  const chance = getLuckBoostedChance(0.50, 0.65);
+  const eligible = frogs.filter(f => f.starLevel > 0 && !f.isBull &&
+    !f.isChampion && !f.isAura && !f.isMagnet && !f.isLucky && !f.isZombie &&
+    !f.isCannibal && !f.isNecromancer && !f.isAlchemist && !f.hasPermaShield);
+  for (const frog of eligible) {
+    if (Math.random() >= chance) continue;
+    rerollPromotedFrogStats(frog);
+    grants[role](frog);
+    refreshFrogPermaGlow(frog);
+    updateFrogRoleEmoji(frog);
+  }
+}
+
 function spawnRoleFrog(role) {
   const frog = createRandomFrog();
   if (!frog) return null;
@@ -2694,6 +2752,7 @@ function spawnRoleFrog(role) {
   clearAllFrogRoles(frog);
 
   switch (role) {
+    case "bull": grantBullFrog(frog); break;
     case "champion":
       grantChampionFrog(frog);
       break;
@@ -2722,10 +2781,12 @@ function spawnRoleFrog(role) {
       break;
   }
 
+  if (!royalBatchActive) tryRoyalApprenticeship(role);
   return frog;
 }
 function getRoleDraftPool() {
   return [
+    { id: "bull", label: "Bull Frog", emoji: "🐸", tier: "normal" },
     { id: "champion", label: "Champion", emoji: "🏅", tier: "normal" },
     { id: "aura", label: "Aura", emoji: "💫", tier: "normal" },
     { id: "magnet", label: "Magnet", emoji: "🧲", tier: "normal" },
@@ -2777,54 +2838,7 @@ function getTwoRandomRoleDraftChoices() {
 }
 
 function applyRoleDraft(roleId) {
-  const starredFrogs = frogs.filter(frog => (frog.starLevel || 0) > 0);
-
-  const spawnCount = randInt(2, 4);
-
-  for (let i = 0; i < spawnCount; i++) {
-    spawnRoleFrog(roleId);
-  }
-
-  for (const frog of starredFrogs) {
-    if (Math.random() >= 0.5) continue; // Independent chance per existing crowned frog.
-    const starCount = Math.max(0, frog.starLevel || 0);
-
-    clearAllFrogRoles(frog);
-
-    switch (roleId) {
-      case "champion":
-        grantChampionFrog(frog);
-        break;
-      case "aura":
-        grantAuraFrog(frog);
-        break;
-      case "magnet":
-        grantMagnetFrog(frog);
-        break;
-      case "lucky":
-        grantLuckyFrog(frog);
-        break;
-      case "zombie":
-        grantZombieFrog(frog);
-        break;
-      case "alchemist":
-        grantAlchemistFrog(frog);
-        break;
-      case "necromancer":
-        grantNecromancerFrog(frog);
-        break;
-    }
-
-    const extraRoleCount = Math.max(0, starCount - 1);
-    for (let i = 0; i < extraRoleCount; i++) {
-      grantRandomPermaFrogUpgrade(frog);
-    }
-
-    frog.starLevel = 0;
-
-    refreshFrogPermaGlow(frog);
-    updateFrogRoleEmoji(frog);
-  }
+  spawnRoleBatch(roleId, 3, 7);
 }
 
 function showRoleDraftOverlayChoices() {
@@ -2850,7 +2864,9 @@ function showRoleDraftOverlayChoices() {
       <div class="frog-upgrade-emoji"></div><div class="frog-upgrade-title">${role.label}</div>
       <div class="frog-upgrade-desc">
         ${
-          role.id === "champion"
+          role.id === "bull"
+            ? "Survives one bite and leaps away from the snake."
+            : role.id === "champion"
             ? "Faster, stronger frog with better hops."
             : role.id === "aura"
             ? "Boosts nearby frogs with an aura."
@@ -3238,7 +3254,7 @@ function computeDeathRattleChanceForFrog(frog) {
   function tryLastingLegacy(deadFrog, source) {
     if (!lastingLegacyActive || source === "scatter") return;
     const grants = [
-      ["isChampion", grantChampionFrog], ["isAura", grantAuraFrog],
+      ["isBull", grantBullFrog], ["isChampion", grantChampionFrog], ["isAura", grantAuraFrog],
       ["hasPermaShield", grantShieldFrog], ["isMagnet", grantMagnetFrog],
       ["isLucky", grantLuckyFrog], ["isZombie", grantZombieFrog],
       ["isNecromancer", grantNecromancerFrog], ["isAlchemist", grantAlchemistFrog],
@@ -3258,7 +3274,7 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
   // Attempt to kill a frog at index `index`, with a specific source ("snake", "cannibal", etc.)
-  function tryKillFrogAtIndex(index, source) {
+  function tryKillFrogAtIndex(index, source, bitingSnake = null) {
     const frog = frogs[index];
     if (!frog || !frog.el) return false;
 
@@ -3270,6 +3286,27 @@ function computeDeathRattleChanceForFrog(frog) {
     // Snake-specific protections
     // -----------------------------
     if (source === "snake") {
+      if ((frog.bullEscapeUntil || 0) > elapsedTime) return false;
+      if (frog.isBull && frog.bullArmor) {
+        frog.bullArmor = false;
+        frog.bullEscapeUntil = elapsedTime + 1.0;
+        const head = (bitingSnake || snake)?.head;
+        let dx = frog.x - (head?.x ?? frog.x - 1);
+        let dy = frog.baseY - (head?.y ?? frog.baseY);
+        const length = Math.hypot(dx, dy);
+        if (length < 0.001) { dx = 1; dy = 0; }
+        const norm = Math.hypot(dx, dy);
+        const distance = FROG_SIZE * 9;
+        frog.hopStartX = frog.x;
+        frog.hopStartBaseY = frog.baseY;
+        frog.hopEndX = Math.max(0, Math.min(window.innerWidth - FROG_SIZE, frog.x + dx / norm * distance));
+        frog.hopEndBaseY = Math.max(0, Math.min(window.innerHeight - FROG_SIZE, frog.baseY + dy / norm * distance));
+        frog.state = "hopping";
+        frog.hopTime = 0;
+        frog.hopDuration = 0.55;
+        frog.hopHeight = FROG_SIZE * 2;
+        return false;
+      }
       // Global temporary shield from orb: protects vs snake hits
       if (frogShieldTime > 0) {
         return false;
@@ -3385,6 +3422,8 @@ function computeDeathRattleChanceForFrog(frog) {
         unmarkCannibalFrog(frog);
       }
       frog.isZombie = false;
+  frog.isBull = false;
+  frog.bullArmor = false;
       frog.extraDeathRattleChance = 0;
       frog.specialDeathRattleChance = null;
     }
@@ -4650,7 +4689,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         if (isMainMenu) {
           frogList.splice(i, 1);
           if (f.el.parentNode) f.el.parentNode.removeChild(f.el);
-        } else if (tryKillFrogAtIndex(i, "snake")) {
+        } else if (tryKillFrogAtIndex(i, "snake", snakeObj)) {
           frogsEatenCount++;
           score += (1 * permanentScoreMultiplier * (scoreMultiTime > 0 ? SCORE_MULTI_FACTOR : 1));
           if (frogsEatenCount % 2 === 0) growSnakeForSnake(snakeObj, 1);
@@ -4732,25 +4771,24 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
+    upgrades.push({id:"bullRecruits", label:"Bull Frog<br>Spawn 1–3 Bull Frogs. Survive one bite and leap to safety.", apply:()=>spawnRoleBatch("bull",1,3)});
+    upgrades.push({id:"magnetRecruits", label:"Magnet Frogs<br>Spawn 1–3 orb-attracting Magnet Frogs.", apply:()=>spawnRoleBatch("magnet",1,3)});
+
+    if (!nightBloomActive) {
+      upgrades.push({
+        id: "nightBloom",
+        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${c.buff};">50%</span> chance to spawn a frog at that spot`,
+        apply: () => { nightBloomActive = true; }
+      });
+    }
     if (!lingeringHexActive) upgrades.push({
       id:"lingeringHex", label:"Lingering Hex<br>Snake debuffs last <span>15%</span> longer",
       apply:()=>{lingeringHexActive=true;}
     });
-    if (!lastingLegacyActive) upgrades.push({
-      id:"lastingLegacy", label:"Lasting Legacy<br><span>20%</span> chance to pass a special frog’s role on death",
-      apply:()=>{lastingLegacyActive=true;}
-    });
 
 
-    upgrades.push({
-      id: "roleDraft",
-      label: `🎭 Role Draft<br>Spawn <span style="color:${c.role};">2–4</span> special frogs. Crowned frogs may gain the chosen role too.`,
-      opensRoleDraft: true,
-      apply: () => {
-        roleDraftUsed = true;
-        showRoleDraftOverlayChoices();
-      }
-    });
+
+
 
     if (!doubleYolkerActive) {
       upgrades.push({
@@ -4865,18 +4903,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
-    upgrades.push({
-      id: "epicOrbStorm",
-      label: `🌪️ Orb Storm<br>Drop up to <span style="color:${c.buff};">10</span> random orbs across the arena`,
-      apply: () => {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        const count = randInt(3, 10);
-        for (let i = 0; i < count; i++) {
-          spawnOrbRandom(w, h);
-        }
-      }
-    });
+
 
     return upgrades;
   }
@@ -4885,6 +4912,33 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Special frog spawns may grant their role to a crowned frog.", apply:()=>{royalApprenticeshipActive=true;}});
+
+    upgrades.push({
+      id: "roleDraft",
+      label: `🎭 Role Draft<br>Choose a role. Spawn <span style="color:${epicTitleColor};">3–7</span> special frogs`,
+      opensRoleDraft: true,
+      apply: () => {
+        roleDraftUsed = true;
+        showRoleDraftOverlayChoices();
+      }
+    });
+    upgrades.push({
+      id: "epicOrbStorm",
+      label: `🌪️ Orb Storm<br>Drop <span style="color:${epicTitleColor};">8–15</span> random orbs across the arena`,
+      apply: () => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const count = getLuckBiasedInt(8, 15);
+        for (let i = 0; i < count; i++) {
+          spawnOrbRandom(w, h);
+        }
+      }
+    });
+    if (!lastingLegacyActive) upgrades.push({
+      id:"lastingLegacy", label:"Lasting Legacy<br><span>20%</span> chance to pass a special frog’s role on death",
+      apply:()=>{lastingLegacyActive=true;}
+    });
     if (!brittleScalesActive) upgrades.push({
       id:"brittleScales", label:"Brittle Scales<br>Halve snake debuff resistance",
       apply:()=>{brittleScalesActive=true;}
@@ -4917,13 +4971,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
-    if (!nightBloomActive) {
-      upgrades.push({
-        id: "nightBloom",
-        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${epicTitleColor};">50%</span> chance to spawn a frog at that spot`,
-        apply: () => { nightBloomActive = true; }
-      });
-    }
+
 
     if (frogs.length < maxFrogsCap) {
       upgrades.push({
@@ -5681,7 +5729,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 10–15 frogs." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
-      { type: "role", label: "🎭 Role Draft", desc: "Choose between 2 random frog roles." },
+      { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 3–7 special frogs." },
       { type: "role", label: "🥇 Promotion", desc: "All current frogs gain +1 star immediately." },
       { type: "role", label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
       { type: "role", label: "🃏 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
@@ -7398,6 +7446,8 @@ snakeOldBodySpeedBonusPending = false;
 doubleYolkerActive = false;
     chainReactionActive = false;
     nightBloomActive = false;
+    royalApprenticeshipActive = false;
+    royalBatchActive = false;
     swarmDivideActive = false;
     swarmDivideUsed = false;
     graveWaveActive = false;
