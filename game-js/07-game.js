@@ -1617,6 +1617,7 @@ function seedMatchGrass() {
 // A short visual interlude: world timers and collisions wait until it finishes.
 let shedSequence = null;
 function clearShedSequence() {
+  AudioMod.setShedAudioActive?.(false);
   if (!shedSequence) return;
   for (const part of shedSequence.parts) {
     part.el.style.transform = part.transform;
@@ -3999,7 +4000,7 @@ function computeDeathRattleChanceForFrog(frog) {
       }
 
       if (orb.ttl <= 0 || !orb.el) {
-        if (nightBloomActive && frogs.length < maxFrogsCap && Math.random() < getLuckBoostedChance(0.50, 0.80)) {
+        if (nightBloomActive && frogs.length < maxFrogsCap && Math.random() < getLuckBoostedChance(0.20, 0.80)) {
           const spawnX = Math.max(8, Math.min(window.innerWidth - FROG_SIZE - 8, orb.x - FROG_SIZE / 2));
           const spawnY = Math.max(24, Math.min(window.innerHeight - FROG_SIZE - 24, orb.y - FROG_SIZE / 2));
           createFrogAt(spawnX, spawnY, null);
@@ -4778,7 +4779,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!nightBloomActive) {
       upgrades.push({
         id: "nightBloom",
-        label: `🌙 Night Bloom<br>Orbs that expire naturally have a <span style="color:${c.buff};">50%</span> chance to spawn a frog at that spot`,
+        label: `🌙 Night Bloom<br>Expired orbs have a <span style="color:${c.buff};">20%</span> chance to spawn a frog`,
         apply: () => { nightBloomActive = true; }
       });
     }
@@ -5720,7 +5721,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "buff", label: "🌩️ Orb Storm", desc: "Drops a burst of random orbs immediately." },
       { type: "buff", label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
       { type: "buff", label: "⚡ Chain Reaction", desc: "When collecting an orb, there is a 25% chance of a second buff." },
-      { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 50% chance to spawn a frog." },
+      { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 20% chance to spawn a frog." },
       { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb has a 50% chance ot spawn a a frog." },
       { type: "buff", label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
@@ -7555,6 +7556,7 @@ doubleYolkerActive = false;
     // Clamp crazy tab-switch jumps so nothing explodes
     if (dt > 0.1) dt = 0.1;
 
+    AudioMod.setShedAudioActive?.(!!shedSequence && !gameOver && !gamePaused && !mainMenuActive && !document.hidden);
     if (!gameOver && !gamePaused && shedSequence) {
       updateShedSequence(dt);
     } else if (!gameOver && !gamePaused) {

@@ -240,15 +240,40 @@
   // ------------------------------------------------------------
   // MUTE CONTROL
   // ------------------------------------------------------------
+  let shedPlayer = null;
+  let shedAudioActive = false;
+  function setShedAudioActive(active) {
+    active = !!active;
+    if (active === shedAudioActive) return;
+    shedAudioActive = active;
+    if (!active) {
+      if (shedPlayer) { shedPlayer.pause(); shedPlayer.currentTime = 0; }
+      return;
+    }
+    if (!shedPlayer) {
+      shedPlayer = new Audio("./game-assets/audio/snake-shed.mp3");
+      shedPlayer.loop = true;
+      shedPlayer.volume = 0.9;
+      shedPlayer.preload = "auto";
+    }
+    shedPlayer.muted = globalMuted;
+    const playback = shedPlayer.play();
+    if (playback?.catch) playback.catch(() => {});
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) setShedAudioActive(false);
+  });
+
   function setMuted(muted) {
     globalMuted = !!muted;
+    if (shedPlayer) shedPlayer.muted = globalMuted;
     // Also propagate to existing audio elements so browsers know they're muted
     Object.keys(pools).forEach(key => {
       const pool = pools[key];
       if (!pool || !pool.players) return;
       pool.players.forEach(a => {
         try {
-          a.muted = globalMuted;
+          a.muted = key === "buttonClick" ? buttonClicksMuted : globalMuted;
         } catch (e) {}
       });
     });
@@ -264,12 +289,14 @@
   // Capture clicks before handlers remove or replace the clicked menu.
   // Click covers mouse, touch activation and keyboard button activation.
   document.addEventListener("click", event => {
+    if (event.target?.closest?.(".frog-upgrade-choice, #upgradeOverlay")) return;
     const button = event.target?.closest?.('button, [role="button"], .frog-btn');
     if (!button || button.disabled || button.getAttribute("aria-disabled") === "true") return;
     playButtonClick();
   }, true);
 
   window.FrogGameAudio = {
+    setShedAudioActive,
     initAudio,
     playRandomRibbit,
     playFrogDeath,
@@ -279,7 +306,10 @@
     playPermanentChoiceSound,
     playPerFrogUpgradeSound,
     playButtonClick,
-    setButtonClicksMuted: muted => { buttonClicksMuted = !!muted; },
+    setButtonClicksMuted: muted => {
+      buttonClicksMuted = !!muted;
+      pools.buttonClick?.players.forEach(a => { a.muted = buttonClicksMuted; });
+    },
     setMuted,   // NEW
     isMuted     // NEW
   };
