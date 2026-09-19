@@ -119,7 +119,7 @@
       createPool("frogDeath", "frogDeath.mp3", { poolSize: 3, volume: 0.9, minIntervalMs: 120 });
       createPool("snakeMunch", "munch.mp3",    { poolSize: 4, volume: 0.9, minIntervalMs: 50 });
 
-      createPool("buttonClick", "buttonClick3.mp3",    { poolSize: 2, volume: 0.9, minIntervalMs: 120 });
+      createPool("buttonClick", "button-click.mp3",    { poolSize: 2, volume: 0.9, minIntervalMs: 120 });
 
       createPool("orbSpawn1", "orbSpawn.mp3",    { poolSize: 2, volume: 0.9, minIntervalMs: 120 });
       createPool("orbSpawn2", "orbSpawnTwo.mp3", { poolSize: 2, volume: 0.9, minIntervalMs: 120 });
@@ -184,7 +184,8 @@
   }
 
   function playButtonClick() {
-    // Button clicks are intentionally silent for now; retain the API for callers.
+    initAudio();
+    playFromPool("buttonClick");
   }
 
   /**
@@ -259,6 +260,14 @@
   // ------------------------------------------------------------
   // EXPORT API
   // ------------------------------------------------------------
+  // Capture clicks before handlers remove or replace the clicked menu.
+  // Click covers mouse, touch activation and keyboard button activation.
+  document.addEventListener("click", event => {
+    const button = event.target?.closest?.('button, [role="button"], .frog-btn');
+    if (!button || button.disabled || button.getAttribute("aria-disabled") === "true") return;
+    playButtonClick();
+  }, true);
+
   window.FrogGameAudio = {
     initAudio,
     playRandomRibbit,
