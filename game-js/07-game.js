@@ -1012,9 +1012,6 @@ let lingeringHexActive = false;
 let lastingLegacyActive = false;
 let brittleScalesActive = false;
 let bruisedEggActive = false;
-let allergicReactionActive = false;
-let panicAttackActive = false;
-let allergicGrowthProgress = 0;
 const MAX_LUCK = 30;
   let fragileRealityActive = false;
   let frogScatterUsed      = false;
@@ -4577,9 +4574,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
     } else if (snakeConfuseTime > 0) {
-      desiredAngle = panicAttackActive && !isMainMenu && targetFrog
-        ? Math.atan2(head.y - (targetFrog.baseY + FROG_SIZE / 2), head.x - (targetFrog.x + FROG_SIZE / 2))
-        : head.angle + (Math.random() - 0.5) * Math.PI;
+      desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
     } else if (targetRemnant) {
       desiredAngle = Math.atan2(
         (targetRemnant.y + SNAKE_SEGMENT_SIZE / 2) - head.y,
@@ -4700,16 +4695,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         } else if (tryKillFrogAtIndex(i, "snake", snakeObj)) {
           frogsEatenCount++;
           score += (1 * permanentScoreMultiplier * (scoreMultiTime > 0 ? SCORE_MULTI_FACTOR : 1));
-          if (frogsEatenCount % 2 === 0) {
-            if (!allergicReactionActive) growSnakeForSnake(snakeObj, 1);
-            else {
-              allergicGrowthProgress += 0.5;
-              if (allergicGrowthProgress >= 1) {
-                allergicGrowthProgress -= 1;
-                growSnakeForSnake(snakeObj, 1);
-              }
-            }
-          }
+          if (frogsEatenCount % 2 === 0) growSnakeForSnake(snakeObj, 1);
         }
       }
     }
@@ -4788,9 +4774,6 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
-    if (!allergicReactionActive) upgrades.push({id:"allergicReaction", label:"Allergic Reaction<br>Snakes grow 50% less from eating frogs", apply:()=>{allergicReactionActive=true;}});
-    if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes flee your frogs", apply:()=>{panicAttackActive=true;}});
-
     upgrades.push({id:"bullRecruits", label:"Bull Frog<br>Spawn 1–3 Bull Frogs. Survive one bite and leap to safety.", apply:()=>spawnRoleBatch("bull",1,3)});
     upgrades.push({id:"magnetRecruits", label:"Magnet Frogs<br>Spawn 1–3 orb-attracting Magnet Frogs.", apply:()=>spawnRoleBatch("magnet",1,3)});
 
@@ -7432,8 +7415,6 @@ function startRunFromMenu() {
 
 luckStat = 0;
 lingeringHexActive = lastingLegacyActive = brittleScalesActive = false;
-allergicReactionActive = panicAttackActive = false;
-allergicGrowthProgress = 0;
 bruisedEggActive = false;
     // Reset game state
     elapsedTime     = 0;
