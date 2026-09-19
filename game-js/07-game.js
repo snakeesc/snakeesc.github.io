@@ -1182,6 +1182,7 @@ const MAX_LUCK = 30;
   function updateStatsPanel() {}
 
   function syncAudioMuteState() {
+    AudioMod.setButtonClicksMuted?.(!soundEnabled);
     if (AudioMod && typeof AudioMod.setMuted === "function") {
       AudioMod.setMuted(!soundEnabled || mainMenuActive);
     }

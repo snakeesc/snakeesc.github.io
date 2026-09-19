@@ -12,6 +12,7 @@
   // ------------------------------------------------------------
   const pools = {};
   let audioInitialized = false;
+  let buttonClicksMuted = false;
   let globalMuted = false; // NEW: global mute flag
 
   /**
@@ -28,7 +29,7 @@
     const players = [];
     for (let i = 0; i < poolSize; i++) {
       try {
-        const a = new Audio(assetURL(AUDIO_BASE + filename));
+        const a = new Audio(key === "buttonClick" ? "./game-assets/audio/button-click.mp3" : assetURL(AUDIO_BASE + filename));
         a.preload = "auto";
         a.volume = volume;
         a.crossOrigin = "anonymous";
@@ -185,7 +186,7 @@
 
   function playButtonClick() {
     initAudio();
-    playFromPool("buttonClick");
+    if (!buttonClicksMuted) playFromPool("buttonClick", true);
   }
 
   /**
@@ -278,6 +279,7 @@
     playPermanentChoiceSound,
     playPerFrogUpgradeSound,
     playButtonClick,
+    setButtonClicksMuted: muted => { buttonClicksMuted = !!muted; },
     setMuted,   // NEW
     isMuted     // NEW
   };
