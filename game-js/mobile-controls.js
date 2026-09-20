@@ -17,11 +17,9 @@
     // has to be scaled by the same `unit` to land in the right spot — same
     // idea as `px()` above, just added on top of a base offset instead of
     // being the whole value.
-    const safeTop = `env(safe-area-inset-top, 0px) * ${unit}`;
     const safeLeft = `env(safe-area-inset-left, 0px) * ${unit}`;
     const safeRight = `env(safe-area-inset-right, 0px) * ${unit}`;
-    const native = window.escapeSnakeInsets || {top:0,left:0,right:0};
-    const topInset = `max(${safeTop}, ${px(native.top)})`;
+    const native = window.escapeSnakeInsets || {left:0,right:0};
     const leftInset = `max(${safeLeft}, ${px(native.left)})`;
     const rightInset = `max(${safeRight}, ${px(native.right)})`;
     style.textContent = `
@@ -36,14 +34,14 @@
         box-shadow:none!important;text-shadow:none!important;clip-path:none!important;
       }
       #frog-game #pocket-hud {
-        position:absolute!important;top:calc(${px(6)} + ${topInset})!important;left:auto!important;right:calc(${px(8)} + ${rightInset})!important;
+        position:absolute!important;top:${px(6)}!important;left:auto!important;right:calc(${px(8)} + ${rightInset})!important;
         transform:none!important;gap:${px(6)}!important;
         width:max-content!important;max-width:calc(100% - ${px(16)} - ${leftInset} - ${rightInset})!important;
       }
       #frog-game #pocket-hud span {font-size:inherit!important;color:#073720!important;}
       #frog-game #pocket-controls {
         position:absolute!important;bottom:auto!important;right:auto!important;flex-direction:row!important;
-        top:calc(${px(6)} + ${topInset})!important;left:calc(${px(8)} + ${leftInset})!important;gap:${px(6)}!important;align-items:center!important;
+        top:${px(6)}!important;left:calc(${px(8)} + ${leftInset})!important;gap:${px(6)}!important;align-items:center!important;
       }
       #frog-game #pocket-controls button {
         min-height:0!important;min-width:0!important;width:auto!important;height:auto!important;

@@ -3,6 +3,7 @@ package io.github.snakeesc.escapethesnake;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.view.DisplayCutout;
 import android.os.Build;
 import androidx.core.view.WindowCompat;
@@ -14,6 +15,13 @@ public class MainActivity extends BridgeActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    if (Build.VERSION.SDK_INT >= 28) {
+      // With the status bar hidden, the default cutout mode letterboxes the whole
+      // window below the cutout, leaving a black band across the top of the screen.
+      WindowManager.LayoutParams lp = getWindow().getAttributes();
+      lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+      getWindow().setAttributes(lp);
+    }
     hideSystemBars();
     bridge.getWebView().getViewTreeObserver().addOnGlobalLayoutListener(this::publishCutout);
     bridge.getWebView().postDelayed(() -> { lastInsets = ""; publishCutout(); }, 1000);
@@ -37,10 +45,9 @@ public class MainActivity extends BridgeActivity {
     web.getLocationOnScreen(location);
     float density = getResources().getDisplayMetrics().density;
     int screenWidth = getWindow().getDecorView().getRootView().getWidth();
-    float top = cutout == null ? 0 : Math.max(0, cutout.getSafeInsetTop() - location[1]) / density;
     float left = cutout == null ? 0 : Math.max(0, cutout.getSafeInsetLeft() - location[0]) / density;
     float right = cutout == null ? 0 : Math.max(0, cutout.getSafeInsetRight() - (screenWidth - location[0] - web.getWidth())) / density;
-    String json = "{\"top\":" + top + ",\"left\":" + left + ",\"right\":" + right + "}";
+    String json = "{\"left\":" + left + ",\"right\":" + right + "}";
     if (json.equals(lastInsets)) return;
     lastInsets = json;
     bridge.getWebView().evaluateJavascript("window.escapeSnakeInsets=" + json + ";window.dispatchEvent(new Event('escape-snake-insets'));", null);
