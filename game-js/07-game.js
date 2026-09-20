@@ -1201,6 +1201,8 @@ const MAX_LUCK = 30;
   if (btnEnd) btnEnd.onclick = ev => { ev.stopPropagation(); openPauseMenu(); };
 
   let pauseMenu = null;
+  let pauseGuideFilter = 'Common';
+  let pauseGuidePage = 0;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
@@ -1310,6 +1312,39 @@ const MAX_LUCK = 30;
       #runPauseOverlay p {font-size:21px;}
       #runPauseOverlay .pause-stats strong {font-size:27px;}
       #runPauseOverlay .pause-row img {width:42px;height:42px;}
+    }
+    #runPauseOverlay .pause-panel {width:560px;}
+    #runPauseOverlay .pause-tabs {margin-bottom:6px;}
+    #runPauseOverlay .pause-stats {grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px;padding:8px 0 12px;}
+    #runPauseOverlay .pause-stats > div {display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:19px;}
+    #runPauseOverlay .pause-stats strong {font-size:23px;}
+    #runPauseOverlay .pause-upgrade-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px;}
+    #runPauseOverlay .pause-upgrade-grid .pause-row {gap:8px;padding:10px 0;}
+    #runPauseOverlay .pause-upgrade-grid strong {font-size:21px;}
+    #runPauseOverlay .pause-upgrade-grid img {width:32px;height:32px;}
+    #runPauseOverlay .pause-rewards {margin-top:16px;font-size:20px;}
+    #runPauseOverlay summary {cursor:pointer;padding:8px 0;}
+    #runPauseOverlay .pause-filters {position:sticky;top:0;background:#fff8dc;gap:8px;border-bottom:1px solid #c0cf94;z-index:1;}
+    #runPauseOverlay .pause-pages {display:flex;align-items:center;justify-content:space-between;padding-top:12px;}
+    #runPauseOverlay button:disabled {opacity:.35;cursor:default;transform:none;}
+    #runPauseOverlay .pause-guide-entries .pause-row {align-items:flex-start;padding:16px 0;}
+    @media(pointer:coarse),(max-width:600px) {
+      #runPauseOverlay .pause-panel {width:880px;}
+      #runPauseOverlay .pause-stats {grid-template-columns:repeat(2,minmax(0,1fr));}
+      #runPauseOverlay .pause-stats > div {font-size:32px;}
+      #runPauseOverlay .pause-stats strong {font-size:36px;}
+      #runPauseOverlay .pause-upgrade-grid strong {font-size:32px;}
+      #runPauseOverlay .pause-upgrade-grid img {width:50px;height:50px;}
+      #runPauseOverlay .pause-rewards {font-size:32px;}
+      #runPauseOverlay .pause-guide-entries p {font-size:36px;line-height:1.3;}
+    }
+    @media(max-width:600px) {
+      #runPauseOverlay .pause-stats > div {font-size:20px;}
+      #runPauseOverlay .pause-stats strong {font-size:23px;}
+      #runPauseOverlay .pause-upgrade-grid strong {font-size:21px;}
+      #runPauseOverlay .pause-upgrade-grid img {width:34px;height:34px;}
+      #runPauseOverlay .pause-rewards {font-size:21px;}
+      #runPauseOverlay .pause-guide-entries p {font-size:22px;line-height:1.3;}
     }`;
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
@@ -1320,7 +1355,8 @@ const MAX_LUCK = 30;
     pauseMenu.addEventListener('click',e=>{
       e.stopPropagation();const b=e.target.closest('button');if(!b)return;
       if(b.dataset.view) renderPauseContent(b.dataset.view);
-      if(b.dataset.filter) renderPauseContent('guide',b.dataset.filter);
+      if(b.dataset.filter) { pauseGuidePage=0; renderPauseContent('guide',b.dataset.filter); }
+      if(b.dataset.page) { pauseGuidePage+=Number(b.dataset.page); renderPauseContent('guide',pauseGuideFilter); }
       if(b.dataset.action==='resume') closePauseMenu();
       if(b.dataset.action==='end') {
         pauseMenu.querySelector('.pause-content').innerHTML='<h3>End this run?</h3><p>Your score will go to the run summary.</p><button data-action="confirm-end">End run & view summary</button><button data-view="run">Keep playing</button>';
@@ -1332,19 +1368,23 @@ const MAX_LUCK = 30;
       if(e.key==='Tab') {const buttons=[...pauseMenu.querySelectorAll('button')];const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
     });
   }
-  function renderPauseContent(view='run',filter='Common') {
+  function renderPauseContent(view='run',filter=pauseGuideFilter) {
     pauseMenu.querySelector('.pause-tabs [data-view=run]').hidden=view==='run';
     pauseMenu.querySelector('.pause-tabs [data-view=guide]').hidden=view==='guide';
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
-      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div>`+pauseGuide.filter(x=>x[0]===filter).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('');return;
+      pauseGuideFilter=filter;
+      const entries=pauseGuide.filter(x=>x[0]===filter);
+      const perPage=3, pages=Math.ceil(entries.length/perPage);
+      pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
+      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;return;
     }
     const instantIds=new Set(['roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed));
     const rewards=runUpgradeLog.filter(x=>!current.includes(x));
     const upgradeRows=items=>items.map(x=>`<div class="pause-row">${pauseIcon(x.name)}<strong>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</strong></div>`).join('');
     const effects=[['Speed',speedBuffTime],['Jump',jumpBuffTime],['Snake Slow',snakeSlowTime],['Snake Confusion',snakeConfuseTime],['Snake Shrink',snakeShrinkTime],['Frog Shield',frogShieldTime],['Orb Magnet',orbMagnetTime],['Score Multiplier',scoreMultiTime],['Panic Hop',panicHopTime],['Life Steal',lifeStealTime],['Time Slow',timeSlowTime],['Clone Swarm',cloneSwarmTime]].filter(x=>x[1]>0);
-    content.innerHTML=`<div class="pause-stats"><div>Time<strong>${formatTime(elapsedTime)}</strong></div><div>Score<strong>${Math.floor(score).toLocaleString()}</strong></div><div>Frogs<strong>${frogs.length}</strong></div><div>Luck<strong>${luckStat} / ${MAX_LUCK}</strong></div><div>Revive chance<strong>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</strong></div><div>Sheds<strong>${snakeShedCount}</strong></div></div><h3>Active effects</h3>${effects.length?effects.map(([name,time])=>`<p>${name} · ${time.toFixed(1)}s remaining</p>`).join(''):'<p>No temporary effects right now.</p>'}<h3>Current upgrades</h3>${current.length?upgradeRows(current):'<p>No permanent upgrades yet.</p>'}${rewards.length?'<h3>Instant / used rewards</h3>'+upgradeRows(rewards):''}`;
+    content.innerHTML=`<div class="pause-stats"><div>Time<strong>${formatTime(elapsedTime)}</strong></div><div>Score<strong>${Math.floor(score).toLocaleString()}</strong></div><div>Frogs<strong>${frogs.length}</strong></div><div>Luck<strong>${luckStat} / ${MAX_LUCK}</strong></div><div>Revive chance<strong>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</strong></div><div>Sheds<strong>${snakeShedCount}</strong></div></div>${effects.length?'<h3>Active effects</h3>'+effects.map(([name,time])=>`<p>${name} · ${time.toFixed(1)}s remaining</p>`).join(''):''}<h3>Current upgrades</h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p>No permanent upgrades yet.</p>'}${rewards.length?'<details class="pause-rewards"><summary>Used rewards ('+rewards.length+')</summary>'+upgradeRows(rewards)+'</details>':''}`;
   }
   function openPauseMenu() {
     if(gameOver || mainMenuActive || summaryPending) return;
@@ -5075,7 +5115,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
-    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Special frog spawns may grant their role to a crowned frog.", apply:()=>{royalApprenticeshipActive=true;}});
+    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Each crowned frog has a <span>50%</span> chance to gain the spawned special role", apply:()=>{royalApprenticeshipActive=true;}});
 
     upgrades.push({
       id: "roleDraft",
