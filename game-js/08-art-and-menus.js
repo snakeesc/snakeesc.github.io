@@ -51,3 +51,12 @@ window.approvedUpgrades={"poison toads":"./game-assets/sprites/approved/frog-poi
   window.addEventListener('resize', align);
   align();
 })();
+
+// Cannibal fullness stages share one size and baseline.
+window.approvedFrogs["cannibal-0"]="./game-assets/sprites/approved/frog-cannibal-meal-0.png";
+window.approvedFrogs["cannibal-1"]="./game-assets/sprites/approved/frog-cannibal-meal-1.png";
+window.approvedFrogs["cannibal-2"]="./game-assets/sprites/approved/frog-cannibal-meal-2.png";
+window.approvedFrogs["cannibal-3"]="./game-assets/sprites/approved/frog-cannibal-meal-3.png";
+window.approvedFrogs["cannibal-4"]="./game-assets/sprites/approved/frog-cannibal-meal-4.png";
+window.approvedFrogs["cannibal-5"]="./game-assets/sprites/approved/frog-cannibal-meal-5.png";
+window.approvedFrogs.cannibal=window.approvedFrogs["cannibal-0"];

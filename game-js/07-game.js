@@ -1141,7 +1141,7 @@ const MAX_LUCK = 30;
 
   
   const btnSound = makeControlButton("sound");
-  const btnEnd   = makeControlButton("pause");
+  const btnEnd   = makeControlButton("end run");
 
   
   controlsBar.appendChild(btnSound);
@@ -1198,7 +1198,7 @@ const MAX_LUCK = 30;
 
 
   if (btnSound) btnSound.onclick = () => { toggleSound(); };
-  if (btnEnd) btnEnd.onclick = ev => { ev.stopPropagation(); openPauseMenu(); };
+  if (btnEnd) btnEnd.onclick = ev => { ev.stopPropagation(); if (!gameOver && confirm("End the current run?")) endGame(); };
 
   let pauseMenu = null;
   let pauseGuideFilter = 'Common';
@@ -1350,19 +1350,14 @@ const MAX_LUCK = 30;
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
-    pauseMenu.innerHTML=`<div class="pause-panel"><h2 id="pauseTitle">Paused</h2><nav class="pause-tabs" aria-label="Pause sections"><button data-view="run" hidden>Back to run</button><button data-view="guide">Field Guide</button></nav><div class="pause-content"></div><footer class="pause-footer"><button data-action="resume">Resume</button><button class="pause-footer-guide" data-view="guide">Field Guide</button><button data-action="end">End Run</button></footer></div>`;
+    pauseMenu.innerHTML=`<div class="pause-panel"><div class="pause-content"></div><footer class="pause-footer"><button data-action="close-guide">Back to menu</button></footer></div>`;
     document.body.appendChild(pauseMenu);
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
       e.stopPropagation();const b=e.target.closest('button');if(!b)return;
-      if(b.dataset.view) renderPauseContent(b.dataset.view);
       if(b.dataset.filter) { pauseGuidePage=0; renderPauseContent('guide',b.dataset.filter); }
       if(b.dataset.page) { pauseGuidePage+=Number(b.dataset.page); renderPauseContent('guide',pauseGuideFilter); }
-      if(b.dataset.action==='resume') closePauseMenu();
-      if(b.dataset.action==='end') {
-        pauseMenu.querySelector('.pause-content').innerHTML='<h3>End this run?</h3><p>Your score will go to the run summary.</p><button data-action="confirm-end">End run & view summary</button><button data-view="run">Keep playing</button>';
-      }
-      if(b.dataset.action==='confirm-end') {pauseMenu.style.display='none';endGame();}
+      if(b.dataset.action==='close-guide') closePauseMenu();
     });
     pauseMenu.addEventListener('keydown',e=>{
       if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePauseMenu();}
@@ -1370,13 +1365,9 @@ const MAX_LUCK = 30;
     });
   }
   function renderPauseContent(view='run',filter=pauseGuideFilter) {
-    pauseMenu.dataset.view = view;
-    pauseMenu.querySelector('#pauseTitle').hidden = view === 'guide';
-    pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
-    if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
-    else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
-    pauseMenu.querySelector('.pause-tabs [data-view=run]').hidden=view==='run';
-    pauseMenu.querySelector('.pause-tabs [data-view=guide]').hidden=view==='guide';
+    pauseMenu.dataset.view = 'guide';
+    pauseMenu.setAttribute('aria-label','Field Guide');
+    pauseMenu.removeAttribute('aria-labelledby');
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
       pauseGuideFilter=filter;
@@ -1385,23 +1376,19 @@ const MAX_LUCK = 30;
       pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
       content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;return;
     }
-    const instantIds=new Set(['roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
-    const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed));
-    const upgradeRows=items=>items.map(x=>`<div class="pause-row">${pauseIcon(x.name)}<strong>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</strong></div>`).join('');
-    const effects=[['Speed',speedBuffTime],['Jump',jumpBuffTime],['Snake Slow',snakeSlowTime],['Snake Confusion',snakeConfuseTime],['Snake Shrink',snakeShrinkTime],['Frog Shield',frogShieldTime],['Orb Magnet',orbMagnetTime],['Score Multiplier',scoreMultiTime],['Panic Hop',panicHopTime],['Life Steal',lifeStealTime],['Time Slow',timeSlowTime],['Clone Swarm',cloneSwarmTime]].filter(x=>x[1]>0);
-    content.innerHTML=`<div class="pause-runline"><span>Score <em>${Math.floor(score).toLocaleString()}</em></span><span>Time <em>${formatTime(elapsedTime)}</em></span></div><dl class="pause-detail-stats"><div><dt>Frogs</dt><dd>${frogs.length}</dd></div><div><dt>Luck</dt><dd>${luckStat} / ${MAX_LUCK}</dd></div><div><dt>Revive chance</dt><dd>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</dd></div><div><dt>Sheds</dt><dd>${snakeShedCount}</dd></div></dl><h3>Current upgrades</h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p class="pause-empty">Your permanent upgrades will appear here.</p>'}${effects.length?'<h3>Active effects</h3><div class="pause-effect-list">'+effects.map(([name,time])=>`<span>${name} <b>${time.toFixed(1)}s</b></span>`).join('')+'</div>':''}`;
   }
-  function openPauseMenu() {
-    if(gameOver || mainMenuActive || summaryPending) return;
-    ensurePauseMenu();if(pauseMenu.style.display==='flex')return;
-    pauseWasAlreadyPaused=gamePaused;gamePaused=true;
-    AudioMod.setShedAudioActive?.(false);
-    renderPauseContent();pauseMenu.style.display='flex';
-    pauseMenu.querySelector('[data-action="resume"]').focus();
+  function openMainFieldGuide() {
+    ensurePauseMenu();
+    renderPauseContent('guide');
+    if(mainMenuOverlay) mainMenuOverlay.style.display='none';
+    pauseMenu.style.display='flex';
+    pauseMenu.querySelector('[data-action="close-guide"]').focus();
   }
   function closePauseMenu() {
     if(!pauseMenu || pauseMenu.style.display!=='flex')return;
-    pauseMenu.style.display='none';gamePaused=pauseWasAlreadyPaused;btnEnd.focus();
+    pauseMenu.style.display='none';
+    if(mainMenuOverlay) mainMenuOverlay.style.display='flex';
+    document.getElementById('btnFieldGuide')?.focus();
   }
 
 
@@ -2698,27 +2685,21 @@ function showLuckyShuffle(result){
   eventVisuals[eventVisuals.length-1].render(0);
 }
 function showZombieSacrifice(frog) {
+  // Same-size sprite, at its actual airborne position; no flying pieces.
   const el=document.createElement('div');
-  const size=FROG_SIZE*1.2, x=frog.x-FROG_SIZE*.1, y=frog.baseY-FROG_SIZE*.1;
-  el.style.cssText=`position:absolute;left:${x}px;top:${y}px;width:${size}px;height:${size}px;pointer-events:none;z-index:40;`;
-  const url=window.approvedFrogs?.zombie;
-  const tiles=[];
-  for(let row=0;row<3;row++)for(let col=0;col<3;col++) {
-    const tile=document.createElement('span');
-    tile.style.cssText=`position:absolute;left:${col*size/3}px;top:${row*size/3}px;width:${size/3}px;height:${size/3}px;background-image:url("${url}");background-size:${size}px ${size}px;background-position:${-col*size/3}px ${-row*size/3}px;image-rendering:pixelated;`;
-    el.appendChild(tile);tiles.push({tile,row,col});
-  }
+  const size=FROG_SIZE;
+  el.style.cssText=`position:absolute;left:${Math.round(frog.x)}px;top:${Math.round(frog.y ?? frog.baseY)}px;width:${size}px;height:${size}px;pointer-events:none;z-index:40;`;
+  const sprite=document.createElement('img');
+  sprite.src=window.approvedFrogs?.zombie || './game-assets/sprites/approved/frog-zombie.png';
+  sprite.alt='';
+  sprite.style.cssText='width:100%;height:100%;object-fit:contain;image-rendering:pixelated;transform-origin:center bottom;';
+  el.appendChild(sprite);
   container.appendChild(el);
-  eventVisuals.push({el,time:0,duration:.9,kind:"zombieSacrifice",render(t){
-    const phase=Math.floor(t*10)/10;
-    for(const {tile,row,col} of tiles){
-      const collapse=phase<.3?phase/.3:1;
-      const spread=Math.max(0,(phase-.3)/.6);
-      const dx=(col-1)*(-size*.12*collapse+size*.42*spread);
-      const dy=(row-1)*(-size*.12*collapse)-size*.5*spread;
-      tile.style.transform=`translate(${Math.round(dx)}px,${Math.round(dy)}px)`;
-      tile.style.opacity=String(1-spread);
-    }
+  eventVisuals.push({el,time:0,duration:.65,kind:"zombieSacrifice",render(t){
+    // Four stepped poses: tuck down, crouch, settle, disappear in pixel rows.
+    const frame=Math.min(4,Math.floor(t/.13));
+    sprite.style.transform=`scaleY(${[1,.92,.82,.72,.72][frame]})`;
+    sprite.style.clipPath=frame>=3?`inset(${frame===3?35:70}% 0 0 0)`:'none';
   }});
 }
 function resolveZombiePanic() {
@@ -2837,8 +2818,8 @@ function updateFrogRoleEmoji(frog) {
  if (!frog || !frog.el) return;
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
  const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
- const role=roles.find(([flag])=>frog[flag]);const key=role?role[1]:(frog.starLevel>0?'crowned':'');
- if(role && frog.el.dataset.approvedRole!==key)showRoleSpotlight(frog);
+ const role=roles.find(([flag])=>frog[flag]);const key=role?(role[1]==='cannibal'?'cannibal-'+Math.min(5,Math.max(0,frog.cannibalMeals||0)):role[1]):(frog.starLevel>0?'crowned':'');
+ if(role && frog.el.dataset.approvedRole!==key && !(frog.isCannibal && (frog.el.dataset.approvedRole||'').startsWith('cannibal-')))showRoleSpotlight(frog);
  if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
  else {delete frog.el.dataset.approvedRole;frog.el.style.removeProperty('--approved-frog');}
 }
@@ -4087,6 +4068,7 @@ function computeDeathRattleChanceForFrog(frog) {
       cannibal.speedMult *= (1 - .05 * cannibal.cannibalMeals) / (1 - .05 * before);
       cannibal.jumpMult *= (1 + .05 * cannibal.cannibalMeals) / (1 + .05 * before);
       cannibal.cannibalNextMeal = elapsedTime + 15;
+      updateFrogRoleEmoji(cannibal);
     }
 
   }
@@ -5585,6 +5567,7 @@ function closeAnimatedOverlay(overlayEl) {
     const btnBuffGuide = document.getElementById("btnBuffGuide");
     const btnLeaderboard = document.getElementById("btnLeaderboard");
     const btnDashboard = document.getElementById("btnDashboard");
+    document.getElementById('btnFieldGuide')?.remove();
 
     if (btnStartRun) {
       btnStartRun.addEventListener("click", () => {
@@ -5670,6 +5653,18 @@ function closeAnimatedOverlay(overlayEl) {
     }
   }
 
+  const FIRST_PLAY_HELP_KEY = "escapeSnake.howToSeen.v1";
+  let howToSeenThisSession = false;
+  let startAfterHowTo = false;
+  function hasSeenHowTo() {
+    if (howToSeenThisSession) return true;
+    try { return localStorage.getItem(FIRST_PLAY_HELP_KEY) === "1"; }
+    catch (_) { return false; }
+  }
+  function rememberHowTo() {
+    howToSeenThisSession = true;
+    try { localStorage.setItem(FIRST_PLAY_HELP_KEY, "1"); } catch (_) {}
+  }
   function initHowToOverlay() {
     if (howToOverlay) return;
     howToOverlay = document.getElementById("howToOverlay");
@@ -5705,12 +5700,17 @@ function closeAnimatedOverlay(overlayEl) {
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
 
+    rememberHowTo();
     openAnimatedOverlay(howToOverlay);
   }
 
   function hideHowToOverlay() {
     if (howToOverlay) {
       closeAnimatedOverlay(howToOverlay);
+    }
+    if (startAfterHowTo) {
+      startAfterHowTo = false;
+      startNewRun();
     }
   }
 
@@ -7397,6 +7397,19 @@ function startNewRun() {
 }
 
 function startRunFromMenu() {
+  if (startAfterHowTo) return;
+  const firstRun = (loadDashboardStats().totalRuns || 0) === 0;
+  if (firstRun && !hasSeenHowTo()) {
+    startAfterHowTo = true;
+    showHowToOverlay();
+    if (howToOverlay && howToOverlay.style.display === "flex") {
+      hideMainMenu();
+      const button = document.getElementById("howToCloseBtn");
+      if (button) { button.textContent = "Got it — let's play"; button.focus(); }
+      return;
+    }
+    startAfterHowTo = false;
+  }
   startNewRun();
 }
 
