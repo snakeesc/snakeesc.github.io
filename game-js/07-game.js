@@ -1012,6 +1012,7 @@ let lingeringHexActive = false;
 let lastingLegacyActive = false;
 let brittleScalesActive = false;
 let bruisedEggActive = false;
+let panicAttackActive = false;
 const MAX_LUCK = 30;
   let fragileRealityActive = false;
   let frogScatterUsed      = false;
@@ -2587,6 +2588,7 @@ function clearAllFrogRoles(frog) {
   frog.isLucky = false;
   frog.isZombie = false;
   frog.isBull = false;
+  frog.isPoisonToad = false;
   frog.bullArmor = false;
   frog.isCannibal = false;
   
@@ -2610,7 +2612,7 @@ function clearAllFrogRoles(frog) {
 function updateFrogRoleEmoji(frog) {
  if (!frog || !frog.el) return;
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
- const roles=[['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isChampion','champion'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
+ const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isChampion','champion'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
  const role=roles.find(([flag])=>frog[flag]);const key=role?role[1]:(frog.starLevel>0?'crowned':'');
  if(role && frog.el.dataset.approvedRole!==key)showRoleSpotlight(frog);
  if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
@@ -2694,6 +2696,11 @@ function spawnTidalWave() {
   spawnExtraFrogs(Math.min(alive, room));
 }
 
+function grantPoisonToad(frog) {
+  frog.isPoisonToad = true;
+  updateFrogRoleEmoji(frog);
+}
+
 function grantBullFrog(frog) {
   frog.isBull = true;
   frog.bullArmor = true;
@@ -2731,12 +2738,12 @@ function rerollPromotedFrogStats(frog) {
 
 function tryRoyalApprenticeship(role) {
   if (!royalApprenticeshipActive) return;
-  const grants = {bull:grantBullFrog, champion:grantChampionFrog, aura:grantAuraFrog,
+  const grants = {poison:grantPoisonToad, bull:grantBullFrog, champion:grantChampionFrog, aura:grantAuraFrog,
     magnet:grantMagnetFrog, lucky:grantLuckyFrog, zombie:grantZombieFrog,
     necromancer:grantNecromancerFrog, alchemist:grantAlchemistFrog, cannibal:markCannibalFrog};
   if (!grants[role]) return;
   const chance = getLuckBoostedChance(0.50, 0.65);
-  const eligible = frogs.filter(f => f.starLevel > 0 && !f.isBull &&
+  const eligible = frogs.filter(f => f.starLevel > 0 && !f.isPoisonToad && !f.isBull &&
     !f.isChampion && !f.isAura && !f.isMagnet && !f.isLucky && !f.isZombie &&
     !f.isCannibal && !f.isNecromancer && !f.isAlchemist && !f.hasPermaShield);
   for (const frog of eligible) {
@@ -2755,6 +2762,7 @@ function spawnRoleFrog(role) {
   clearAllFrogRoles(frog);
 
   switch (role) {
+    case "poison": grantPoisonToad(frog); break;
     case "bull": grantBullFrog(frog); break;
     case "champion":
       grantChampionFrog(frog);
@@ -2789,6 +2797,7 @@ function spawnRoleFrog(role) {
 }
 function getRoleDraftPool() {
   return [
+    { id: "poison", label: "Poison Toad", emoji: "", tier: "normal" },
     { id: "bull", label: "Bull Frog", emoji: "🐸", tier: "normal" },
     { id: "champion", label: "Champion", emoji: "🏅", tier: "normal" },
     { id: "aura", label: "Aura", emoji: "💫", tier: "normal" },
@@ -2867,7 +2876,9 @@ function showRoleDraftOverlayChoices() {
       <div class="frog-upgrade-emoji"></div><div class="frog-upgrade-title">${role.label}</div>
       <div class="frog-upgrade-desc">
         ${
-          role.id === "bull"
+          role.id === "poison"
+            ? "Confuses the snake when eaten."
+            : role.id === "bull"
             ? "Survives one bite and leaps away from the snake."
             : role.id === "champion"
             ? "Faster, stronger frog with better hops."
@@ -3257,7 +3268,7 @@ function computeDeathRattleChanceForFrog(frog) {
   function tryLastingLegacy(deadFrog, source) {
     if (!lastingLegacyActive || source === "scatter") return;
     const grants = [
-      ["isBull", grantBullFrog], ["isChampion", grantChampionFrog], ["isAura", grantAuraFrog],
+      ["isPoisonToad", grantPoisonToad], ["isBull", grantBullFrog], ["isChampion", grantChampionFrog], ["isAura", grantAuraFrog],
       ["hasPermaShield", grantShieldFrog], ["isMagnet", grantMagnetFrog],
       ["isLucky", grantLuckyFrog], ["isZombie", grantZombieFrog],
       ["isNecromancer", grantNecromancerFrog], ["isAlchemist", grantAlchemistFrog],
@@ -3329,6 +3340,9 @@ function computeDeathRattleChanceForFrog(frog) {
       frog.cloneEl = null;
     }
 
+    if (source === "snake" && frog.isPoisonToad) {
+      applyBuff("snakeConfuse", null);
+    }
     tryLastingLegacy(frog, source);
 
     // If this frog *is* a cannibal, unmark it so global counters stay correct
@@ -3417,30 +3431,17 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
   function scatterFrogSwarm() {
-    const frogsToScatter = frogs.slice();
-
-    for (const frog of frogsToScatter) {
-      if (!frog) continue;
-      if (frog.isCannibal) {
-        unmarkCannibalFrog(frog);
-      }
-      frog.isZombie = false;
-  frog.isBull = false;
-  frog.bullArmor = false;
-      frog.extraDeathRattleChance = 0;
-      frog.specialDeathRattleChance = null;
-    }
-
-    for (const frog of frogsToScatter) {
-      const idx = frogs.indexOf(frog);
-      if (idx !== -1) {
-        tryKillFrogAtIndex(idx, "scatter");
-      }
-    }
-
-    const needed = Math.max(0, frogsToScatter.length - frogs.length);
-    if (needed > 0) {
-      spawnExtraFrogs(needed);
+    const width = window.innerWidth, height = window.innerHeight;
+    for (const frog of frogs) {
+      const x = 16 + Math.random() * Math.max(0, width - 32 - FROG_SIZE);
+      const y = 16 + Math.random() * Math.max(0, height - 32 - FROG_SIZE);
+      frog.x = frog.hopStartX = frog.hopEndX = x;
+      frog.y = frog.baseY = frog.hopStartBaseY = frog.hopEndBaseY = y;
+      frog.state = "idle";
+      frog.hopTime = 0;
+      frog.idleTime = randRange(frog.idleMin, frog.idleMax);
+      frog.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      if (frog.cloneEl) frog.cloneEl.style.transform = frog.el.style.transform;
     }
   }
 
@@ -4574,7 +4575,9 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
     } else if (snakeConfuseTime > 0) {
-      desiredAngle = head.angle + (Math.random() - 0.5) * Math.PI;
+      desiredAngle = panicAttackActive && !isMainMenu && targetFrog
+        ? Math.atan2(head.y - (targetFrog.baseY + FROG_SIZE / 2), head.x - (targetFrog.x + FROG_SIZE / 2))
+        : head.angle + (Math.random() - 0.5) * Math.PI;
     } else if (targetRemnant) {
       desiredAngle = Math.atan2(
         (targetRemnant.y + SNAKE_SEGMENT_SIZE / 2) - head.y,
@@ -4774,6 +4777,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
+    if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes flee your frogs", apply:()=>{panicAttackActive=true;}});
+    upgrades.push({id:"poisonRecruits", label:"Poison Toads<br>Spawn 1–3 toads. Confuse the snake when eaten.", apply:()=>spawnRoleBatch("poison",1,3)});
     upgrades.push({id:"bullRecruits", label:"Bull Frog<br>Spawn 1–3 Bull Frogs. Survive one bite and leap to safety.", apply:()=>spawnRoleBatch("bull",1,3)});
     upgrades.push({id:"magnetRecruits", label:"Magnet Frogs<br>Spawn 1–3 orb-attracting Magnet Frogs.", apply:()=>spawnRoleBatch("magnet",1,3)});
 
@@ -5045,7 +5050,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!frogScatterUsed && frogs.length > 0) {
       upgrades.push({
         id: "frogScatter",
-        label: `🌪️ Frog Scatter<br>Kill and respawn <span style="color:${epicTitleColor};">all</span> current frogs`,
+        label: `🌪️ Frog Scatter<br>Rescatter <span style="color:${epicTitleColor};">all</span> frogs. Keep roles and crowns`,
         apply: () => { frogScatterUsed = true; scatterFrogSwarm(); }
       });
     }
@@ -6990,10 +6995,6 @@ function initUpgradeOverlay() {
         choice.apply();
         showUpgradeFeedback(choice, btn);
 
-        if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
-          initialUpgradeDone = true;
-        }
-
         closeUpgradeOverlay();
         updateUpgradeBuffSummary();
       });
@@ -7019,7 +7020,8 @@ function initUpgradeOverlay() {
       aura: 0,
       magnet: 0,
       lucky: 0,
-      zombie: 0
+      zombie: 0,
+      poison: 0
     };
 
     for (const frog of frogs) {
@@ -7028,9 +7030,12 @@ function initUpgradeOverlay() {
       if (frog.isMagnet)   roleCounts.magnet++;
       if (frog.isLucky)    roleCounts.lucky++;
       if (frog.isZombie)   roleCounts.zombie++;
+      if (frog.isPoisonToad) roleCounts.poison++;
     }
 
     const items = [];
+    if (panicAttackActive) items.push("<strong>Panic Attack:</strong> Confused snakes flee frogs");
+    if (roleCounts.poison) items.push(`<strong>Poison Toads:</strong> ${roleCounts.poison}`);
     if (lingeringHexActive) items.push("<strong>Lingering Hex:</strong> +15% snake debuff duration, excluding Lucky Roll");
     if (lastingLegacyActive) items.push("<strong>Lasting Legacy:</strong> 20% role inheritance chance; excludes Frog Scatter");
     if (brittleScalesActive) items.push("<strong>Brittle Scales:</strong> Snake resistance halved");
@@ -7152,7 +7157,7 @@ function initUpgradeOverlay() {
   }
 
   function openFirstUpgradeSelection() {
-    openUpgradeOverlay("normal", { context: "start" });
+    openUpgradeOverlay("epic", { context: "start" });
   }
 
 function startNewRun() {
@@ -7237,9 +7242,10 @@ function startRunFromMenu() {
     gamePaused = false;
 
     // schedule next timers
-    if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
+    if (!initialUpgradeDone) {
       initialUpgradeDone = true;
       nextPermanentChoiceTime = elapsedTime + 60;
+      nextEpicChoiceTime = elapsedTime + 180;
     } else {
       if (currentUpgradeOverlayMode === "normal") {
         nextPermanentChoiceTime = elapsedTime + 60;
@@ -7416,6 +7422,7 @@ function startRunFromMenu() {
 luckStat = 0;
 lingeringHexActive = lastingLegacyActive = brittleScalesActive = false;
 bruisedEggActive = false;
+panicAttackActive = false;
     // Reset game state
     elapsedTime     = 0;
     lastTime        = 0;
