@@ -118,6 +118,7 @@
 
       // Death / snake / orb
       createPool("frogDeath", "frogDeath.mp3", { poolSize: 3, volume: 0.9, minIntervalMs: 120 });
+      createPool("zombieSacrifice", "frogDeath2.mp3", { poolSize: 2, volume: 0.9, minIntervalMs: 0 });
       createPool("snakeMunch", "munch.mp3",    { poolSize: 4, volume: 0.9, minIntervalMs: 50 });
 
       createPool("buttonClick", "button-click.mp3",    { poolSize: 2, volume: 0.9, minIntervalMs: 120 });
@@ -168,6 +169,11 @@
     const ribbits = ["ribbit1", "ribbit2", "ribbit3", "ribbitBase"];
     const key = ribbits[Math.floor(Math.random() * ribbits.length)];
     playFromPool(key);
+  }
+
+  function playZombieSacrifice() {
+    initAudio();
+    playFromPool("zombieSacrifice");
   }
 
   function playFrogDeath() {
@@ -301,6 +307,7 @@
     initAudio,
     playRandomRibbit,
     playFrogDeath,
+    playZombieSacrifice,
     playSnakeMunch,
     playRandomOrbSpawnSound,
     playBuffSound,

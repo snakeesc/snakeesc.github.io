@@ -282,7 +282,7 @@ function applySelectedStartingBuff() {
       break;
 
     case "evolved": {
-      const roleIds = ["champion", "aura", "magnet", "lucky", "zombie"];
+      const roleIds = ["cannibal", "aura", "magnet", "lucky", "zombie"];
       const chosenRole = roleIds[Math.floor(Math.random() * roleIds.length)];
       const count = randInt(2, 4);
 
@@ -1141,7 +1141,7 @@ const MAX_LUCK = 30;
 
   
   const btnSound = makeControlButton("sound");
-  const btnEnd   = makeControlButton("end run");
+  const btnEnd   = makeControlButton("pause");
 
   
   controlsBar.appendChild(btnSound);
@@ -1198,12 +1198,212 @@ const MAX_LUCK = 30;
 
 
   if (btnSound) btnSound.onclick = () => { toggleSound(); };
-  if (btnEnd)   btnEnd.onclick   = (ev) => {
-      ev.stopPropagation();
-      if (!gameOver) {
-        if (confirm("End the current run?")) endGame();
+  if (btnEnd) btnEnd.onclick = ev => { ev.stopPropagation(); openPauseMenu(); };
+
+  let pauseMenu = null;
+  let pauseGuideFilter = 'Common';
+  let pauseGuidePage = 0;
+  let pauseWasAlreadyPaused = false;
+  let runUpgradeLog = [];
+  const pauseGuide = [
+    ['Common','Mutation','Frogs hop 15% faster and 15% higher, up to their limits.'],
+    ['Common','Panic Attack','Confused snakes flee your frogs.'],
+    ['Common','Poison Toads','Spawn 1–3 Poison Toads. Luck favors larger batches.'],
+    ['Common','Bull Frog','Spawn 1–3 Bull Frogs. Each survives one bite and leaps away.'],
+    ['Common','Magnet Frogs','Spawn 1–3 Magnet Frogs that attract orbs.'],
+    ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
+    ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
+    ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
+    ['Common','Spawn frogs',`${NORMAL_SPAWN_AMOUNT} frogs immediately, subject to the population cap.`],
+    ['Common','Orb Flow','Reduces the interval between orb spawns by 10%, up to its limit.'],
+    ['Common','Orb Whisperer','Orbs stay on the field 30% longer.'],
+    ['Common','Ouroboros Pact','Dead frogs have a 10% base chance to drop an orb.'],
+    ['Common','Luck','Gain 10 luck, up to 30. Improves supported chances, spawn rolls and positive orb durations.'],
+    ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
+    ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, within the revival cap.`],
+    ['Common','Survival Instinct','Below 10 frogs, they hop 20% faster.'],
+    ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
+    ['Common','Pair of Scissors','Cuts the snake in half and slows it.'],
+    ['Epic','Royal Apprenticeship','Special-frog batches can convert each crowned frog to that role: 50% chance, up to 65% with luck. Replaces the crown and rerolls natural movement stats.'],
+    ['Epic','Role Draft','Choose between two roles and spawn 3–7 special frogs. Luck favors larger batches.'],
+    ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
+    ['Epic','Lasting Legacy','A dying special frog has a 20% chance to pass a role to an ordinary frog.'],
+    ['Epic','Bruised Egg','Snakes gain 25% less additional speed per shed.'],
+    ['Epic','Brittle Scales','Halves snake debuff resistance.'],
+    ['Epic','Chain Reaction','An orb pickup has a 15% chance to trigger an additional orb effect.'],
+    ['Epic','Loaded Hand','Future upgrade menus offer four choices instead of three.'],
+    ['Epic','Tidal Wave','Spawns as many frogs as are currently alive, up to the population cap.'],
+    ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
+    ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
+    ['Epic','Second Wind','Once per run: below 10 frogs, spawn 20.'],
+    ['Epic','Grave Wave','Each shed spawns 10–15 frogs.'],
+    ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
+    ['Epic','Promotion','Adds a crown level to up to 10 random frogs, within crown limits.'],
+    ['Epic','Frog Scatter','Rescatters the swarm, preserving roles, crowns and remaining defenses. Once per run.'],
+    ['Epic','Molt Fortune','Drops 5–10 orbs when the snake sheds.'],
+    ['Frogs','Crowned','Permanently improved movement. Can gain up to three crown levels.'],
+    ['Frogs','Aura','Nearby frogs gain 12% shorter hop timing and 12% higher jumps. Overlapping auras stack, within movement caps.'],
+    ['Frogs','Shield','Temporary protection from snake bites.'],
+    ['Frogs','Magnet','Attracts nearby orbs.'],
+    ['Frogs','Lucky','Improves the value of its orb pickups and contributes a score bonus.'],
+    ['Frogs','Zombie','Sacrifices itself to end Panic Hop for the swarm. Spawns one ordinary frog on any death.'],
+    ['Frogs','Cannibal','Eats up to 5 ordinary frogs, gaining 5% shorter hop timing and 5% higher jumps per meal. On death, spawns 2–5 frogs, never more than it ate.'],
+    ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs.'],
+    ['Frogs','Alchemist','Drops an orb every 12 seconds.'],
+    ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
+    ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.']
+  ];
+  function pauseEscape(value) {
+    return String(value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function pauseIcon(name) {
+    const key=name.toLowerCase();
+    const url=window.approvedUpgrades?.[key] || window.approvedFrogs?.[key];
+    return url ? `<img src="${pauseEscape(url)}" alt="" loading="lazy">` : '';
+  }
+  function rememberRunUpgrade(choice) {
+    const el=document.createElement('div'); el.innerHTML=choice.label;
+    const title=el.querySelector('br') ? choice.label.split(/<br\s*\/?\s*>/i)[0] : choice.label;
+    el.innerHTML=title;
+    const name=el.textContent.replace(/^[^\p{L}\p{N}]+/u,'').trim();
+    const found=runUpgradeLog.find(x=>x.id===choice.id);
+    if(found) found.count++; else runUpgradeLog.push({id:choice.id,name,count:1});
+  }
+  function ensurePauseMenu() {
+    if(pauseMenu) return;
+    const style=document.createElement('style');
+    style.textContent=`
+    #runPauseOverlay {position:fixed;inset:0;z-index:1600;display:none;align-items:center;justify-content:center;background:rgba(8,48,29,.23);padding:16px;box-sizing:border-box;}
+    #runPauseOverlay [hidden] {display:none!important;}
+    #runPauseOverlay * {box-sizing:border-box;font-family:ReferencePixel,Pocket,monospace!important;color:#083b27;text-shadow:none;}
+    #runPauseOverlay .pause-panel {background:#fff8dc;border:4px solid #083b27;border-radius:7px;box-shadow:3px 4px 0 #466e35;width:520px;max-width:94%;max-height:calc(94 * var(--app-vh,1vh));display:flex;flex-direction:column;padding:20px;overflow:hidden;font-size:22px;}
+    #runPauseOverlay h2 {font-size:34px;text-align:center;margin:0 0 12px;line-height:1;}
+    #runPauseOverlay button {font-size:22px;background:transparent;border:0;border-radius:0;padding:10px 8px;cursor:pointer;line-height:1.1;}
+    #runPauseOverlay button:focus-visible {outline:2px dashed #087f86;outline-offset:2px;}
+    #runPauseOverlay button[aria-selected=true] {color:#087f86;text-decoration:underline;text-underline-offset:6px;}
+    #runPauseOverlay .pause-tabs,#runPauseOverlay .pause-footer,#runPauseOverlay .pause-filters {display:flex;justify-content:center;gap:16px;flex-wrap:wrap;flex-shrink:0;}
+    #runPauseOverlay .pause-tabs {border-bottom:2px solid #c0cf94;margin-bottom:12px;}
+    #runPauseOverlay .pause-content {overflow:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:0 4px;scrollbar-color:#8da66c #fff8dc;}
+    #runPauseOverlay .pause-stats {display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;padding:8px 0 16px;border-bottom:1px solid #c0cf94;}
+    #runPauseOverlay .pause-stats strong {display:block;color:#087f86;font-size:28px;}
+    #runPauseOverlay h3 {font-size:24px;margin:18px 0 8px;}
+    #runPauseOverlay p {font-size:20px;line-height:1.3;margin:4px 0 12px;}
+    #runPauseOverlay .pause-row {display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #d4d9ad;}
+    #runPauseOverlay .pause-row img {width:42px;height:42px;object-fit:contain;image-rendering:pixelated;flex-shrink:0;}
+    #runPauseOverlay .pause-row strong {font-size:23px;display:block;}
+    #runPauseOverlay .pause-row p {margin:4px 0 0;}
+    #runPauseOverlay .pause-footer {border-top:2px solid #c0cf94;padding-top:10px;margin-top:12px;}
+    @media(hover:hover) {#runPauseOverlay button:hover {transform:translateY(-2px);}}
+    @media(pointer:coarse),(max-width:600px) {
+      #runPauseOverlay .pause-panel {width:880px;padding:26px;font-size:36px;}
+      #runPauseOverlay h2 {font-size:52px;}
+      #runPauseOverlay button {font-size:36px;padding:14px 10px;min-height:48px;}
+      #runPauseOverlay h3,#runPauseOverlay .pause-row strong {font-size:38px;}
+      #runPauseOverlay p {font-size:34px;}
+      #runPauseOverlay .pause-stats strong {font-size:42px;}
+      #runPauseOverlay .pause-row img {width:64px;height:64px;}
+    }
+    @media(max-width:600px) {
+      #runPauseOverlay .pause-panel {padding:16px;font-size:19px;}
+      #runPauseOverlay h2 {font-size:30px;}
+      #runPauseOverlay button {font-size:22px;}
+      #runPauseOverlay h3,#runPauseOverlay .pause-row strong {font-size:23px;}
+      #runPauseOverlay p {font-size:21px;}
+      #runPauseOverlay .pause-stats strong {font-size:27px;}
+      #runPauseOverlay .pause-row img {width:42px;height:42px;}
+    }
+    #runPauseOverlay .pause-panel {width:560px;}
+    #runPauseOverlay .pause-tabs {margin-bottom:6px;}
+    #runPauseOverlay .pause-stats {grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px;padding:8px 0 12px;}
+    #runPauseOverlay .pause-stats > div {display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:19px;}
+    #runPauseOverlay .pause-stats strong {font-size:23px;}
+    #runPauseOverlay .pause-upgrade-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px;}
+    #runPauseOverlay .pause-upgrade-grid .pause-row {gap:8px;padding:10px 0;}
+    #runPauseOverlay .pause-upgrade-grid strong {font-size:21px;}
+    #runPauseOverlay .pause-upgrade-grid img {width:32px;height:32px;}
+    #runPauseOverlay .pause-rewards {margin-top:16px;font-size:20px;}
+    #runPauseOverlay summary {cursor:pointer;padding:8px 0;}
+    #runPauseOverlay .pause-filters {position:sticky;top:0;background:#fff8dc;gap:8px;border-bottom:1px solid #c0cf94;z-index:1;}
+    #runPauseOverlay .pause-pages {display:flex;align-items:center;justify-content:space-between;padding-top:12px;}
+    #runPauseOverlay button:disabled {opacity:.35;cursor:default;transform:none;}
+    #runPauseOverlay .pause-guide-entries .pause-row {align-items:flex-start;padding:16px 0;}
+    @media(pointer:coarse),(max-width:600px) {
+      #runPauseOverlay .pause-panel {width:880px;}
+      #runPauseOverlay .pause-stats {grid-template-columns:repeat(2,minmax(0,1fr));}
+      #runPauseOverlay .pause-stats > div {font-size:32px;}
+      #runPauseOverlay .pause-stats strong {font-size:36px;}
+      #runPauseOverlay .pause-upgrade-grid strong {font-size:32px;}
+      #runPauseOverlay .pause-upgrade-grid img {width:50px;height:50px;}
+      #runPauseOverlay .pause-rewards {font-size:32px;}
+      #runPauseOverlay .pause-guide-entries p {font-size:36px;line-height:1.3;}
+    }
+    @media(max-width:600px) {
+      #runPauseOverlay .pause-stats > div {font-size:20px;}
+      #runPauseOverlay .pause-stats strong {font-size:23px;}
+      #runPauseOverlay .pause-upgrade-grid strong {font-size:21px;}
+      #runPauseOverlay .pause-upgrade-grid img {width:34px;height:34px;}
+      #runPauseOverlay .pause-rewards {font-size:21px;}
+      #runPauseOverlay .pause-guide-entries p {font-size:22px;line-height:1.3;}
+    }`;
+    style.textContent += '\n    #runPauseOverlay[data-view="run"] .pause-tabs {display:none;}\n    #runPauseOverlay[data-view="guide"] .pause-footer-guide {display:none;}\n    #runPauseOverlay[data-view="run"] .pause-panel {padding:24px 28px;width:540px;}\n    #runPauseOverlay[data-view="run"] h2 {margin-bottom:18px;}\n    #runPauseOverlay .pause-scoreline {display:flex;justify-content:center;gap:50px;text-align:center;margin-bottom:14px;}\n    #runPauseOverlay .pause-scoreline span {display:block;font-size:20px;}\n    #runPauseOverlay .pause-scoreline strong {display:block;font-size:38px;color:#087f86;line-height:1.1;}\n    #runPauseOverlay .pause-statline {display:flex;justify-content:center;flex-wrap:wrap;gap:6px 18px;font-size:19px;padding-bottom:14px;border-bottom:1px solid #c0cf94;}\n    #runPauseOverlay .pause-statline b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] h3 {font-size:21px;margin:18px 0 8px;}\n    #runPauseOverlay[data-view="run"] .pause-upgrade-grid {gap:8px 14px;}\n    #runPauseOverlay[data-view="run"] .pause-row {border:0;padding:4px 0;gap:9px;}\n    #runPauseOverlay[data-view="run"] .pause-row strong {font-size:21px;font-weight:normal;}\n    #runPauseOverlay .pause-effect-list {display:flex;flex-wrap:wrap;gap:6px 18px;font-size:19px;}\n    #runPauseOverlay .pause-effect-list b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] .pause-footer {display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;border:0;margin-top:18px;padding:0;}\n    #runPauseOverlay[data-view="run"] [data-action="resume"] {grid-column:1/-1;font-size:32px;padding:12px;}\n    #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:21px;}\n    @media(pointer:coarse),(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {width:880px;padding:30px;}\n      #runPauseOverlay .pause-scoreline {gap:70px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:32px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:56px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:34px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:48px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:34px;}\n    }\n    @media(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {padding:20px;}\n      #runPauseOverlay .pause-scoreline {gap:36px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:20px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:36px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:22px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:32px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:22px;}\n    }\n';
+    style.textContent += '\n#runPauseOverlay[data-view="run"] .pause-panel {width:520px;}\n#runPauseOverlay[data-view="run"] .pause-content {font-weight:400;font-synthesis:none;}\n#runPauseOverlay .pause-runline {display:flex;justify-content:space-between;gap:16px;padding:8px 0 14px;border-bottom:1px solid #c0cf94;font-size:23px;font-weight:400;}\n#runPauseOverlay .pause-runline span {display:flex;gap:12px;align-items:baseline;}\n#runPauseOverlay .pause-runline em {font-style:normal;font-weight:400;color:#087f86;}\n#runPauseOverlay .pause-detail-stats {display:grid;grid-template-columns:1fr 1fr;gap:9px 26px;margin:14px 0 18px;font-size:21px;}\n#runPauseOverlay .pause-detail-stats div {display:flex;justify-content:space-between;gap:10px;}\n#runPauseOverlay .pause-detail-stats dt,#runPauseOverlay .pause-detail-stats dd {margin:0;font-weight:400;}\n#runPauseOverlay .pause-detail-stats dd {color:#087f86;}\n#runPauseOverlay[data-view="run"] h3 {font-weight:400;text-align:left;border-top:1px solid #c0cf94;padding-top:12px;margin-top:10px;}\n#runPauseOverlay[data-view="run"] .pause-row strong,#runPauseOverlay[data-view="run"] .pause-effect-list b {font-weight:400;font-synthesis:none;}\n@media(pointer:coarse),(max-width:600px){\n#runPauseOverlay[data-view="run"] .pause-panel {width:880px;}\n#runPauseOverlay .pause-runline {font-size:36px;}\n#runPauseOverlay .pause-detail-stats {font-size:32px;gap:12px 32px;}\n}\n@media(max-width:600px){\n#runPauseOverlay .pause-runline {font-size:23px;gap:12px;}\n#runPauseOverlay .pause-runline span {gap:8px;}\n#runPauseOverlay .pause-detail-stats {font-size:21px;gap:9px 18px;}\n}\n';
+    document.head.appendChild(style);
+    pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
+    pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
+    pauseMenu.innerHTML=`<div class="pause-panel"><h2 id="pauseTitle">Paused</h2><nav class="pause-tabs" aria-label="Pause sections"><button data-view="run" hidden>Back to run</button><button data-view="guide">Field Guide</button></nav><div class="pause-content"></div><footer class="pause-footer"><button data-action="resume">Resume</button><button class="pause-footer-guide" data-view="guide">Field Guide</button><button data-action="end">End Run</button></footer></div>`;
+    document.body.appendChild(pauseMenu);
+    pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
+    pauseMenu.addEventListener('click',e=>{
+      e.stopPropagation();const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.view) renderPauseContent(b.dataset.view);
+      if(b.dataset.filter) { pauseGuidePage=0; renderPauseContent('guide',b.dataset.filter); }
+      if(b.dataset.page) { pauseGuidePage+=Number(b.dataset.page); renderPauseContent('guide',pauseGuideFilter); }
+      if(b.dataset.action==='resume') closePauseMenu();
+      if(b.dataset.action==='end') {
+        pauseMenu.querySelector('.pause-content').innerHTML='<h3>End this run?</h3><p>Your score will go to the run summary.</p><button data-action="confirm-end">End run & view summary</button><button data-view="run">Keep playing</button>';
       }
-    };
+      if(b.dataset.action==='confirm-end') {pauseMenu.style.display='none';endGame();}
+    });
+    pauseMenu.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePauseMenu();}
+      if(e.key==='Tab') {const buttons=[...pauseMenu.querySelectorAll('button')].filter(b=>!b.disabled && b.getClientRects().length);const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+    });
+  }
+  function renderPauseContent(view='run',filter=pauseGuideFilter) {
+    pauseMenu.dataset.view = view;
+    pauseMenu.querySelector('#pauseTitle').hidden = view === 'guide';
+    pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
+    if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
+    else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
+    pauseMenu.querySelector('.pause-tabs [data-view=run]').hidden=view==='run';
+    pauseMenu.querySelector('.pause-tabs [data-view=guide]').hidden=view==='guide';
+    const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
+    if(view==='guide') {
+      pauseGuideFilter=filter;
+      const entries=pauseGuide.filter(x=>x[0]===filter);
+      const perPage=4, pages=Math.ceil(entries.length/perPage);
+      pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
+      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;return;
+    }
+    const instantIds=new Set(['roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
+    const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed));
+    const upgradeRows=items=>items.map(x=>`<div class="pause-row">${pauseIcon(x.name)}<strong>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</strong></div>`).join('');
+    const effects=[['Speed',speedBuffTime],['Jump',jumpBuffTime],['Snake Slow',snakeSlowTime],['Snake Confusion',snakeConfuseTime],['Snake Shrink',snakeShrinkTime],['Frog Shield',frogShieldTime],['Orb Magnet',orbMagnetTime],['Score Multiplier',scoreMultiTime],['Panic Hop',panicHopTime],['Life Steal',lifeStealTime],['Time Slow',timeSlowTime],['Clone Swarm',cloneSwarmTime]].filter(x=>x[1]>0);
+    content.innerHTML=`<div class="pause-runline"><span>Score <em>${Math.floor(score).toLocaleString()}</em></span><span>Time <em>${formatTime(elapsedTime)}</em></span></div><dl class="pause-detail-stats"><div><dt>Frogs</dt><dd>${frogs.length}</dd></div><div><dt>Luck</dt><dd>${luckStat} / ${MAX_LUCK}</dd></div><div><dt>Revive chance</dt><dd>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</dd></div><div><dt>Sheds</dt><dd>${snakeShedCount}</dd></div></dl><h3>Current upgrades</h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p class="pause-empty">Your permanent upgrades will appear here.</p>'}${effects.length?'<h3>Active effects</h3><div class="pause-effect-list">'+effects.map(([name,time])=>`<span>${name} <b>${time.toFixed(1)}s</b></span>`).join('')+'</div>':''}`;
+  }
+  function openPauseMenu() {
+    if(gameOver || mainMenuActive || summaryPending) return;
+    ensurePauseMenu();if(pauseMenu.style.display==='flex')return;
+    pauseWasAlreadyPaused=gamePaused;gamePaused=true;
+    AudioMod.setShedAudioActive?.(false);
+    renderPauseContent();pauseMenu.style.display='flex';
+    pauseMenu.querySelector('[data-action="resume"]').focus();
+  }
+  function closePauseMenu() {
+    if(!pauseMenu || pauseMenu.style.display!=='flex')return;
+    pauseMenu.style.display='none';gamePaused=pauseWasAlreadyPaused;btnEnd.focus();
+  }
+
 
   function showGameOver() {
     gameOverBanner.style.display = "block";
@@ -2365,16 +2565,6 @@ function applyMutationUpgrade() {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
 }
-function grantChampionFrog(frog) {
-  if (frog.isChampion) return;
-  frog.isChampion = true;
-  frog.speedMult *= 0.80; // 20% faster hops
-  frog.jumpMult  *= 1.20; // 20% higher jumps
-  refreshFrogPermaGlow(frog);
-  updateFrogRoleEmoji(frog);
-  playPerFrogUpgradeSound("champion");
-}
-
 function grantAuraFrog(frog) {
   if (frog.isAura) return;
   frog.isAura = true;
@@ -2507,21 +2697,49 @@ function showLuckyShuffle(result){
   eventVisuals.push({el,time:0,duration:2.1,kind:"roll",render(t){const type=t<.65?outcomes[Math.floor(t/.08)%outcomes.length]:result;const url=t<.65?icons[Math.floor(t/.08)%icons.length]:rollIcon;if(url){if(image.getAttribute("src")!==url)image.src=url;}image.style.display=url?"block":"none";label.textContent=t<.65?"Rolling…":labels[type];}});
   eventVisuals[eventVisuals.length-1].render(0);
 }
+function showZombieSacrifice(frog) {
+  // Same-size sprite, at its actual airborne position; no flying pieces.
+  const el=document.createElement('div');
+  const size=FROG_SIZE;
+  el.style.cssText=`position:absolute;left:${Math.round(frog.x)}px;top:${Math.round(frog.y ?? frog.baseY)}px;width:${size}px;height:${size}px;pointer-events:none;z-index:40;`;
+  const sprite=document.createElement('img');
+  sprite.src=window.approvedFrogs?.zombie || './game-assets/sprites/approved/frog-zombie.png';
+  sprite.alt='';
+  sprite.style.cssText='width:100%;height:100%;object-fit:contain;image-rendering:pixelated;transform-origin:center bottom;';
+  el.appendChild(sprite);
+  container.appendChild(el);
+  eventVisuals.push({el,time:0,duration:.65,kind:"zombieSacrifice",render(t){
+    // Four stepped poses: tuck down, crouch, settle, disappear in pixel rows.
+    const frame=Math.min(4,Math.floor(t/.13));
+    sprite.style.transform=`scaleY(${[1,.92,.82,.72,.72][frame]})`;
+    sprite.style.clipPath=frame>=3?`inset(${frame===3?35:70}% 0 0 0)`:'none';
+  }});
+}
+function resolveZombiePanic() {
+  if (panicHopTime <= 0) return;
+  const index=frogs.findIndex(f=>f.isZombie);
+  if(index<0)return;
+  const frog=frogs[index];
+  panicHopTime=0;
+  showZombieSacrifice(frog);
+  if (tryKillFrogAtIndex(index,"zombieSacrifice")) AudioMod.playZombieSacrifice?.();
+}
+
 function updateEventVisuals(dt){
  for(let i=eventVisuals.length-1;i>=0;i--){const e=eventVisuals[i];e.time+=dt;if(e.time>=e.duration || (e.frog&&!e.frog.el.isConnected)){e.el.remove();eventVisuals.splice(i,1);continue;}
  const fade=Math.min(1,(e.duration-e.time)/.3);e.el.style.opacity=String(fade);
- if(e.kind==="roll"){e.render(e.time);continue;}
+ if(e.kind==="roll" || e.kind==="zombieSacrifice"){e.render(e.time);continue;}
  if(e.frog){e.el.style.left=(e.frog.x+FROG_SIZE/2-19)+"px";e.el.style.top=(e.frog.baseY+FROG_SIZE-9)+"px";e.el.style.transform=`scale(${Math.min(1,e.time/.15)})`;}
  else {e.el.style.left=Math.max(150,Math.min(window.innerWidth-150,e.x))+"px";e.el.style.top=Math.max(80,e.y-30-Math.min(e.time/.3,1)*10)+"px";}
  }
 }
 function grantRandomPermaFrogUpgrade(frog) {
   if (!frog) return;
-  const roles = ["champion", "aura", "magnet", "lucky"];
+  const roles = ["cannibal", "aura", "magnet", "lucky"];
 
   const available = roles.filter((r) => {
     switch (r) {
-      case "champion": return !frog.isChampion;
+      case "cannibal": return !frog.isCannibal;
       case "aura":     return !frog.isAura;
       case "magnet":   return !frog.isMagnet;
       case "lucky":    return !frog.isLucky;
@@ -2534,7 +2752,7 @@ function grantRandomPermaFrogUpgrade(frog) {
   const role = pool[Math.floor(Math.random() * pool.length)];
 
   switch (role) {
-    case "champion": grantChampionFrog(frog);   break;
+    case "cannibal": markCannibalFrog(frog);   break;
     case "aura":     grantAuraFrog(frog);       break;
     case "magnet":   grantMagnetFrog(frog);     break;
     case "lucky":    grantLuckyFrog(frog);      break;
@@ -2612,9 +2830,9 @@ function clearAllFrogRoles(frog) {
 function updateFrogRoleEmoji(frog) {
  if (!frog || !frog.el) return;
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
- const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isChampion','champion'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
- const role=roles.find(([flag])=>frog[flag]);const key=role?role[1]:(frog.starLevel>0?'crowned':'');
- if(role && frog.el.dataset.approvedRole!==key)showRoleSpotlight(frog);
+ const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
+ const role=roles.find(([flag])=>frog[flag]);const key=role?(role[1]==='cannibal'?'cannibal-'+Math.min(5,Math.max(0,frog.cannibalMeals||0)):role[1]):(frog.starLevel>0?'crowned':'');
+ if(role && frog.el.dataset.approvedRole!==key && !(frog.isCannibal && (frog.el.dataset.approvedRole||'').startsWith('cannibal-')))showRoleSpotlight(frog);
  if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
  else {delete frog.el.dataset.approvedRole;frog.el.style.removeProperty('--approved-frog');}
 }
@@ -2675,7 +2893,7 @@ function promoteAllFrogs() {
   if (!Array.isArray(frogs) || frogs.length === 0) return;
 
   const pool = frogs.slice();
-  const count = Math.min(getLuckBiasedInt(10, 15), pool.length);
+  const count = Math.min(10, pool.length);
 
   for (let i = 0; i < count; i++) {
     const idx = Math.floor(Math.random() * pool.length);
@@ -2738,7 +2956,7 @@ function rerollPromotedFrogStats(frog) {
 
 function tryRoyalApprenticeship(role) {
   if (!royalApprenticeshipActive) return;
-  const grants = {poison:grantPoisonToad, bull:grantBullFrog, champion:grantChampionFrog, aura:grantAuraFrog,
+  const grants = {poison:grantPoisonToad, bull:grantBullFrog, aura:grantAuraFrog,
     magnet:grantMagnetFrog, lucky:grantLuckyFrog, zombie:grantZombieFrog,
     necromancer:grantNecromancerFrog, alchemist:grantAlchemistFrog, cannibal:markCannibalFrog};
   if (!grants[role]) return;
@@ -2764,9 +2982,6 @@ function spawnRoleFrog(role) {
   switch (role) {
     case "poison": grantPoisonToad(frog); break;
     case "bull": grantBullFrog(frog); break;
-    case "champion":
-      grantChampionFrog(frog);
-      break;
     case "aura":
       grantAuraFrog(frog);
       break;
@@ -2799,7 +3014,7 @@ function getRoleDraftPool() {
   return [
     { id: "poison", label: "Poison Toad", emoji: "", tier: "normal" },
     { id: "bull", label: "Bull Frog", emoji: "🐸", tier: "normal" },
-    { id: "champion", label: "Champion", emoji: "🏅", tier: "normal" },
+    { id: "cannibal", label: "Cannibal", emoji: "", tier: "normal" },
     { id: "aura", label: "Aura", emoji: "💫", tier: "normal" },
     { id: "magnet", label: "Magnet", emoji: "🧲", tier: "normal" },
     { id: "lucky", label: "Lucky", emoji: "🍀", tier: "normal" },
@@ -2816,8 +3031,8 @@ function applySpecificRoleToFrog(frog, roleId) {
   frog.starLevel = 0;
 
   switch (roleId) {
-    case "champion":
-      grantChampionFrog(frog);
+    case "cannibal":
+      markCannibalFrog(frog);
       break;
     case "aura":
       grantAuraFrog(frog);
@@ -2880,8 +3095,8 @@ function showRoleDraftOverlayChoices() {
             ? "Confuses the snake when eaten."
             : role.id === "bull"
             ? "Survives one bite and leaps away from the snake."
-            : role.id === "champion"
-            ? "Faster, stronger frog with better hops."
+            : role.id === "cannibal"
+            ? "Eats up to 5 ordinary frogs to grow stronger. Returns up to that many on death."
             : role.id === "aura"
             ? "Boosts nearby frogs with an aura."
             : role.id === "magnet"
@@ -2889,7 +3104,7 @@ function showRoleDraftOverlayChoices() {
             : role.id === "lucky"
             ? "Increases luck-based bonuses and buff value."
             : role.id === "zombie"
-            ? "On death, causes extra chaos and recovery."
+            ? "Sacrifices itself to stop Panic Hop. Spawns one frog on death."
             : role.id === "alchemist"
             ? "Drops an orb every 12 seconds."
             : role.id === "necromancer"
@@ -2916,11 +3131,6 @@ function showRoleDraftOverlayChoices() {
 }
 function getMutationChoices() {
   return [
-    {
-      id: "mutationChampion",
-      label: `⭐ Mutation<br>Spawn 1 Champion frog`,
-      apply: () => spawnRoleFrog("champion")
-    },
     {
       id: "mutationAura",
       label: `⭐ Mutation<br>Spawn 1 Aura frog`,
@@ -3199,16 +3409,9 @@ function clearScissorsAndOldSnakeState() {
 
 function markCannibalFrog(frog) {
   if (!frog || frog.isCannibal) return;
-
   frog.isCannibal = true;
-
-  // +5% "overall stats": slightly faster cycle + higher jumps
-  frog.speedMult *= 0.95;          // 5% faster hops
-  frog.jumpMult  *= 1.05;          // 5% higher jumps
-
-  // +5% personal deathrattle
-  frog.extraDeathRattleChance = (frog.extraDeathRattleChance || 0) + 0.05;
-
+  frog.cannibalMeals = 0;
+  frog.cannibalNextMeal = elapsedTime + 15;
   cannibalFrogCount++;
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
@@ -3268,7 +3471,7 @@ function computeDeathRattleChanceForFrog(frog) {
   function tryLastingLegacy(deadFrog, source) {
     if (!lastingLegacyActive || source === "scatter") return;
     const grants = [
-      ["isPoisonToad", grantPoisonToad], ["isBull", grantBullFrog], ["isChampion", grantChampionFrog], ["isAura", grantAuraFrog],
+      ["isPoisonToad", grantPoisonToad], ["isBull", grantBullFrog], ["isAura", grantAuraFrog],
       ["hasPermaShield", grantShieldFrog], ["isMagnet", grantMagnetFrog],
       ["isLucky", grantLuckyFrog], ["isZombie", grantZombieFrog],
       ["isNecromancer", grantNecromancerFrog], ["isAlchemist", grantAlchemistFrog],
@@ -3293,6 +3496,7 @@ function computeDeathRattleChanceForFrog(frog) {
     if (!frog || !frog.el) return false;
 
     const wasLastFrog = (frogs.length === 1);
+    const cannibalMeals = frog.isCannibal ? Math.min(5, frog.cannibalMeals || 0) : 0;
     const deathX = frog.x + FROG_SIZE / 2;
     const deathY = frog.baseY + FROG_SIZE / 2;
 
@@ -3362,14 +3566,9 @@ function computeDeathRattleChanceForFrog(frog) {
     // On-death effects: zombie, global + per-frog deathrattle, Lifeline, Last Stand
     // -----------------------------
 
-    // Zombie on-death effect (any zombie frog)
-    if (frog.isZombie) {
-      spawnExtraFrogs(3);
-      if (source === "snake") {
-        snakeSlowTime = Math.max(snakeSlowTime, 3 * buffDurationFactor);
-        snakeSlowCueTime = Math.max(snakeSlowCueTime, 3 * buffDurationFactor);
-      }
-    }
+    // Role death spawns apply regardless of cause; Scatter is a relocation, not a death.
+    if (frog.isZombie) spawnExtraFrogs(1);
+    if (cannibalMeals > 0) spawnExtraFrogs(cannibalMeals === 1 ? 1 : 2 + Math.floor(Math.random() * (cannibalMeals - 1)));
 
     let drChance = computeDeathRattleChanceForFrog(frog);
 
@@ -3538,6 +3737,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
       case "panicHop":
         panicHopTime = Math.max(panicHopTime, PANIC_HOP_DURATION * durationScale);
+        resolveZombiePanic();
         break;
 
       case "cloneSwarm":
@@ -3656,7 +3856,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
     const baseMaxStep = 40;
     const speedBuffed = (speedBuffTime > 0 || panicHopTime > 0) ? 1.7 : 1.0;
-    const championBoost = frog.isChampion ? 1.4 : 1.0;
+    const championBoost = 1; // Champion removed.
     const jumpFactor = getJumpFactor(frog);  // <-- add this line
     const maxStep = baseMaxStep * speedBuffed * championBoost * jumpFactor;
 
@@ -3866,42 +4066,22 @@ function computeDeathRattleChanceForFrog(frog) {
         }
       }
     }
-    // --- Cannibal Frogs --- //
-    const cannibals = frogs.filter(f => f.isCannibal);
-    if (cannibals.length > 0) {
-      const eatRadius = FROG_SIZE * 0.6;
-      const eatR2 = eatRadius * eatRadius;
-
-      for (const cannibal of cannibals) {
-        let victim = null;
-        let bestD2 = Infinity;
-
-        const cx = cannibal.x + FROG_SIZE / 2;
-        const cy = cannibal.baseY + FROG_SIZE / 2;
-
-        for (const candidate of frogs) {
-          if (candidate === cannibal) continue;
-          const fx = candidate.x + FROG_SIZE / 2;
-          const fy = candidate.baseY + FROG_SIZE / 2;
-          const dx = fx - cx;
-          const dy = fy - cy;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < eatR2 && d2 < bestD2) {
-            bestD2 = d2;
-            victim = candidate;
-          }
-        }
-        if (victim) {
-          // Chance to actually eat the frog (from config, default 10%)
-          if (Math.random() < CANNIBAL_EAT_CHANCE) {
-            const idx = frogs.indexOf(victim);
-            if (idx !== -1) {
-              // Cannibal kill; uses deathrattle logic but no snake growth
-              tryKillFrogAtIndex(idx, "cannibal");
-            }
-          }
-        }
-      }
+    // Resolve one zombie sacrifice for a Panic Hop episode, including frenzy sources.
+    resolveZombiePanic();
+    for (const cannibal of frogs.filter(f => f.isCannibal)) {
+      if (frogs.length <= 15 || (cannibal.cannibalMeals || 0) >= 5 || elapsedTime < (cannibal.cannibalNextMeal || 0)) continue;
+      const radius2 = (FROG_SIZE * 0.6) ** 2;
+      const victim = frogs.find(f => f !== cannibal && !f.starLevel && !f.isBull && !f.isPoisonToad &&
+        !f.isAura && !f.isMagnet && !f.isLucky && !f.isZombie && !f.isCannibal && !f.isNecromancer &&
+        !f.isAlchemist && !f.hasPermaShield && !f.isGhost && !f.isMutationZombie &&
+        (f.x-cannibal.x)**2 + (f.baseY-cannibal.baseY)**2 < radius2);
+      if (!victim || !tryKillFrogAtIndex(frogs.indexOf(victim), "cannibal")) continue;
+      const before = cannibal.cannibalMeals || 0;
+      cannibal.cannibalMeals = before + 1;
+      cannibal.speedMult *= (1 - .05 * cannibal.cannibalMeals) / (1 - .05 * before);
+      cannibal.jumpMult *= (1 + .05 * cannibal.cannibalMeals) / (1 + .05 * before);
+      cannibal.cannibalNextMeal = elapsedTime + 15;
+      updateFrogRoleEmoji(cannibal);
     }
 
   }
@@ -4920,7 +5100,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
-    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Special frog spawns may grant their role to a crowned frog.", apply:()=>{royalApprenticeshipActive=true;}});
+    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Each crowned frog has a <span>50%</span> chance to gain the spawned special role", apply:()=>{royalApprenticeshipActive=true;}});
 
     upgrades.push({
       id: "roleDraft",
@@ -5042,7 +5222,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (frogs.length > 0) {
       upgrades.push({
         id: "promotionEpic",
-        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">10-15</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
+        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">10</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
         apply: () => { promoteAllFrogs(); }
       });
     }
@@ -5400,6 +5580,7 @@ function closeAnimatedOverlay(overlayEl) {
     const btnBuffGuide = document.getElementById("btnBuffGuide");
     const btnLeaderboard = document.getElementById("btnLeaderboard");
     const btnDashboard = document.getElementById("btnDashboard");
+    document.getElementById('btnFieldGuide')?.remove();
 
     if (btnStartRun) {
       btnStartRun.addEventListener("click", () => {
@@ -5485,6 +5666,18 @@ function closeAnimatedOverlay(overlayEl) {
     }
   }
 
+  const FIRST_PLAY_HELP_KEY = "escapeSnake.howToSeen.v1";
+  let howToSeenThisSession = false;
+  let startAfterHowTo = false;
+  function hasSeenHowTo() {
+    if (howToSeenThisSession) return true;
+    try { return localStorage.getItem(FIRST_PLAY_HELP_KEY) === "1"; }
+    catch (_) { return false; }
+  }
+  function rememberHowTo() {
+    howToSeenThisSession = true;
+    try { localStorage.setItem(FIRST_PLAY_HELP_KEY, "1"); } catch (_) {}
+  }
   function initHowToOverlay() {
     if (howToOverlay) return;
     howToOverlay = document.getElementById("howToOverlay");
@@ -5520,12 +5713,17 @@ function closeAnimatedOverlay(overlayEl) {
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
 
+    rememberHowTo();
     openAnimatedOverlay(howToOverlay);
   }
 
   function hideHowToOverlay() {
     if (howToOverlay) {
       closeAnimatedOverlay(howToOverlay);
+    }
+    if (startAfterHowTo) {
+      startAfterHowTo = false;
+      startNewRun();
     }
   }
 
@@ -5550,7 +5748,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Panic Hop", desc: `Chaotic hops about ${fmtPct((1 - PANIC_HOP_SPEED_FACTOR) * 100)} faster for ${fmtSec(PANIC_HOP_DURATION)}.` },
       { title: "Life Steal", desc: `For ${fmtSec(LIFE_STEAL_DURATION)}, every deathrattle roll is boosted to at least ${fmtPct(MAX_DEATHRATTLE_CHANCE * 100)}.` },
       { title: "Clone Swarm", desc: `For ${fmtSec(CLONE_SWARM_DURATION)}, about ${fmtPct(65)} of snake bites snap at decoy clones instead.` },
-      { title: "Perma Frog", desc: `Grants the collector a random permanent role (Champion, Aura, Magnet, Lucky, or Zombie).` }
+      { title: "Perma Frog", desc: `Grants the collector a random permanent role (Cannibal, Aura, Magnet, Lucky, or Zombie).` }
     ];
 
     const speedPerPickPct = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
@@ -5598,12 +5796,12 @@ function closeAnimatedOverlay(overlayEl) {
     ];
 
     const roleDescriptions = [
-      { title: "Champion", desc: `${fmtPct((1 - CHAMPION_SPEED_FACTOR) * 100)} faster hops and ${fmtPct((CHAMPION_JUMP_FACTOR - 1) * 100)} higher jumps.` },
+      { title: "Cannibal", desc: "Eats up to 5 ordinary frogs for movement bonuses; returns up to its meal count on death." },
       { title: "Aura", desc: `All frogs within ${statHighlight(`${AURA_RADIUS}px`)} get ${fmtPct((1 - AURA_SPEED_FACTOR) * 100)} faster hops and ${fmtPct((AURA_JUMP_FACTOR - 1) * 100)} higher jumps.` },
       { title: "Magnet", desc: `Pulls nearby orbs from ${statHighlight(`${ORB_MAGNET_PULL_RANGE}px`)} away.` },
       { title: "Lucky", desc: `Buffs last ${statHighlight(`${Math.round((LUCKY_BUFF_DURATION_BOOST - 1) * 100)}%`)} longer and spawn orbs can add bonus frogs.` },
-      { title: "Zombie", desc: `On death, spawns ${statHighlight(5)} frogs and slows the snake for about ${fmtSec(3)}.` },
-      { title: "Cannibal", desc: `${fmtPct((1 - 0.95) * 100)} faster hops, ${fmtPct((1.05 - 1) * 100)} higher jumps, and ${fmtPct(5)} personal deathrattle; ${fmtPct(CANNIBAL_EAT_CHANCE * 100)} chance to eat nearby frogs.` }
+      { title: "Zombie", desc: "Sacrifices itself to end Panic Hop. Spawns one ordinary frog whenever it dies." },
+
     ];
 
     const renderCard = (title, entries) => `
@@ -5743,7 +5941,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 10–15 frogs." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
       { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 3–7 special frogs." },
-      { type: "role", label: "🥇 Promotion", desc: "All current frogs gain +1 star immediately." },
+      { type: "role", label: "🥇 Promotion", desc: "Up to 10 random frogs gain one crown level immediately." },
       { type: "role", label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
       { type: "role", label: "🃏 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
     ];
@@ -6740,13 +6938,13 @@ function getDashboardPfp() {
   💰 <b>Score ×2</b> – score gain is multiplied for a short window.<br>
   😱 <b>Panic Hop</b> – frogs hop faster but in random directions.<br>
   🩺 <b>Lifeline</b> – frogs that die during the buff have a chance to instantly respawn.<br>
-  ⭐ <b>PermaFrog</b> – upgrades one frog with a permanent role (Champion, Aura, Magnet, Lucky, Zombie, etc.).
+  ⭐ <b>PermaFrog</b> – upgrades one frog with a permanent role (Cannibal, Aura, Magnet, Lucky, Zombie, etc.).
   `;
     } else if (infoPage === 3) {
       // PAGE 3 – Permanent frog roles
       html = `
   <b>🐸 Permanent Frog Roles</b><br><br>
-  🏅 <b>Champion</b> – that frog's hop cycle is faster and jumps are higher.<br>
+  <b>Cannibal</b> – eats up to five ordinary frogs to grow stronger.<br>
   💫 <b>Aura</b> – nearby frogs get bonus speed and jump height in a radius around this frog.<br>
   🧲 <b>Magnet</b> – orbs in a radius are strongly pulled toward this frog.<br>
   🍀 <b>Lucky</b> – buffs last longer, more frogs spawn from some effects, and score gain is boosted slightly per Lucky frog.<br>
@@ -6857,12 +7055,14 @@ function initUpgradeOverlay() {
 
     try {
       if (choice && choice.opensRoleDraft) {
+        rememberRunUpgrade(choice);
         choice.apply();
         return;
       }
 
       if (typeof choice.apply === "function") {
         choice.apply();
+        rememberRunUpgrade(choice);
         showUpgradeFeedback(choice);
       }
     } catch (e) {
@@ -6895,6 +7095,9 @@ function initUpgradeOverlay() {
 
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
+      if (upgradeOverlayContext === "start") {
+        pool = pool.filter(choice => choice.id !== "frogScatter");
+      }
       while (choices.length < optionCount && pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
         choices.push(pool.splice(idx, 1)[0]);
@@ -6987,12 +7190,14 @@ function initUpgradeOverlay() {
         
 
         if (choice.opensRoleDraft) {
+          rememberRunUpgrade(choice);
           choice.apply();
           
           return;
         }
 
         choice.apply();
+        rememberRunUpgrade(choice);
         showUpgradeFeedback(choice, btn);
 
         closeUpgradeOverlay();
@@ -7157,6 +7362,7 @@ function initUpgradeOverlay() {
   }
 
   function openFirstUpgradeSelection() {
+    epicChainPending = false;
     openUpgradeOverlay("epic", { context: "start" });
   }
 
@@ -7204,6 +7410,19 @@ function startNewRun() {
 }
 
 function startRunFromMenu() {
+  if (startAfterHowTo) return;
+  const firstRun = (loadDashboardStats().totalRuns || 0) === 0;
+  if (firstRun && !hasSeenHowTo()) {
+    startAfterHowTo = true;
+    showHowToOverlay();
+    if (howToOverlay && howToOverlay.style.display === "flex") {
+      hideMainMenu();
+      const button = document.getElementById("howToCloseBtn");
+      if (button) { button.textContent = "Got it — let's play"; button.focus(); }
+      return;
+    }
+    startAfterHowTo = false;
+  }
   startNewRun();
 }
 
@@ -7211,6 +7430,7 @@ function startRunFromMenu() {
     // 13-second Frenzy: snake faster + frogs panic hop randomly
     snakeFrenzyTime = 13;
     panicHopTime = Math.max(panicHopTime, 13);
+    resolveZombiePanic();
     setSnakeFrenzyVisual(true);
   }
 
@@ -7267,6 +7487,7 @@ function startRunFromMenu() {
   }
 
   async function endGame() {
+    if (pauseMenu) pauseMenu.style.display = "none";
     clearEventVisuals();
     clearShedSequence();
     if (gameOver || summaryPending) return;
@@ -7344,6 +7565,8 @@ function startRunFromMenu() {
   }
 
   function restartGame() {
+    runUpgradeLog = [];
+    if (pauseMenu) pauseMenu.style.display = "none";
     // Stop old loop
     if (animId) {
       cancelAnimationFrame(animId);
