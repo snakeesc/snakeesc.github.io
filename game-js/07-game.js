@@ -1141,7 +1141,7 @@ const MAX_LUCK = 30;
 
   
   const btnSound = makeControlButton("sound");
-  const btnEnd   = makeControlButton("end run");
+  const btnEnd   = makeControlButton("pause");
 
   
   controlsBar.appendChild(btnSound);
@@ -1198,7 +1198,7 @@ const MAX_LUCK = 30;
 
 
   if (btnSound) btnSound.onclick = () => { toggleSound(); };
-  if (btnEnd) btnEnd.onclick = ev => { ev.stopPropagation(); if (!gameOver && confirm("End the current run?")) endGame(); };
+  if (btnEnd) btnEnd.onclick = ev => { ev.stopPropagation(); openPauseMenu(); };
 
   let pauseMenu = null;
   let pauseGuideFilter = 'Common';
@@ -1350,14 +1350,19 @@ const MAX_LUCK = 30;
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
-    pauseMenu.innerHTML=`<div class="pause-panel"><div class="pause-content"></div><footer class="pause-footer"><button data-action="close-guide">Back to menu</button></footer></div>`;
+    pauseMenu.innerHTML=`<div class="pause-panel"><h2 id="pauseTitle">Paused</h2><nav class="pause-tabs" aria-label="Pause sections"><button data-view="run" hidden>Back to run</button><button data-view="guide">Field Guide</button></nav><div class="pause-content"></div><footer class="pause-footer"><button data-action="resume">Resume</button><button class="pause-footer-guide" data-view="guide">Field Guide</button><button data-action="end">End Run</button></footer></div>`;
     document.body.appendChild(pauseMenu);
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
       e.stopPropagation();const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.view) renderPauseContent(b.dataset.view);
       if(b.dataset.filter) { pauseGuidePage=0; renderPauseContent('guide',b.dataset.filter); }
       if(b.dataset.page) { pauseGuidePage+=Number(b.dataset.page); renderPauseContent('guide',pauseGuideFilter); }
-      if(b.dataset.action==='close-guide') closePauseMenu();
+      if(b.dataset.action==='resume') closePauseMenu();
+      if(b.dataset.action==='end') {
+        pauseMenu.querySelector('.pause-content').innerHTML='<h3>End this run?</h3><p>Your score will go to the run summary.</p><button data-action="confirm-end">End run & view summary</button><button data-view="run">Keep playing</button>';
+      }
+      if(b.dataset.action==='confirm-end') {pauseMenu.style.display='none';endGame();}
     });
     pauseMenu.addEventListener('keydown',e=>{
       if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePauseMenu();}
@@ -1365,9 +1370,13 @@ const MAX_LUCK = 30;
     });
   }
   function renderPauseContent(view='run',filter=pauseGuideFilter) {
-    pauseMenu.dataset.view = 'guide';
-    pauseMenu.setAttribute('aria-label','Field Guide');
-    pauseMenu.removeAttribute('aria-labelledby');
+    pauseMenu.dataset.view = view;
+    pauseMenu.querySelector('#pauseTitle').hidden = view === 'guide';
+    pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
+    if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
+    else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
+    pauseMenu.querySelector('.pause-tabs [data-view=run]').hidden=view==='run';
+    pauseMenu.querySelector('.pause-tabs [data-view=guide]').hidden=view==='guide';
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
       pauseGuideFilter=filter;
@@ -1376,19 +1385,23 @@ const MAX_LUCK = 30;
       pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
       content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;return;
     }
+    const instantIds=new Set(['roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
+    const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed));
+    const upgradeRows=items=>items.map(x=>`<div class="pause-row">${pauseIcon(x.name)}<strong>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</strong></div>`).join('');
+    const effects=[['Speed',speedBuffTime],['Jump',jumpBuffTime],['Snake Slow',snakeSlowTime],['Snake Confusion',snakeConfuseTime],['Snake Shrink',snakeShrinkTime],['Frog Shield',frogShieldTime],['Orb Magnet',orbMagnetTime],['Score Multiplier',scoreMultiTime],['Panic Hop',panicHopTime],['Life Steal',lifeStealTime],['Time Slow',timeSlowTime],['Clone Swarm',cloneSwarmTime]].filter(x=>x[1]>0);
+    content.innerHTML=`<div class="pause-runline"><span>Score <em>${Math.floor(score).toLocaleString()}</em></span><span>Time <em>${formatTime(elapsedTime)}</em></span></div><dl class="pause-detail-stats"><div><dt>Frogs</dt><dd>${frogs.length}</dd></div><div><dt>Luck</dt><dd>${luckStat} / ${MAX_LUCK}</dd></div><div><dt>Revive chance</dt><dd>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</dd></div><div><dt>Sheds</dt><dd>${snakeShedCount}</dd></div></dl><h3>Current upgrades</h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p class="pause-empty">Your permanent upgrades will appear here.</p>'}${effects.length?'<h3>Active effects</h3><div class="pause-effect-list">'+effects.map(([name,time])=>`<span>${name} <b>${time.toFixed(1)}s</b></span>`).join('')+'</div>':''}`;
   }
-  function openMainFieldGuide() {
-    ensurePauseMenu();
-    renderPauseContent('guide');
-    if(mainMenuOverlay) mainMenuOverlay.style.display='none';
-    pauseMenu.style.display='flex';
-    pauseMenu.querySelector('[data-action="close-guide"]').focus();
+  function openPauseMenu() {
+    if(gameOver || mainMenuActive || summaryPending) return;
+    ensurePauseMenu();if(pauseMenu.style.display==='flex')return;
+    pauseWasAlreadyPaused=gamePaused;gamePaused=true;
+    AudioMod.setShedAudioActive?.(false);
+    renderPauseContent();pauseMenu.style.display='flex';
+    pauseMenu.querySelector('[data-action="resume"]').focus();
   }
   function closePauseMenu() {
     if(!pauseMenu || pauseMenu.style.display!=='flex')return;
-    pauseMenu.style.display='none';
-    if(mainMenuOverlay) mainMenuOverlay.style.display='flex';
-    document.getElementById('btnFieldGuide')?.focus();
+    pauseMenu.style.display='none';gamePaused=pauseWasAlreadyPaused;btnEnd.focus();
   }
 
 
