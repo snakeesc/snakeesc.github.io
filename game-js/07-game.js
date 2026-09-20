@@ -282,7 +282,7 @@ function applySelectedStartingBuff() {
       break;
 
     case "evolved": {
-      const roleIds = ["champion", "aura", "magnet", "lucky", "zombie"];
+      const roleIds = ["cannibal", "aura", "magnet", "lucky", "zombie"];
       const chosenRole = roleIds[Math.floor(Math.random() * roleIds.length)];
       const count = randInt(2, 4);
 
@@ -1238,17 +1238,16 @@ const MAX_LUCK = 30;
     ['Epic','Second Wind','Once per run: below 10 frogs, spawn 20.'],
     ['Epic','Grave Wave','Each shed spawns 10–15 frogs.'],
     ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
-    ['Epic','Promotion','Adds a crown level to 10–15 random frogs, within crown limits.'],
+    ['Epic','Promotion','Adds a crown level to up to 10 random frogs, within crown limits.'],
     ['Epic','Frog Scatter','Rescatters the swarm, preserving roles, crowns and remaining defenses. Once per run.'],
     ['Epic','Molt Fortune','Drops 5–10 orbs when the snake sheds.'],
     ['Frogs','Crowned','Permanently improved movement. Can gain up to three crown levels.'],
-    ['Frogs','Champion','25% shorter hop timing and 25% higher jumps.'],
     ['Frogs','Aura','Nearby frogs gain 12% shorter hop timing and 12% higher jumps. Overlapping auras stack, within movement caps.'],
     ['Frogs','Shield','Temporary protection from snake bites.'],
     ['Frogs','Magnet','Attracts nearby orbs.'],
     ['Frogs','Lucky','Improves the value of its orb pickups and contributes a score bonus.'],
-    ['Frogs','Zombie','On death, spawns three frogs. When eaten, briefly slows snakes.'],
-    ['Frogs','Cannibal','Eats other frogs and contributes to revival chance.'],
+    ['Frogs','Zombie','Sacrifices itself to end Panic Hop for the swarm. Spawns one ordinary frog on any death.'],
+    ['Frogs','Cannibal','Eats up to 5 ordinary frogs, gaining 5% shorter hop timing and 5% higher jumps per meal. On death, spawns 2–5 frogs, never more than it ate.'],
     ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs.'],
     ['Frogs','Alchemist','Drops an orb every 12 seconds.'],
     ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
@@ -1347,6 +1346,7 @@ const MAX_LUCK = 30;
       #runPauseOverlay .pause-guide-entries p {font-size:22px;line-height:1.3;}
     }`;
     style.textContent += '\n    #runPauseOverlay[data-view="run"] .pause-tabs {display:none;}\n    #runPauseOverlay[data-view="guide"] .pause-footer-guide {display:none;}\n    #runPauseOverlay[data-view="run"] .pause-panel {padding:24px 28px;width:540px;}\n    #runPauseOverlay[data-view="run"] h2 {margin-bottom:18px;}\n    #runPauseOverlay .pause-scoreline {display:flex;justify-content:center;gap:50px;text-align:center;margin-bottom:14px;}\n    #runPauseOverlay .pause-scoreline span {display:block;font-size:20px;}\n    #runPauseOverlay .pause-scoreline strong {display:block;font-size:38px;color:#087f86;line-height:1.1;}\n    #runPauseOverlay .pause-statline {display:flex;justify-content:center;flex-wrap:wrap;gap:6px 18px;font-size:19px;padding-bottom:14px;border-bottom:1px solid #c0cf94;}\n    #runPauseOverlay .pause-statline b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] h3 {font-size:21px;margin:18px 0 8px;}\n    #runPauseOverlay[data-view="run"] .pause-upgrade-grid {gap:8px 14px;}\n    #runPauseOverlay[data-view="run"] .pause-row {border:0;padding:4px 0;gap:9px;}\n    #runPauseOverlay[data-view="run"] .pause-row strong {font-size:21px;font-weight:normal;}\n    #runPauseOverlay .pause-effect-list {display:flex;flex-wrap:wrap;gap:6px 18px;font-size:19px;}\n    #runPauseOverlay .pause-effect-list b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] .pause-footer {display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;border:0;margin-top:18px;padding:0;}\n    #runPauseOverlay[data-view="run"] [data-action="resume"] {grid-column:1/-1;font-size:32px;padding:12px;}\n    #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:21px;}\n    @media(pointer:coarse),(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {width:880px;padding:30px;}\n      #runPauseOverlay .pause-scoreline {gap:70px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:32px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:56px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:34px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:48px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:34px;}\n    }\n    @media(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {padding:20px;}\n      #runPauseOverlay .pause-scoreline {gap:36px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:20px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:36px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:22px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:32px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:22px;}\n    }\n';
+    style.textContent += '\n#runPauseOverlay[data-view="run"] .pause-panel {width:520px;}\n#runPauseOverlay[data-view="run"] .pause-content {font-weight:400;font-synthesis:none;}\n#runPauseOverlay .pause-runline {display:flex;justify-content:space-between;gap:16px;padding:8px 0 14px;border-bottom:1px solid #c0cf94;font-size:23px;font-weight:400;}\n#runPauseOverlay .pause-runline span {display:flex;gap:12px;align-items:baseline;}\n#runPauseOverlay .pause-runline em {font-style:normal;font-weight:400;color:#087f86;}\n#runPauseOverlay .pause-detail-stats {display:grid;grid-template-columns:1fr 1fr;gap:9px 26px;margin:14px 0 18px;font-size:21px;}\n#runPauseOverlay .pause-detail-stats div {display:flex;justify-content:space-between;gap:10px;}\n#runPauseOverlay .pause-detail-stats dt,#runPauseOverlay .pause-detail-stats dd {margin:0;font-weight:400;}\n#runPauseOverlay .pause-detail-stats dd {color:#087f86;}\n#runPauseOverlay[data-view="run"] h3 {font-weight:400;text-align:left;border-top:1px solid #c0cf94;padding-top:12px;margin-top:10px;}\n#runPauseOverlay[data-view="run"] .pause-row strong,#runPauseOverlay[data-view="run"] .pause-effect-list b {font-weight:400;font-synthesis:none;}\n@media(pointer:coarse),(max-width:600px){\n#runPauseOverlay[data-view="run"] .pause-panel {width:880px;}\n#runPauseOverlay .pause-runline {font-size:36px;}\n#runPauseOverlay .pause-detail-stats {font-size:32px;gap:12px 32px;}\n}\n@media(max-width:600px){\n#runPauseOverlay .pause-runline {font-size:23px;gap:12px;}\n#runPauseOverlay .pause-runline span {gap:8px;}\n#runPauseOverlay .pause-detail-stats {font-size:21px;gap:9px 18px;}\n}\n';
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
@@ -1389,7 +1389,7 @@ const MAX_LUCK = 30;
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed));
     const upgradeRows=items=>items.map(x=>`<div class="pause-row">${pauseIcon(x.name)}<strong>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</strong></div>`).join('');
     const effects=[['Speed',speedBuffTime],['Jump',jumpBuffTime],['Snake Slow',snakeSlowTime],['Snake Confusion',snakeConfuseTime],['Snake Shrink',snakeShrinkTime],['Frog Shield',frogShieldTime],['Orb Magnet',orbMagnetTime],['Score Multiplier',scoreMultiTime],['Panic Hop',panicHopTime],['Life Steal',lifeStealTime],['Time Slow',timeSlowTime],['Clone Swarm',cloneSwarmTime]].filter(x=>x[1]>0);
-    content.innerHTML=`<div class="pause-scoreline"><div><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong></div><div><span>Time</span><strong>${formatTime(elapsedTime)}</strong></div></div><div class="pause-statline"><span><b>${frogs.length}</b> frogs</span><span><b>${luckStat}</b> luck</span><span><b>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</b> revive</span><span><b>${snakeShedCount}</b> sheds</span></div><h3>Current upgrades</h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p class="pause-empty">Your permanent upgrades will appear here.</p>'}${effects.length?'<h3>Active effects</h3><div class="pause-effect-list">'+effects.map(([name,time])=>`<span>${name} <b>${time.toFixed(1)}s</b></span>`).join('')+'</div>':''}`;
+    content.innerHTML=`<div class="pause-runline"><span>Score <em>${Math.floor(score).toLocaleString()}</em></span><span>Time <em>${formatTime(elapsedTime)}</em></span></div><dl class="pause-detail-stats"><div><dt>Frogs</dt><dd>${frogs.length}</dd></div><div><dt>Luck</dt><dd>${luckStat} / ${MAX_LUCK}</dd></div><div><dt>Revive chance</dt><dd>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</dd></div><div><dt>Sheds</dt><dd>${snakeShedCount}</dd></div></dl><h3>Current upgrades</h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p class="pause-empty">Your permanent upgrades will appear here.</p>'}${effects.length?'<h3>Active effects</h3><div class="pause-effect-list">'+effects.map(([name,time])=>`<span>${name} <b>${time.toFixed(1)}s</b></span>`).join('')+'</div>':''}`;
   }
   function openPauseMenu() {
     if(gameOver || mainMenuActive || summaryPending) return;
@@ -2565,16 +2565,6 @@ function applyMutationUpgrade() {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
 }
-function grantChampionFrog(frog) {
-  if (frog.isChampion) return;
-  frog.isChampion = true;
-  frog.speedMult *= CHAMPION_SPEED_FACTOR; // 25% shorter hop timing
-  frog.jumpMult  *= CHAMPION_JUMP_FACTOR; // 25% higher jumps
-  refreshFrogPermaGlow(frog);
-  updateFrogRoleEmoji(frog);
-  playPerFrogUpgradeSound("champion");
-}
-
 function grantAuraFrog(frog) {
   if (frog.isAura) return;
   frog.isAura = true;
@@ -2707,21 +2697,55 @@ function showLuckyShuffle(result){
   eventVisuals.push({el,time:0,duration:2.1,kind:"roll",render(t){const type=t<.65?outcomes[Math.floor(t/.08)%outcomes.length]:result;const url=t<.65?icons[Math.floor(t/.08)%icons.length]:rollIcon;if(url){if(image.getAttribute("src")!==url)image.src=url;}image.style.display=url?"block":"none";label.textContent=t<.65?"Rolling…":labels[type];}});
   eventVisuals[eventVisuals.length-1].render(0);
 }
+function showZombieSacrifice(frog) {
+  const el=document.createElement('div');
+  const size=FROG_SIZE*1.2, x=frog.x-FROG_SIZE*.1, y=frog.baseY-FROG_SIZE*.1;
+  el.style.cssText=`position:absolute;left:${x}px;top:${y}px;width:${size}px;height:${size}px;pointer-events:none;z-index:40;`;
+  const url=window.approvedFrogs?.zombie;
+  const tiles=[];
+  for(let row=0;row<3;row++)for(let col=0;col<3;col++) {
+    const tile=document.createElement('span');
+    tile.style.cssText=`position:absolute;left:${col*size/3}px;top:${row*size/3}px;width:${size/3}px;height:${size/3}px;background-image:url("${url}");background-size:${size}px ${size}px;background-position:${-col*size/3}px ${-row*size/3}px;image-rendering:pixelated;`;
+    el.appendChild(tile);tiles.push({tile,row,col});
+  }
+  container.appendChild(el);
+  eventVisuals.push({el,time:0,duration:.9,kind:"zombieSacrifice",render(t){
+    const phase=Math.floor(t*10)/10;
+    for(const {tile,row,col} of tiles){
+      const collapse=phase<.3?phase/.3:1;
+      const spread=Math.max(0,(phase-.3)/.6);
+      const dx=(col-1)*(-size*.12*collapse+size*.42*spread);
+      const dy=(row-1)*(-size*.12*collapse)-size*.5*spread;
+      tile.style.transform=`translate(${Math.round(dx)}px,${Math.round(dy)}px)`;
+      tile.style.opacity=String(1-spread);
+    }
+  }});
+}
+function resolveZombiePanic() {
+  if (panicHopTime <= 0) return;
+  const index=frogs.findIndex(f=>f.isZombie);
+  if(index<0)return;
+  const frog=frogs[index];
+  panicHopTime=0;
+  showZombieSacrifice(frog);
+  if (tryKillFrogAtIndex(index,"zombieSacrifice")) AudioMod.playZombieSacrifice?.();
+}
+
 function updateEventVisuals(dt){
  for(let i=eventVisuals.length-1;i>=0;i--){const e=eventVisuals[i];e.time+=dt;if(e.time>=e.duration || (e.frog&&!e.frog.el.isConnected)){e.el.remove();eventVisuals.splice(i,1);continue;}
  const fade=Math.min(1,(e.duration-e.time)/.3);e.el.style.opacity=String(fade);
- if(e.kind==="roll"){e.render(e.time);continue;}
+ if(e.kind==="roll" || e.kind==="zombieSacrifice"){e.render(e.time);continue;}
  if(e.frog){e.el.style.left=(e.frog.x+FROG_SIZE/2-19)+"px";e.el.style.top=(e.frog.baseY+FROG_SIZE-9)+"px";e.el.style.transform=`scale(${Math.min(1,e.time/.15)})`;}
  else {e.el.style.left=Math.max(150,Math.min(window.innerWidth-150,e.x))+"px";e.el.style.top=Math.max(80,e.y-30-Math.min(e.time/.3,1)*10)+"px";}
  }
 }
 function grantRandomPermaFrogUpgrade(frog) {
   if (!frog) return;
-  const roles = ["champion", "aura", "magnet", "lucky"];
+  const roles = ["cannibal", "aura", "magnet", "lucky"];
 
   const available = roles.filter((r) => {
     switch (r) {
-      case "champion": return !frog.isChampion;
+      case "cannibal": return !frog.isCannibal;
       case "aura":     return !frog.isAura;
       case "magnet":   return !frog.isMagnet;
       case "lucky":    return !frog.isLucky;
@@ -2734,7 +2758,7 @@ function grantRandomPermaFrogUpgrade(frog) {
   const role = pool[Math.floor(Math.random() * pool.length)];
 
   switch (role) {
-    case "champion": grantChampionFrog(frog);   break;
+    case "cannibal": markCannibalFrog(frog);   break;
     case "aura":     grantAuraFrog(frog);       break;
     case "magnet":   grantMagnetFrog(frog);     break;
     case "lucky":    grantLuckyFrog(frog);      break;
@@ -2812,7 +2836,7 @@ function clearAllFrogRoles(frog) {
 function updateFrogRoleEmoji(frog) {
  if (!frog || !frog.el) return;
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
- const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isChampion','champion'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
+ const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
  const role=roles.find(([flag])=>frog[flag]);const key=role?role[1]:(frog.starLevel>0?'crowned':'');
  if(role && frog.el.dataset.approvedRole!==key)showRoleSpotlight(frog);
  if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
@@ -2875,7 +2899,7 @@ function promoteAllFrogs() {
   if (!Array.isArray(frogs) || frogs.length === 0) return;
 
   const pool = frogs.slice();
-  const count = Math.min(getLuckBiasedInt(10, 15), pool.length);
+  const count = Math.min(10, pool.length);
 
   for (let i = 0; i < count; i++) {
     const idx = Math.floor(Math.random() * pool.length);
@@ -2938,7 +2962,7 @@ function rerollPromotedFrogStats(frog) {
 
 function tryRoyalApprenticeship(role) {
   if (!royalApprenticeshipActive) return;
-  const grants = {poison:grantPoisonToad, bull:grantBullFrog, champion:grantChampionFrog, aura:grantAuraFrog,
+  const grants = {poison:grantPoisonToad, bull:grantBullFrog, aura:grantAuraFrog,
     magnet:grantMagnetFrog, lucky:grantLuckyFrog, zombie:grantZombieFrog,
     necromancer:grantNecromancerFrog, alchemist:grantAlchemistFrog, cannibal:markCannibalFrog};
   if (!grants[role]) return;
@@ -2964,9 +2988,6 @@ function spawnRoleFrog(role) {
   switch (role) {
     case "poison": grantPoisonToad(frog); break;
     case "bull": grantBullFrog(frog); break;
-    case "champion":
-      grantChampionFrog(frog);
-      break;
     case "aura":
       grantAuraFrog(frog);
       break;
@@ -2999,7 +3020,7 @@ function getRoleDraftPool() {
   return [
     { id: "poison", label: "Poison Toad", emoji: "", tier: "normal" },
     { id: "bull", label: "Bull Frog", emoji: "🐸", tier: "normal" },
-    { id: "champion", label: "Champion", emoji: "🏅", tier: "normal" },
+    { id: "cannibal", label: "Cannibal", emoji: "", tier: "normal" },
     { id: "aura", label: "Aura", emoji: "💫", tier: "normal" },
     { id: "magnet", label: "Magnet", emoji: "🧲", tier: "normal" },
     { id: "lucky", label: "Lucky", emoji: "🍀", tier: "normal" },
@@ -3016,8 +3037,8 @@ function applySpecificRoleToFrog(frog, roleId) {
   frog.starLevel = 0;
 
   switch (roleId) {
-    case "champion":
-      grantChampionFrog(frog);
+    case "cannibal":
+      markCannibalFrog(frog);
       break;
     case "aura":
       grantAuraFrog(frog);
@@ -3080,8 +3101,8 @@ function showRoleDraftOverlayChoices() {
             ? "Confuses the snake when eaten."
             : role.id === "bull"
             ? "Survives one bite and leaps away from the snake."
-            : role.id === "champion"
-            ? "Faster, stronger frog with better hops."
+            : role.id === "cannibal"
+            ? "Eats up to 5 ordinary frogs to grow stronger. Returns up to that many on death."
             : role.id === "aura"
             ? "Boosts nearby frogs with an aura."
             : role.id === "magnet"
@@ -3089,7 +3110,7 @@ function showRoleDraftOverlayChoices() {
             : role.id === "lucky"
             ? "Increases luck-based bonuses and buff value."
             : role.id === "zombie"
-            ? "On death, causes extra chaos and recovery."
+            ? "Sacrifices itself to stop Panic Hop. Spawns one frog on death."
             : role.id === "alchemist"
             ? "Drops an orb every 12 seconds."
             : role.id === "necromancer"
@@ -3116,11 +3137,6 @@ function showRoleDraftOverlayChoices() {
 }
 function getMutationChoices() {
   return [
-    {
-      id: "mutationChampion",
-      label: `⭐ Mutation<br>Spawn 1 Champion frog`,
-      apply: () => spawnRoleFrog("champion")
-    },
     {
       id: "mutationAura",
       label: `⭐ Mutation<br>Spawn 1 Aura frog`,
@@ -3399,16 +3415,9 @@ function clearScissorsAndOldSnakeState() {
 
 function markCannibalFrog(frog) {
   if (!frog || frog.isCannibal) return;
-
   frog.isCannibal = true;
-
-  // +5% "overall stats": slightly faster cycle + higher jumps
-  frog.speedMult *= 0.95;          // 5% faster hops
-  frog.jumpMult  *= 1.05;          // 5% higher jumps
-
-  // +5% personal deathrattle
-  frog.extraDeathRattleChance = (frog.extraDeathRattleChance || 0) + 0.05;
-
+  frog.cannibalMeals = 0;
+  frog.cannibalNextMeal = elapsedTime + 15;
   cannibalFrogCount++;
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
@@ -3468,7 +3477,7 @@ function computeDeathRattleChanceForFrog(frog) {
   function tryLastingLegacy(deadFrog, source) {
     if (!lastingLegacyActive || source === "scatter") return;
     const grants = [
-      ["isPoisonToad", grantPoisonToad], ["isBull", grantBullFrog], ["isChampion", grantChampionFrog], ["isAura", grantAuraFrog],
+      ["isPoisonToad", grantPoisonToad], ["isBull", grantBullFrog], ["isAura", grantAuraFrog],
       ["hasPermaShield", grantShieldFrog], ["isMagnet", grantMagnetFrog],
       ["isLucky", grantLuckyFrog], ["isZombie", grantZombieFrog],
       ["isNecromancer", grantNecromancerFrog], ["isAlchemist", grantAlchemistFrog],
@@ -3493,6 +3502,7 @@ function computeDeathRattleChanceForFrog(frog) {
     if (!frog || !frog.el) return false;
 
     const wasLastFrog = (frogs.length === 1);
+    const cannibalMeals = frog.isCannibal ? Math.min(5, frog.cannibalMeals || 0) : 0;
     const deathX = frog.x + FROG_SIZE / 2;
     const deathY = frog.baseY + FROG_SIZE / 2;
 
@@ -3562,14 +3572,9 @@ function computeDeathRattleChanceForFrog(frog) {
     // On-death effects: zombie, global + per-frog deathrattle, Lifeline, Last Stand
     // -----------------------------
 
-    // Zombie on-death effect (any zombie frog)
-    if (frog.isZombie) {
-      spawnExtraFrogs(3);
-      if (source === "snake") {
-        snakeSlowTime = Math.max(snakeSlowTime, 3 * buffDurationFactor);
-        snakeSlowCueTime = Math.max(snakeSlowCueTime, 3 * buffDurationFactor);
-      }
-    }
+    // Role death spawns apply regardless of cause; Scatter is a relocation, not a death.
+    if (frog.isZombie) spawnExtraFrogs(1);
+    if (cannibalMeals > 0) spawnExtraFrogs(cannibalMeals === 1 ? 1 : 2 + Math.floor(Math.random() * (cannibalMeals - 1)));
 
     let drChance = computeDeathRattleChanceForFrog(frog);
 
@@ -3738,6 +3743,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
       case "panicHop":
         panicHopTime = Math.max(panicHopTime, PANIC_HOP_DURATION * durationScale);
+        resolveZombiePanic();
         break;
 
       case "cloneSwarm":
@@ -3856,7 +3862,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
     const baseMaxStep = 40;
     const speedBuffed = (speedBuffTime > 0 || panicHopTime > 0) ? 1.7 : 1.0;
-    const championBoost = frog.isChampion ? 1.4 : 1.0;
+    const championBoost = 1; // Champion removed.
     const jumpFactor = getJumpFactor(frog);  // <-- add this line
     const maxStep = baseMaxStep * speedBuffed * championBoost * jumpFactor;
 
@@ -4066,42 +4072,21 @@ function computeDeathRattleChanceForFrog(frog) {
         }
       }
     }
-    // --- Cannibal Frogs --- //
-    const cannibals = frogs.filter(f => f.isCannibal);
-    if (cannibals.length > 0) {
-      const eatRadius = FROG_SIZE * 0.6;
-      const eatR2 = eatRadius * eatRadius;
-
-      for (const cannibal of cannibals) {
-        let victim = null;
-        let bestD2 = Infinity;
-
-        const cx = cannibal.x + FROG_SIZE / 2;
-        const cy = cannibal.baseY + FROG_SIZE / 2;
-
-        for (const candidate of frogs) {
-          if (candidate === cannibal) continue;
-          const fx = candidate.x + FROG_SIZE / 2;
-          const fy = candidate.baseY + FROG_SIZE / 2;
-          const dx = fx - cx;
-          const dy = fy - cy;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < eatR2 && d2 < bestD2) {
-            bestD2 = d2;
-            victim = candidate;
-          }
-        }
-        if (victim) {
-          // Chance to actually eat the frog (from config, default 10%)
-          if (Math.random() < CANNIBAL_EAT_CHANCE) {
-            const idx = frogs.indexOf(victim);
-            if (idx !== -1) {
-              // Cannibal kill; uses deathrattle logic but no snake growth
-              tryKillFrogAtIndex(idx, "cannibal");
-            }
-          }
-        }
-      }
+    // Resolve one zombie sacrifice for a Panic Hop episode, including frenzy sources.
+    resolveZombiePanic();
+    for (const cannibal of frogs.filter(f => f.isCannibal)) {
+      if (frogs.length <= 15 || (cannibal.cannibalMeals || 0) >= 5 || elapsedTime < (cannibal.cannibalNextMeal || 0)) continue;
+      const radius2 = (FROG_SIZE * 0.6) ** 2;
+      const victim = frogs.find(f => f !== cannibal && !f.starLevel && !f.isBull && !f.isPoisonToad &&
+        !f.isAura && !f.isMagnet && !f.isLucky && !f.isZombie && !f.isCannibal && !f.isNecromancer &&
+        !f.isAlchemist && !f.hasPermaShield && !f.isGhost && !f.isMutationZombie &&
+        (f.x-cannibal.x)**2 + (f.baseY-cannibal.baseY)**2 < radius2);
+      if (!victim || !tryKillFrogAtIndex(frogs.indexOf(victim), "cannibal")) continue;
+      const before = cannibal.cannibalMeals || 0;
+      cannibal.cannibalMeals = before + 1;
+      cannibal.speedMult *= (1 - .05 * cannibal.cannibalMeals) / (1 - .05 * before);
+      cannibal.jumpMult *= (1 + .05 * cannibal.cannibalMeals) / (1 + .05 * before);
+      cannibal.cannibalNextMeal = elapsedTime + 15;
     }
 
   }
@@ -5242,7 +5227,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (frogs.length > 0) {
       upgrades.push({
         id: "promotionEpic",
-        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">10-15</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
+        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">10</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
         apply: () => { promoteAllFrogs(); }
       });
     }
@@ -5750,7 +5735,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Panic Hop", desc: `Chaotic hops about ${fmtPct((1 - PANIC_HOP_SPEED_FACTOR) * 100)} faster for ${fmtSec(PANIC_HOP_DURATION)}.` },
       { title: "Life Steal", desc: `For ${fmtSec(LIFE_STEAL_DURATION)}, every deathrattle roll is boosted to at least ${fmtPct(MAX_DEATHRATTLE_CHANCE * 100)}.` },
       { title: "Clone Swarm", desc: `For ${fmtSec(CLONE_SWARM_DURATION)}, about ${fmtPct(65)} of snake bites snap at decoy clones instead.` },
-      { title: "Perma Frog", desc: `Grants the collector a random permanent role (Champion, Aura, Magnet, Lucky, or Zombie).` }
+      { title: "Perma Frog", desc: `Grants the collector a random permanent role (Cannibal, Aura, Magnet, Lucky, or Zombie).` }
     ];
 
     const speedPerPickPct = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
@@ -5798,12 +5783,12 @@ function closeAnimatedOverlay(overlayEl) {
     ];
 
     const roleDescriptions = [
-      { title: "Champion", desc: `${fmtPct((1 - CHAMPION_SPEED_FACTOR) * 100)} faster hops and ${fmtPct((CHAMPION_JUMP_FACTOR - 1) * 100)} higher jumps.` },
+      { title: "Cannibal", desc: "Eats up to 5 ordinary frogs for movement bonuses; returns up to its meal count on death." },
       { title: "Aura", desc: `All frogs within ${statHighlight(`${AURA_RADIUS}px`)} get ${fmtPct((1 - AURA_SPEED_FACTOR) * 100)} faster hops and ${fmtPct((AURA_JUMP_FACTOR - 1) * 100)} higher jumps.` },
       { title: "Magnet", desc: `Pulls nearby orbs from ${statHighlight(`${ORB_MAGNET_PULL_RANGE}px`)} away.` },
       { title: "Lucky", desc: `Buffs last ${statHighlight(`${Math.round((LUCKY_BUFF_DURATION_BOOST - 1) * 100)}%`)} longer and spawn orbs can add bonus frogs.` },
-      { title: "Zombie", desc: `On death, spawns ${statHighlight(5)} frogs and slows the snake for about ${fmtSec(3)}.` },
-      { title: "Cannibal", desc: `${fmtPct((1 - 0.95) * 100)} faster hops, ${fmtPct((1.05 - 1) * 100)} higher jumps, and ${fmtPct(5)} personal deathrattle; ${fmtPct(CANNIBAL_EAT_CHANCE * 100)} chance to eat nearby frogs.` }
+      { title: "Zombie", desc: "Sacrifices itself to end Panic Hop. Spawns one ordinary frog whenever it dies." },
+
     ];
 
     const renderCard = (title, entries) => `
@@ -5943,7 +5928,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 10–15 frogs." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
       { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 3–7 special frogs." },
-      { type: "role", label: "🥇 Promotion", desc: "All current frogs gain +1 star immediately." },
+      { type: "role", label: "🥇 Promotion", desc: "Up to 10 random frogs gain one crown level immediately." },
       { type: "role", label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
       { type: "role", label: "🃏 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
     ];
@@ -6940,13 +6925,13 @@ function getDashboardPfp() {
   💰 <b>Score ×2</b> – score gain is multiplied for a short window.<br>
   😱 <b>Panic Hop</b> – frogs hop faster but in random directions.<br>
   🩺 <b>Lifeline</b> – frogs that die during the buff have a chance to instantly respawn.<br>
-  ⭐ <b>PermaFrog</b> – upgrades one frog with a permanent role (Champion, Aura, Magnet, Lucky, Zombie, etc.).
+  ⭐ <b>PermaFrog</b> – upgrades one frog with a permanent role (Cannibal, Aura, Magnet, Lucky, Zombie, etc.).
   `;
     } else if (infoPage === 3) {
       // PAGE 3 – Permanent frog roles
       html = `
   <b>🐸 Permanent Frog Roles</b><br><br>
-  🏅 <b>Champion</b> – that frog's hop cycle is faster and jumps are higher.<br>
+  <b>Cannibal</b> – eats up to five ordinary frogs to grow stronger.<br>
   💫 <b>Aura</b> – nearby frogs get bonus speed and jump height in a radius around this frog.<br>
   🧲 <b>Magnet</b> – orbs in a radius are strongly pulled toward this frog.<br>
   🍀 <b>Lucky</b> – buffs last longer, more frogs spawn from some effects, and score gain is boosted slightly per Lucky frog.<br>
@@ -7419,6 +7404,7 @@ function startRunFromMenu() {
     // 13-second Frenzy: snake faster + frogs panic hop randomly
     snakeFrenzyTime = 13;
     panicHopTime = Math.max(panicHopTime, 13);
+    resolveZombiePanic();
     setSnakeFrenzyVisual(true);
   }
 
