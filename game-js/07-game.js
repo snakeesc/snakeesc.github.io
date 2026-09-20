@@ -1242,8 +1242,8 @@ const MAX_LUCK = 30;
     ['Epic','Frog Scatter','Rescatters the swarm, preserving roles, crowns and remaining defenses. Once per run.'],
     ['Epic','Molt Fortune','Drops 5–10 orbs when the snake sheds.'],
     ['Frogs','Crowned','Permanently improved movement. Can gain up to three crown levels.'],
-    ['Frogs','Champion','Faster hops and higher jumps.'],
-    ['Frogs','Aura','Improves nearby frogs’ movement.'],
+    ['Frogs','Champion','25% shorter hop timing and 25% higher jumps.'],
+    ['Frogs','Aura','Nearby frogs gain 12% shorter hop timing and 12% higher jumps. Overlapping auras stack, within movement caps.'],
     ['Frogs','Shield','Temporary protection from snake bites.'],
     ['Frogs','Magnet','Attracts nearby orbs.'],
     ['Frogs','Lucky','Improves the value of its orb pickups and contributes a score bonus.'],
@@ -1346,10 +1346,11 @@ const MAX_LUCK = 30;
       #runPauseOverlay .pause-rewards {font-size:21px;}
       #runPauseOverlay .pause-guide-entries p {font-size:22px;line-height:1.3;}
     }`;
+    style.textContent += '\n    #runPauseOverlay[data-view="run"] .pause-tabs {display:none;}\n    #runPauseOverlay[data-view="guide"] .pause-footer-guide {display:none;}\n    #runPauseOverlay[data-view="run"] .pause-panel {padding:24px 28px;width:540px;}\n    #runPauseOverlay[data-view="run"] h2 {margin-bottom:18px;}\n    #runPauseOverlay .pause-scoreline {display:flex;justify-content:center;gap:50px;text-align:center;margin-bottom:14px;}\n    #runPauseOverlay .pause-scoreline span {display:block;font-size:20px;}\n    #runPauseOverlay .pause-scoreline strong {display:block;font-size:38px;color:#087f86;line-height:1.1;}\n    #runPauseOverlay .pause-statline {display:flex;justify-content:center;flex-wrap:wrap;gap:6px 18px;font-size:19px;padding-bottom:14px;border-bottom:1px solid #c0cf94;}\n    #runPauseOverlay .pause-statline b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] h3 {font-size:21px;margin:18px 0 8px;}\n    #runPauseOverlay[data-view="run"] .pause-upgrade-grid {gap:8px 14px;}\n    #runPauseOverlay[data-view="run"] .pause-row {border:0;padding:4px 0;gap:9px;}\n    #runPauseOverlay[data-view="run"] .pause-row strong {font-size:21px;font-weight:normal;}\n    #runPauseOverlay .pause-effect-list {display:flex;flex-wrap:wrap;gap:6px 18px;font-size:19px;}\n    #runPauseOverlay .pause-effect-list b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] .pause-footer {display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;border:0;margin-top:18px;padding:0;}\n    #runPauseOverlay[data-view="run"] [data-action="resume"] {grid-column:1/-1;font-size:32px;padding:12px;}\n    #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:21px;}\n    @media(pointer:coarse),(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {width:880px;padding:30px;}\n      #runPauseOverlay .pause-scoreline {gap:70px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:32px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:56px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:34px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:48px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:34px;}\n    }\n    @media(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {padding:20px;}\n      #runPauseOverlay .pause-scoreline {gap:36px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:20px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:36px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:22px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:32px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:22px;}\n    }\n';
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
-    pauseMenu.innerHTML=`<div class="pause-panel"><h2 id="pauseTitle">Paused</h2><nav class="pause-tabs" aria-label="Pause sections"><button data-view="run" hidden>Back to run</button><button data-view="guide">Field Guide</button></nav><div class="pause-content"></div><footer class="pause-footer"><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
+    pauseMenu.innerHTML=`<div class="pause-panel"><h2 id="pauseTitle">Paused</h2><nav class="pause-tabs" aria-label="Pause sections"><button data-view="run" hidden>Back to run</button><button data-view="guide">Field Guide</button></nav><div class="pause-content"></div><footer class="pause-footer"><button data-action="resume">Resume</button><button class="pause-footer-guide" data-view="guide">Field Guide</button><button data-action="end">End Run</button></footer></div>`;
     document.body.appendChild(pauseMenu);
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
@@ -1365,26 +1366,30 @@ const MAX_LUCK = 30;
     });
     pauseMenu.addEventListener('keydown',e=>{
       if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePauseMenu();}
-      if(e.key==='Tab') {const buttons=[...pauseMenu.querySelectorAll('button')];const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+      if(e.key==='Tab') {const buttons=[...pauseMenu.querySelectorAll('button')].filter(b=>!b.disabled && b.getClientRects().length);const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
     });
   }
   function renderPauseContent(view='run',filter=pauseGuideFilter) {
+    pauseMenu.dataset.view = view;
+    pauseMenu.querySelector('#pauseTitle').hidden = view === 'guide';
+    pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
+    if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
+    else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
     pauseMenu.querySelector('.pause-tabs [data-view=run]').hidden=view==='run';
     pauseMenu.querySelector('.pause-tabs [data-view=guide]').hidden=view==='guide';
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
       pauseGuideFilter=filter;
       const entries=pauseGuide.filter(x=>x[0]===filter);
-      const perPage=3, pages=Math.ceil(entries.length/perPage);
+      const perPage=4, pages=Math.ceil(entries.length/perPage);
       pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
       content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;return;
     }
     const instantIds=new Set(['roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed));
-    const rewards=runUpgradeLog.filter(x=>!current.includes(x));
     const upgradeRows=items=>items.map(x=>`<div class="pause-row">${pauseIcon(x.name)}<strong>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</strong></div>`).join('');
     const effects=[['Speed',speedBuffTime],['Jump',jumpBuffTime],['Snake Slow',snakeSlowTime],['Snake Confusion',snakeConfuseTime],['Snake Shrink',snakeShrinkTime],['Frog Shield',frogShieldTime],['Orb Magnet',orbMagnetTime],['Score Multiplier',scoreMultiTime],['Panic Hop',panicHopTime],['Life Steal',lifeStealTime],['Time Slow',timeSlowTime],['Clone Swarm',cloneSwarmTime]].filter(x=>x[1]>0);
-    content.innerHTML=`<div class="pause-stats"><div>Time<strong>${formatTime(elapsedTime)}</strong></div><div>Score<strong>${Math.floor(score).toLocaleString()}</strong></div><div>Frogs<strong>${frogs.length}</strong></div><div>Luck<strong>${luckStat} / ${MAX_LUCK}</strong></div><div>Revive chance<strong>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</strong></div><div>Sheds<strong>${snakeShedCount}</strong></div></div>${effects.length?'<h3>Active effects</h3>'+effects.map(([name,time])=>`<p>${name} · ${time.toFixed(1)}s remaining</p>`).join(''):''}<h3>Current upgrades</h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p>No permanent upgrades yet.</p>'}${rewards.length?'<details class="pause-rewards"><summary>Used rewards ('+rewards.length+')</summary>'+upgradeRows(rewards)+'</details>':''}`;
+    content.innerHTML=`<div class="pause-scoreline"><div><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong></div><div><span>Time</span><strong>${formatTime(elapsedTime)}</strong></div></div><div class="pause-statline"><span><b>${frogs.length}</b> frogs</span><span><b>${luckStat}</b> luck</span><span><b>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</b> revive</span><span><b>${snakeShedCount}</b> sheds</span></div><h3>Current upgrades</h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p class="pause-empty">Your permanent upgrades will appear here.</p>'}${effects.length?'<h3>Active effects</h3><div class="pause-effect-list">'+effects.map(([name,time])=>`<span>${name} <b>${time.toFixed(1)}s</b></span>`).join('')+'</div>':''}`;
   }
   function openPauseMenu() {
     if(gameOver || mainMenuActive || summaryPending) return;
@@ -2563,8 +2568,8 @@ function applyMutationUpgrade() {
 function grantChampionFrog(frog) {
   if (frog.isChampion) return;
   frog.isChampion = true;
-  frog.speedMult *= 0.80; // 20% faster hops
-  frog.jumpMult  *= 1.20; // 20% higher jumps
+  frog.speedMult *= CHAMPION_SPEED_FACTOR; // 25% shorter hop timing
+  frog.jumpMult  *= CHAMPION_JUMP_FACTOR; // 25% higher jumps
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
   playPerFrogUpgradeSound("champion");
@@ -7092,6 +7097,9 @@ function initUpgradeOverlay() {
 
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
+      if (upgradeOverlayContext === "start") {
+        pool = pool.filter(choice => choice.id !== "frogScatter");
+      }
       while (choices.length < optionCount && pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
         choices.push(pool.splice(idx, 1)[0]);
@@ -7356,8 +7364,8 @@ function initUpgradeOverlay() {
   }
 
   function openFirstUpgradeSelection() {
-    epicChainPending = true;
-    openUpgradeOverlay("normal", { context: "start" });
+    epicChainPending = false;
+    openUpgradeOverlay("epic", { context: "start" });
   }
 
 function startNewRun() {
