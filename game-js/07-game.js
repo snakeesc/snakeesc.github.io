@@ -1141,7 +1141,7 @@ const MAX_LUCK = 30;
 
   
   const btnSound = makeControlButton("sound");
-  const btnEnd   = makeControlButton("end run");
+  const btnEnd   = makeControlButton("pause");
 
   
   controlsBar.appendChild(btnSound);
@@ -1198,12 +1198,167 @@ const MAX_LUCK = 30;
 
 
   if (btnSound) btnSound.onclick = () => { toggleSound(); };
-  if (btnEnd)   btnEnd.onclick   = (ev) => {
-      ev.stopPropagation();
-      if (!gameOver) {
-        if (confirm("End the current run?")) endGame();
+  if (btnEnd) btnEnd.onclick = ev => { ev.stopPropagation(); openPauseMenu(); };
+
+  let pauseMenu = null;
+  let pauseWasAlreadyPaused = false;
+  let runUpgradeLog = [];
+  const pauseGuide = [
+    ['Common','Mutation','Frogs hop 15% faster and 15% higher, up to their limits.'],
+    ['Common','Panic Attack','Confused snakes flee your frogs.'],
+    ['Common','Poison Toads','Spawn 1–3 Poison Toads. Luck favors larger batches.'],
+    ['Common','Bull Frog','Spawn 1–3 Bull Frogs. Each survives one bite and leaps away.'],
+    ['Common','Magnet Frogs','Spawn 1–3 Magnet Frogs that attract orbs.'],
+    ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
+    ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
+    ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
+    ['Common','Spawn frogs',`${NORMAL_SPAWN_AMOUNT} frogs immediately, subject to the population cap.`],
+    ['Common','Orb Flow','Reduces the interval between orb spawns by 10%, up to its limit.'],
+    ['Common','Orb Whisperer','Orbs stay on the field 30% longer.'],
+    ['Common','Ouroboros Pact','Dead frogs have a 10% base chance to drop an orb.'],
+    ['Common','Luck','Gain 10 luck, up to 30. Improves supported chances, spawn rolls and positive orb durations.'],
+    ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
+    ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, within the revival cap.`],
+    ['Common','Survival Instinct','Below 10 frogs, they hop 20% faster.'],
+    ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
+    ['Common','Pair of Scissors','Cuts the snake in half and slows it.'],
+    ['Epic','Royal Apprenticeship','Special-frog batches can convert each crowned frog to that role: 50% chance, up to 65% with luck. Replaces the crown and rerolls natural movement stats.'],
+    ['Epic','Role Draft','Choose between two roles and spawn 3–7 special frogs. Luck favors larger batches.'],
+    ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
+    ['Epic','Lasting Legacy','A dying special frog has a 20% chance to pass a role to an ordinary frog.'],
+    ['Epic','Bruised Egg','Snakes gain 25% less additional speed per shed.'],
+    ['Epic','Brittle Scales','Halves snake debuff resistance.'],
+    ['Epic','Chain Reaction','An orb pickup has a 15% chance to trigger an additional orb effect.'],
+    ['Epic','Loaded Hand','Future upgrade menus offer four choices instead of three.'],
+    ['Epic','Tidal Wave','Spawns as many frogs as are currently alive, up to the population cap.'],
+    ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
+    ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
+    ['Epic','Second Wind','Once per run: below 10 frogs, spawn 20.'],
+    ['Epic','Grave Wave','Each shed spawns 10–15 frogs.'],
+    ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
+    ['Epic','Promotion','Adds a crown level to 10–15 random frogs, within crown limits.'],
+    ['Epic','Frog Scatter','Rescatters the swarm, preserving roles, crowns and remaining defenses. Once per run.'],
+    ['Epic','Molt Fortune','Drops 5–10 orbs when the snake sheds.'],
+    ['Frogs','Crowned','Permanently improved movement. Can gain up to three crown levels.'],
+    ['Frogs','Champion','Faster hops and higher jumps.'],
+    ['Frogs','Aura','Improves nearby frogs’ movement.'],
+    ['Frogs','Shield','Temporary protection from snake bites.'],
+    ['Frogs','Magnet','Attracts nearby orbs.'],
+    ['Frogs','Lucky','Improves the value of its orb pickups and contributes a score bonus.'],
+    ['Frogs','Zombie','On death, spawns three frogs. When eaten, briefly slows snakes.'],
+    ['Frogs','Cannibal','Eats other frogs and contributes to revival chance.'],
+    ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs.'],
+    ['Frogs','Alchemist','Drops an orb every 12 seconds.'],
+    ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
+    ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.']
+  ];
+  function pauseEscape(value) {
+    return String(value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function pauseIcon(name) {
+    const key=name.toLowerCase();
+    const url=window.approvedUpgrades?.[key] || window.approvedFrogs?.[key];
+    return url ? `<img src="${pauseEscape(url)}" alt="" loading="lazy">` : '';
+  }
+  function rememberRunUpgrade(choice) {
+    const el=document.createElement('div'); el.innerHTML=choice.label;
+    const title=el.querySelector('br') ? choice.label.split(/<br\s*\/?\s*>/i)[0] : choice.label;
+    el.innerHTML=title;
+    const name=el.textContent.replace(/^[^\p{L}\p{N}]+/u,'').trim();
+    const found=runUpgradeLog.find(x=>x.id===choice.id);
+    if(found) found.count++; else runUpgradeLog.push({id:choice.id,name,count:1});
+  }
+  function ensurePauseMenu() {
+    if(pauseMenu) return;
+    const style=document.createElement('style');
+    style.textContent=`
+    #runPauseOverlay {position:fixed;inset:0;z-index:1600;display:none;align-items:center;justify-content:center;background:rgba(8,48,29,.23);padding:16px;box-sizing:border-box;}
+    #runPauseOverlay [hidden] {display:none!important;}
+    #runPauseOverlay * {box-sizing:border-box;font-family:ReferencePixel,Pocket,monospace!important;color:#083b27;text-shadow:none;}
+    #runPauseOverlay .pause-panel {background:#fff8dc;border:4px solid #083b27;border-radius:7px;box-shadow:3px 4px 0 #466e35;width:520px;max-width:94%;max-height:calc(94 * var(--app-vh,1vh));display:flex;flex-direction:column;padding:20px;overflow:hidden;font-size:22px;}
+    #runPauseOverlay h2 {font-size:34px;text-align:center;margin:0 0 12px;line-height:1;}
+    #runPauseOverlay button {font-size:22px;background:transparent;border:0;border-radius:0;padding:10px 8px;cursor:pointer;line-height:1.1;}
+    #runPauseOverlay button:focus-visible {outline:2px dashed #087f86;outline-offset:2px;}
+    #runPauseOverlay button[aria-selected=true] {color:#087f86;text-decoration:underline;text-underline-offset:6px;}
+    #runPauseOverlay .pause-tabs,#runPauseOverlay .pause-footer,#runPauseOverlay .pause-filters {display:flex;justify-content:center;gap:16px;flex-wrap:wrap;flex-shrink:0;}
+    #runPauseOverlay .pause-tabs {border-bottom:2px solid #c0cf94;margin-bottom:12px;}
+    #runPauseOverlay .pause-content {overflow:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:0 4px;scrollbar-color:#8da66c #fff8dc;}
+    #runPauseOverlay .pause-stats {display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;padding:8px 0 16px;border-bottom:1px solid #c0cf94;}
+    #runPauseOverlay .pause-stats strong {display:block;color:#087f86;font-size:28px;}
+    #runPauseOverlay h3 {font-size:24px;margin:18px 0 8px;}
+    #runPauseOverlay p {font-size:20px;line-height:1.3;margin:4px 0 12px;}
+    #runPauseOverlay .pause-row {display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #d4d9ad;}
+    #runPauseOverlay .pause-row img {width:42px;height:42px;object-fit:contain;image-rendering:pixelated;flex-shrink:0;}
+    #runPauseOverlay .pause-row strong {font-size:23px;display:block;}
+    #runPauseOverlay .pause-row p {margin:4px 0 0;}
+    #runPauseOverlay .pause-footer {border-top:2px solid #c0cf94;padding-top:10px;margin-top:12px;}
+    @media(hover:hover) {#runPauseOverlay button:hover {transform:translateY(-2px);}}
+    @media(pointer:coarse),(max-width:600px) {
+      #runPauseOverlay .pause-panel {width:880px;padding:26px;font-size:36px;}
+      #runPauseOverlay h2 {font-size:52px;}
+      #runPauseOverlay button {font-size:36px;padding:14px 10px;min-height:48px;}
+      #runPauseOverlay h3,#runPauseOverlay .pause-row strong {font-size:38px;}
+      #runPauseOverlay p {font-size:34px;}
+      #runPauseOverlay .pause-stats strong {font-size:42px;}
+      #runPauseOverlay .pause-row img {width:64px;height:64px;}
+    }
+    @media(max-width:600px) {
+      #runPauseOverlay .pause-panel {padding:16px;font-size:19px;}
+      #runPauseOverlay h2 {font-size:30px;}
+      #runPauseOverlay button {font-size:22px;}
+      #runPauseOverlay h3,#runPauseOverlay .pause-row strong {font-size:23px;}
+      #runPauseOverlay p {font-size:21px;}
+      #runPauseOverlay .pause-stats strong {font-size:27px;}
+      #runPauseOverlay .pause-row img {width:42px;height:42px;}
+    }`;
+    document.head.appendChild(style);
+    pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
+    pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
+    pauseMenu.innerHTML=`<div class="pause-panel"><h2 id="pauseTitle">Paused</h2><nav class="pause-tabs" aria-label="Pause sections"><button data-view="run" hidden>Back to run</button><button data-view="guide">Field Guide</button></nav><div class="pause-content"></div><footer class="pause-footer"><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
+    document.body.appendChild(pauseMenu);
+    pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
+    pauseMenu.addEventListener('click',e=>{
+      e.stopPropagation();const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.view) renderPauseContent(b.dataset.view);
+      if(b.dataset.filter) renderPauseContent('guide',b.dataset.filter);
+      if(b.dataset.action==='resume') closePauseMenu();
+      if(b.dataset.action==='end') {
+        pauseMenu.querySelector('.pause-content').innerHTML='<h3>End this run?</h3><p>Your score will go to the run summary.</p><button data-action="confirm-end">End run & view summary</button><button data-view="run">Keep playing</button>';
       }
-    };
+      if(b.dataset.action==='confirm-end') {pauseMenu.style.display='none';endGame();}
+    });
+    pauseMenu.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePauseMenu();}
+      if(e.key==='Tab') {const buttons=[...pauseMenu.querySelectorAll('button')];const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+    });
+  }
+  function renderPauseContent(view='run',filter='Common') {
+    pauseMenu.querySelector('.pause-tabs [data-view=run]').hidden=view==='run';
+    pauseMenu.querySelector('.pause-tabs [data-view=guide]').hidden=view==='guide';
+    const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
+    if(view==='guide') {
+      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div>`+pauseGuide.filter(x=>x[0]===filter).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('');return;
+    }
+    const instantIds=new Set(['roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
+    const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed));
+    const rewards=runUpgradeLog.filter(x=>!current.includes(x));
+    const upgradeRows=items=>items.map(x=>`<div class="pause-row">${pauseIcon(x.name)}<strong>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</strong></div>`).join('');
+    const effects=[['Speed',speedBuffTime],['Jump',jumpBuffTime],['Snake Slow',snakeSlowTime],['Snake Confusion',snakeConfuseTime],['Snake Shrink',snakeShrinkTime],['Frog Shield',frogShieldTime],['Orb Magnet',orbMagnetTime],['Score Multiplier',scoreMultiTime],['Panic Hop',panicHopTime],['Life Steal',lifeStealTime],['Time Slow',timeSlowTime],['Clone Swarm',cloneSwarmTime]].filter(x=>x[1]>0);
+    content.innerHTML=`<div class="pause-stats"><div>Time<strong>${formatTime(elapsedTime)}</strong></div><div>Score<strong>${Math.floor(score).toLocaleString()}</strong></div><div>Frogs<strong>${frogs.length}</strong></div><div>Luck<strong>${luckStat} / ${MAX_LUCK}</strong></div><div>Revive chance<strong>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</strong></div><div>Sheds<strong>${snakeShedCount}</strong></div></div><h3>Active effects</h3>${effects.length?effects.map(([name,time])=>`<p>${name} · ${time.toFixed(1)}s remaining</p>`).join(''):'<p>No temporary effects right now.</p>'}<h3>Current upgrades</h3>${current.length?upgradeRows(current):'<p>No permanent upgrades yet.</p>'}${rewards.length?'<h3>Instant / used rewards</h3>'+upgradeRows(rewards):''}`;
+  }
+  function openPauseMenu() {
+    if(gameOver || mainMenuActive || summaryPending) return;
+    ensurePauseMenu();if(pauseMenu.style.display==='flex')return;
+    pauseWasAlreadyPaused=gamePaused;gamePaused=true;
+    AudioMod.setShedAudioActive?.(false);
+    renderPauseContent();pauseMenu.style.display='flex';
+    pauseMenu.querySelector('[data-action="resume"]').focus();
+  }
+  function closePauseMenu() {
+    if(!pauseMenu || pauseMenu.style.display!=='flex')return;
+    pauseMenu.style.display='none';gamePaused=pauseWasAlreadyPaused;btnEnd.focus();
+  }
+
 
   function showGameOver() {
     gameOverBanner.style.display = "block";
@@ -6857,12 +7012,14 @@ function initUpgradeOverlay() {
 
     try {
       if (choice && choice.opensRoleDraft) {
+        rememberRunUpgrade(choice);
         choice.apply();
         return;
       }
 
       if (typeof choice.apply === "function") {
         choice.apply();
+        rememberRunUpgrade(choice);
         showUpgradeFeedback(choice);
       }
     } catch (e) {
@@ -6987,12 +7144,14 @@ function initUpgradeOverlay() {
         
 
         if (choice.opensRoleDraft) {
+          rememberRunUpgrade(choice);
           choice.apply();
           
           return;
         }
 
         choice.apply();
+        rememberRunUpgrade(choice);
         showUpgradeFeedback(choice, btn);
 
         closeUpgradeOverlay();
@@ -7157,7 +7316,8 @@ function initUpgradeOverlay() {
   }
 
   function openFirstUpgradeSelection() {
-    openUpgradeOverlay("epic", { context: "start" });
+    epicChainPending = true;
+    openUpgradeOverlay("normal", { context: "start" });
   }
 
 function startNewRun() {
@@ -7267,6 +7427,7 @@ function startRunFromMenu() {
   }
 
   async function endGame() {
+    if (pauseMenu) pauseMenu.style.display = "none";
     clearEventVisuals();
     clearShedSequence();
     if (gameOver || summaryPending) return;
@@ -7344,6 +7505,8 @@ function startRunFromMenu() {
   }
 
   function restartGame() {
+    runUpgradeLog = [];
+    if (pauseMenu) pauseMenu.style.display = "none";
     // Stop old loop
     if (animId) {
       cancelAnimationFrame(animId);
