@@ -240,10 +240,11 @@
   // ------------------------------------------------------------
   // MUTE CONTROL
   // ------------------------------------------------------------
+  const SHED_AUDIO_ENABLED = false; // Temporary: set true to restore shedding audio.
   let shedPlayer = null;
   let shedAudioActive = false;
   function setShedAudioActive(active) {
-    active = !!active;
+    active = SHED_AUDIO_ENABLED && !!active;
     if (active === shedAudioActive) return;
     shedAudioActive = active;
     if (!active) {
