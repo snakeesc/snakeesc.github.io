@@ -19,3 +19,35 @@ window.approvedUpgrades={"poison toads":"./game-assets/sprites/approved/frog-poi
  select(document.getElementById('btnStartRun'));options.forEach(b=>{b.addEventListener('pointerenter',()=>select(b));b.addEventListener('focus',()=>select(b));});
 
 })();
+
+// Center Role Draft in the mobile card's actual icon gutter, not a fixed left offset.
+(() => {
+  const mobile = matchMedia('(pointer: coarse), (max-width: 600px)');
+  const observed = new WeakSet();
+  function align() {
+    document.querySelectorAll('#upgradeOverlay .frog-upgrade-choice').forEach(card => {
+      const icon = card.querySelector('.frog-upgrade-emoji');
+      const title = card.querySelector('.frog-upgrade-title')?.textContent.trim().toLowerCase();
+      if (!icon || title !== 'role draft') return;
+      if (!observed.has(card)) { observer.observe(card); observed.add(card); }
+      if (!mobile.matches) {
+        if (icon.dataset.mobileCentered) {
+          icon.style.removeProperty('left');
+          delete icon.dataset.mobileCentered;
+        }
+        return;
+      }
+      const gutter = parseFloat(getComputedStyle(card).paddingLeft);
+      const width = parseFloat(getComputedStyle(icon).width);
+      if (!Number.isFinite(gutter) || !Number.isFinite(width) || gutter < width) return;
+      const left = `${(gutter - width) / 2}px`;
+      if (icon.style.left !== left) icon.style.setProperty('left', left, 'important');
+      icon.dataset.mobileCentered = 'true';
+    });
+  }
+  const observer = new ResizeObserver(align);
+  new MutationObserver(align).observe(document.body, {childList:true, subtree:true});
+  mobile.addEventListener('change', align);
+  window.addEventListener('resize', align);
+  align();
+})();
