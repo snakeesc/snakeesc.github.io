@@ -1386,7 +1386,8 @@ const MAX_LUCK = 30;
       if(b.dataset.page) { pauseGuidePage+=Number(b.dataset.page); renderPauseContent('guide',pauseGuideFilter); }
       if(b.dataset.action==='resume') closePauseMenu();
       if(b.dataset.action==='end') {
-        pauseMenu.querySelector('.pause-content').innerHTML=menuHeader('End this run?','Your score will go to the run summary.')+'<div class="mp-actions"><button class="mp-primary" data-action="confirm-end">End run & view summary</button><button class="mp-primary" data-view="run">Keep playing</button></div>';
+        pauseMenu.querySelector('footer').hidden=true;
+        pauseMenu.querySelector('.pause-content').innerHTML=menuHeader('End this run?','Your score will go to the run summary.')+'<div class="mp-actions"><button class="mp-primary" data-action="confirm-end">End run</button><button class="mp-primary" data-action="resume">Keep playing</button></div>';
       }
       if(b.dataset.action==='confirm-end') {pauseMenu.style.display='none';endGame();}
     });
@@ -1405,6 +1406,7 @@ const MAX_LUCK = 30;
     }
     pauseMenu.querySelector('.pause-content').classList.toggle('mp-content', view !== 'guide');
     const footer = pauseMenu.querySelector('footer');
+    footer.hidden=false;
     footer.className = view === 'guide' ? 'pause-footer' : 'mp-actions';
     footer.querySelector('[data-action="resume"]').textContent='Resume run';
     footer.querySelector('[data-action="resume"]').className=view === 'guide' ? '' : 'mp-primary';
@@ -1435,12 +1437,9 @@ const MAX_LUCK = 30;
     pauseUpgradePage=Math.max(0,Math.min(upgradePages-1,pauseUpgradePage));
     const pageUpgrades=current.slice(pauseUpgradePage*upgradesPerPage,(pauseUpgradePage+1)*upgradesPerPage);
     const rows=pageUpgrades.map(x=>`<div class="mp-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b><span>${pauseEscape(descriptions[x.name.toLowerCase()] || (pauseGuide.find(e=>e[0]!=='Frogs' && e[1].toLowerCase()===x.name.toLowerCase())||[])[2] || 'Active for this run.')}</span></div></div>`).join('');
-    // Representative living frogs, not fictional sample roles.
-    const party=[...new Set(frogs.map(f=>f.el?.dataset.approvedRole).filter(Boolean))].slice(0,5);
-    const partyArt=party.map(role=>window.approvedFrogs?.[role] ? `<img class="mp-sprite" src="${pauseEscape(window.approvedFrogs[role])}" alt="">` : '').join('');
+    // Keep the pause header compact and consistent with Scores.
     content.innerHTML=menuHeader('Paused')+
-      `<div class="mp-swarm">${partyArt || '<span class="mp-hint">Your frogs are waiting.</span>'}</div>
-      <div class="mp-runline"><span>SCORE<b>${Math.floor(score).toLocaleString()}</b></span><span>TIME<b>${formatTime(elapsedTime)}</b></span></div>
+      `<div class="mp-runline"><span>SCORE<b>${Math.floor(score).toLocaleString()}</b></span><span>TIME<b>${formatTime(elapsedTime)}</b></span></div>
       <div class="mp-facts">${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
       <div class="mp-section-label">YOUR UPGRADES <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
       ${rows || '<p class="mp-hint">No lasting upgrades yet.</p>'}
@@ -5806,19 +5805,12 @@ function closeAnimatedOverlay(overlayEl) {
         <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
       <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
-      <div class="frog-panel-footer"><button id="howToFieldGuideBtn" class="frog-btn frog-btn-secondary">Field Guide</button><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
+      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
 
-    document.getElementById('howToFieldGuideBtn').addEventListener('click',()=>{
-      ensurePauseMenu();fieldGuideFromHelp=true;pauseGuidePage=0;
-      // Do not call hideHowToOverlay: it can start a first-time player's run.
-      howToOverlay.style.display='none';
-      renderPauseContent('guide','Common');pauseMenu.style.display='flex';
-      pauseMenu.querySelector('.pause-filters button')?.focus();
-    });
     rememberHowTo();
     openAnimatedOverlay(howToOverlay);
   }

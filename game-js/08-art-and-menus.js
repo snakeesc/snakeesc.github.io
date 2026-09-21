@@ -120,7 +120,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
   const read=s=>getComputedStyle(probe.querySelector(s));
   const panel=read('.pp-board'),heading=read('.pp-heading'),name=read('.pp-player strong'),body=read('.pp-time'),button=read('button'),points=read('.pp-points strong');
   // Typography follows the scoreboard's responsive values, independently of panel geometry.
-  for(const [key,value] of Object.entries({'--menu-frame-border':panel.border,'--menu-frame-shadow':panel.boxShadow,'--menu-frame-radius':panel.borderRadius,'--menu-frame-background':panel.backgroundColor,'--menu-body-font':body.fontSize,'--menu-name-font':name.fontSize,'--menu-title-font':heading.fontSize,'--menu-control-font':button.fontSize})) {
+  for(const [key,value] of Object.entries({'--menu-unit':(parseFloat(body.fontSize)/21)+'px','--menu-panel-width':panel.width,'--menu-panel-padding':panel.padding,'--menu-frame-border':panel.border,'--menu-frame-shadow':panel.boxShadow,'--menu-frame-radius':panel.borderRadius,'--menu-frame-background':panel.backgroundColor,'--menu-body-font':body.fontSize,'--menu-name-font':name.fontSize,'--menu-title-font':heading.fontSize,'--menu-control-font':button.fontSize})) {
    if(document.documentElement.style.getPropertyValue(key)!==value)document.documentElement.style.setProperty(key,value);
   }
   const font={'font-family':name.fontFamily,'font-weight':'400','text-shadow':'none','letter-spacing':'normal'};
@@ -169,12 +169,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 // Approved menus share the exact preview styling; dimensions follow the established design viewport.
 (()=>{
  const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css';document.head.appendChild(css);
- function size(){
-  const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-  const phone=(matchMedia('(pointer:coarse)').matches||touch)&&Math.min(screen.width,screen.height)<=600;
-  document.documentElement.style.setProperty('--menu-unit',phone ? (window.innerWidth / 430)+'px' : '1px');
- }
- size();window.addEventListener('resize',size);window.addEventListener('orientationchange',size);
+
 })();
 
 // Preserve the existing main/help/score surfaces and approved icon sizing.
