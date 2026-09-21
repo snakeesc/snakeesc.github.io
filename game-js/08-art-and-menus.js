@@ -72,51 +72,6 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 // Match visible artwork bounds without altering approved source pixels.
 (()=>{const style=document.createElement("style");style.textContent=".frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"panic attack\"]{background-size:114.7770% 114.7770%!important;background-position:63.3171% 62.6977%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"royal apprenticeship\"]{background-size:103.6728% 103.6728%!important;background-position:51.1255% 50.0000%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"lingering hex\"]{background-size:119.7243% 109.2798%!important;background-position:30.8784% 71.8847%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"lasting legacy\"]{background-size:109.7552% 99.8418%!important;background-position:32.7606% 441.6667%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"brittle scales\"]{background-size:111.4414% 100.6094%!important;background-position:57.2209% 682.6923%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"snake egg\"]{background-size:105.2627% 112.1935%!important;background-position:48.3538% 20.1587%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"poisonous skin\"]{background-size:148.7520% 124.3576%!important;background-position:56.7829% 69.1401%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"eye for eye\"]{background-size:133.3439% 133.3439%!important;background-position:61.7994% 50.7973%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"wild company\"]{background-size:101.6172% 101.6172%!important;background-position:50.0000% 70.0426%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"greedy hand\"]{background-size:155.3043% 155.3043%!important;background-position:52.6872% 52.7992%!important;image-rendering:pixelated;}";document.head.appendChild(style);})();
 
-/* Pause-only presentation. Does not change viewport, APK insets or UI scale. */
-(()=>{
- const style=document.createElement('style');
- style.textContent=`
- #runPauseOverlay[data-view="run"] #pauseTitle{text-align:left;margin:0;padding:0 0 calc(14 * var(--p));border-bottom:2px solid #bdcf93;line-height:1.1;}
- #runPauseOverlay[data-view="run"] #pauseTitle:before{content:"ESCAPE THE SNAKE";display:block;font-size:.48em;letter-spacing:.1em;color:#567143;margin-bottom:.3em;}
- #runPauseOverlay[data-view="run"] .pause-overview{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.5em;padding:calc(14 * var(--p)) 0;}
- #runPauseOverlay[data-view="run"] .pause-overview>div{display:flex;align-items:baseline;gap:.4em;}
- #runPauseOverlay[data-view="run"] .pause-overview strong{font-size:calc(27 * var(--p));margin:0;}
- #runPauseOverlay[data-view="run"] .pause-overview span{font-size:calc(20 * var(--p));}
- #runPauseOverlay[data-view="run"] .pause-facts{display:none;}
- #runPauseOverlay[data-view="run"] .pause-compact-facts{display:flex;flex-wrap:wrap;gap:calc(8 * var(--p)) calc(18 * var(--p));padding:0 0 calc(15 * var(--p));font-size:calc(20 * var(--p));line-height:1.2;color:#45663b;border-bottom:1px solid #bdcf93;}
- #runPauseOverlay[data-view="run"] .pause-compact-facts span{white-space:nowrap;}
- #runPauseOverlay[data-view="run"] .pause-compact-facts b{color:#087985;font-weight:400;}
- #runPauseOverlay[data-view="run"] .pause-kit h3{font-size:calc(23 * var(--p));margin:calc(17 * var(--p)) 0 calc(4 * var(--p));}
- #runPauseOverlay[data-view="run"] .pause-upgrade-grid{display:block;}
- #runPauseOverlay[data-view="run"] .pause-upgrade-grid .pause-row{display:grid;grid-template-columns:calc(36 * var(--p)) minmax(0,1fr);align-items:center;gap:calc(14 * var(--p));padding:calc(12 * var(--p)) 0;border:0;border-bottom:1px solid #d5ddae;background:transparent;}
- #runPauseOverlay[data-view="run"] .pause-upgrade-grid .pause-row:last-child{border-bottom:0;}
- #runPauseOverlay[data-view="run"] .pause-row img{width:calc(36 * var(--p));height:calc(36 * var(--p));object-fit:contain;image-rendering:pixelated;}
- #runPauseOverlay[data-view="run"] .pause-row strong{font-size:calc(24 * var(--p));line-height:1.15;}
- #runPauseOverlay[data-view="run"] .pause-footer{display:grid;grid-template-columns:1fr 1fr;gap:0 calc(12 * var(--p));}
- #runPauseOverlay[data-view="run"] .pause-footer [data-action="resume"]{grid-column:1/-1;text-align:center;padding:calc(12 * var(--p)) 0;font-size:calc(29 * var(--p));}
- #runPauseOverlay[data-view="run"] .pause-footer-guide{text-align:left;}
- #runPauseOverlay[data-view="run"] .pause-footer [data-action="end"]{text-align:right;}
- `;
- document.head.appendChild(style);
- function refresh(){
-  const panel=document.querySelector('#runPauseOverlay[data-view="run"]');
-  if(!panel)return;
-  const facts=panel.querySelector('.pause-facts');
-  if(!facts||panel.querySelector('.pause-compact-facts'))return;
-  const summary=document.createElement('div');summary.className='pause-compact-facts';
-  for(const row of facts.children){
-   const label=row.querySelector('dt')?.textContent||'';
-   const value=row.querySelector('dd')?.textContent||'';
-   const item=document.createElement('span'),num=document.createElement('b');
-   item.append(label+' ');num.textContent=value;item.append(num);summary.append(item);
-  }
-  // Retain the approved two-column facts grid.
-  summary.remove();
- }
- new MutationObserver(refresh).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-view']});
- refresh();
-})();
-
 // Field guide only: concise copy and a modest reduction in visible icon size.
 (()=>{
  const descriptions={
@@ -146,27 +101,6 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  new MutationObserver(polish).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-view']});polish();
 })();
 
-(()=>{const style=document.createElement("style");style.textContent="\n#runPauseOverlay[data-view=\"run\"] #pauseTitle{font-size:calc(36 * var(--p));text-align:left;border:0;padding:0;margin:0;}\n#runPauseOverlay[data-view=\"run\"] #pauseTitle:before{content:\"ESCAPE THE SNAKE\";font-size:calc(17 * var(--p));letter-spacing:calc(2 * var(--p));margin-bottom:calc(4 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-overview{display:flex;justify-content:space-between;border-bottom:2px solid #bdcf93;padding:calc(15 * var(--p)) 0 calc(13 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-overview strong{font-size:calc(25 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-overview span{font-size:calc(21 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-facts{display:grid;grid-template-columns:1fr 1fr;border:0;padding:0;margin:calc(14 * var(--p)) 0 calc(18 * var(--p));gap:calc(8 * var(--p)) calc(24 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-compact-facts{display:none;}\n#runPauseOverlay[data-view=\"run\"] .pause-kit h3{font-size:calc(21 * var(--p));color:#4b7139;margin:0;padding:calc(10 * var(--p)) 0;border-top:1px solid #bdcf93;}\n#runPauseOverlay[data-view=\"run\"] .pause-upgrade-grid .pause-row{grid-template-columns:calc(40 * var(--p)) minmax(0,1fr);gap:calc(15 * var(--p));padding:calc(14 * var(--p)) 0;}\n#runPauseOverlay[data-view=\"run\"] .pause-row img{width:calc(40 * var(--p));height:calc(40 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-row strong{font-size:calc(25 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-row p{font-size:calc(20 * var(--p));color:#45663b;line-height:1.15;margin:calc(5 * var(--p)) 0 0;}\n#runPauseOverlay[data-view=\"guide\"] .pause-row strong{font-size:calc(23 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-row p{font-size:calc(19 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-row img{scale:.80;}\n@media(pointer:coarse),(max-width:600px){.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"loaded hand\"]{scale:1.18;}}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"poisonous skin\"]{background-size:129.6521739130435% 124.78260869565219%!important;background-position:59.579667644183765% 54.093567251461984%!important;}";document.head.appendChild(style);})();
-
-(()=>{const s=document.createElement("style");s.textContent="#howToOverlay .frog-panel,#dashboardOverlay .frog-panel,#leaderboardOverlay .frog-panel,#endGameSummaryOverlay .frog-panel,#buffGuideOverlay .frog-panel,#mainMenuOverlay .frog-panel{border-radius:8px!important;clip-path:none!important;}";document.head.appendChild(s);})();
-
-(()=>{
- const resetTitle=()=>{
-  const title=document.querySelector('#runPauseOverlay #pauseTitle');
-  if(!title || title.dataset.previewHeader==='true')return;
-  title.dataset.previewHeader='true';
-  for(const [key,value] of Object.entries({background:'transparent',color:'#0b3a25',boxShadow:'none',textShadow:'none',border:'0',clipPath:'none',position:'static',width:'auto',height:'auto'})){
-   title.style.setProperty(key.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),value,'important');
-  }
- };
- const style=document.createElement('style');style.textContent=`
- #runPauseOverlay[data-view="run"] #pauseTitle{background:transparent!important;background-image:none!important;color:#0b3a25!important;box-shadow:none!important;text-shadow:none!important;clip-path:none!important;border-radius:0!important;}
- #runPauseOverlay[data-view="run"] #pauseTitle::after{content:none!important;display:none!important;}
- #runPauseOverlay[data-view="run"] #pauseTitle::before{background:transparent!important;color:#4b7139!important;box-shadow:none!important;position:static!important;}
- `;document.head.appendChild(style);
- new MutationObserver(resetTitle).observe(document.body,{childList:true,subtree:true});resetTitle();
-})();
-
 // Shared secondary-menu presentation. The live scoreboard is the design reference.
 // Keep viewport, panel dimensions, native insets and game scaling owned by existing code.
 (()=>{
@@ -187,6 +121,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
   const panel=read('.pp-board'),heading=read('.pp-heading'),name=read('.pp-player strong'),body=read('.pp-time'),button=read('button'),points=read('.pp-points strong');
   const font={'font-family':name.fontFamily,'font-weight':'400','text-shadow':'none','letter-spacing':'normal'};
   document.querySelectorAll(targets).forEach(root=>{
+   if(root.querySelector('.mp-panel')) return;
    apply(root,'.frog-panel,.pp-board,.pause-panel',{'background':panel.backgroundColor,'color':panel.color,'border':panel.border,'border-radius':panel.borderRadius,'box-shadow':panel.boxShadow,'clip-path':'none',...font});
    apply(root,'h2,.pp-heading', {...font,'font-size':heading.fontSize,'color':heading.color,'background':'transparent','line-height':'1.15','text-align':'center','border':'0','padding':'0','margin':'4px 0 20px'});
    apply(root,'p,label,dt,dd,.ui-records span,.ui-tag-label,.ui-progress-caption,.rest-runline,.rest-facts,.rest-label,.rest-effects,.pause-pages span,.pp-metrics span,.pp-tag label,.pp-result>span,.pp-result>small', {...font,'font-size':body.fontSize,'line-height':'1.3','color':body.color});
@@ -213,3 +148,34 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-view']});
  window.addEventListener('resize',schedule);document.fonts?.ready.then(schedule);schedule();
 })();
+
+// Suppress browser/WebView tap flashes, not the game's button surfaces.
+(()=>{
+ const style=document.createElement('style');
+ style.id='menu-pointer-feedback';
+ style.textContent=`
+ html body :is(button,[role="button"],.frog-btn,a){-webkit-tap-highlight-color:transparent!important;}
+ html body :is(button,[role="button"],.frog-btn){-webkit-user-select:none;user-select:none;}
+ html body :is(button,[role="button"],.frog-btn,a):focus:not(:focus-visible){outline:none!important;box-shadow:none!important;}
+ html body :is(button,[role="button"],.frog-btn,a):active:not(:focus-visible){outline:none!important;box-shadow:none!important;}
+ `;
+ document.head.appendChild(style);
+})();
+
+// Approved menus share the exact preview styling; dimensions follow the established design viewport.
+(()=>{
+ const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css';document.head.appendChild(css);
+ function size(){
+  const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+  const phone=(matchMedia('(pointer:coarse)').matches||touch)&&Math.min(screen.width,screen.height)<=600;
+  document.documentElement.style.setProperty('--menu-unit',phone ? (window.innerWidth / 430)+'px' : '1px');
+ }
+ size();window.addEventListener('resize',size);window.addEventListener('orientationchange',size);
+})();
+
+// Preserve the existing main/help/score surfaces and approved icon sizing.
+(()=>{const style=document.createElement('style');style.textContent=`
+#howToOverlay .frog-panel,#dashboardOverlay .frog-panel,#leaderboardOverlay .frog-panel,#endGameSummaryOverlay .frog-panel,#buffGuideOverlay .frog-panel,#mainMenuOverlay .frog-panel{border-radius:8px!important;clip-path:none!important;}
+@media(pointer:coarse),(max-width:600px){.frog-upgrade-choice .frog-upgrade-emoji[data-approved="loaded hand"]{scale:1.18;}}
+.frog-upgrade-choice .frog-upgrade-emoji[data-approved="poisonous skin"]{background-size:129.6521739130435% 124.78260869565219%!important;background-position:59.579667644183765% 54.093567251461984%!important;}
+`;document.head.appendChild(style);})();
