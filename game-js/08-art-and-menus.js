@@ -168,7 +168,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 
 // Approved menus share the exact preview styling; dimensions follow the established design viewport.
 (()=>{
- const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=pause-columns-guide-back-12';document.head.appendChild(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=pause-balanced-stats-13';document.head.appendChild(css);
 
 })();
 

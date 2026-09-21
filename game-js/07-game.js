@@ -1432,7 +1432,7 @@ const MAX_LUCK = 30;
     const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
     const descriptions={'loaded hand':'Four choices at each upgrade pick.','royal apprenticeship':'Spawned roles promote crowned frogs.','snake egg':'Less speed gained when shedding.'};
-    const upgradesPerPage=8;
+    const upgradesPerPage=10;
     const upgradePages=Math.max(1,Math.ceil(current.length/upgradesPerPage));
     pauseUpgradePage=Math.max(0,Math.min(upgradePages-1,pauseUpgradePage));
     const pageUpgrades=current.slice(pauseUpgradePage*upgradesPerPage,(pauseUpgradePage+1)*upgradesPerPage);
