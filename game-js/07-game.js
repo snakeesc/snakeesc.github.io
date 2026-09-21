@@ -1439,11 +1439,11 @@ const MAX_LUCK = 30;
     const rows=pageUpgrades.map(x=>`<div class="sm-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b></div></div>`).join('');
     // Keep the pause header compact and consistent with Scores.
     content.innerHTML=menuHeader('Paused')+
-      `<div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Time <b>${formatTime(elapsedTime)}</b></p></div>
-      <div class="summary-details"><span><b>${frogs.length} / ${maxFrogsCap}</b> frogs</span><span><b>${luckStat} / ${MAX_LUCK}</b> luck</span><span><b>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</b> revive</span><span><b>${snakeShedCount}</b> sheds</span></div>
-      <div class="sm-section-label">Current upgrades <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
+      `<div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b>${Math.max(Math.floor(score),0,...(loadDashboardStats().recentRuns || []).map(r=>Number(r.score)||0)).toLocaleString()}</b></p></div>
+      <div class="summary-details"><span><b>${formatLeaderboardTime(elapsedTime)}</b> survived</span><span><b>${totalOrbsCollected || 0}</b> orbs</span><span><b>${snakeShedCount}</b> sheds</span></div>
+      <div class="summary-name"><label>Current upgrades</label>
       ${rows ? `<div class="sm-upgrade-columns">${rows}</div>` : '<p class="sm-hint">No lasting upgrades yet.</p>'}
-      ${upgradePages>1 ? `<nav class="sm-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}`;
+      ${upgradePages>1 ? `<nav class="sm-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}</div>`;
 
   }
   function openPauseMenu() {

@@ -206,3 +206,7 @@ html.phone-secondary-menus #runPauseOverlay[data-view="run"] .sm-upgrade-columns
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .sm-actions{border-top:0!important;margin-top:16px!important;padding-top:0!important;gap:28px!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .sm-section-label{border-top:0!important;padding:14px 0 6px!important;margin:0!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .sm-actions>button{flex:0 0 auto!important;width:auto!important;cursor:pointer!important}
+
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .summary-name{width:78%!important;margin:18px auto 0!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .summary-name label{display:block!important;font-size:var(--menu-body-font,21px)!important;color:#426535!important;margin-bottom:4px!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .summary-name .sm-upgrade-columns{padding:4px 0!important}
