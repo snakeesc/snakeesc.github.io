@@ -1408,7 +1408,7 @@ const MAX_LUCK = 30;
     pauseMenu.querySelector('.pause-content').classList.toggle('sm-content', view !== 'guide');
     const footer = pauseMenu.querySelector('footer');
     footer.hidden=false;
-    footer.innerHTML='<button data-action="resume">Resume run</button><button data-action="end">End run</button>';
+    footer.innerHTML='<div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back to How to Play</button><button data-action="resume">Resume run</button><button data-action="end">End run</button>';
     footer.className = view === 'guide' ? 'pause-footer' : 'sm-actions';
     footer.querySelector('[data-action="resume"]').textContent='Resume run';
     footer.querySelector('[data-action="resume"]').className=view === 'guide' ? '' : 'sm-primary';
@@ -1438,12 +1438,12 @@ const MAX_LUCK = 30;
     const upgradePages=Math.max(1,Math.ceil(current.length/upgradesPerPage));
     pauseUpgradePage=Math.max(0,Math.min(upgradePages-1,pauseUpgradePage));
     const pageUpgrades=current.slice(pauseUpgradePage*upgradesPerPage,(pauseUpgradePage+1)*upgradesPerPage);
-    const rows=pageUpgrades.map(x=>`<div class="sm-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b><span>${pauseEscape(descriptions[x.name.toLowerCase()] || (pauseGuide.find(e=>e[0]!=='Frogs' && e[1].toLowerCase()===x.name.toLowerCase())||[])[2] || 'Active for this run.')}</span></div></div>`).join('');
+    const rows=pageUpgrades.map(x=>`<div class="sm-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b></div></div>`).join('');
     // Keep the pause header compact and consistent with Scores.
     content.innerHTML=menuHeader('Paused')+
-      `<div class="sm-runline"><span>SCORE<b>${Math.floor(score).toLocaleString()}</b></span><span>TIME<b>${formatTime(elapsedTime)}</b></span></div>
+      `<div class="sm-runline"><span>Score<b>${Math.floor(score).toLocaleString()}</b></span><span>Time<b>${formatTime(elapsedTime)}</b></span></div>
       <div class="sm-facts">${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
-      <div class="sm-section-label">YOUR UPGRADES <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
+      <div class="sm-section-label">Current upgrades <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
       ${rows || '<p class="sm-hint">No lasting upgrades yet.</p>'}
       ${upgradePages>1 ? `<nav class="sm-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}`;
 
@@ -1646,8 +1646,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
   content.innerHTML = menuHeader('Run complete')+`
- <div class="sm-bigscore"><span>FINAL SCORE</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong></div>
- <div class="sm-best">${menuSprite('frog-crowned.png')}Personal best · ${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</div>
+ <div class="sm-runline"><span>Final score<b>${Math.floor(run.score || 0).toLocaleString()}</b></span><span>Personal best<b>${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</b></span></div>
  <div class="sm-result-details"><div><b>${formatLeaderboardTime(run.time || 0)}</b><span>Survived</span></div><div><b>${run.orbs || 0}</b><span>Orbs</span></div><div><b>${run.sheds || 0}</b><span>Sheds</span></div></div>
  <label class="sm-tag-label" for="endSummaryTagInput">YOUR NAME ON THE BOARD</label><div class="sm-tag-row"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p class="sm-hint" id="endSummaryTagMsg" aria-live="polite"></p>`;
   openAnimatedOverlay(endGameSummaryOverlay);
@@ -5808,12 +5807,21 @@ function closeAnimatedOverlay(overlayEl) {
         <section>${menuSprite('upgrade-snake-egg.png')}<div><h3>Watch the snake</h3><p>Keep your distance. Shedding makes the snake faster.</p></div></section>
         <section>${menuSprite('upgrade-loaded-hand.png')}<div><h3>Choose upgrades</h3><p>Pick a boost every minute. Shed milestones offer epic upgrades.</p></div></section>
       </div>
-      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
+      <div class="frog-panel-footer"><button id="howToFieldGuideBtn" class="frog-btn frog-btn-secondary">Field Guide</button><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
 
+    document.getElementById('howToFieldGuideBtn').addEventListener('click',()=>{
+      ensurePauseMenu();
+      fieldGuideFromHelp=true;
+      howToOverlay.style.display='none';
+      pauseGuidePage=0;
+      renderPauseContent('guide','Common');
+      pauseMenu.style.display='flex';
+      pauseMenu.querySelector('.guide-back').focus();
+    });
     rememberHowTo();
     openAnimatedOverlay(howToOverlay);
   }
