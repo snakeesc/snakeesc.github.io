@@ -1320,7 +1320,7 @@ const MAX_LUCK = 30;
 
       heading.hidden=false;edit.hidden=false;editor.hidden=true;
     }
-    section.prepend(heading,edit);section.classList.add('player-identity');
+    const headingRow=document.createElement('div');headingRow.className='player-heading-row';headingRow.append(heading,edit);section.prepend(headingRow);section.classList.add('player-identity');
     heading.onclick=()=>{input.value=saved;heading.hidden=true;edit.hidden=true;editor.hidden=false;input.focus();input.select();};
     edit.onclick=()=>heading.click();
     cancel.onclick=()=>{input.value=saved;showName();};
@@ -1460,7 +1460,7 @@ const MAX_LUCK = 30;
     footer.className = view === 'guide' ? 'pause-footer' : 'sm-actions';
     footer.innerHTML=view === 'guide'
       ? '<button class="guide-back" data-action="guide-back">Back</button><div class="guide-pagination-slot"></div>'
-      : '<button data-action="resume">Resume run</button><button data-action="end">End run</button>';
+      : '<button data-action="resume">Resume</button><button data-action="end">End run</button>';
     pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
     else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
@@ -1483,7 +1483,7 @@ const MAX_LUCK = 30;
     content.innerHTML= `
 <div class="summary-name"><div class="summary-editor"><input id="pauseTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || '')}" placeholder="Your name on the board"><button id="pauseTagSaveBtn">Save</button></div><p id="pauseTagMsg" role="status" aria-live="polite"></p></div>
       
-      <div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
+      <p class="identity-best">Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p><div class="summary-score"><strong>${Math.floor(score).toLocaleString()}</strong><span>Current score</span></div>
       <div class="summary-details"><span><b>${formatLeaderboardTime(elapsedTime)}</b> survived</span><span><b>${totalOrbsCollected || 0}</b> orbs</span><span><b>${snakeShedCount}</b> sheds</span></div>
       <section class="run-upgrades"></section>`;
     renderRunUpgrades(content.querySelector('.run-upgrades'),current);
@@ -1712,7 +1712,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
   content.innerHTML = `
 <div class="summary-name"><div class="summary-editor"><input aria-label="Your name on the board" id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Your name on the board"><button id="endSummaryTagSaveBtn">Save</button></div><p id="endSummaryTagMsg" aria-live="polite"></p></div>
  
- <div class="summary-score"><span>Final score</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><p>Personal best <b>${menuPersonalBest(run.score,leaderboardBest.bestRun).toLocaleString()}</b></p></div>
+ <p class="identity-best">Personal best <b>${menuPersonalBest(run.score,leaderboardBest.bestRun).toLocaleString()}</b></p><div class="summary-score"><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><span>Final score</span></div>
  <div class="summary-details"><span><b>${formatLeaderboardTime(run.time || 0)}</b> survived</span><span><b>${run.orbs || 0}</b> orbs</span><span><b>${run.sheds || 0}</b> sheds</span></div>
  <section class="run-upgrades"></section>`;
   renderRunUpgrades(content.querySelector('.run-upgrades'),runUpgradeLog.map(x=>({...x})));
