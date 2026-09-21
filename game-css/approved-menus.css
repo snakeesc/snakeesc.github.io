@@ -122,3 +122,34 @@
 #endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-tag-label,#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-tag-row,#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay #endSummaryTagMsg{width:78%!important;max-width:100%!important;box-sizing:border-box!important;margin-left:auto!important;margin-right:auto!important}
 #endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-actions{display:flex!important;flex-direction:row!important;justify-content:center!important;gap:24px!important}
 #endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-actions>button{flex:0 0 auto!important;width:auto!important}
+
+/* Desktop only: counter world scaling on menu panels, not gameplay. */
+html.desktop-readable-menus #leaderboardOverlay > .pp-board,
+html.desktop-readable-menus #howToOverlay > .frog-panel,
+html.desktop-readable-menus #dashboardOverlay > .sm-panel,
+html.desktop-readable-menus #dashboardOverlay > .frog-panel,
+html.desktop-readable-menus #endGameSummaryOverlay > .sm-panel,
+html.desktop-readable-menus #runPauseOverlay > [data-menu-panel],
+html.desktop-readable-menus #buffGuideOverlay > .frog-panel {
+ zoom:var(--desktop-menu-zoom,1)!important;
+ max-width:var(--desktop-menu-max-width)!important;
+ max-height:var(--desktop-menu-max-height)!important;
+ overflow-y:auto!important;
+ box-sizing:border-box!important;
+}
+
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-score{text-align:center!important;padding:4px 0 16px!important;color:#073720!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-score>span{font-size:var(--menu-body-font,21px)!important;color:#426535!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-score>strong{display:block!important;font-size:calc(42 * var(--menu-unit,1px))!important;font-weight:400!important;line-height:1.1!important;margin:5px 0!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-score p{margin:6px 0 0!important;font-size:var(--menu-body-font,21px)!important;color:#426535!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-score b{color:#073720!important;font-weight:400!important;margin-left:6px!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-details{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:8px 18px!important;padding:12px 0!important;border-top:1px solid #bdcb9e!important;border-bottom:1px solid #bdcb9e!important;font-size:var(--menu-body-font,21px)!important;color:#426535!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-details span{white-space:nowrap!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-details b{color:#073720!important;font-weight:400!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-name{width:78%!important;margin:18px auto 0!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-name label{display:block!important;font-size:var(--menu-body-font,21px)!important;color:#426535!important;margin-bottom:4px!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-editor{display:flex!important;align-items:center!important;gap:12px!important;border-bottom:1px solid #bdcb9e!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-editor input{width:100%!important;min-width:0!important;box-sizing:border-box!important;padding:8px 0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;font-size:var(--menu-name-font,23px)!important;color:#073720!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .summary-editor button{flex:0 0 auto!important;padding:8px 0!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay #endSummaryTagMsg{width:100%!important;margin:5px 0 0!important;max-width:none!important;font-size:var(--menu-body-font,21px)!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-actions{border-top:0!important;margin-top:16px!important;padding-top:0!important;gap:28px!important}

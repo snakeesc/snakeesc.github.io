@@ -1642,9 +1642,9 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
   content.innerHTML = menuHeader('Run complete')+`
- <div class="sm-runline"><span>Final score<b>${Math.floor(run.score || 0).toLocaleString()}</b></span><span>Personal best<b>${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</b></span></div>
- <div class="sm-result-details"><div><b>${formatLeaderboardTime(run.time || 0)}</b><span>Survived</span></div><div><b>${run.orbs || 0}</b><span>Orbs</span></div><div><b>${run.sheds || 0}</b><span>Sheds</span></div></div>
- <label class="sm-tag-label" for="endSummaryTagInput">YOUR NAME ON THE BOARD</label><div class="sm-tag-row"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p class="sm-hint" id="endSummaryTagMsg" aria-live="polite"></p>`;
+ <div class="summary-score"><span>Final score</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><p>Personal best <b>${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</b></p></div>
+ <div class="summary-details"><span><b>${formatLeaderboardTime(run.time || 0)}</b> survived</span><span><b>${run.orbs || 0}</b> orbs</span><span><b>${run.sheds || 0}</b> sheds</span></div>
+ <div class="summary-name"><label for="endSummaryTagInput">Leaderboard name</label><div class="summary-editor"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p id="endSummaryTagMsg" aria-live="polite"></p></div>`;
   openAnimatedOverlay(endGameSummaryOverlay);
 
   const tagInput = document.getElementById("endSummaryTagInput");
@@ -3144,6 +3144,7 @@ function applyRoleDraft(roleId) {
 
 function showRoleDraftOverlayChoices() {
   initUpgradeOverlay();
+  armUpgradeTapGuard();
   if (!upgradeOverlayButtonsContainer) return;
 
   if (soundEnabled) { initAudio(); playPermanentChoiceSound(); }
@@ -7151,6 +7152,34 @@ function initUpgradeOverlay() {
   }
 }
 
+  // A fresh tap must begin after the mobile choice panel settles.
+  let upgradeTapReadyAt = 0;
+  let upgradeTapTarget = null;
+  function mobileUpgradeInput() {
+    return matchMedia('(pointer:coarse)').matches ||
+      (navigator.maxTouchPoints > 0 && Math.min(screen.width,screen.height) <= 600);
+  }
+  function armUpgradeTapGuard() {
+    upgradeTapReadyAt = mobileUpgradeInput() ? performance.now()+450 : 0;
+    upgradeTapTarget = null;
+  }
+  document.addEventListener('pointerdown', e => {
+    const card=e.target.closest?.('#upgradeOverlay .frog-upgrade-choice');
+    if (!mobileUpgradeInput()) return;
+    upgradeTapTarget=card && performance.now() >= upgradeTapReadyAt ? card : null;
+  }, true);
+  document.addEventListener('pointercancel', () => { upgradeTapTarget=null; }, true);
+  document.addEventListener('click', e => {
+    const card=e.target.closest?.('#upgradeOverlay .frog-upgrade-choice');
+    if (!card || !mobileUpgradeInput()) return;
+    const ready=performance.now() >= upgradeTapReadyAt;
+    const freshTap=upgradeTapTarget === card;
+    upgradeTapTarget=null;
+    if (!ready || (!freshTap && e.detail !== 0)) {
+      e.preventDefault();e.stopImmediatePropagation();
+    }
+  }, true);
+
   function selectUpgrade(choice) {
     if (!choice) return;
     if (choice.id === "greedyHand") {
@@ -7455,6 +7484,7 @@ function initUpgradeOverlay() {
     }
 
     populateUpgradeOverlayChoices(mode);
+    armUpgradeTapGuard();
     updateUpgradeBuffSummary();
 
     gamePaused = true;

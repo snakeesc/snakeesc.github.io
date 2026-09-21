@@ -168,7 +168,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 
 // Approved menus share the exact preview styling; dimensions follow the established design viewport.
 (()=>{
- const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=summary-two-actions-9';document.head.appendChild(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=summary-grouped-11';document.head.appendChild(css);
 
 })();
 
@@ -178,3 +178,22 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 @media(pointer:coarse),(max-width:600px){.frog-upgrade-choice .frog-upgrade-emoji[data-approved="loaded hand"]{scale:1.18;}}
 .frog-upgrade-choice .frog-upgrade-emoji[data-approved="poisonous skin"]{background-size:129.6521739130435% 124.78260869565219%!important;background-position:59.579667644183765% 54.093567251461984%!important;}
 `;document.head.appendChild(style);})();
+
+// Keep secondary menus readable independently of desktop world scaling.
+(()=>{
+  const desktop=matchMedia('(min-width:601px) and (hover:hover) and (pointer:fine)');
+  function resizeMenus(){
+    const active=desktop.matches && !window.Capacitor;
+    const scale=Number(window.__escapeSnakeRenderScale)||1;
+    // 21px body text renders at about 20px, without reducing larger displays.
+    const zoom=active ? Math.max(1,.95/scale) : 1;
+    const effective=scale*zoom;
+    document.documentElement.classList.toggle('desktop-readable-menus',active);
+    document.documentElement.style.setProperty('--desktop-menu-zoom',String(zoom));
+    document.documentElement.style.setProperty('--desktop-menu-max-width',Math.max(1,(document.documentElement.clientWidth-32)/effective)+'px');
+    document.documentElement.style.setProperty('--desktop-menu-max-height',Math.max(1,(document.documentElement.clientHeight-40)/effective)+'px');
+  }
+  window.addEventListener('resize',resizeMenus);
+  desktop.addEventListener?.('change',resizeMenus);
+  resizeMenus();
+})();
