@@ -166,3 +166,20 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  `;document.head.appendChild(style);
  new MutationObserver(resetTitle).observe(document.body,{childList:true,subtree:true});resetTitle();
 })();
+
+// Shared outer menu frame. Inline priorities handle older panel-specific overrides.
+(()=>{
+ const selector='#howToOverlay .frog-panel,#dashboardOverlay .frog-panel,#leaderboardOverlay .frog-panel,#endGameSummaryOverlay .frog-panel,#buffGuideOverlay .frog-panel,#mainMenuOverlay .frog-panel';
+ const properties={'border-radius':'8px','border':'3px solid #0b3a25','clip-path':'none','box-shadow':'4px 5px 0 #538e3e','border-image':'none'};
+ const probe=document.createElement('div');
+ for(const [key,value] of Object.entries(properties)){probe.style.setProperty(key,value);properties[key]=probe.style.getPropertyValue(key);}
+ function apply(){
+  document.querySelectorAll(selector).forEach(panel=>{
+   for(const [key,value] of Object.entries(properties)){
+    if(panel.style.getPropertyValue(key)!==value || panel.style.getPropertyPriority(key)!=='important')panel.style.setProperty(key,value,'important');
+   }
+  });
+ }
+ const style=document.createElement('style');style.textContent=selector.split(',').map(s=>s+'::before,'+s+'::after').join(',')+'{clip-path:none!important;border-radius:inherit!important;}';document.head.appendChild(style);
+ new MutationObserver(apply).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});apply();
+})();
