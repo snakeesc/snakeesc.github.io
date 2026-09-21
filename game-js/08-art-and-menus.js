@@ -132,7 +132,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  'Aura':'Nearby frogs hop 12% sooner and higher. Auras stack within movement caps.',
  'Lucky':'Better orb pickups and a score bonus. Cannot trigger Panic Hop from pickups.',
  'Luck':'Gain 10 luck (max 30). Improves supported chances, spawn rolls and positive buff durations.',
- 'Role Draft':'Choose a role; spawn 3–7 special frogs. Luck favors more.'
+ 'Role Draft':'Choose a role; spawn 2–5 special frogs. Luck favors more.'
  };
  const style=document.createElement('style');
  style.textContent='#runPauseOverlay[data-view="guide"] .pause-row img{scale:.88;transform-origin:center;}';
@@ -149,3 +149,20 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 (()=>{const style=document.createElement("style");style.textContent="\n#runPauseOverlay[data-view=\"run\"] #pauseTitle{font-size:calc(36 * var(--p));text-align:left;border:0;padding:0;margin:0;}\n#runPauseOverlay[data-view=\"run\"] #pauseTitle:before{content:\"ESCAPE THE SNAKE\";font-size:calc(17 * var(--p));letter-spacing:calc(2 * var(--p));margin-bottom:calc(4 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-overview{display:flex;justify-content:space-between;border-bottom:2px solid #bdcf93;padding:calc(15 * var(--p)) 0 calc(13 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-overview strong{font-size:calc(25 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-overview span{font-size:calc(21 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-facts{display:grid;grid-template-columns:1fr 1fr;border:0;padding:0;margin:calc(14 * var(--p)) 0 calc(18 * var(--p));gap:calc(8 * var(--p)) calc(24 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-compact-facts{display:none;}\n#runPauseOverlay[data-view=\"run\"] .pause-kit h3{font-size:calc(21 * var(--p));color:#4b7139;margin:0;padding:calc(10 * var(--p)) 0;border-top:1px solid #bdcf93;}\n#runPauseOverlay[data-view=\"run\"] .pause-upgrade-grid .pause-row{grid-template-columns:calc(40 * var(--p)) minmax(0,1fr);gap:calc(15 * var(--p));padding:calc(14 * var(--p)) 0;}\n#runPauseOverlay[data-view=\"run\"] .pause-row img{width:calc(40 * var(--p));height:calc(40 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-row strong{font-size:calc(25 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-row p{font-size:calc(20 * var(--p));color:#45663b;line-height:1.15;margin:calc(5 * var(--p)) 0 0;}\n#runPauseOverlay[data-view=\"guide\"] .pause-row strong{font-size:calc(23 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-row p{font-size:calc(19 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-row img{scale:.80;}\n@media(pointer:coarse),(max-width:600px){.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"loaded hand\"]{scale:1.18;}}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"poisonous skin\"]{background-size:129.6521739130435% 124.78260869565219%!important;background-position:59.579667644183765% 54.093567251461984%!important;}";document.head.appendChild(style);})();
 
 (()=>{const s=document.createElement("style");s.textContent="#howToOverlay .frog-panel,#dashboardOverlay .frog-panel,#leaderboardOverlay .frog-panel,#endGameSummaryOverlay .frog-panel,#buffGuideOverlay .frog-panel,#mainMenuOverlay .frog-panel{border-radius:8px!important;clip-path:none!important;}";document.head.appendChild(s);})();
+
+(()=>{
+ const resetTitle=()=>{
+  const title=document.querySelector('#runPauseOverlay #pauseTitle');
+  if(!title || title.dataset.previewHeader==='true')return;
+  title.dataset.previewHeader='true';
+  for(const [key,value] of Object.entries({background:'transparent',color:'#0b3a25',boxShadow:'none',textShadow:'none',border:'0',clipPath:'none',position:'static',width:'auto',height:'auto'})){
+   title.style.setProperty(key.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),value,'important');
+  }
+ };
+ const style=document.createElement('style');style.textContent=`
+ #runPauseOverlay[data-view="run"] #pauseTitle{background:transparent!important;background-image:none!important;color:#0b3a25!important;box-shadow:none!important;text-shadow:none!important;clip-path:none!important;border-radius:0!important;}
+ #runPauseOverlay[data-view="run"] #pauseTitle::after{content:none!important;display:none!important;}
+ #runPauseOverlay[data-view="run"] #pauseTitle::before{background:transparent!important;color:#4b7139!important;box-shadow:none!important;position:static!important;}
+ `;document.head.appendChild(style);
+ new MutationObserver(resetTitle).observe(document.body,{childList:true,subtree:true});resetTitle();
+})();
