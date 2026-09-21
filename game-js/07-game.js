@@ -1316,7 +1316,7 @@ const MAX_LUCK = 30;
     let saved=input.value;
     function showName(){
       heading.replaceChildren(document.createTextNode(saved || 'Your name'));
-      const hint=document.createElement('span');hint.className='player-edit-hint';hint.textContent='edit';heading.appendChild(hint);
+
       heading.hidden=false;editor.hidden=true;
     }
     section.prepend(heading);section.classList.add('player-identity');
@@ -1481,7 +1481,7 @@ const MAX_LUCK = 30;
     content.innerHTML= `
 <div class="summary-name"><div class="summary-editor"><input id="pauseTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || '')}" placeholder="Your name on the board"><button id="pauseTagSaveBtn">Save</button></div><p id="pauseTagMsg" role="status" aria-live="polite"></p></div>
       
-      <div class="summary-score"><span>Current score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
+      <div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
       <div class="summary-details"><span><b>${formatLeaderboardTime(elapsedTime)}</b> survived</span><span><b>${totalOrbsCollected || 0}</b> orbs</span><span><b>${snakeShedCount}</b> sheds</span></div>
       <section class="run-upgrades"></section>`;
     renderRunUpgrades(content.querySelector('.run-upgrades'),current);
