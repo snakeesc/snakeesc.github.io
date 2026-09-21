@@ -68,3 +68,79 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 
 // Small visual adjustment only; retain the icon's layout space and centering.
 (()=>{const style=document.createElement('style');style.textContent='.frog-upgrade-choice .frog-upgrade-emoji[data-approved="loaded hand"] { scale:1.08; transform-origin:center; }';document.head.appendChild(style);})();
+
+// Match visible artwork bounds without altering approved source pixels.
+(()=>{const style=document.createElement("style");style.textContent=".frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"panic attack\"]{background-size:114.7770% 114.7770%!important;background-position:63.3171% 62.6977%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"royal apprenticeship\"]{background-size:103.6728% 103.6728%!important;background-position:51.1255% 50.0000%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"lingering hex\"]{background-size:119.7243% 109.2798%!important;background-position:30.8784% 71.8847%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"lasting legacy\"]{background-size:109.7552% 99.8418%!important;background-position:32.7606% 441.6667%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"brittle scales\"]{background-size:111.4414% 100.6094%!important;background-position:57.2209% 682.6923%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"snake egg\"]{background-size:105.2627% 112.1935%!important;background-position:48.3538% 20.1587%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"poisonous skin\"]{background-size:148.7520% 124.3576%!important;background-position:56.7829% 69.1401%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"eye for eye\"]{background-size:133.3439% 133.3439%!important;background-position:61.7994% 50.7973%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"wild company\"]{background-size:101.6172% 101.6172%!important;background-position:50.0000% 70.0426%!important;image-rendering:pixelated;}\n.frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"greedy hand\"]{background-size:155.3043% 155.3043%!important;background-position:52.6872% 52.7992%!important;image-rendering:pixelated;}";document.head.appendChild(style);})();
+
+/* Pause-only presentation. Does not change viewport, APK insets or UI scale. */
+(()=>{
+ const style=document.createElement('style');
+ style.textContent=`
+ #runPauseOverlay[data-view="run"] #pauseTitle{text-align:left;margin:0;padding:0 0 calc(14 * var(--p));border-bottom:2px solid #bdcf93;line-height:1.1;}
+ #runPauseOverlay[data-view="run"] #pauseTitle:before{content:"ESCAPE THE SNAKE";display:block;font-size:.48em;letter-spacing:.1em;color:#567143;margin-bottom:.3em;}
+ #runPauseOverlay[data-view="run"] .pause-overview{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.5em;padding:calc(14 * var(--p)) 0;}
+ #runPauseOverlay[data-view="run"] .pause-overview>div{display:flex;align-items:baseline;gap:.4em;}
+ #runPauseOverlay[data-view="run"] .pause-overview strong{font-size:calc(27 * var(--p));margin:0;}
+ #runPauseOverlay[data-view="run"] .pause-overview span{font-size:calc(20 * var(--p));}
+ #runPauseOverlay[data-view="run"] .pause-facts{display:none;}
+ #runPauseOverlay[data-view="run"] .pause-compact-facts{display:flex;flex-wrap:wrap;gap:calc(8 * var(--p)) calc(18 * var(--p));padding:0 0 calc(15 * var(--p));font-size:calc(20 * var(--p));line-height:1.2;color:#45663b;border-bottom:1px solid #bdcf93;}
+ #runPauseOverlay[data-view="run"] .pause-compact-facts span{white-space:nowrap;}
+ #runPauseOverlay[data-view="run"] .pause-compact-facts b{color:#087985;font-weight:400;}
+ #runPauseOverlay[data-view="run"] .pause-kit h3{font-size:calc(23 * var(--p));margin:calc(17 * var(--p)) 0 calc(4 * var(--p));}
+ #runPauseOverlay[data-view="run"] .pause-upgrade-grid{display:block;}
+ #runPauseOverlay[data-view="run"] .pause-upgrade-grid .pause-row{display:grid;grid-template-columns:calc(36 * var(--p)) minmax(0,1fr);align-items:center;gap:calc(14 * var(--p));padding:calc(12 * var(--p)) 0;border:0;border-bottom:1px solid #d5ddae;background:transparent;}
+ #runPauseOverlay[data-view="run"] .pause-upgrade-grid .pause-row:last-child{border-bottom:0;}
+ #runPauseOverlay[data-view="run"] .pause-row img{width:calc(36 * var(--p));height:calc(36 * var(--p));object-fit:contain;image-rendering:pixelated;}
+ #runPauseOverlay[data-view="run"] .pause-row strong{font-size:calc(24 * var(--p));line-height:1.15;}
+ #runPauseOverlay[data-view="run"] .pause-footer{display:grid;grid-template-columns:1fr 1fr;gap:0 calc(12 * var(--p));}
+ #runPauseOverlay[data-view="run"] .pause-footer [data-action="resume"]{grid-column:1/-1;text-align:center;padding:calc(12 * var(--p)) 0;font-size:calc(29 * var(--p));}
+ #runPauseOverlay[data-view="run"] .pause-footer-guide{text-align:left;}
+ #runPauseOverlay[data-view="run"] .pause-footer [data-action="end"]{text-align:right;}
+ `;
+ document.head.appendChild(style);
+ function refresh(){
+  const panel=document.querySelector('#runPauseOverlay[data-view="run"]');
+  if(!panel)return;
+  const facts=panel.querySelector('.pause-facts');
+  if(!facts||panel.querySelector('.pause-compact-facts'))return;
+  const summary=document.createElement('div');summary.className='pause-compact-facts';
+  for(const row of facts.children){
+   const label=row.querySelector('dt')?.textContent||'';
+   const value=row.querySelector('dd')?.textContent||'';
+   const item=document.createElement('span'),num=document.createElement('b');
+   item.append(label+' ');num.textContent=value;item.append(num);summary.append(item);
+  }
+  facts.after(summary);
+ }
+ new MutationObserver(refresh).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-view']});
+ refresh();
+})();
+
+// Field guide only: concise copy and a modest reduction in visible icon size.
+(()=>{
+ const descriptions={
+ 'Royal Apprenticeship':'Spawned roles replace crowns on ordinary crowned frogs. Movement stats reroll; special frogs keep their role.',
+ 'Greedy Hand':'Take every offer; another snake joins. Requires Loaded Hand. 20% offer chance; once per run. Never paired with Eye for Eye.',
+ 'Eye for Eye':'With 2+ snakes, kill the slowest. Cap drops to 55; excess frogs die without death rewards. Once per run.',
+ 'Snake Egg':'One snake gains 25% less speed per shed. Targets the fewest sheds; future snakes are unaffected.',
+ 'Wild Company':'Spawn 1–3 Bull, Magnet or Poison frogs—all one random role. Luck favors more.',
+ 'Frog Scatter':'Respawn the swarm, keeping roles, crowns and stats. Triggers death effects; bonus frogs respect the cap. Once per run.',
+ 'Lasting Legacy':'20% chance a dying special frog passes its role to an ordinary frog.',
+ 'Cannibal':'Eats up to 5 ordinary frogs. Each meal: 5% shorter hop timing and higher jumps. Death returns 2–5 frogs, never more than eaten.',
+ 'Poison Toad':'Confuses snakes when eaten: 10s base, affected by bonuses and resistance.',
+ 'Aura':'Nearby frogs hop 12% sooner and higher. Auras stack within movement caps.',
+ 'Lucky':'Better orb pickups and a score bonus. Cannot trigger Panic Hop from pickups.',
+ 'Luck':'Gain 10 luck (max 30). Improves supported chances, spawn rolls and positive buff durations.',
+ 'Role Draft':'Choose a role; spawn 3–7 special frogs. Luck favors more.'
+ };
+ const style=document.createElement('style');
+ style.textContent='#runPauseOverlay[data-view="guide"] .pause-row img{scale:.88;transform-origin:center;}';
+ document.head.appendChild(style);
+ function polish(){
+  document.querySelectorAll('#runPauseOverlay[data-view="guide"] .pause-guide-entries .pause-row').forEach(row=>{
+   const name=row.querySelector('strong')?.textContent.trim();const p=row.querySelector('p');
+   if(p && descriptions[name] && p.textContent!==descriptions[name])p.textContent=descriptions[name];
+  });
+ }
+ new MutationObserver(polish).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-view']});polish();
+})();
