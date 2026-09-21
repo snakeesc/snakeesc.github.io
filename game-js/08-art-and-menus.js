@@ -62,3 +62,6 @@ window.approvedFrogs["cannibal-5"]="./game-assets/sprites/approved/frog-cannibal
 window.approvedFrogs.cannibal=window.approvedFrogs["cannibal-0"];
 
 window.approvedUpgrades["eye for eye"]="./game-assets/sprites/approved/upgrade-eye-for-eye.png";
+
+window.approvedUpgrades["wild company"]="./game-assets/sprites/approved/upgrade-wild-company.png";
+window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-greedy-hand.png";

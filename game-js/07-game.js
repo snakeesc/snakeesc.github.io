@@ -908,6 +908,8 @@ function rollFrogCosmetics() {
   let frogsEatenCount = 0; // grow one segment every 2 frogs
   let latestCompletedRun = null;
 let extraUpgradeOptionActive = false;
+let greedyHandUsed = false;
+let greedyHandQueue = null;
   // UI + audio toggles
   let soundEnabled      = true;
   let statsPanelVisible = true;
@@ -1208,9 +1210,7 @@ const MAX_LUCK = 30;
   const pauseGuide = [
     ['Common','Mutation','Frogs hop 15% faster and 15% higher, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
-    ['Common','Poison Toads','Spawn 1–3 Poison Toads. Luck favors larger batches.'],
-    ['Common','Bull Frog','Spawn 1–3 Bull Frogs. Each survives one bite and leaps away.'],
-    ['Common','Magnet Frogs','Spawn 1–3 Magnet Frogs that attract orbs.'],
+    ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
     ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
@@ -1231,6 +1231,7 @@ const MAX_LUCK = 30;
     ['Epic','Snake Egg','Targets the lowest-shed snake when selected. It gains 25% less added speed from its remaining sheds. Other and future snakes are unaffected.'],
     ['Epic','Brittle Scales','Halves snake debuff resistance.'],
     ['Epic','Chain Reaction','An orb pickup has a 15% chance to trigger an additional orb effect.'],
+    ['Epic','Greedy Hand','Requires Loaded Hand; 20% chance to appear per epic offer. Take all other offered upgrades, then another snake enters. Once per run. Never offered alongside Eye for Eye.'],
     ['Epic','Loaded Hand','Future upgrade menus offer four choices instead of three.'],
     ['Epic','Tidal Wave','Spawns as many frogs as are currently alive, up to the population cap.'],
     ['Epic','Eye for Eye','Once per run, with at least 2 snakes: kill the slowest snake and reduce the frog cap to 55. Excess frogs die immediately without revival or death rewards.'],
@@ -1240,17 +1241,17 @@ const MAX_LUCK = 30;
     ['Epic','Grave Wave','Each shed spawns 10–15 frogs.'],
     ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
     ['Epic','Promotion','Adds a crown level to up to 10 random frogs, within crown limits.'],
-    ['Epic','Frog Scatter','Rescatters the swarm, preserving roles, crowns and remaining defenses. Once per run.'],
+    ['Epic','Frog Scatter','Respawns the swarm with roles, crowns and stats intact, triggering death effects. Bonus frogs respect the population cap. Once per run.'],
     ['Epic','Molt Fortune','Drops 5–10 orbs when the snake sheds.'],
     ['Frogs','Crowned','Permanently improved movement. Can gain up to three crown levels.'],
     ['Frogs','Aura','Nearby frogs gain 12% shorter hop timing and 12% higher jumps. Overlapping auras stack, within movement caps.'],
     ['Frogs','Shield','Temporary protection from snake bites.'],
     ['Frogs','Magnet','Attracts nearby orbs.'],
-    ['Frogs','Lucky','Improves the value of its orb pickups and contributes a score bonus.'],
+    ['Frogs','Lucky','Improves orb pickups and contributes a score bonus. Its pickups cannot trigger Panic Hop.'],
     ['Frogs','Zombie','Sacrifices itself to end Panic Hop for the swarm. Spawns one ordinary frog on any death.'],
     ['Frogs','Cannibal','Eats up to 5 ordinary frogs, gaining 5% shorter hop timing and 5% higher jumps per meal. On death, spawns 2–5 frogs, never more than it ate.'],
     ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs.'],
-    ['Frogs','Alchemist','Drops an orb every 12 seconds.'],
+    ['Frogs','Alchemist','Drops an orb every 10–15 seconds.'],
     ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
     ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.']
   ];
@@ -1352,10 +1353,12 @@ const MAX_LUCK = 30;
     style.textContent += "\n#runPauseOverlay[data-view=\"run\"] {--p:1px;background:rgba(8,48,29,.20);}\n#runPauseOverlay[data-view=\"run\"] .pause-panel {width:calc(368 * var(--p));max-width:90vw;padding:0;border:calc(3 * var(--p)) solid #083b27;border-radius:7px;box-shadow:calc(3 * var(--p)) calc(4 * var(--p)) 0 #466e35;}\n#runPauseOverlay[data-view=\"run\"] h2 {background:#083b27;color:#fff8dc;font-size:calc(27 * var(--p));letter-spacing:calc(1 * var(--p));padding:calc(16 * var(--p));margin:0;}\n#runPauseOverlay[data-view=\"run\"] .pause-content {padding:0 calc(20 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-party {display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:calc(12 * var(--p));padding:calc(20 * var(--p)) 0 calc(16 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-party-frogs {display:flex;align-items:end;justify-content:center;gap:calc(2 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-party-frogs img {width:calc(39 * var(--p));height:calc(39 * var(--p));object-fit:contain;image-rendering:pixelated;}\n#runPauseOverlay[data-view=\"run\"] .pause-party-frogs img:nth-child(2) {width:calc(49 * var(--p));height:calc(49 * var(--p));margin-bottom:calc(7 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-party-score {text-align:center;}\n#runPauseOverlay[data-view=\"run\"] .pause-party-score span {display:block;font-size:calc(14 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-party-score strong {display:block;font-weight:400;font-size:calc(38 * var(--p));line-height:1.1;color:#087f86;}\n#runPauseOverlay[data-view=\"run\"] .pause-party-score small {font-size:calc(16 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-ledger {display:grid;grid-template-columns:repeat(4,1fr);margin:0;padding:calc(12 * var(--p)) 0;border-top:1px solid #b5c78c;border-bottom:1px solid #b5c78c;gap:calc(6 * var(--p));text-align:center;}\n#runPauseOverlay[data-view=\"run\"] .pause-ledger dt {font-size:calc(14 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-ledger dd {margin:calc(4 * var(--p)) 0 0;font-size:calc(19 * var(--p));color:#087f86;}\n#runPauseOverlay[data-view=\"run\"] h3 {font-size:calc(18 * var(--p));font-weight:400;text-align:left;margin:calc(16 * var(--p)) 0 calc(8 * var(--p));padding:0;border:0;display:flex;justify-content:space-between;}\n#runPauseOverlay[data-view=\"run\"] h3 span {color:#087f86;}\n#runPauseOverlay[data-view=\"run\"] .pause-upgrade-grid {display:grid;grid-template-columns:1fr;gap:calc(3 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-row {padding:calc(5 * var(--p)) 0;gap:calc(10 * var(--p));border:0;}\n#runPauseOverlay[data-view=\"run\"] .pause-row img {width:calc(29 * var(--p));height:calc(29 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-row strong {font-size:calc(19 * var(--p));font-weight:400;line-height:1.2;}\n#runPauseOverlay[data-view=\"run\"] .pause-effect-list,#runPauseOverlay[data-view=\"run\"] .pause-empty {font-size:calc(16 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-footer {display:grid;grid-template-columns:1fr 1fr;gap:0;margin:calc(16 * var(--p)) calc(20 * var(--p)) calc(10 * var(--p));padding:calc(8 * var(--p)) 0 0;border-top:1px solid #b5c78c;}\n#runPauseOverlay[data-view=\"run\"] .pause-footer button {font-size:calc(18 * var(--p));min-height:calc(42 * var(--p));padding:calc(9 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-footer [data-action=\"resume\"] {grid-column:1/-1;font-size:calc(29 * var(--p));padding:calc(10 * var(--p));}\n@media(pointer:coarse) {#runPauseOverlay[data-view=\"run\"] {--p:calc(100vw / 430);}}\n";
     style.textContent += "\n#runPauseOverlay[data-view=\"guide\"] {--g:1px;}\n#runPauseOverlay[data-view=\"guide\"] .pause-panel {width:calc(410 * var(--g));max-width:92vw;background:#083b27;padding:calc(14 * var(--g));border:3px solid #083b27;border-radius:7px;}\n#runPauseOverlay[data-view=\"guide\"] .pause-content {padding:0;}\n#runPauseOverlay[data-view=\"guide\"] .pause-tabs {border:0;margin:0 0 calc(6 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-tabs button,#runPauseOverlay[data-view=\"guide\"] .pause-footer button,#runPauseOverlay[data-view=\"guide\"] .pause-pages button,#runPauseOverlay[data-view=\"guide\"] .pause-pages span {color:#fff8dc;font-size:calc(19 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters {gap:calc(8 * var(--g));margin-bottom:calc(12 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters button {color:#fff8dc;font-size:calc(20 * var(--g));padding:calc(8 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters button[aria-selected=true] {color:#c6ed78;}\n#runPauseOverlay[data-view=\"guide\"] .pause-guide-entries {display:grid;gap:calc(8 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-guide-entries .pause-row {display:grid;grid-template-columns:calc(43 * var(--g)) 1fr;align-items:center;gap:calc(12 * var(--g));background:#fff8dc;border:0;padding:calc(14 * var(--g));clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);}\n#runPauseOverlay[data-view=\"guide\"] .pause-row img {width:calc(43 * var(--g));height:calc(43 * var(--g));object-fit:contain;image-rendering:pixelated;}\n#runPauseOverlay[data-view=\"guide\"] .pause-row strong {font-size:calc(22 * var(--g));line-height:1.12;font-weight:400;}\n#runPauseOverlay[data-view=\"guide\"] .pause-row p {font-size:calc(18 * var(--g));line-height:1.25;margin:calc(5 * var(--g)) 0 0;}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages {margin-top:calc(12 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages button:disabled {opacity:.35;}\n#runPauseOverlay[data-view=\"guide\"] .pause-footer {margin-top:calc(10 * var(--g));border-color:#497b36;padding-top:calc(8 * var(--g));}\n@media(pointer:coarse) {#runPauseOverlay[data-view=\"guide\"] {--g:calc(100vw / 450);}}\n";
     style.textContent += "\n#runPauseOverlay[data-view=\"run\"] .guide-pagination-slot {display:none;}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(5 * var(--g));margin:calc(3 * var(--g)) 0 calc(14 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters button {font-size:calc(23 * var(--g));line-height:1.1;min-height:calc(46 * var(--g));padding:calc(10 * var(--g)) calc(4 * var(--g));background:#28543d;color:#fff8dc;border:0;letter-spacing:0;text-decoration:none;clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px);}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters button[aria-selected=\"true\"] {background:#fff8dc;color:#083b27;text-decoration:none;}\n#runPauseOverlay[data-view=\"guide\"] .pause-footer {display:grid;grid-template-columns:1fr 1fr;gap:calc(4 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .guide-pagination-slot {grid-column:1/-1;}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages {display:flex;align-items:center;justify-content:space-between;margin:0 0 calc(6 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages button,#runPauseOverlay[data-view=\"guide\"] .pause-pages span {font-size:calc(20 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-footer .guide-back {grid-column:1/-1;font-size:calc(25 * var(--g));min-height:calc(44 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-footer button {padding:calc(10 * var(--g)) calc(5 * var(--g));min-height:calc(44 * var(--g));}\n";
+    style.textContent += "\n@font-face{font-family:GuidePixel;src:url(\"game-assets/fonts/jersey10.ttf\") format(\"truetype\");font-display:swap;}\n#runPauseOverlay[data-view=\"guide\"]{--g:1px;}\n#runPauseOverlay[data-view=\"guide\"] *{font-family:GuidePixel,monospace!important;}\n#runPauseOverlay[data-view=\"guide\"] .pause-panel{width:calc(440 * var(--g));max-width:92vw;padding:0;background:#fff8dc;border:3px solid #0b3a25;border-radius:8px;box-shadow:4px 5px 0 #538e3e;}\n#runPauseOverlay[data-view=\"guide\"] .guide-heading{padding:calc(22 * var(--g)) calc(24 * var(--g)) 0;flex-shrink:0;}\n#runPauseOverlay[data-view=\"guide\"] .guide-eyebrow{font-size:calc(17 * var(--g));letter-spacing:calc(2 * var(--g));color:#4b7139;margin:0 0 calc(3 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .guide-heading h2{font-size:calc(36 * var(--g));font-weight:400;text-align:left;margin:0;line-height:1;color:#0b3a25;}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(12 * var(--g));margin:calc(20 * var(--g)) 0 0;border-bottom:2px solid #bdcf93;}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters button{font-size:calc(24 * var(--g));padding:calc(8 * var(--g)) 0 calc(10 * var(--g));background:transparent;border:0;border-bottom:3px solid transparent;border-radius:0;clip-path:none;margin-bottom:-2px;color:#567143;min-height:calc(44 * var(--g));text-decoration:none;}\n#runPauseOverlay[data-view=\"guide\"] .pause-filters button[aria-selected=true]{background:transparent;color:#093923;border-bottom-color:#093923;text-decoration:none;}\n#runPauseOverlay[data-view=\"guide\"] .pause-content{padding:0 calc(24 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-guide-entries{display:block;}\n#runPauseOverlay[data-view=\"guide\"] .pause-guide-entries .pause-row{display:grid;grid-template-columns:calc(46 * var(--g)) 1fr;gap:calc(15 * var(--g));padding:calc(17 * var(--g)) 0;border:0;border-bottom:1px solid #d5ddae;background:transparent;clip-path:none;align-items:start;}\n#runPauseOverlay[data-view=\"guide\"] .pause-guide-entries .pause-row:last-child{border:0;}\n#runPauseOverlay[data-view=\"guide\"] .pause-row img{width:calc(46 * var(--g));height:calc(46 * var(--g));margin-top:calc(3 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-row strong{font-size:calc(25 * var(--g));line-height:1.05;font-weight:400;color:#0b3a25;}\n#runPauseOverlay[data-view=\"guide\"] .pause-row p{font-size:calc(21 * var(--g));line-height:1.2;margin:calc(5 * var(--g)) 0 0;color:#264c32;}\n#runPauseOverlay[data-view=\"guide\"] .pause-footer{display:block;padding:calc(10 * var(--g)) calc(24 * var(--g)) calc(16 * var(--g));margin:0;border-top:2px solid #bdcf93;}\n#runPauseOverlay[data-view=\"guide\"] .pause-footer>[data-action],#runPauseOverlay[data-view=\"guide\"] .pause-footer-guide{display:none;}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages{display:grid;grid-template-columns:1fr auto 1fr;gap:calc(12 * var(--g));margin:0;align-items:center;}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages button{font-size:calc(22 * var(--g));padding:calc(10 * var(--g)) 0;color:#0b3a25;min-height:calc(44 * var(--g));}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages button:first-child{text-align:left;}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages button:last-child{text-align:right;}\n#runPauseOverlay[data-view=\"guide\"] .pause-pages span{font-size:calc(20 * var(--g));color:#45663b;}\n#runPauseOverlay[data-view=\"guide\"] .pause-footer .guide-back{width:100%;display:block;font-size:calc(25 * var(--g));padding:calc(8 * var(--g));color:#0b3a25;min-height:calc(44 * var(--g));}\n@media(pointer:coarse){#runPauseOverlay[data-view=\"guide\"]{--g:calc(100vw / 470);}}\n";
+    style.textContent += "\n#runPauseOverlay[data-view=\"run\"]{--p:1px;}\n#runPauseOverlay[data-view=\"run\"] *{font-family:GuidePixel,monospace!important;font-weight:400;font-synthesis:none;}\n#runPauseOverlay[data-view=\"run\"] .pause-panel{width:calc(440 * var(--p));max-width:92vw;padding:calc(24 * var(--p));background:#fff8dc;border:3px solid #0b3a25;border-radius:8px;box-shadow:4px 5px 0 #538e3e;}\n#runPauseOverlay[data-view=\"run\"] #pauseTitle{text-align:left;font-size:calc(36 * var(--p));line-height:1;margin:0 0 calc(20 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] #pauseTitle:before{content:\"ESCAPE THE SNAKE\";display:block;font-size:calc(17 * var(--p));letter-spacing:calc(2 * var(--p));color:#4b7139;margin-bottom:calc(5 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-content{padding:0;min-height:0;overflow-y:auto;}\n#runPauseOverlay[data-view=\"run\"] .pause-run-summary{display:grid;grid-template-columns:1fr 1fr;gap:calc(20 * var(--p));padding-bottom:calc(15 * var(--p));border-bottom:2px solid #bdcf93;}\n#runPauseOverlay[data-view=\"run\"] .pause-run-summary span{display:block;font-size:calc(21 * var(--p));color:#45663b;}\n#runPauseOverlay[data-view=\"run\"] .pause-run-summary strong{display:block;font-size:calc(34 * var(--p));color:#087985;}\n#runPauseOverlay[data-view=\"run\"] .pause-ledger{display:grid;grid-template-columns:1fr 1fr;gap:calc(9 * var(--p)) calc(24 * var(--p));margin:calc(15 * var(--p)) 0;font-size:calc(21 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-ledger div{display:flex;justify-content:space-between;gap:calc(8 * var(--p));border:0;padding:0;}\n#runPauseOverlay[data-view=\"run\"] .pause-ledger dt,#runPauseOverlay[data-view=\"run\"] .pause-ledger dd{margin:0;font-size:inherit;}\n#runPauseOverlay[data-view=\"run\"] .pause-ledger dd{color:#087985;}\n#runPauseOverlay[data-view=\"run\"] h3{display:flex;justify-content:space-between;text-align:left;font-size:calc(24 * var(--p));border-top:2px solid #bdcf93;padding-top:calc(14 * var(--p));margin:calc(16 * var(--p)) 0 calc(6 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-upgrade-grid{display:block;}\n#runPauseOverlay[data-view=\"run\"] .pause-row{display:flex;gap:calc(12 * var(--p));padding:calc(9 * var(--p)) 0;border-bottom:1px solid #d5ddae;background:transparent;}\n#runPauseOverlay[data-view=\"run\"] .pause-row img{width:calc(30 * var(--p));height:calc(30 * var(--p));object-fit:contain;image-rendering:pixelated;}\n#runPauseOverlay[data-view=\"run\"] .pause-row strong{font-size:calc(23 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-effect-list,#runPauseOverlay[data-view=\"run\"] .pause-empty{font-size:calc(21 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-footer{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid #bdcf93;padding:calc(10 * var(--p)) 0 0;margin-top:calc(16 * var(--p));gap:0;}\n#runPauseOverlay[data-view=\"run\"] .pause-footer button{background:transparent;border:0;color:#0b3a25;font-size:calc(23 * var(--p));padding:calc(10 * var(--p)) 0;min-height:calc(44 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .pause-footer [data-action=\"resume\"]{grid-column:1/-1;font-size:calc(29 * var(--p));}\n#runPauseOverlay[data-view=\"run\"] .guide-pagination-slot{display:none;}\n@media(pointer:coarse){#runPauseOverlay[data-view=\"run\"]{--p:calc(100vw / 470);}}\n";
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
-    pauseMenu.innerHTML=`<div class="pause-panel"><h2 id="pauseTitle">Paused</h2><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-view="run" hidden>Back to run</button><button data-action="resume">Resume</button><button class="pause-footer-guide" data-view="guide">Field Guide</button><button data-action="end">End Run</button></footer></div>`;
+    pauseMenu.innerHTML=`<div class="pause-panel"><h2 id="pauseTitle">Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-view="run" hidden>Back to pause menu</button><button data-action="resume">Resume</button><button class="pause-footer-guide" data-view="guide">Field Guide</button><button data-action="end">End Run</button></footer></div>`;
     document.body.appendChild(pauseMenu);
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
@@ -1381,6 +1384,8 @@ const MAX_LUCK = 30;
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
     else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
     pauseMenu.querySelector('.guide-back').hidden=view!=='guide';
+    pauseMenu.querySelector('.guide-heading').hidden=view!=='guide';
+    pauseMenu.querySelector('.guide-category-slot').replaceChildren();
     pauseMenu.querySelector('.guide-pagination-slot').replaceChildren();
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
@@ -1389,14 +1394,15 @@ const MAX_LUCK = 30;
       const perPage=4, pages=Math.ceil(entries.length/perPage);
       pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
       content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;
+      pauseMenu.querySelector('.guide-category-slot').appendChild(content.querySelector('.pause-filters'));
       pauseMenu.querySelector('.guide-pagination-slot').appendChild(content.querySelector('.pause-pages'));
       return;
     }
-    const instantIds=new Set(['roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
+    const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
     const upgradeRows=items=>items.map(x=>`<div class="pause-row">${pauseIcon(x.name)}<strong>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</strong></div>`).join('');
     const effects=[['Speed',speedBuffTime],['Jump',jumpBuffTime],['Snake Slow',snakeSlowTime],['Snake Confusion',snakeConfuseTime],['Snake Shrink',snakeShrinkTime],['Frog Shield',frogShieldTime],['Orb Magnet',orbMagnetTime],['Score Multiplier',scoreMultiTime],['Panic Hop',panicHopTime],['Life Steal',lifeStealTime],['Time Slow',timeSlowTime],['Clone Swarm',cloneSwarmTime]].filter(x=>x[1]>0);
-    content.innerHTML=`<section class="pause-party"><div class="pause-party-frogs"><img src="game-assets/sprites/approved/frog-bull.png" alt=""><img src="game-assets/sprites/approved/frog-crowned.png" alt=""><img src="game-assets/sprites/approved/frog-cannibal.png" alt=""></div><div class="pause-party-score"><span>YOUR RUN</span><strong>${Math.floor(score).toLocaleString()}</strong><small>${formatTime(elapsedTime)} survived</small></div></section><dl class="pause-ledger"><div><dt>Frogs</dt><dd>${frogs.length} / ${maxFrogsCap}</dd></div><div><dt>Luck</dt><dd>${luckStat} / ${MAX_LUCK}</dd></div><div><dt>Revival</dt><dd>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</dd></div><div><dt>Sheds</dt><dd>${snakeShedCount}</dd></div></dl><section class="pause-kit"><h3>Your upgrades <span>${current.reduce((n,x)=>n+x.count,0)}</span></h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p class="pause-empty">Your adventure is just beginning.</p>'}</section>${effects.length?'<section class="pause-timers"><h3>Active effects</h3><div class="pause-effect-list">'+effects.map(([name,time])=>`<span>${name} <b>${time.toFixed(1)}s</b></span>`).join('')+'</div></section>':''}`;
+    content.innerHTML=`<section class="pause-run-summary"><div><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong></div><div><span>Survived</span><strong>${formatTime(elapsedTime)}</strong></div></section><dl class="pause-ledger"><div><dt>Frogs</dt><dd>${frogs.length} / ${maxFrogsCap}</dd></div><div><dt>Luck</dt><dd>${luckStat} / ${MAX_LUCK}</dd></div><div><dt>Revival</dt><dd>${Math.round(computeDeathRattleChanceForFrog(null)*100)}%</dd></div><div><dt>Sheds</dt><dd>${snakeShedCount}</dd></div></dl><section class="pause-kit"><h3>Current upgrades <span>${current.reduce((n,x)=>n+x.count,0)}</span></h3>${current.length?'<div class="pause-upgrade-grid">'+upgradeRows(current)+'</div>':'<p class="pause-empty">No lasting upgrades yet.</p>'}</section>${effects.length?'<section class="pause-timers"><h3>Active effects</h3><div class="pause-effect-list">'+effects.map(([name,time])=>`<span>${name} <b>${time.toFixed(1)}s</b></span>`).join('')+'</div></section>':''}`;
 
   }
   function openPauseMenu() {
@@ -2006,6 +2012,7 @@ function snakeShed(stage) {
       segments,
       path,
       snakeEggProtected: !!oldSnake.snakeEggProtected,
+      scissorsOwner: !!oldSnake.scissorsOwner,
       shedStage: stage,
       speedFactor: newSpeedFactor,
       canGrow: true
@@ -2014,7 +2021,7 @@ function snakeShed(stage) {
     applySnakeAppearance();
 
     // Re-trigger Scissors Remnant Chase if needed
-    if (scissorsRemnantSegments.length > 0) {
+    if (snake.scissorsOwner && scissorsRemnantSegments.length > 0) {
       snakeEatingOldBody = true;
       snakeOldBodySpeedBonusPending = true;
       snakeOldBodyChaseTime = 0;
@@ -2068,7 +2075,7 @@ function snakeShed(stage) {
       ds.nextDespawnTime -= dt;
 
       if (ds.nextDespawnTime <= 0) {
-        // Reset timer between chunks
+        // Independently roll the next drop. between chunks
         ds.nextDespawnTime = 0.08; // ~12–13 segments per second
 
         // 1) Remove one body segment at a time
@@ -2780,7 +2787,7 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
-  frog.alchemistTimer = 12.0; // Drops an orb every 12s
+  frog.alchemistTimer = randRange(10, 15); // Independently roll the first drop.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -2796,7 +2803,7 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
-  frog.alchemistTimer = 12.0; // Drops an orb every 12s
+  frog.alchemistTimer = randRange(10, 15); // Independently roll the first drop.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -3114,7 +3121,7 @@ function showRoleDraftOverlayChoices() {
             : role.id === "zombie"
             ? "Sacrifices itself to stop Panic Hop. Spawns one frog on death."
             : role.id === "alchemist"
-            ? "Drops an orb every 12 seconds."
+            ? "Drops an orb every 10–15 seconds."
             : role.id === "necromancer"
             ? "Deathrattle revivals become Zombies."
             : "Special frog role."
@@ -3346,6 +3353,7 @@ function applyPairOfScissors() {
   original.segments = frontSegments;
   original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.80);
   original.canGrow = false;
+  original.scissorsOwner = true;
 
   // Mark the cut point on the living snake
   const frontLast = frontSegments[frontSegments.length - 1];
@@ -3576,6 +3584,13 @@ function computeDeathRattleChanceForFrog(frog) {
     // On-death effects: zombie, global + per-frog deathrattle, Lifeline, Last Stand
     // -----------------------------
 
+    applyFrogDeathRewards(frog, source, wasLastFrog, cannibalMeals, deathX, deathY);
+
+    return true; // a frog actually died
+  }
+
+
+  function applyFrogDeathRewards(frog, source, wasLastFrog, cannibalMeals, deathX, deathY) {
     // Role death spawns apply regardless of cause; Scatter is a relocation, not a death.
     if (frog.isZombie) spawnExtraFrogs(1);
     if (cannibalMeals > 0) spawnExtraFrogs(cannibalMeals === 1 ? 1 : 2 + Math.floor(Math.random() * (cannibalMeals - 1)));
@@ -3624,9 +3639,7 @@ function computeDeathRattleChanceForFrog(frog) {
       spawnOrb(null, deathX, deathY);
     }
 
-    return true; // a frog actually died
   }
-
 
   function killRandomFrogs(count, source) {
     let killed = 0;
@@ -3640,8 +3653,17 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
   function scatterFrogSwarm() {
+    // Only the original swarm participates, never newly created death rewards.
+    const original = frogs.slice();
+    const deaths = original.map(f => ({...f}));
     const width = window.innerWidth, height = window.innerHeight;
-    for (const frog of frogs) {
+    for (const frog of original) {
+      // Recreate the visual, while retaining role/crown/meal/defense state.
+      const replacement = frog.el.cloneNode(true);
+      frog.el.remove();
+      frog.el = replacement;
+      if (frog.cloneEl) { frog.cloneEl.remove(); frog.cloneEl = null; }
+      container.appendChild(replacement);
       const x = 16 + Math.random() * Math.max(0, width - 32 - FROG_SIZE);
       const y = 16 + Math.random() * Math.max(0, height - 32 - FROG_SIZE);
       frog.x = frog.hopStartX = frog.hopEndX = x;
@@ -3650,10 +3672,16 @@ function computeDeathRattleChanceForFrog(frog) {
       frog.hopTime = 0;
       frog.idleTime = randRange(frog.idleMin, frog.idleMax);
       frog.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      if (frog.cloneEl) frog.cloneEl.style.transform = frog.el.style.transform;
+      refreshFrogPermaGlow(frog);
+      updateFrogRoleEmoji(frog);
+    }
+    for (const dead of deaths) {
+      tryLastingLegacy(dead, "scatterDeath");
+      applyFrogDeathRewards(dead, "scatter", deaths.length === 1,
+        dead.isCannibal ? Math.min(5, dead.cannibalMeals || 0) : 0,
+        dead.x + FROG_SIZE / 2, dead.baseY + FROG_SIZE / 2);
     }
   }
-
 
   // EPIC: spawn a Cannibal Frog
   function spawnCannibalFrog() {
@@ -3682,6 +3710,10 @@ function computeDeathRattleChanceForFrog(frog) {
 
   function applyBuff(type, frog, durationMultiplier = 1, fixedDuration = false) {
     const isLuckyCollector = frog && frog.isLucky;
+    // Lucky collectors reroll negative orb results, including chain reactions.
+    if (isLuckyCollector && type === "panicHop") {
+      type = getRandomTriggeredOrbBuffType(["panicHop"]);
+    }
     const durBoost = isLuckyCollector
       ? LUCKY_BUFF_DURATION_BOOST
       : 1.0;
@@ -4072,7 +4104,7 @@ function computeDeathRattleChanceForFrog(frog) {
         frog.alchemistTimer -= dt;
         if (frog.alchemistTimer <= 0) {
           spawnOrb(null, frog.x, frog.y); // Drops random orb
-          frog.alchemistTimer = 12.0;     // Reset timer
+          frog.alchemistTimer = randRange(10, 15);     // Independently roll the next drop.
         }
       }
     }
@@ -4731,7 +4763,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     let targetRemnant = null;
     let bestRemnantDist2 = Infinity;
 
-    if (!isMainMenu && snakeObj === snake && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
+    if (!isMainMenu && snakeObj.scissorsOwner && snakeEatingOldBody && scissorsRemnantSegments.length > 0) {
       snakeOldBodyChaseTime += dt;
       for (const seg of scissorsRemnantSegments) {
         const dx = (seg.x + SNAKE_SEGMENT_SIZE / 2) - head.x;
@@ -4742,10 +4774,7 @@ function samplePathAtDistance(path, startIdx, dist) {
           targetRemnant = seg;
         }
       }
-      if (snakeOldBodyChaseTime > 12.0) {
-        snakeEatingOldBody = false;
-        snakeLastRemnantTarget = null;
-      }
+
     }
 
     for (const frog of frogList) {
@@ -4891,7 +4920,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       }
     }
 
-    if (snakeEatingOldBody && snakeObj === snake && scissorsRemnantSegments.length > 0) {
+    if (snakeEatingOldBody && snakeObj.scissorsOwner && scissorsRemnantSegments.length > 0) {
       const remR2 = Math.pow(SNAKE_SEGMENT_SIZE * 0.8, 2);
       for (let i = scissorsRemnantSegments.length - 1; i >= 0; i--) {
         const s = scissorsRemnantSegments[i];
@@ -4966,9 +4995,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes flee your frogs", apply:()=>{panicAttackActive=true;}});
-    upgrades.push({id:"poisonRecruits", label:"Poison Toads<br>Spawn 1–3 toads. Confuse the snake when eaten.", apply:()=>spawnRoleBatch("poison",1,3)});
-    upgrades.push({id:"bullRecruits", label:"Bull Frog<br>Spawn 1–3 Bull Frogs. Survive one bite and leap to safety.", apply:()=>spawnRoleBatch("bull",1,3)});
-    upgrades.push({id:"magnetRecruits", label:"Magnet Frogs<br>Spawn 1–3 orb-attracting Magnet Frogs.", apply:()=>spawnRoleBatch("magnet",1,3)});
+
+    upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn 1–3 special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],1,3)});
 
     if (!nightBloomActive) {
       upgrades.push({
@@ -5151,7 +5179,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     });
     if (!bruisedEggActive && snake) upgrades.push({
       id: "bruisedEgg",
-      label: "Snake Egg<br>The lowest-shed snake gains <span>25%</span> less speed per shed",
+      label: "Snake Egg<br>Snake gains <span>25%</span> less speed per shed",
       apply: applySnakeEggToLowestShedSnake
     });
     if (!brittleScalesActive) upgrades.push({
@@ -5252,7 +5280,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!frogScatterUsed && frogs.length > 0) {
       upgrades.push({
         id: "frogScatter",
-        label: `🌪️ Frog Scatter<br>Rescatter <span style="color:${epicTitleColor};">all</span> frogs. Keep roles and crowns`,
+        label: `🌪️ Frog Scatter<br>Respawn all frogs. Keep roles and crowns; trigger death effects`,
         apply: () => { frogScatterUsed = true; scatterFrogSwarm(); }
       });
     }
@@ -5807,7 +5835,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Grave Wave", desc: `Every shed spawns ${fmtRange(GRAVE_WAVE_MIN_GHOSTS, GRAVE_WAVE_MAX_GHOSTS)} uncontrollable ghost frogs.` },
       { title: "Orb Specialist", desc: `Every orb guarantees ${statHighlight("1")} frog; Orb Collector rolls can add more.` },
       { title: "Fragile Reality", desc: `Doubles buff duration caps but halves orb spawn speed going forward.` },
-      { title: "Frog Scatter", desc: `Wipe and respawn every frog with fresh roles; deathrattles still trigger.` },
+      { title: "Frog Scatter", desc: `Respawn every frog with roles and crowns intact; trigger death effects.` },
       { title: "Eye for an Eye", desc: `Kill the slowest snake and half your frogs; frog cap drops to ${statHighlight(50)}.` }
     ];
 
@@ -7073,6 +7101,14 @@ function initUpgradeOverlay() {
 
   function selectUpgrade(choice) {
     if (!choice) return;
+    if (choice.id === "greedyHand") {
+      if (greedyHandUsed) return;
+      greedyHandUsed = true;
+      rememberRunUpgrade(choice);
+      greedyHandQueue = currentUpgradeChoices.filter(c=>c.id!=="greedyHand" && c.id!=="eyeForEye");
+      closeUpgradeOverlay();
+      return;
+    }
     
 
     try {
@@ -7119,6 +7155,10 @@ function initUpgradeOverlay() {
       let pool = getEpicUpgradeChoices().slice();
       if (upgradeOverlayContext === "start") {
         pool = pool.filter(choice => choice.id !== "frogScatter");
+      }
+      if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
+        pool = pool.filter(c=>c.id!=="eyeForEye");
+        choices.push({id:"greedyHand",label:"Greedy Hand<br>Take every offered upgrade. Another snake joins.",apply:()=>{}});
       }
       while (choices.length < optionCount && pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
@@ -7209,20 +7249,9 @@ function initUpgradeOverlay() {
       `;
 
       btn.addEventListener("click", () => {
-        
-
-        if (choice.opensRoleDraft) {
-          rememberRunUpgrade(choice);
-          choice.apply();
-          
-          return;
-        }
-
-        choice.apply();
-        rememberRunUpgrade(choice);
-        showUpgradeFeedback(choice, btn);
-
-        closeUpgradeOverlay();
+        if (btn.disabled) return;
+        containerEl.querySelectorAll('button').forEach(button=>button.disabled=true);
+        selectUpgrade(choice);
         updateUpgradeBuffSummary();
       });
 
@@ -7264,7 +7293,7 @@ function initUpgradeOverlay() {
     if (panicAttackActive) items.push("<strong>Panic Attack:</strong> Confused snakes flee frogs");
     if (roleCounts.poison) items.push(`<strong>Poison Toads:</strong> ${roleCounts.poison}`);
     if (lingeringHexActive) items.push("<strong>Lingering Hex:</strong> +15% snake debuff duration, excluding Lucky Roll");
-    if (lastingLegacyActive) items.push("<strong>Lasting Legacy:</strong> 20% role inheritance chance; excludes Frog Scatter");
+    if (lastingLegacyActive) items.push("<strong>Lasting Legacy:</strong> 20% role inheritance chance, including Frog Scatter");
     if (brittleScalesActive) items.push("<strong>Brittle Scales:</strong> Snake resistance halved");
 
 
@@ -7457,6 +7486,18 @@ function startRunFromMenu() {
   }
 
   function closeUpgradeOverlay() {
+    if (greedyHandQueue) {
+      while (greedyHandQueue.length) {
+        const next = greedyHandQueue.shift();
+        rememberRunUpgrade(next);
+        next.apply();
+        if (next.opensRoleDraft) return;
+        showUpgradeFeedback(next);
+      }
+      greedyHandQueue = null;
+      const newcomer = spawnAdditionalSnake(window.innerWidth, window.innerHeight);
+      if (newcomer) { newcomer.shedStage = 0; extraSnakes.push(newcomer); }
+    }
     const shouldOpenEpicNow =
       !gameOver && epicChainPending && currentUpgradeOverlayMode === "normal";
 
@@ -7680,6 +7721,8 @@ panicAttackActive = false;
     mouse.follow    = false;
     latestCompletedRun = null;
 extraUpgradeOptionActive = false;
+greedyHandUsed = false;
+greedyHandQueue = null;
     // Reset upgrade timing
     // Reset upgrade timing / sheds
     // Reset upgrade timing / sheds
