@@ -1207,6 +1207,7 @@ const MAX_LUCK = 30;
   let pauseMenu = null;
   let pauseGuideFilter = 'Common';
   let pauseGuidePage = 0;
+  let pauseUpgradePage = 0;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
@@ -1256,20 +1257,12 @@ const MAX_LUCK = 30;
     ['Frogs','Alchemist','Adds 2.5% orb spawn rate while alive. Alchemists add up to 10%; combined bonus caps at 17%.'],
     ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
     ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.'],
-    ['Mechanics','Luck & duration','Each 10 luck adds 10% to eligible orb durations, up to 30%. Panic Hop and Lucky Roll do not receive this bonus.'],
-    ['Mechanics','Luck & rewards','Each 10 luck adds 5 percentage points to supported chances, up to each effect’s cap. Luck also favors larger spawn batches; it does not guarantee the maximum.'],
-    ['Mechanics','Snake resistance','All snakes count together: +3 percentage points per segment above 12, plus 4 per shed. Resistance caps at 75%; Brittle Scales halves it.'],
-    ['Mechanics','Debuff timing','Slow starts at 12s; Confusion and Shrink at 10s. Timers run faster with resistance: duration ÷ (1 + resistance). At 75%, 10s lasts about 5.7s.'],
-    ['Mechanics','Duration bonuses','Lingering Hex adds 15% to snake debuffs. Lucky Frogs add 50% to eligible collected-orb durations. These multiply with luck and other duration bonuses. Lucky Roll uses its own fixed +50%.'],
-    ['Mechanics','Repeat pickups','An active effect keeps whichever is longer: its remaining timer or the new pickup’s duration. Picking it up again never shortens the timer.'],
-    ['Mechanics','Crowning','An ordinary frog’s Crowning pickup has a fixed 35% chance to grant a random role instead of crown bonuses. Existing special frogs keep their role and gain crown bonuses.'],
-    ['Mechanics','Crowns & roles','Each crown level improves movement, up to 3 levels. When a crowned ordinary frog gains a special role, its crown bonuses are removed. Special frogs can then gain crowns without changing role.']
   ];
   function pauseEscape(value) {
     return String(value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
   function pauseIcon(name) {
-    const key=({'Luck & duration':'luck','Luck & rewards':'luck','Snake resistance':'brittle scales','Debuff timing':'lingering hex','Duration bonuses':'lingering hex','Repeat pickups':'orb flow','Crowning':'crowned','Crowns & roles':'crowned'}[name] || name).toLowerCase();
+    const key=name.toLowerCase();
     const url=window.approvedUpgrades?.[key] || window.approvedFrogs?.[key];
     return url ? `<img src="${pauseEscape(url)}" alt="" loading="lazy">` : '';
   }
@@ -1387,6 +1380,7 @@ const MAX_LUCK = 30;
       e.stopPropagation();const b=e.target.closest('button');if(!b)return;
       if(b.dataset.view) renderPauseContent(b.dataset.view);
       if(b.dataset.filter) { pauseGuidePage=0; renderPauseContent('guide',b.dataset.filter); }
+      if(b.dataset.upgradePage && !b.disabled) { pauseUpgradePage+=Number(b.dataset.upgradePage); renderPauseContent('run'); }
       if(b.dataset.page) { pauseGuidePage+=Number(b.dataset.page); renderPauseContent('guide',pauseGuideFilter); }
       if(b.dataset.action==='resume') closePauseMenu();
       if(b.dataset.action==='end') {
@@ -1427,7 +1421,7 @@ const MAX_LUCK = 30;
       const entries=pauseGuide.filter(x=>x[0]===filter);
       const perPage=4, pages=Math.ceil(entries.length/perPage);
       pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
-      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs','Mechanics'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;
+      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;
       pauseMenu.querySelector('.guide-category-slot').appendChild(content.querySelector('.pause-filters'));
       pauseMenu.querySelector('.guide-pagination-slot').appendChild(content.querySelector('.pause-pages'));
       return;
@@ -1435,16 +1429,21 @@ const MAX_LUCK = 30;
     const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
     const descriptions={'loaded hand':'Four choices at each upgrade pick.','royal apprenticeship':'Spawned roles promote crowned frogs.','snake egg':'Less speed gained when shedding.'};
-    const rows=current.map(x=>`<div class="mp-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b><span>${pauseEscape(descriptions[x.name.toLowerCase()] || (pauseGuide.find(e=>e[0]!=='Frogs' && e[0]!=='Mechanics' && e[1].toLowerCase()===x.name.toLowerCase())||[])[2] || 'Active for this run.')}</span></div></div>`).join('');
+    const upgradesPerPage=4;
+    const upgradePages=Math.max(1,Math.ceil(current.length/upgradesPerPage));
+    pauseUpgradePage=Math.max(0,Math.min(upgradePages-1,pauseUpgradePage));
+    const pageUpgrades=current.slice(pauseUpgradePage*upgradesPerPage,(pauseUpgradePage+1)*upgradesPerPage);
+    const rows=pageUpgrades.map(x=>`<div class="mp-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b><span>${pauseEscape(descriptions[x.name.toLowerCase()] || (pauseGuide.find(e=>e[0]!=='Frogs' && e[1].toLowerCase()===x.name.toLowerCase())||[])[2] || 'Active for this run.')}</span></div></div>`).join('');
     // Representative living frogs, not fictional sample roles.
     const party=[...new Set(frogs.map(f=>f.el?.dataset.approvedRole).filter(Boolean))].slice(0,5);
     const partyArt=party.map(role=>window.approvedFrogs?.[role] ? `<img class="mp-sprite" src="${pauseEscape(window.approvedFrogs[role])}" alt="">` : '').join('');
-    content.innerHTML=menuHeader('A moment to breathe','Paused · your swarm is safe')+
+    content.innerHTML=menuHeader('Paused')+
       `<div class="mp-swarm">${partyArt || '<span class="mp-hint">Your frogs are waiting.</span>'}</div>
       <div class="mp-runline"><span>SCORE<b>${Math.floor(score).toLocaleString()}</b></span><span>TIME<b>${formatTime(elapsedTime)}</b></span></div>
       <div class="mp-facts">${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
       <div class="mp-section-label">YOUR UPGRADES <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
-      ${rows || '<p class="mp-hint">No lasting upgrades yet.</p>'}`;
+      ${rows || '<p class="mp-hint">No lasting upgrades yet.</p>'}
+      ${upgradePages>1 ? `<nav class="mp-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}`;
 
   }
   function openPauseMenu() {
@@ -1452,7 +1451,7 @@ const MAX_LUCK = 30;
     ensurePauseMenu();if(pauseMenu.style.display==='flex')return;
     pauseWasAlreadyPaused=gamePaused;gamePaused=true;
     AudioMod.setShedAudioActive?.(false);
-    renderPauseContent();pauseMenu.style.display='flex';
+    pauseUpgradePage=0;renderPauseContent();pauseMenu.style.display='flex';
     pauseMenu.querySelector('[data-action="resume"]').focus();
   }
   function closePauseMenu() {
@@ -1637,7 +1636,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
       </li>`
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
-  content.innerHTML = menuHeader('Run complete','One more run?')+`
+  content.innerHTML = menuHeader('Run complete')+`
  <div class="mp-bigscore"><span>FINAL SCORE</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong></div>
  <div class="mp-best">${menuSprite('frog-crowned.png')}Personal best · ${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</div>
  <div class="mp-result-details"><div><b>${formatLeaderboardTime(run.time || 0)}</b><span>Survived</span></div><div><b>${run.orbs || 0}</b><span>Orbs</span></div><div><b>${run.sheds || 0}</b><span>Sheds</span></div></div>
@@ -6412,7 +6411,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
   content.innerHTML = menuHeader('My frogs & stats')+`
     <div class="mp-profile"><div class="mp-portrait">${menuSprite('frog-crowned.png')}</div><div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #${bestRecordRank + 1}` : ''}</span></div></div>
     <div class="mp-progress-label"><span>Next level</span><span>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan} orbs</span></div>
-    <div class="mp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i style="background:${i<Math.floor(levelData.progressPercent/5)?'#508d42':'transparent'}!important"></i>`).join('')}</div>
+    <div class="mp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i class="${i<Math.floor(levelData.progressPercent/5)?'is-filled':''}" aria-hidden="true"></i>`).join('')}</div>
     <p class="mp-hint">${levelData.orbsNeededForNextLevel} more orbs to level ${levelData.nextLevel}</p>
     <div class="mp-records">${menuStat('Personal best',leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : '—')}${menuStat('Best-run time',leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime || 0) : '—')}${menuStat('Runs played',localStats.totalRuns || 0)}${menuStat('Orbs collected',localStats.totalOrbsCollected || 0)}</div>
     <label class="mp-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label><div class="mp-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div><p class="mp-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>`;
