@@ -1205,6 +1205,7 @@ const MAX_LUCK = 30;
   if (btnEnd) btnEnd.onclick = ev => { ev.stopPropagation(); openPauseMenu(); };
 
   let pauseMenu = null;
+  let fieldGuideFromHelp = false;
   let pauseGuideFilter = 'Common';
   let pauseGuidePage = 0;
   let pauseUpgradePage = 0;
@@ -1373,11 +1374,12 @@ const MAX_LUCK = 30;
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
-    pauseMenu.innerHTML=`<div class="mp-panel" data-menu-panel><h2 id="pauseTitle" hidden>Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-view="run" hidden>Back to pause menu</button><button data-action="resume">Resume</button><button class="pause-footer-guide" data-view="guide">Field Guide</button><button data-action="end">End Run</button></footer></div>`;
+    pauseMenu.innerHTML=`<div class="mp-panel" data-menu-panel><h2 id="pauseTitle" hidden>Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back to How to Play</button><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
     document.body.appendChild(pauseMenu);
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
       e.stopPropagation();const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.action==='guide-back') { closePauseMenu(); return; }
       if(b.dataset.view) renderPauseContent(b.dataset.view);
       if(b.dataset.filter) { pauseGuidePage=0; renderPauseContent('guide',b.dataset.filter); }
       if(b.dataset.upgradePage && !b.disabled) { pauseUpgradePage+=Number(b.dataset.upgradePage); renderPauseContent('run'); }
@@ -1406,7 +1408,6 @@ const MAX_LUCK = 30;
     footer.className = view === 'guide' ? 'pause-footer' : 'mp-actions';
     footer.querySelector('[data-action="resume"]').textContent='Resume run';
     footer.querySelector('[data-action="resume"]').className=view === 'guide' ? '' : 'mp-primary';
-    footer.querySelector('.pause-footer-guide').textContent='Field guide';
     footer.querySelector('[data-action="end"]').textContent='End run';
     pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
@@ -1456,7 +1457,14 @@ const MAX_LUCK = 30;
   }
   function closePauseMenu() {
     if(!pauseMenu || pauseMenu.style.display!=='flex')return;
-    pauseMenu.style.display='none';gamePaused=pauseWasAlreadyPaused;btnEnd.focus();
+    pauseMenu.style.display='none';
+    if(fieldGuideFromHelp){
+      fieldGuideFromHelp=false;
+      openAnimatedOverlay(howToOverlay);
+      document.getElementById('howToFieldGuideBtn')?.focus();
+      return;
+    }
+    gamePaused=pauseWasAlreadyPaused;btnEnd.focus();
   }
 
 
@@ -5798,12 +5806,19 @@ function closeAnimatedOverlay(overlayEl) {
         <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
       <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
-      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
+      <div class="frog-panel-footer"><button id="howToFieldGuideBtn" class="frog-btn frog-btn-secondary">Field Guide</button><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
 
+    document.getElementById('howToFieldGuideBtn').addEventListener('click',()=>{
+      ensurePauseMenu();fieldGuideFromHelp=true;pauseGuidePage=0;
+      // Do not call hideHowToOverlay: it can start a first-time player's run.
+      howToOverlay.style.display='none';
+      renderPauseContent('guide','Common');pauseMenu.style.display='flex';
+      pauseMenu.querySelector('.pause-filters button')?.focus();
+    });
     rememberHowTo();
     openAnimatedOverlay(howToOverlay);
   }
@@ -6409,12 +6424,15 @@ async function showDashboardOverlay(cachedLeaderboard) {
     : "";
 
   content.innerHTML = menuHeader('My frogs & stats')+`
-    <div class="mp-profile"><div class="mp-portrait">${menuSprite('frog-crowned.png')}</div><div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #${bestRecordRank + 1}` : ''}</span></div></div>
+    <label class="mp-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label>
+    <div class="mp-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div>
+    <p class="mp-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>
+    <div class="mp-level-line"><span>Level ${levelData.level}</span><span>${leaderboardBest.found && bestRecordRank >= 0 ? `Rank #${bestRecordRank + 1}` : 'Unranked'}</span></div>
     <div class="mp-progress-label"><span>Next level</span><span>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan} orbs</span></div>
     <div class="mp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i class="${i<Math.floor(levelData.progressPercent/5)?'is-filled':''}" aria-hidden="true"></i>`).join('')}</div>
     <p class="mp-hint">${levelData.orbsNeededForNextLevel} more orbs to level ${levelData.nextLevel}</p>
     <div class="mp-records">${menuStat('Personal best',leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : '—')}${menuStat('Best-run time',leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime || 0) : '—')}${menuStat('Runs played',localStats.totalRuns || 0)}${menuStat('Orbs collected',localStats.totalOrbsCollected || 0)}</div>
-    <label class="mp-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label><div class="mp-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div><p class="mp-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>`;
+`;
 
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
