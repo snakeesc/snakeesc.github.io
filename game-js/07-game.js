@@ -1374,7 +1374,7 @@ const MAX_LUCK = 30;
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
-    pauseMenu.innerHTML=`<div class="sm-panel" data-menu-panel><h2 id="pauseTitle" hidden>Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back to How to Play</button><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
+    pauseMenu.innerHTML=`<div class="sm-panel" data-menu-panel><h2 id="pauseTitle" hidden>Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back</button><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
     document.body.appendChild(pauseMenu);
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
@@ -1410,7 +1410,7 @@ const MAX_LUCK = 30;
     footer.hidden=false;
     footer.className = view === 'guide' ? 'pause-footer' : 'sm-actions';
     footer.innerHTML=view === 'guide'
-      ? '<div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back">Back to How to Play</button>'
+      ? '<button class="guide-back" data-action="guide-back">Back</button><div class="guide-pagination-slot"></div>'
       : '<button data-action="resume">Resume run</button><button data-action="end">End run</button>';
     pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
@@ -1432,7 +1432,7 @@ const MAX_LUCK = 30;
     const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
     const descriptions={'loaded hand':'Four choices at each upgrade pick.','royal apprenticeship':'Spawned roles promote crowned frogs.','snake egg':'Less speed gained when shedding.'};
-    const upgradesPerPage=4;
+    const upgradesPerPage=8;
     const upgradePages=Math.max(1,Math.ceil(current.length/upgradesPerPage));
     pauseUpgradePage=Math.max(0,Math.min(upgradePages-1,pauseUpgradePage));
     const pageUpgrades=current.slice(pauseUpgradePage*upgradesPerPage,(pauseUpgradePage+1)*upgradesPerPage);
@@ -1442,7 +1442,7 @@ const MAX_LUCK = 30;
       `<div class="sm-runline"><span>Score<b>${Math.floor(score).toLocaleString()}</b></span><span>Time<b>${formatTime(elapsedTime)}</b></span></div>
       <div class="sm-facts">${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
       <div class="sm-section-label">Current upgrades <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
-      ${rows || '<p class="sm-hint">No lasting upgrades yet.</p>'}
+      ${rows ? `<div class="sm-upgrade-columns">${rows}</div>` : '<p class="sm-hint">No lasting upgrades yet.</p>'}
       ${upgradePages>1 ? `<nav class="sm-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}`;
 
   }
@@ -2067,12 +2067,8 @@ function snakeShed(stage) {
 
     applySnakeAppearance();
 
-    // Re-trigger Scissors Remnant Chase if needed
-    if (snake.scissorsOwner && scissorsRemnantSegments.length > 0) {
-      snakeEatingOldBody = true;
-      snakeOldBodySpeedBonusPending = true;
-      snakeOldBodyChaseTime = 0;
-    }
+    // The cut snake reclaims its own body at the next milestone.
+    startScissorsRemnantChase(snake);
 
     if (graveWaveActive) {
       spawnExtraFrogs(getLuckBiasedInt(10, 15));
@@ -2085,6 +2081,13 @@ function snakeShed(stage) {
       }
     }
   }
+  function startScissorsRemnantChase(owner) {
+    if (!owner?.scissorsOwner || scissorsRemnantSegments.length === 0 || snakeEatingOldBody) return;
+    owner.canGrow = true;
+    snakeEatingOldBody = true;
+    snakeOldBodySpeedBonusPending = true;
+    snakeOldBodyChaseTime = 0;
+  }
   function handleFourthShed() {
     const width  = window.innerWidth;
     const height = window.innerHeight;
@@ -2093,6 +2096,9 @@ function snakeShed(stage) {
     const newSnake = spawnAdditionalSnake(width, height);
     if (!newSnake) return;
 
+    // A red snake does not molt again, but must still reclaim its Scissors tail.
+    // Arm the owner before the new green snake becomes primary.
+    startScissorsRemnantChase(snake);
     // Demote the current primary snake into the extras array (if it exists)
     if (snake) {
       extraSnakes.push(snake);
