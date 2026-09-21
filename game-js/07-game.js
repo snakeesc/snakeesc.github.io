@@ -1284,6 +1284,30 @@ const MAX_LUCK = 30;
       entry ? getLeaderboardEntryScore(entry) : 0,
       ...(loadDashboardStats().recentRuns || []).map(r=>Number(r.score)||0));
   }
+  function renderRunUpgrades(host, entries) {
+    if (!host) return;
+    let page=0;
+    const pages=Math.max(1,Math.ceil(entries.length/6));
+    const row=x=>`<div class="upgrade-entry">${pauseIcon(x.name)}<span>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</span></div>`;
+    host.innerHTML='<label>Run upgrades</label><div class="upgrade-grid"></div><nav class="upgrade-pages" aria-label="Upgrade pages"><button data-step="-1">Prev</button><span></span><button data-step="1">Next</button></nav>';
+    const grid=host.querySelector('.upgrade-grid'),nav=host.querySelector('nav');
+    function draw(){
+      grid.innerHTML=entries.length?entries.slice(page*6,page*6+6).map(row).join(''):'<span>No upgrades yet.</span>';
+      nav.hidden=pages===1;nav.querySelector('span').textContent=`${page+1} / ${pages}`;
+      nav.querySelector('[data-step="-1"]').disabled=page===0;
+      nav.querySelector('[data-step="1"]').disabled=page===pages-1;
+    }
+    function fit(){
+      if(!host.isConnected)return;
+      grid.style.minHeight='0px';if(pages===1)return;
+      const probe=grid.cloneNode(false);probe.style.cssText='position:absolute;visibility:hidden;pointer-events:none;width:'+grid.getBoundingClientRect().width+'px;';host.appendChild(probe);
+      let height=0;for(let i=0;i<pages;i++){probe.innerHTML=entries.slice(i*6,i*6+6).map(row).join('');height=Math.max(height,probe.getBoundingClientRect().height);}
+      probe.remove();grid.style.minHeight=Math.ceil(height)+'px';
+    }
+    nav.onclick=e=>{const b=e.target.closest('button[data-step]');if(!b||b.disabled)return;page+=Number(b.dataset.step);draw();};
+    draw();requestAnimationFrame(fit);document.fonts?.ready.then(fit);
+    const observer=new ResizeObserver(()=>{if(!host.isConnected){observer.disconnect();return;}const width=host.clientWidth;if(width!==host._lastUpgradeWidth){host._lastUpgradeWidth=width;fit();}});observer.observe(host);
+  }
   function menuHeader(title, subtitle = '') {
     return `<header class="sm-header"><div class="sm-eyebrow">ESCAPE THE SNAKE</div><h1>${pauseEscape(title)}</h1>${subtitle ? `<p>${pauseEscape(subtitle)}</p>` : ''}</header>`;
   }
@@ -1437,19 +1461,12 @@ const MAX_LUCK = 30;
     }
     const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
-    const descriptions={'loaded hand':'Four choices at each upgrade pick.','royal apprenticeship':'Spawned roles promote crowned frogs.','snake egg':'Less speed gained when shedding.'};
-    const upgradesPerPage=10;
-    const upgradePages=Math.max(1,Math.ceil(current.length/upgradesPerPage));
-    pauseUpgradePage=Math.max(0,Math.min(upgradePages-1,pauseUpgradePage));
-    const pageUpgrades=current.slice(pauseUpgradePage*upgradesPerPage,(pauseUpgradePage+1)*upgradesPerPage);
-    const rows=pageUpgrades.map(x=>`<div class="sm-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b></div></div>`).join('');
-    // Keep the pause header compact and consistent with Scores.
-    content.innerHTML=menuHeader('Paused')+
-      `<div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
+    content.innerHTML=menuHeader('Paused')+`
+      <div class="summary-name"><div class="summary-editor"><span class="run-player-name">${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || 'Player')}</span></div></div>
+      <div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
       <div class="summary-details"><span><b>${formatLeaderboardTime(elapsedTime)}</b> survived</span><span><b>${totalOrbsCollected || 0}</b> orbs</span><span><b>${snakeShedCount}</b> sheds</span></div>
-      <div class="summary-name"><label>Current upgrades</label>
-      ${rows ? `<div class="sm-upgrade-columns">${rows}</div>` : '<p class="sm-hint">No lasting upgrades yet.</p>'}
-      ${upgradePages>1 ? `<nav class="sm-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}</div>`;
+      <section class="run-upgrades"></section>`;
+    renderRunUpgrades(content.querySelector('.run-upgrades'),current);
 
   }
   function openPauseMenu() {
@@ -1653,9 +1670,11 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
   content.innerHTML = menuHeader('Run complete')+`
+ <div class="summary-name"><div class="summary-editor"><input aria-label="Your name on the board" id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Your name on the board"><button id="endSummaryTagSaveBtn">Save</button></div><p id="endSummaryTagMsg" aria-live="polite"></p></div>
  <div class="summary-score"><span>Final score</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><p>Personal best <b>${menuPersonalBest(run.score,leaderboardBest.bestRun).toLocaleString()}</b></p></div>
  <div class="summary-details"><span><b>${formatLeaderboardTime(run.time || 0)}</b> survived</span><span><b>${run.orbs || 0}</b> orbs</span><span><b>${run.sheds || 0}</b> sheds</span></div>
- <div class="summary-name"><label for="endSummaryTagInput">Leaderboard name</label><div class="summary-editor"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p id="endSummaryTagMsg" aria-live="polite"></p></div>`;
+ <section class="run-upgrades"></section>`;
+  renderRunUpgrades(content.querySelector('.run-upgrades'),runUpgradeLog.map(x=>({...x})));
   openAnimatedOverlay(endGameSummaryOverlay);
 
   const tagInput = document.getElementById("endSummaryTagInput");
