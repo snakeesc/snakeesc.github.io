@@ -125,7 +125,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
   }
   const font={'font-family':name.fontFamily,'font-weight':'400','text-shadow':'none','letter-spacing':'normal'};
   document.querySelectorAll(targets).forEach(root=>{
-   if(root.querySelector('.mp-panel')) return;
+   if(root.querySelector('.mp-panel') || root.id==='howToOverlay') return;
    apply(root,'.frog-panel,.pp-board,.pause-panel',{'background':panel.backgroundColor,'color':panel.color,'border':panel.border,'border-radius':panel.borderRadius,'box-shadow':panel.boxShadow,'clip-path':'none',...font});
    apply(root,'h2,.pp-heading', {...font,'font-size':heading.fontSize,'color':heading.color,'background':'transparent','line-height':'1.15','text-align':'center','border':'0','padding':'0','margin':'4px 0 20px'});
    apply(root,'p,label,dt,dd,.ui-records span,.ui-tag-label,.ui-progress-caption,.rest-runline,.rest-facts,.rest-label,.rest-effects,.pause-pages span,.pp-metrics span,.pp-tag label,.pp-result>span,.pp-result>small', {...font,'font-size':body.fontSize,'line-height':'1.3','color':body.color});

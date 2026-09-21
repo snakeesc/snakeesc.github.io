@@ -5797,14 +5797,14 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-title">How to Play</div>
-      <p class="ui-help-intro">Keep your frogs alive. Keep moving.</p>
+      <div class="frog-panel-title">How to play</div>
+      <p class="ui-help-intro">Keep your frogs alive</p>
       <div class="ui-help-steps">
-        <section><img src="game-assets/sprites/approved/frog-crowned.png" alt=""><div><h3>Lead your frogs</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
-        <section><img src="game-assets/sprites/snake-head.png" alt=""><div><h3>Stay ahead</h3><p>The snake chases your frogs. Lose them all and the run ends.</p></div></section>
-        <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
+        <section>${menuSprite('frog-crowned.png')}<div><h3>Lead the swarm</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
+        <section>${menuSprite('upgrade-orb-flow.png')}<div><h3>Collect orbs</h3><p>Lead frogs to orbs for helpful effects. Some pickups can cause Panic Hop.</p></div></section>
+        <section>${menuSprite('upgrade-snake-egg.png')}<div><h3>Watch the snake</h3><p>Keep your distance. Shedding makes the snake faster.</p></div></section>
+        <section>${menuSprite('upgrade-loaded-hand.png')}<div><h3>Choose upgrades</h3><p>Pick a boost every minute. Shed milestones offer epic upgrades.</p></div></section>
       </div>
-      <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
       <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
     `;
 
@@ -6415,15 +6415,15 @@ async function showDashboardOverlay(cachedLeaderboard) {
     `
     : "";
 
-  content.innerHTML = menuHeader('My frogs & stats')+`
-    <label class="mp-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label>
-    <div class="mp-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div>
-    <p class="mp-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>
-    <div class="mp-level-line"><span>Level ${levelData.level}</span><span>${leaderboardBest.found && bestRecordRank >= 0 ? `Rank #${bestRecordRank + 1}` : 'Unranked'}</span></div>
+  content.innerHTML = menuHeader('My stats','Your progress')+`
+    <div class="mp-profile">${menuSprite('frog-crowned.png')}<div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #${bestRecordRank + 1}` : ''}</span></div></div>
     <div class="mp-progress-label"><span>Next level</span><span>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan} orbs</span></div>
     <div class="mp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i class="${i<Math.floor(levelData.progressPercent/5)?'is-filled':''}" aria-hidden="true"></i>`).join('')}</div>
     <p class="mp-hint">${levelData.orbsNeededForNextLevel} more orbs to level ${levelData.nextLevel}</p>
     <div class="mp-records">${menuStat('Personal best',leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : '—')}${menuStat('Best-run time',leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime || 0) : '—')}${menuStat('Runs played',localStats.totalRuns || 0)}${menuStat('Orbs collected',localStats.totalOrbsCollected || 0)}</div>
+    <label class="mp-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label>
+    <div class="mp-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div>
+    <p class="mp-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>
 `;
 
   const tagInput = document.getElementById("dashboardTagInput");
