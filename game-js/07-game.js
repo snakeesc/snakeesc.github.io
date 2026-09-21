@@ -1647,7 +1647,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
  <div class="mp-bigscore"><span>FINAL SCORE</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong></div>
  <div class="mp-best">${menuSprite('frog-crowned.png')}Personal best · ${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</div>
  <div class="mp-result-details"><div><b>${formatLeaderboardTime(run.time || 0)}</b><span>Survived</span></div><div><b>${run.orbs || 0}</b><span>Orbs</span></div><div><b>${run.sheds || 0}</b><span>Sheds</span></div></div>
- <label class="mp-tag-label" for="endSummaryTagInput">YOUR NAME ON THE BOARD</label><div class="mp-tag-row"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p class="mp-hint" id="endSummaryTagMsg" aria-live="polite">Keep your name for your next run.</p>`;
+ <label class="mp-tag-label" for="endSummaryTagInput">YOUR NAME ON THE BOARD</label><div class="mp-tag-row"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p class="mp-hint" id="endSummaryTagMsg" aria-live="polite"></p>`;
   openAnimatedOverlay(endGameSummaryOverlay);
 
   const tagInput = document.getElementById("endSummaryTagInput");
