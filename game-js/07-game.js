@@ -1312,15 +1312,17 @@ const MAX_LUCK = 30;
     const input=content.querySelector('#'+inputId), section=input.closest('.summary-name');
     const editor=section.querySelector('.summary-editor');
     const heading=document.createElement('button');heading.type='button';heading.className='player-heading';heading.setAttribute('aria-label','Edit player name');
+    const edit=document.createElement('button');edit.type='button';edit.className='player-edit-below';edit.textContent='Edit';
     const cancel=document.createElement('button');cancel.type='button';cancel.textContent='×';cancel.setAttribute('aria-label','Cancel editing');editor.appendChild(cancel);
     let saved=input.value;
     function showName(){
       heading.replaceChildren(document.createTextNode(saved || 'Your name'));
 
-      heading.hidden=false;editor.hidden=true;
+      heading.hidden=false;edit.hidden=false;editor.hidden=true;
     }
-    section.prepend(heading);section.classList.add('player-identity');
-    heading.onclick=()=>{input.value=saved;heading.hidden=true;editor.hidden=false;input.focus();input.select();};
+    section.prepend(heading,edit);section.classList.add('player-identity');
+    heading.onclick=()=>{input.value=saved;heading.hidden=true;edit.hidden=true;editor.hidden=false;input.focus();input.select();};
+    edit.onclick=()=>heading.click();
     cancel.onclick=()=>{input.value=saved;showName();};
     input.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();cancel.click();}});
     section.finishNameEdit=value=>{saved=value;input.value=value;showName();};showName();
@@ -5880,7 +5882,7 @@ function closeAnimatedOverlay(overlayEl) {
         <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
       <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
-      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back</button></div>
+      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back to menu</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
