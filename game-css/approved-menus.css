@@ -185,3 +185,11 @@ html.phone-secondary-menus :is(#howToOverlay,#dashboardOverlay,#endGameSummaryOv
 html.phone-secondary-menus #runPauseOverlay[data-view="run"] .sm-upgrade-columns{column-gap:24px!important}
 #endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay button:not(:disabled){cursor:pointer!important}
 #endGameSummaryOverlay button:disabled{cursor:default!important}
+
+/* Unified pause stats: three aligned columns, two compact rows. */
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .pause-stat-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:calc(12 * var(--menu-unit,1px)) 12px!important;padding:4px 0 calc(16 * var(--menu-unit,1px))!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .pause-stat-grid .sm-stat{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:2px!important;min-width:0!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .pause-stat-grid .sm-stat b{font-size:calc(27 * var(--menu-unit,1px))!important;line-height:1.1!important;white-space:nowrap!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .sm-section-label{margin:0!important;padding:12px 0 6px!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .sm-upgrade-columns{padding:8px 0!important;gap:6px 16px!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .sm-actions{margin-top:12px!important;padding-top:12px!important}

@@ -1439,8 +1439,7 @@ const MAX_LUCK = 30;
     const rows=pageUpgrades.map(x=>`<div class="sm-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b></div></div>`).join('');
     // Keep the pause header compact and consistent with Scores.
     content.innerHTML=menuHeader('Paused')+
-      `<div class="sm-runline"><span>Score<b>${Math.floor(score).toLocaleString()}</b></span><span>Time<b>${formatTime(elapsedTime)}</b></span></div>
-      <div class="sm-facts">${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
+      `<div class="pause-stat-grid">${menuStat('Score',Math.floor(score).toLocaleString())}${menuStat('Time',formatTime(elapsedTime))}${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
       <div class="sm-section-label">Current upgrades <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
       ${rows ? `<div class="sm-upgrade-columns">${rows}</div>` : '<p class="sm-hint">No lasting upgrades yet.</p>'}
       ${upgradePages>1 ? `<nav class="sm-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}`;
@@ -5809,21 +5808,12 @@ function closeAnimatedOverlay(overlayEl) {
         <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
       <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
-      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back</button><button id="howToFieldGuideBtn" class="frog-btn frog-btn-secondary">Field Guide</button></div>
+      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
 
-    document.getElementById('howToFieldGuideBtn').addEventListener('click',()=>{
-      ensurePauseMenu();
-      fieldGuideFromHelp=true;
-      howToOverlay.style.display='none';
-      pauseGuidePage=0;
-      renderPauseContent('guide','Common');
-      pauseMenu.style.display='flex';
-      pauseMenu.querySelector('.guide-back').focus();
-    });
     rememberHowTo();
     openAnimatedOverlay(howToOverlay);
   }
