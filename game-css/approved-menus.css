@@ -103,10 +103,10 @@
 
 /* Restored pre-Classic-A How to Play rules. */
 #howToOverlay .stat-highlight{color:#9a491c!important;}
-#howToOverlay#howToOverlay#howToOverlay .frog-panel-footer{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:20px!important;justify-content:space-between!important}
-#howToOverlay#howToOverlay#howToOverlay .frog-panel-footer button{width:auto!important;flex:1 1 0!important;margin:0!important;min-width:0!important;white-space:nowrap!important}
-#howToOverlay#howToOverlay#howToOverlay #howToCloseBtn{text-align:left!important}
-#howToOverlay#howToOverlay#howToOverlay #howToFieldGuideBtn{text-align:right!important}
+#howToOverlay#howToOverlay#howToOverlay .frog-panel-footer{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:20px!important;justify-content:center!important}
+#howToOverlay#howToOverlay#howToOverlay .frog-panel-footer button{width:auto!important;flex:0 0 auto!important;margin:0!important;min-width:0!important;white-space:nowrap!important}
+#howToOverlay#howToOverlay#howToOverlay #howToCloseBtn{text-align:center!important}
+#howToOverlay#howToOverlay#howToOverlay #howToFieldGuideBtn{text-align:center!important}
 
 /* Field Guide frame follows the unchanged leaderboard, including responsive dimensions. */
 #runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-panel {
