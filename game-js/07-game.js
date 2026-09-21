@@ -1408,18 +1408,16 @@ const MAX_LUCK = 30;
     pauseMenu.querySelector('.pause-content').classList.toggle('sm-content', view !== 'guide');
     const footer = pauseMenu.querySelector('footer');
     footer.hidden=false;
-    footer.innerHTML='<div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back to How to Play</button><button data-action="resume">Resume run</button><button data-action="end">End run</button>';
     footer.className = view === 'guide' ? 'pause-footer' : 'sm-actions';
-    footer.querySelector('[data-action="resume"]').textContent='Resume run';
-    footer.querySelector('[data-action="resume"]').className=view === 'guide' ? '' : 'sm-primary';
-    footer.querySelector('[data-action="end"]').textContent='End run';
+    footer.innerHTML=view === 'guide'
+      ? '<div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back">Back to How to Play</button>'
+      : '<button data-action="resume">Resume run</button><button data-action="end">End run</button>';
     pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
     else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
-    pauseMenu.querySelector('.guide-back').hidden=view!=='guide';
     pauseMenu.querySelector('.guide-heading').hidden=view!=='guide';
     pauseMenu.querySelector('.guide-category-slot').replaceChildren();
-    pauseMenu.querySelector('.guide-pagination-slot').replaceChildren();
+    pauseMenu.querySelector('.guide-pagination-slot')?.replaceChildren();
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
       pauseGuideFilter=filter;
@@ -5797,17 +5795,16 @@ function closeAnimatedOverlay(overlayEl) {
     const panel = howToOverlay.querySelector(".frog-panel");
     if (!panel) return;
 
-    panel.classList.add('sm-panel');
     panel.innerHTML = `
-      <div class="frog-panel-title">How to play</div>
-      <p class="ui-help-intro">Keep your frogs alive</p>
+      <div class="frog-panel-title">How to Play</div>
+      <p class="ui-help-intro">Keep your frogs alive. Keep moving.</p>
       <div class="ui-help-steps">
-        <section>${menuSprite('frog-crowned.png')}<div><h3>Lead the swarm</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
-        <section>${menuSprite('upgrade-orb-flow.png')}<div><h3>Collect orbs</h3><p>Lead frogs to orbs for helpful effects. Some pickups can cause Panic Hop.</p></div></section>
-        <section>${menuSprite('upgrade-snake-egg.png')}<div><h3>Watch the snake</h3><p>Keep your distance. Shedding makes the snake faster.</p></div></section>
-        <section>${menuSprite('upgrade-loaded-hand.png')}<div><h3>Choose upgrades</h3><p>Pick a boost every minute. Shed milestones offer epic upgrades.</p></div></section>
+        <section><img src="game-assets/sprites/approved/frog-crowned.png" alt=""><div><h3>Lead your frogs</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
+        <section><img src="game-assets/sprites/snake-head.png" alt=""><div><h3>Stay ahead</h3><p>The snake chases your frogs. Lose them all and the run ends.</p></div></section>
+        <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
-      <div class="frog-panel-footer"><button id="howToFieldGuideBtn" class="frog-btn frog-btn-secondary">Field Guide</button><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
+      <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
+      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back</button><button id="howToFieldGuideBtn" class="frog-btn frog-btn-secondary">Field Guide</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
