@@ -1242,7 +1242,7 @@ const MAX_LUCK = 30;
     ['Epic','Frog Scatter','Rescatters the swarm, preserving roles, crowns and remaining defenses. Once per run.'],
     ['Epic','Molt Fortune','Drops 5–10 orbs when the snake sheds.'],
     ['Frogs','Crowned','Permanently improved movement. Can gain up to three crown levels.'],
-    ['Frogs','Aura','Nearby frogs gain 12% shorter hop timing and 12% higher jumps. Overlapping auras stack, within movement caps.'],
+    ['Frogs','Aura','Nearby frogs gain 12% shorter hop timing and 12% higher jumps. Overlapping auras do not stack.'],
     ['Frogs','Shield','Temporary protection from snake bites.'],
     ['Frogs','Magnet','Attracts nearby orbs.'],
     ['Frogs','Lucky','Improves the value of its orb pickups and contributes a score bonus.'],
@@ -2407,18 +2407,18 @@ function createFrogAt(x, y, tokenId) {
   function getSpeedFactor(frog) {
     let factor = frogPermanentSpeedFactor * (frog.speedMult || 1);
 
-    // Aura speed boost (permanent, area-based)
-    let auraFactor = 1.0;
+    // Aura speed boost (permanent, area-based). Applied once no matter how
+    // many aura frogs are in range: overlapping auras do not stack.
     for (const other of frogs) {
       if (!other.isAura) continue;
       const dx = (other.x + FROG_SIZE / 2) - (frog.x + FROG_SIZE / 2);
       const dy = (other.baseY + FROG_SIZE / 2) - (frog.baseY + FROG_SIZE / 2);
       const d2 = dx * dx + dy * dy;
       if (d2 <= AURA_RADIUS2) {
-        auraFactor *= AURA_SPEED_FACTOR;
+        factor *= AURA_SPEED_FACTOR;
+        break;
       }
     }
-    factor *= auraFactor;
 
     // -----------------------------
     // TEMP SPEED BUFFS (from orbs)
@@ -2451,7 +2451,8 @@ function createFrogAt(x, y, tokenId) {
   function getJumpFactor(frog) {
     let factor = frogPermanentJumpFactor * (frog.jumpMult || 1);
 
-    // Aura jump boost (perma)
+    // Aura jump boost (perma). Applied once no matter how many aura frogs
+    // are in range: overlapping auras do not stack.
     for (const other of frogs) {
       if (!other.isAura) continue;
       const dx = (other.x + FROG_SIZE / 2) - (frog.x + FROG_SIZE / 2);
@@ -2459,6 +2460,7 @@ function createFrogAt(x, y, tokenId) {
       const d2 = dx * dx + dy * dy;
       if (d2 <= AURA_RADIUS2) {
         factor *= AURA_JUMP_FACTOR;
+        break;
       }
     }
 
@@ -5794,7 +5796,7 @@ function closeAnimatedOverlay(overlayEl) {
 
     const roleDescriptions = [
       { title: "Cannibal", desc: "Eats up to 5 ordinary frogs for movement bonuses; returns up to its meal count on death." },
-      { title: "Aura", desc: `All frogs within ${statHighlight(`${AURA_RADIUS}px`)} get ${fmtPct((1 - AURA_SPEED_FACTOR) * 100)} faster hops and ${fmtPct((AURA_JUMP_FACTOR - 1) * 100)} higher jumps.` },
+      { title: "Aura", desc: `All frogs within ${statHighlight(`${AURA_RADIUS}px`)} get ${fmtPct((1 - AURA_SPEED_FACTOR) * 100)} faster hops and ${fmtPct((AURA_JUMP_FACTOR - 1) * 100)} higher jumps. Overlapping auras do not stack.` },
       { title: "Magnet", desc: `Pulls nearby orbs from ${statHighlight(`${ORB_MAGNET_PULL_RANGE}px`)} away.` },
       { title: "Lucky", desc: `Buffs last ${statHighlight(`${Math.round((LUCKY_BUFF_DURATION_BOOST - 1) * 100)}%`)} longer and spawn orbs can add bonus frogs.` },
       { title: "Zombie", desc: "Sacrifices itself to end Panic Hop. Spawns one ordinary frog whenever it dies." },
