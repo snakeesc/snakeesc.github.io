@@ -60,3 +60,5 @@ window.approvedFrogs["cannibal-3"]="./game-assets/sprites/approved/frog-cannibal
 window.approvedFrogs["cannibal-4"]="./game-assets/sprites/approved/frog-cannibal-meal-4.png";
 window.approvedFrogs["cannibal-5"]="./game-assets/sprites/approved/frog-cannibal-meal-5.png";
 window.approvedFrogs.cannibal=window.approvedFrogs["cannibal-0"];
+
+window.approvedUpgrades["eye for eye"]="./game-assets/sprites/approved/upgrade-eye-for-eye.png";
