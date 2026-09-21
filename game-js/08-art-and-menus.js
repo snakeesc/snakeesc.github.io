@@ -167,27 +167,49 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  new MutationObserver(resetTitle).observe(document.body,{childList:true,subtree:true});resetTitle();
 })();
 
-// Match help text to leaderboard typography, without changing panel dimensions.
+// Shared secondary-menu presentation. The live scoreboard is the design reference.
+// Keep viewport, panel dimensions, native insets and game scaling owned by existing code.
 (()=>{
- let probe;
- function syncHelpType(){
-  const help=document.getElementById('howToOverlay');
-  const board=document.getElementById('leaderboardOverlay');
-  if(!help||!board)return;
-  if(!probe){
-   probe=document.createElement('div');probe.setAttribute('aria-hidden','true');
+ const targets='#howToOverlay,#dashboardOverlay,#endGameSummaryOverlay,#runPauseOverlay,#buffGuideOverlay';
+ let probe,queued=false;
+ const set=(el,key,value)=>{if(el.style.getPropertyValue(key)!==value || el.style.getPropertyPriority(key)!=='important')el.style.setProperty(key,value,'important');};
+ const apply=(root,selector,props)=>root.querySelectorAll(selector).forEach(el=>Object.entries(props).forEach(([k,v])=>set(el,k,v)));
+ function sync(){
+  queued=false;
+  const board=document.getElementById('leaderboardOverlay');if(!board)return;
+  if(!probe || !probe.isConnected){
+   probe=document.createElement('div');probe.setAttribute('aria-hidden','true');probe.inert=true;
    probe.style.cssText='position:absolute;visibility:hidden;pointer-events:none;width:0;height:0;overflow:hidden;';
-   probe.innerHTML='<div class="pp-board"><div class="pp-entry"><div class="pp-player"><strong>Sample</strong></div><div class="pp-time">00:00</div></div></div>';
+   probe.innerHTML='<div class="pp-board"><h2 class="pp-heading">Scores</h2><div class="pp-entry"><div class="pp-player"><strong>Player</strong></div><div class="pp-time">00:00</div><div class="pp-points"><strong>100</strong></div></div><div class="pp-pager"><button tabindex="-1">Next</button></div></div>';
    board.appendChild(probe);
   }
-  const titleStyle=getComputedStyle(probe.querySelector('.pp-player strong'));
-  const bodyStyle=getComputedStyle(probe.querySelector('.pp-time'));
-  const set=(el,key,value)=>{if(el.style.getPropertyValue(key)!==value || el.style.getPropertyPriority(key)!=='important')el.style.setProperty(key,value,'important');};
-  help.querySelectorAll('.ui-help-steps h3').forEach(el=>{set(el,'font-size',titleStyle.fontSize);set(el,'font-family',titleStyle.fontFamily);set(el,'font-weight','400');set(el,'line-height','1.15');});
-  help.querySelectorAll('.ui-help-intro,.ui-help-steps p,.ui-help-note').forEach(el=>{set(el,'font-size',bodyStyle.fontSize);set(el,'font-family',titleStyle.fontFamily);set(el,'line-height','1.3');});
+  const read=s=>getComputedStyle(probe.querySelector(s));
+  const panel=read('.pp-board'),heading=read('.pp-heading'),name=read('.pp-player strong'),body=read('.pp-time'),button=read('button'),points=read('.pp-points strong');
+  const font={'font-family':name.fontFamily,'font-weight':'400','text-shadow':'none','letter-spacing':'normal'};
+  document.querySelectorAll(targets).forEach(root=>{
+   apply(root,'.frog-panel,.pp-board,.pause-panel',{'background':panel.backgroundColor,'color':panel.color,'border':panel.border,'border-radius':panel.borderRadius,'box-shadow':panel.boxShadow,'clip-path':'none',...font});
+   apply(root,'h2,.pp-heading', {...font,'font-size':heading.fontSize,'color':heading.color,'background':'transparent','line-height':'1.15','text-align':'center','border':'0','padding':'0','margin':'4px 0 20px'});
+   apply(root,'p,label,dt,dd,.ui-records span,.ui-tag-label,.ui-progress-caption,.rest-runline,.rest-facts,.rest-label,.rest-effects,.pause-pages span,.pp-metrics span,.pp-tag label,.pp-result>span,.pp-result>small', {...font,'font-size':body.fontSize,'line-height':'1.3','color':body.color});
+   apply(root,'h3,.rest-name,.pause-row strong,#dashboardCurrentTag,.ui-help-steps h3', {...font,'font-size':name.fontSize,'line-height':'1.2','color':panel.color});
+   apply(root,'.ui-records strong,.rest-runline b,.rest-facts dd,.rest-effects b,.pp-metrics strong', {...font,'font-size':name.fontSize,'color':points.color});
+   apply(root,'button', {...font,'font-size':button.fontSize,'line-height':'1.2','color':panel.color,'background':'transparent','border':'0','box-shadow':'none','clip-path':'none','border-radius':'7px','padding':button.padding,'min-height':button.minHeight});
+   apply(root,'input[type="text"],#dashboardTagInput,#endSummaryTagInput', {...font,'font-size':name.fontSize,'line-height':'1.2','color':panel.color,'background':panel.backgroundColor,'border':'1px solid #bdcb9e','border-radius':'7px','padding':'8px 12px','min-width':'0','box-sizing':'border-box'});
+   apply(root,'.guide-heading,.pause-filters',{'background':'transparent','color':panel.color,'box-shadow':'none','border-bottom':'1px solid #bdcb9e'});
+   apply(root,'.pause-footer,.pp-pager,.rest-label',{'border-top':'1px solid #bdcb9e'});
+   apply(root,'.rest-entry,.pause-guide-entries .pause-row',{'background':'transparent','box-shadow':'none','border':'0','border-bottom':'1px solid #bdcb9e','border-radius':'0','clip-path':'none'});
+  });
  }
- new MutationObserver(syncHelpType).observe(document.body,{childList:true,subtree:true});
- window.addEventListener('resize',syncHelpType);
- document.fonts?.ready.then(syncHelpType);
- syncHelpType();
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(sync);}}
+ const style=document.createElement('style');style.textContent=`
+ #runPauseOverlay#runPauseOverlay #pauseTitle::before,#runPauseOverlay#runPauseOverlay #pauseTitle::after{content:none!important;display:none!important}
+ #runPauseOverlay .guide-eyebrow{display:none!important}
+ #runPauseOverlay .pause-filters button[aria-selected="true"]{text-decoration:underline;text-underline-offset:5px}
+ :is(${targets}) button:focus-visible,:is(${targets}) input:focus-visible{outline:2px solid #397a43!important;outline-offset:3px}
+ :is(${targets}) button:disabled{opacity:.4}
+ @media(hover:hover){:is(${targets}) button:not(:disabled):hover{transform:translateY(-2px)}}
+ @media(prefers-reduced-motion:reduce){:is(${targets}) button{transform:none!important;transition:none!important}}
+ `;document.head.appendChild(style);
+ // No style observation: gameplay updates inline styles every frame.
+ new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-view']});
+ window.addEventListener('resize',schedule);document.fonts?.ready.then(schedule);schedule();
 })();
