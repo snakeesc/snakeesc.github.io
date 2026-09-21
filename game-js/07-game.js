@@ -1486,7 +1486,7 @@ function initEndGameSummaryOverlay() {
   endGameSummaryOverlay.className = "frog-overlay";
   endGameSummaryOverlay.style.zIndex = "1400";
   endGameSummaryOverlay.style.background = "rgba(0,0,0,0.18)";
-  endGameSummaryOverlay.innerHTML = `<section class="sm-panel"><div id="endGameSummaryContent"></div><div class="sm-actions"><button id="endSummaryPlayAgainBtn" class="sm-primary">Play again</button><div class="sm-secondary"><button id="endSummaryScoresBtn">Scores</button><button id="endSummaryMenuBtn">Main menu</button></div></div></section>`;
+  endGameSummaryOverlay.innerHTML = `<section class="sm-panel"><div id="endGameSummaryContent"></div><div class="sm-actions"><button id="endSummaryPlayAgainBtn" class="sm-primary">Play again</button><button id="endSummaryMenuBtn">Main menu</button></div></section>`;
   container.appendChild(endGameSummaryOverlay);
 
   document.addEventListener("keydown", (e) => {
@@ -1499,8 +1499,6 @@ function initEndGameSummaryOverlay() {
     }
   });
 
-  const scoresBtn = document.getElementById("endSummaryScoresBtn");
-  if (scoresBtn) scoresBtn.addEventListener('click',()=>{hideEndGameSummaryOverlay();showLeaderboardOverlay();});
   const dashboardBtn = document.getElementById("endSummaryDashboardBtn");
   const playAgainBtn = document.getElementById("endSummaryPlayAgainBtn");
   const menuBtn = document.getElementById("endSummaryMenuBtn");

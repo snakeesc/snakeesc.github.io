@@ -117,3 +117,8 @@
   clip-path:none!important;
   box-sizing:border-box!important;
 }
+
+/* Compact summary name editor; no other menu changes. */
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-tag-label,#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-tag-row,#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay #endSummaryTagMsg{width:78%!important;max-width:100%!important;box-sizing:border-box!important;margin-left:auto!important;margin-right:auto!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-actions{display:flex!important;flex-direction:row!important;justify-content:center!important;gap:24px!important}
+#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay .sm-actions>button{flex:0 0 auto!important;width:auto!important}
