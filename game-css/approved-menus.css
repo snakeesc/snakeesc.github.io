@@ -210,3 +210,12 @@ html.phone-secondary-menus #runPauseOverlay[data-view="run"] .sm-upgrade-columns
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .summary-name{width:78%!important;margin:18px auto 0!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .summary-name label{display:block!important;font-size:var(--menu-body-font,21px)!important;color:#426535!important;margin-bottom:4px!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .summary-name .sm-upgrade-columns{padding:4px 0!important}
+
+/* Match summary content flow and action spacing, without legacy pause flex sizing. */
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .sm-panel{display:block!important;gap:0!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .sm-content{flex:none!important;padding:0!important;margin:0!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"] .summary-name{padding-bottom:8px!important;border-bottom:1px solid #bdcb9e!important}
+
+/* Explicit shared label colors: legacy Pause span rules must not override inheritance. */
+:is(#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"],#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay) .summary-details>span{color:#426535!important}
+:is(#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="run"],#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay#endGameSummaryOverlay) .summary-details>span>b{color:#073720!important}

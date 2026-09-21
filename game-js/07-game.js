@@ -1278,6 +1278,12 @@ const MAX_LUCK = 30;
   function menuSprite(name) {
     return `<img class="sm-sprite" src="game-assets/sprites/approved/${pauseEscape(name)}" alt="">`;
   }
+  function menuPersonalBest(currentScore = 0, serverBest = 0) {
+    const entry = window.FrogGameLeaderboard?._lastMyEntry;
+    return Math.max(0, Number(currentScore)||0, Number(serverBest)||0,
+      entry ? getLeaderboardEntryScore(entry) : 0,
+      ...(loadDashboardStats().recentRuns || []).map(r=>Number(r.score)||0));
+  }
   function menuHeader(title, subtitle = '') {
     return `<header class="sm-header"><div class="sm-eyebrow">ESCAPE THE SNAKE</div><h1>${pauseEscape(title)}</h1>${subtitle ? `<p>${pauseEscape(subtitle)}</p>` : ''}</header>`;
   }
@@ -1439,7 +1445,7 @@ const MAX_LUCK = 30;
     const rows=pageUpgrades.map(x=>`<div class="sm-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b></div></div>`).join('');
     // Keep the pause header compact and consistent with Scores.
     content.innerHTML=menuHeader('Paused')+
-      `<div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b>${Math.max(Math.floor(score),0,...(loadDashboardStats().recentRuns || []).map(r=>Number(r.score)||0)).toLocaleString()}</b></p></div>
+      `<div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
       <div class="summary-details"><span><b>${formatLeaderboardTime(elapsedTime)}</b> survived</span><span><b>${totalOrbsCollected || 0}</b> orbs</span><span><b>${snakeShedCount}</b> sheds</span></div>
       <div class="summary-name"><label>Current upgrades</label>
       ${rows ? `<div class="sm-upgrade-columns">${rows}</div>` : '<p class="sm-hint">No lasting upgrades yet.</p>'}
@@ -1453,6 +1459,11 @@ const MAX_LUCK = 30;
     AudioMod.setShedAudioActive?.(false);
     pauseUpgradePage=0;renderPauseContent();pauseMenu.style.display='flex';
     pauseMenu.querySelector('[data-action="resume"]').focus();
+    getMyDashboardBestFromLeaderboard().then(best=>{
+      const label=pauseMenu?.querySelector('#pausePersonalBest');
+      if(label) label.textContent=menuPersonalBest(Math.floor(score),best?.bestRun).toLocaleString();
+    }).catch(()=>{});
+
   }
   function closePauseMenu() {
     if(!pauseMenu || pauseMenu.style.display!=='flex')return;
@@ -1642,7 +1653,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
   content.innerHTML = menuHeader('Run complete')+`
- <div class="summary-score"><span>Final score</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><p>Personal best <b>${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</b></p></div>
+ <div class="summary-score"><span>Final score</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><p>Personal best <b>${menuPersonalBest(run.score,leaderboardBest.bestRun).toLocaleString()}</b></p></div>
  <div class="summary-details"><span><b>${formatLeaderboardTime(run.time || 0)}</b> survived</span><span><b>${run.orbs || 0}</b> orbs</span><span><b>${run.sheds || 0}</b> sheds</span></div>
  <div class="summary-name"><label for="endSummaryTagInput">Leaderboard name</label><div class="summary-editor"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p id="endSummaryTagMsg" aria-live="polite"></p></div>`;
   openAnimatedOverlay(endGameSummaryOverlay);
