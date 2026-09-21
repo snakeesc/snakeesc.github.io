@@ -65,3 +65,6 @@ window.approvedUpgrades["eye for eye"]="./game-assets/sprites/approved/upgrade-e
 
 window.approvedUpgrades["wild company"]="./game-assets/sprites/approved/upgrade-wild-company.png";
 window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-greedy-hand.png";
+
+// Small visual adjustment only; retain the icon's layout space and centering.
+(()=>{const style=document.createElement('style');style.textContent='.frog-upgrade-choice .frog-upgrade-emoji[data-approved="loaded hand"] { scale:1.08; transform-origin:center; }';document.head.appendChild(style);})();
