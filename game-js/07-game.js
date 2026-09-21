@@ -1308,6 +1308,23 @@ const MAX_LUCK = 30;
     draw();requestAnimationFrame(fit);document.fonts?.ready.then(fit);
     const observer=new ResizeObserver(()=>{if(!host.isConnected){observer.disconnect();return;}const width=host.clientWidth;if(width!==host._lastUpgradeWidth){host._lastUpgradeWidth=width;fit();}});observer.observe(host);
   }
+  function setupPlayerHeading(content,inputId) {
+    const input=content.querySelector('#'+inputId), section=input.closest('.summary-name');
+    const editor=section.querySelector('.summary-editor');
+    const heading=document.createElement('button');heading.type='button';heading.className='player-heading';heading.setAttribute('aria-label','Edit player name');
+    const cancel=document.createElement('button');cancel.type='button';cancel.textContent='×';cancel.setAttribute('aria-label','Cancel editing');editor.appendChild(cancel);
+    let saved=input.value;
+    function showName(){
+      heading.replaceChildren(document.createTextNode(saved || 'Your name'));
+      const hint=document.createElement('span');hint.className='player-edit-hint';hint.textContent='edit';heading.appendChild(hint);
+      heading.hidden=false;editor.hidden=true;
+    }
+    section.prepend(heading);section.classList.add('player-identity');
+    heading.onclick=()=>{input.value=saved;heading.hidden=true;editor.hidden=false;input.focus();input.select();};
+    cancel.onclick=()=>{input.value=saved;showName();};
+    input.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();cancel.click();}});
+    section.finishNameEdit=value=>{saved=value;input.value=value;showName();};showName();
+  }
   function menuHeader(title, subtitle = '') {
     return `<header class="sm-header"><div class="sm-eyebrow">ESCAPE THE SNAKE</div><h1>${pauseEscape(title)}</h1>${subtitle ? `<p>${pauseEscape(subtitle)}</p>` : ''}</header>`;
   }
@@ -1461,12 +1478,15 @@ const MAX_LUCK = 30;
     }
     const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
-    content.innerHTML=menuHeader('Paused')+`
-      <div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
-      <div class="summary-name"><div class="summary-editor"><input id="pauseTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || '')}" placeholder="Your name on the board"><button id="pauseTagSaveBtn">Save</button></div><p id="pauseTagMsg" role="status" aria-live="polite"></p></div>
+    content.innerHTML= `
+<div class="summary-name"><div class="summary-editor"><input id="pauseTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || '')}" placeholder="Your name on the board"><button id="pauseTagSaveBtn">Save</button></div><p id="pauseTagMsg" role="status" aria-live="polite"></p></div>
+      
+      <div class="summary-score"><span>Current score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
       <div class="summary-details"><span><b>${formatLeaderboardTime(elapsedTime)}</b> survived</span><span><b>${totalOrbsCollected || 0}</b> orbs</span><span><b>${snakeShedCount}</b> sheds</span></div>
       <section class="run-upgrades"></section>`;
     renderRunUpgrades(content.querySelector('.run-upgrades'),current);
+    content.querySelector('.run-upgrades>label').textContent="Current upgrades";
+    setupPlayerHeading(content,'pauseTagInput');
     const input=content.querySelector('#pauseTagInput'),save=content.querySelector('#pauseTagSaveBtn'),msg=content.querySelector('#pauseTagMsg');
     save.onclick=async()=>{
       const validation=validateDashboardTag(input.value);
@@ -1479,7 +1499,7 @@ const MAX_LUCK = 30;
         if(!result || result._error){msg.textContent=result?.error==='tag_taken'?'That name is already taken.':(result?.message || 'Could not save. Try again.');return;}
         await saveDashboardTag(validation.tag);
         if(window.FrogGameLeaderboard?._lastMyEntry)window.FrogGameLeaderboard._lastMyEntry.tag=validation.tag;
-        msg.textContent='Name saved.';
+        msg.textContent='';input.closest('.summary-name').finishNameEdit(validation.tag);
       }catch(e){msg.textContent='Connection error. Try again.';}
       finally{save.disabled=false;}
     };
@@ -1687,14 +1707,16 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
       </li>`
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
-  content.innerHTML = menuHeader('Run complete')+`
+  content.innerHTML = `
+<div class="summary-name"><div class="summary-editor"><input aria-label="Your name on the board" id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Your name on the board"><button id="endSummaryTagSaveBtn">Save</button></div><p id="endSummaryTagMsg" aria-live="polite"></p></div>
+ 
  <div class="summary-score"><span>Final score</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><p>Personal best <b>${menuPersonalBest(run.score,leaderboardBest.bestRun).toLocaleString()}</b></p></div>
- <div class="summary-name"><div class="summary-editor"><input aria-label="Your name on the board" id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Your name on the board"><button id="endSummaryTagSaveBtn">Save</button></div><p id="endSummaryTagMsg" aria-live="polite"></p></div>
  <div class="summary-details"><span><b>${formatLeaderboardTime(run.time || 0)}</b> survived</span><span><b>${run.orbs || 0}</b> orbs</span><span><b>${run.sheds || 0}</b> sheds</span></div>
  <section class="run-upgrades"></section>`;
   renderRunUpgrades(content.querySelector('.run-upgrades'),runUpgradeLog.map(x=>({...x})));
   openAnimatedOverlay(endGameSummaryOverlay);
 
+  setupPlayerHeading(content,'endSummaryTagInput');
   const tagInput = document.getElementById("endSummaryTagInput");
   const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
   const tagMsg = document.getElementById("endSummaryTagMsg");
@@ -1719,17 +1741,18 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
           null,
           newTag
         );
-        if (result && result._error) {
-          const msg = result.error === "tag_taken"
+        if (!result || result._error) {
+          const msg = result?.error === "tag_taken"
             ? "That tag is already taken — try another."
-            : (result.message || "Could not save tag. Try again.");
+            : (result?.message || "Could not save tag. Try again.");
           if (tagMsg) { tagMsg.textContent = msg; tagMsg.style.color = "#fca5a5"; }
           return;
         }
         await saveDashboardTag(newTag);
         activePlayerTag = newTag;
         if (myEntry) myEntry.tag = newTag;
-        if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#a3e635"; }
+        if (tagMsg) tagMsg.textContent = "";
+        tagInput.closest(".summary-name").finishNameEdit(newTag);
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
       } catch (e) {
@@ -6500,10 +6523,10 @@ async function showDashboardOverlay(cachedLeaderboard) {
         const bestTime  = leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
         const result = await submitScoreToServer(bestScore, bestTime, null, newTag);
 
-        if (result && result._error) {
-          const msg = result.error === "tag_taken"
+        if (!result || result._error) {
+          const msg = result?.error === "tag_taken"
             ? "That tag is already taken — try another."
-            : (result.message || "Could not save tag. Try again.");
+            : (result?.message || "Could not save tag. Try again.");
           if (msgEl) { msgEl.textContent = msg; msgEl.style.color = "#fca5a5"; }
           return;
         }
