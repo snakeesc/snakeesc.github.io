@@ -127,12 +127,12 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
   document.querySelectorAll(targets).forEach(root=>{
    if(root.querySelector('.sm-panel') || (root.id==='runPauseOverlay' && root.dataset.view==='guide')) return;
    apply(root,'.frog-panel,.pp-board,.pause-panel',{'background':panel.backgroundColor,'color':panel.color,'border':panel.border,'border-radius':panel.borderRadius,'box-shadow':panel.boxShadow,'clip-path':'none',...font});
-   apply(root,'h2,.pp-heading', {...font,'font-size':heading.fontSize,'color':heading.color,'background':'transparent','line-height':'1.15','text-align':'center','border':'0','padding':'0','margin':'4px 0 20px'});
-   apply(root,'p,label,dt,dd,.ui-records span,.ui-tag-label,.ui-progress-caption,.rest-runline,.rest-facts,.rest-label,.rest-effects,.pause-pages span,.pp-metrics span,.pp-tag label,.pp-result>span,.pp-result>small', {...font,'font-size':body.fontSize,'line-height':'1.3','color':body.color});
-   apply(root,'h3,.rest-name,.pause-row strong,#dashboardCurrentTag,.ui-help-steps h3', {...font,'font-size':name.fontSize,'line-height':'1.2','color':panel.color});
-   apply(root,'.ui-records strong,.rest-runline b,.rest-facts dd,.rest-effects b,.pp-metrics strong', {...font,'font-size':name.fontSize,'color':points.color});
-   apply(root,'button', {...font,'font-size':button.fontSize,'line-height':'1.2','color':panel.color,'background':'transparent','border':'0','box-shadow':'none','clip-path':'none','border-radius':'7px','padding':button.padding,'min-height':button.minHeight});
-   apply(root,'input[type="text"],#dashboardTagInput,#endSummaryTagInput', {...font,'font-size':name.fontSize,'line-height':'1.2','color':panel.color,'background':panel.backgroundColor,'border':'1px solid #bdcb9e','border-radius':'7px','padding':'8px 12px','min-width':'0','box-sizing':'border-box'});
+   apply(root,'h2,.pp-heading', {...font,'font-size':'var(--menu-title-font)','color':heading.color,'background':'transparent','line-height':'1.15','text-align':'center','border':'0','padding':'0','margin':'4px 0 20px'});
+   apply(root,'p,label,dt,dd,.ui-records span,.ui-tag-label,.ui-progress-caption,.rest-runline,.rest-facts,.rest-label,.rest-effects,.pause-pages span,.pp-metrics span,.pp-tag label,.pp-result>span,.pp-result>small', {...font,'font-size':'var(--menu-body-font)','line-height':'1.3','color':body.color});
+   apply(root,'h3,.rest-name,.pause-row strong,#dashboardCurrentTag,.ui-help-steps h3', {...font,'font-size':'var(--menu-name-font)','line-height':'1.2','color':panel.color});
+   apply(root,'.ui-records strong,.rest-runline b,.rest-facts dd,.rest-effects b,.pp-metrics strong', {...font,'font-size':'var(--menu-name-font)','color':points.color});
+   apply(root,'button', {...font,'font-size':'var(--menu-control-font)','line-height':'1.2','color':panel.color,'background':'transparent','border':'0','box-shadow':'none','clip-path':'none','border-radius':'7px','padding':button.padding,'min-height':button.minHeight});
+   apply(root,'input[type="text"],#dashboardTagInput,#endSummaryTagInput', {...font,'font-size':'var(--menu-name-font)','line-height':'1.2','color':panel.color,'background':panel.backgroundColor,'border':'1px solid #bdcb9e','border-radius':'7px','padding':'8px 12px','min-width':'0','box-sizing':'border-box'});
    apply(root,'.guide-heading,.pause-filters',{'background':'transparent','color':panel.color,'box-shadow':'none','border-bottom':'1px solid #bdcb9e'});
    apply(root,'.pause-footer,.pp-pager,.rest-label',{'border-top':'1px solid #bdcb9e'});
    apply(root,'.rest-entry,.pause-guide-entries .pause-row',{'background':'transparent','box-shadow':'none','border':'0','border-bottom':'1px solid #bdcb9e','border-radius':'0','clip-path':'none'});
@@ -168,7 +168,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 
 // Approved menus share the exact preview styling; dimensions follow the established design viewport.
 (()=>{
- const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=pause-balanced-stats-13';document.head.appendChild(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=mobile-menu-proportions-15';document.head.appendChild(css);
 
 })();
 
@@ -196,4 +196,13 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
   window.addEventListener('resize',resizeMenus);
   desktop.addEventListener?.('change',resizeMenus);
   resizeMenus();
+})();
+
+// Phone menu proportions only; the world, HUD and upgrade chooser keep their existing scale.
+(()=>{
+ function update(){
+  const phone=(matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints>0) && Math.min(screen.width,screen.height)<=600;
+  document.documentElement.classList.toggle('phone-secondary-menus',phone);
+ }
+ window.addEventListener('resize',update);update();
 })();
