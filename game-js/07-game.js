@@ -1276,13 +1276,13 @@ const MAX_LUCK = 30;
     if(found) found.count++; else runUpgradeLog.push({id:choice.id,name,count:1});
   }
   function menuSprite(name) {
-    return `<img class="mp-sprite" src="game-assets/sprites/approved/${pauseEscape(name)}" alt="">`;
+    return `<img class="sm-sprite" src="game-assets/sprites/approved/${pauseEscape(name)}" alt="">`;
   }
   function menuHeader(title, subtitle = '') {
-    return `<header class="mp-header"><div class="mp-eyebrow">ESCAPE THE SNAKE</div><h1>${pauseEscape(title)}</h1>${subtitle ? `<p>${pauseEscape(subtitle)}</p>` : ''}</header>`;
+    return `<header class="sm-header"><div class="sm-eyebrow">ESCAPE THE SNAKE</div><h1>${pauseEscape(title)}</h1>${subtitle ? `<p>${pauseEscape(subtitle)}</p>` : ''}</header>`;
   }
   function menuStat(label, value) {
-    return `<div class="mp-stat"><span>${pauseEscape(label)}</span><b>${pauseEscape(value)}</b></div>`;
+    return `<div class="sm-stat"><span>${pauseEscape(label)}</span><b>${pauseEscape(value)}</b></div>`;
   }
   function ensurePauseMenu() {
     if(pauseMenu) return;
@@ -1374,7 +1374,7 @@ const MAX_LUCK = 30;
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
-    pauseMenu.innerHTML=`<div class="mp-panel" data-menu-panel><h2 id="pauseTitle" hidden>Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back to How to Play</button><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
+    pauseMenu.innerHTML=`<div class="sm-panel" data-menu-panel><h2 id="pauseTitle" hidden>Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back to How to Play</button><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
     document.body.appendChild(pauseMenu);
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
@@ -1386,8 +1386,9 @@ const MAX_LUCK = 30;
       if(b.dataset.page) { pauseGuidePage+=Number(b.dataset.page); renderPauseContent('guide',pauseGuideFilter); }
       if(b.dataset.action==='resume') closePauseMenu();
       if(b.dataset.action==='end') {
-        pauseMenu.querySelector('footer').hidden=true;
-        pauseMenu.querySelector('.pause-content').innerHTML=menuHeader('End this run?','Your score will go to the run summary.')+'<div class="mp-actions"><button class="mp-primary" data-action="confirm-end">End run</button><button class="mp-primary" data-action="resume">Keep playing</button></div>';
+        pauseMenu.dataset.view='confirm';
+        pauseMenu.querySelector('.pause-content').innerHTML=menuHeader('End this run?','Your score will be saved to the run summary.');
+        pauseMenu.querySelector('footer').innerHTML='<button data-action="confirm-end">End run</button><button data-action="resume">Keep playing</button>';
       }
       if(b.dataset.action==='confirm-end') {pauseMenu.style.display='none';endGame();}
     });
@@ -1399,17 +1400,18 @@ const MAX_LUCK = 30;
   function renderPauseContent(view='run',filter=pauseGuideFilter) {
     pauseMenu.dataset.view = view;
     pauseMenu.querySelector('#pauseTitle').hidden = true;
-    pauseMenu.querySelector('[data-menu-panel]').className = view === 'guide' ? 'pause-panel' : 'mp-panel';
+    pauseMenu.querySelector('[data-menu-panel]').className = view === 'guide' ? 'pause-panel' : 'sm-panel';
     if(view !== 'guide') {
       pauseMenu.querySelector('[data-menu-panel]').removeAttribute('style');
       pauseMenu.querySelectorAll('footer,footer button').forEach(el=>el.removeAttribute('style'));
     }
-    pauseMenu.querySelector('.pause-content').classList.toggle('mp-content', view !== 'guide');
+    pauseMenu.querySelector('.pause-content').classList.toggle('sm-content', view !== 'guide');
     const footer = pauseMenu.querySelector('footer');
     footer.hidden=false;
-    footer.className = view === 'guide' ? 'pause-footer' : 'mp-actions';
+    footer.innerHTML='<button data-action="resume">Resume run</button><button data-action="end">End run</button>';
+    footer.className = view === 'guide' ? 'pause-footer' : 'sm-actions';
     footer.querySelector('[data-action="resume"]').textContent='Resume run';
-    footer.querySelector('[data-action="resume"]').className=view === 'guide' ? '' : 'mp-primary';
+    footer.querySelector('[data-action="resume"]').className=view === 'guide' ? '' : 'sm-primary';
     footer.querySelector('[data-action="end"]').textContent='End run';
     pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
@@ -1436,14 +1438,14 @@ const MAX_LUCK = 30;
     const upgradePages=Math.max(1,Math.ceil(current.length/upgradesPerPage));
     pauseUpgradePage=Math.max(0,Math.min(upgradePages-1,pauseUpgradePage));
     const pageUpgrades=current.slice(pauseUpgradePage*upgradesPerPage,(pauseUpgradePage+1)*upgradesPerPage);
-    const rows=pageUpgrades.map(x=>`<div class="mp-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b><span>${pauseEscape(descriptions[x.name.toLowerCase()] || (pauseGuide.find(e=>e[0]!=='Frogs' && e[1].toLowerCase()===x.name.toLowerCase())||[])[2] || 'Active for this run.')}</span></div></div>`).join('');
+    const rows=pageUpgrades.map(x=>`<div class="sm-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b><span>${pauseEscape(descriptions[x.name.toLowerCase()] || (pauseGuide.find(e=>e[0]!=='Frogs' && e[1].toLowerCase()===x.name.toLowerCase())||[])[2] || 'Active for this run.')}</span></div></div>`).join('');
     // Keep the pause header compact and consistent with Scores.
     content.innerHTML=menuHeader('Paused')+
-      `<div class="mp-runline"><span>SCORE<b>${Math.floor(score).toLocaleString()}</b></span><span>TIME<b>${formatTime(elapsedTime)}</b></span></div>
-      <div class="mp-facts">${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
-      <div class="mp-section-label">YOUR UPGRADES <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
-      ${rows || '<p class="mp-hint">No lasting upgrades yet.</p>'}
-      ${upgradePages>1 ? `<nav class="mp-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}`;
+      `<div class="sm-runline"><span>SCORE<b>${Math.floor(score).toLocaleString()}</b></span><span>TIME<b>${formatTime(elapsedTime)}</b></span></div>
+      <div class="sm-facts">${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
+      <div class="sm-section-label">YOUR UPGRADES <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
+      ${rows || '<p class="sm-hint">No lasting upgrades yet.</p>'}
+      ${upgradePages>1 ? `<nav class="sm-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}`;
 
   }
   function openPauseMenu() {
@@ -1486,7 +1488,7 @@ function initEndGameSummaryOverlay() {
   endGameSummaryOverlay.className = "frog-overlay";
   endGameSummaryOverlay.style.zIndex = "1400";
   endGameSummaryOverlay.style.background = "rgba(0,0,0,0.18)";
-  endGameSummaryOverlay.innerHTML = `<section class="mp-panel"><div id="endGameSummaryContent"></div><div class="mp-actions"><button id="endSummaryPlayAgainBtn" class="mp-primary">Play again</button><div class="mp-secondary"><button id="endSummaryScoresBtn">Scores</button><button id="endSummaryMenuBtn">Main menu</button></div></div></section>`;
+  endGameSummaryOverlay.innerHTML = `<section class="sm-panel"><div id="endGameSummaryContent"></div><div class="sm-actions"><button id="endSummaryPlayAgainBtn" class="sm-primary">Play again</button><div class="sm-secondary"><button id="endSummaryScoresBtn">Scores</button><button id="endSummaryMenuBtn">Main menu</button></div></div></section>`;
   container.appendChild(endGameSummaryOverlay);
 
   document.addEventListener("keydown", (e) => {
@@ -1644,10 +1646,10 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
   content.innerHTML = menuHeader('Run complete')+`
- <div class="mp-bigscore"><span>FINAL SCORE</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong></div>
- <div class="mp-best">${menuSprite('frog-crowned.png')}Personal best · ${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</div>
- <div class="mp-result-details"><div><b>${formatLeaderboardTime(run.time || 0)}</b><span>Survived</span></div><div><b>${run.orbs || 0}</b><span>Orbs</span></div><div><b>${run.sheds || 0}</b><span>Sheds</span></div></div>
- <label class="mp-tag-label" for="endSummaryTagInput">YOUR NAME ON THE BOARD</label><div class="mp-tag-row"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p class="mp-hint" id="endSummaryTagMsg" aria-live="polite"></p>`;
+ <div class="sm-bigscore"><span>FINAL SCORE</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong></div>
+ <div class="sm-best">${menuSprite('frog-crowned.png')}Personal best · ${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</div>
+ <div class="sm-result-details"><div><b>${formatLeaderboardTime(run.time || 0)}</b><span>Survived</span></div><div><b>${run.orbs || 0}</b><span>Orbs</span></div><div><b>${run.sheds || 0}</b><span>Sheds</span></div></div>
+ <label class="sm-tag-label" for="endSummaryTagInput">YOUR NAME ON THE BOARD</label><div class="sm-tag-row"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p class="sm-hint" id="endSummaryTagMsg" aria-live="polite"></p>`;
   openAnimatedOverlay(endGameSummaryOverlay);
 
   const tagInput = document.getElementById("endSummaryTagInput");
@@ -5796,6 +5798,7 @@ function closeAnimatedOverlay(overlayEl) {
     const panel = howToOverlay.querySelector(".frog-panel");
     if (!panel) return;
 
+    panel.classList.add('sm-panel');
     panel.innerHTML = `
       <div class="frog-panel-title">How to play</div>
       <p class="ui-help-intro">Keep your frogs alive</p>
@@ -6415,15 +6418,15 @@ async function showDashboardOverlay(cachedLeaderboard) {
     `
     : "";
 
-  content.innerHTML = menuHeader('My stats','Your progress')+`
-    <div class="mp-profile">${menuSprite('frog-crowned.png')}<div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #${bestRecordRank + 1}` : ''}</span></div></div>
-    <div class="mp-progress-label"><span>Next level</span><span>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan} orbs</span></div>
-    <div class="mp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i class="${i<Math.floor(levelData.progressPercent/5)?'is-filled':''}" aria-hidden="true"></i>`).join('')}</div>
-    <p class="mp-hint">${levelData.orbsNeededForNextLevel} more orbs to level ${levelData.nextLevel}</p>
-    <div class="mp-records">${menuStat('Personal best',leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : '—')}${menuStat('Best-run time',leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime || 0) : '—')}${menuStat('Runs played',localStats.totalRuns || 0)}${menuStat('Orbs collected',localStats.totalOrbsCollected || 0)}</div>
-    <label class="mp-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label>
-    <div class="mp-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div>
-    <p class="mp-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>
+  content.innerHTML = menuHeader('My stats')+`
+    <div class="sm-profile">${menuSprite('frog-crowned.png')}<div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #${bestRecordRank + 1}` : ''}</span></div></div>
+    <div class="sm-progress-label"><span>Next level</span><span>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan} orbs</span></div>
+    <div class="sm-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i class="${i<Math.floor(levelData.progressPercent/5)?'is-filled':''}" aria-hidden="true"></i>`).join('')}</div>
+    <p class="sm-hint">${levelData.orbsNeededForNextLevel} more orbs to level ${levelData.nextLevel}</p>
+    <div class="sm-records">${menuStat('Personal best',leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : '—')}${menuStat('Best-run time',leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime || 0) : '—')}${menuStat('Runs played',localStats.totalRuns || 0)}${menuStat('Orbs collected',localStats.totalOrbsCollected || 0)}</div>
+    <label class="sm-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label>
+    <div class="sm-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div>
+    <p class="sm-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>
 `;
 
   const tagInput = document.getElementById("dashboardTagInput");
@@ -6680,8 +6683,8 @@ function hideDashboardOverlay() {
 
     dashboardOverlay = document.getElementById("dashboardOverlay");
     const panel=dashboardOverlay.querySelector('.frog-panel');
-    if(panel){panel.className='mp-panel';panel.querySelector('.frog-panel-sub')?.remove();panel.querySelector('.frog-panel-footer').className='mp-actions';}
-    document.getElementById('dashboardCloseBtn').className='mp-primary';
+    if(panel){panel.className='sm-panel';panel.querySelector('.frog-panel-sub')?.remove();panel.querySelector('.frog-panel-footer').className='sm-actions';}
+    document.getElementById('dashboardCloseBtn').className='sm-primary';
     document.getElementById('dashboardCloseBtn').textContent='Back to menu';
     const closeBtn = document.getElementById("dashboardCloseBtn");
 
