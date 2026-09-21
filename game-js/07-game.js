@@ -6468,10 +6468,10 @@ async function showDashboardOverlay(cachedLeaderboard) {
     : "";
 
   content.innerHTML = menuHeader('My stats')+`
-    <div class="sm-profile">${menuSprite('frog-crowned.png')}<div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #${bestRecordRank + 1}` : ''}</span></div></div>
-    <div class="sm-progress-label"><span>Next level</span><span>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan} orbs</span></div>
+    <div class="sm-profile">${menuSprite('frog-crowned.png')}<div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level <b class="menu-value">${levelData.level}</b>${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #<b class="menu-value">${bestRecordRank + 1}</b>` : ''}</span></div></div>
+    <div class="sm-progress-label"><span>Next level</span><span><b class="menu-value">${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan}</b> orbs</span></div>
     <div class="sm-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i class="${i<Math.floor(levelData.progressPercent/5)?'is-filled':''}" aria-hidden="true"></i>`).join('')}</div>
-    <p class="sm-hint">${levelData.orbsNeededForNextLevel} more orbs to level ${levelData.nextLevel}</p>
+    <p class="sm-hint"><b class="menu-value">${levelData.orbsNeededForNextLevel}</b> more orbs to level <b class="menu-value">${levelData.nextLevel}</b></p>
     <div class="sm-records">${menuStat('Personal best',leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : '—')}${menuStat('Best-run time',leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime || 0) : '—')}${menuStat('Runs played',localStats.totalRuns || 0)}${menuStat('Orbs collected',localStats.totalOrbsCollected || 0)}</div>
     <label class="sm-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label>
     <div class="sm-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div>

@@ -168,7 +168,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 
 // Approved menus share the exact preview styling; dimensions follow the established design viewport.
 (()=>{
- const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=menu-colors-tag-fix-23';document.head.appendChild(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=consistent-menu-values-26';document.head.appendChild(css);
 
 })();
 
@@ -205,4 +205,19 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
   document.documentElement.classList.toggle('phone-secondary-menus',phone);
  }
  window.addEventListener('resize',update);update();
+})();
+
+// Accent only compact numeric highlights, never description wrappers or full sentences.
+(()=>{
+ const scope='#upgradeOverlay,#howToOverlay,#dashboardOverlay,#endGameSummaryOverlay,#runPauseOverlay,#buffGuideOverlay';
+ let queued=false;
+ function update(){queued=false;
+  document.querySelectorAll(scope).forEach(root=>root.querySelectorAll('.stat-highlight,.frog-upgrade-desc span').forEach(el=>{
+   const text=el.textContent.trim();
+   const numeric=/^[+−–×x-]?\s*\d[\d,.]*(?:\s*[–−-]\s*\d[\d,.]*)?\s*[%×x]?$/.test(text);
+   el.classList.toggle('menu-number-accent',numeric && !el.children.length);
+  }));
+ }
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(update);}}
+ new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true});schedule();
 })();
