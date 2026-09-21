@@ -1462,11 +1462,29 @@ const MAX_LUCK = 30;
     const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
     content.innerHTML=menuHeader('Paused')+`
-      <div class="summary-name"><div class="summary-editor"><span class="run-player-name">${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || 'Player')}</span></div></div>
+      <div class="summary-name"><div class="summary-editor"><input id="pauseTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || '')}" placeholder="Your name on the board"><button id="pauseTagSaveBtn">Save</button></div><p id="pauseTagMsg" role="status" aria-live="polite"></p></div>
       <div class="summary-score"><span>Score</span><strong>${Math.floor(score).toLocaleString()}</strong><p>Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p></div>
       <div class="summary-details"><span><b>${formatLeaderboardTime(elapsedTime)}</b> survived</span><span><b>${totalOrbsCollected || 0}</b> orbs</span><span><b>${snakeShedCount}</b> sheds</span></div>
       <section class="run-upgrades"></section>`;
     renderRunUpgrades(content.querySelector('.run-upgrades'),current);
+    const input=content.querySelector('#pauseTagInput'),save=content.querySelector('#pauseTagSaveBtn'),msg=content.querySelector('#pauseTagMsg');
+    save.onclick=async()=>{
+      const validation=validateDashboardTag(input.value);
+      if(!validation.ok){msg.textContent=validation.message;return;}
+      save.disabled=true;msg.textContent='Saving…';
+      try{
+        // Rename using the saved best record, never submit the unfinished run.
+        const best=await getMyDashboardBestFromLeaderboard();
+        const result=await submitScoreToServer(best?.bestRun || 0,best?.bestTime || 0,null,validation.tag);
+        if(!result || result._error){msg.textContent=result?.error==='tag_taken'?'That name is already taken.':(result?.message || 'Could not save. Try again.');return;}
+        await saveDashboardTag(validation.tag);
+        if(window.FrogGameLeaderboard?._lastMyEntry)window.FrogGameLeaderboard._lastMyEntry.tag=validation.tag;
+        msg.textContent='Name saved.';
+      }catch(e){msg.textContent='Connection error. Try again.';}
+      finally{save.disabled=false;}
+    };
+    input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(!save.disabled)save.click();}});
+
 
   }
   function openPauseMenu() {
