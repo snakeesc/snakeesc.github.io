@@ -1220,7 +1220,7 @@ const MAX_LUCK = 30;
     ['Common','Ouroboros Pact','Dead frogs have a 10% base chance to drop an orb.'],
     ['Common','Luck','Gain 10 luck, up to 30. Improves supported chances, spawn rolls and positive orb durations.'],
     ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
-    ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, within the revival cap.`],
+    ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, even above the revival cap.`],
     ['Common','Survival Instinct','Below 10 frogs, they hop 20% faster.'],
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
     ['Common','Pair of Scissors','Cuts the snake in half and slows it.'],
@@ -1303,7 +1303,7 @@ const MAX_LUCK = 30;
       #runPauseOverlay .pause-stats strong {font-size:42px;}
       #runPauseOverlay .pause-row img {width:64px;height:64px;}
     }
-    @media(max-width:600px) {
+    @media(max-width:600px) and (pointer:fine) {
       #runPauseOverlay .pause-panel {padding:16px;font-size:19px;}
       #runPauseOverlay h2 {font-size:30px;}
       #runPauseOverlay button {font-size:22px;}
@@ -1337,7 +1337,7 @@ const MAX_LUCK = 30;
       #runPauseOverlay .pause-rewards {font-size:32px;}
       #runPauseOverlay .pause-guide-entries p {font-size:36px;line-height:1.3;}
     }
-    @media(max-width:600px) {
+    @media(max-width:600px) and (pointer:fine) {
       #runPauseOverlay .pause-stats > div {font-size:20px;}
       #runPauseOverlay .pause-stats strong {font-size:23px;}
       #runPauseOverlay .pause-upgrade-grid strong {font-size:21px;}
@@ -1345,8 +1345,8 @@ const MAX_LUCK = 30;
       #runPauseOverlay .pause-rewards {font-size:21px;}
       #runPauseOverlay .pause-guide-entries p {font-size:22px;line-height:1.3;}
     }`;
-    style.textContent += '\n    #runPauseOverlay[data-view="run"] .pause-tabs {display:none;}\n    #runPauseOverlay[data-view="guide"] .pause-footer-guide {display:none;}\n    #runPauseOverlay[data-view="run"] .pause-panel {padding:24px 28px;width:540px;}\n    #runPauseOverlay[data-view="run"] h2 {margin-bottom:18px;}\n    #runPauseOverlay .pause-scoreline {display:flex;justify-content:center;gap:50px;text-align:center;margin-bottom:14px;}\n    #runPauseOverlay .pause-scoreline span {display:block;font-size:20px;}\n    #runPauseOverlay .pause-scoreline strong {display:block;font-size:38px;color:#087f86;line-height:1.1;}\n    #runPauseOverlay .pause-statline {display:flex;justify-content:center;flex-wrap:wrap;gap:6px 18px;font-size:19px;padding-bottom:14px;border-bottom:1px solid #c0cf94;}\n    #runPauseOverlay .pause-statline b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] h3 {font-size:21px;margin:18px 0 8px;}\n    #runPauseOverlay[data-view="run"] .pause-upgrade-grid {gap:8px 14px;}\n    #runPauseOverlay[data-view="run"] .pause-row {border:0;padding:4px 0;gap:9px;}\n    #runPauseOverlay[data-view="run"] .pause-row strong {font-size:21px;font-weight:normal;}\n    #runPauseOverlay .pause-effect-list {display:flex;flex-wrap:wrap;gap:6px 18px;font-size:19px;}\n    #runPauseOverlay .pause-effect-list b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] .pause-footer {display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;border:0;margin-top:18px;padding:0;}\n    #runPauseOverlay[data-view="run"] [data-action="resume"] {grid-column:1/-1;font-size:32px;padding:12px;}\n    #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:21px;}\n    @media(pointer:coarse),(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {width:880px;padding:30px;}\n      #runPauseOverlay .pause-scoreline {gap:70px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:32px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:56px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:34px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:48px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:34px;}\n    }\n    @media(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {padding:20px;}\n      #runPauseOverlay .pause-scoreline {gap:36px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:20px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:36px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:22px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:32px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:22px;}\n    }\n';
-    style.textContent += '\n#runPauseOverlay[data-view="run"] .pause-panel {width:520px;}\n#runPauseOverlay[data-view="run"] .pause-content {font-weight:400;font-synthesis:none;}\n#runPauseOverlay .pause-runline {display:flex;justify-content:space-between;gap:16px;padding:8px 0 14px;border-bottom:1px solid #c0cf94;font-size:23px;font-weight:400;}\n#runPauseOverlay .pause-runline span {display:flex;gap:12px;align-items:baseline;}\n#runPauseOverlay .pause-runline em {font-style:normal;font-weight:400;color:#087f86;}\n#runPauseOverlay .pause-detail-stats {display:grid;grid-template-columns:1fr 1fr;gap:9px 26px;margin:14px 0 18px;font-size:21px;}\n#runPauseOverlay .pause-detail-stats div {display:flex;justify-content:space-between;gap:10px;}\n#runPauseOverlay .pause-detail-stats dt,#runPauseOverlay .pause-detail-stats dd {margin:0;font-weight:400;}\n#runPauseOverlay .pause-detail-stats dd {color:#087f86;}\n#runPauseOverlay[data-view="run"] h3 {font-weight:400;text-align:left;border-top:1px solid #c0cf94;padding-top:12px;margin-top:10px;}\n#runPauseOverlay[data-view="run"] .pause-row strong,#runPauseOverlay[data-view="run"] .pause-effect-list b {font-weight:400;font-synthesis:none;}\n@media(pointer:coarse),(max-width:600px){\n#runPauseOverlay[data-view="run"] .pause-panel {width:880px;}\n#runPauseOverlay .pause-runline {font-size:36px;}\n#runPauseOverlay .pause-detail-stats {font-size:32px;gap:12px 32px;}\n}\n@media(max-width:600px){\n#runPauseOverlay .pause-runline {font-size:23px;gap:12px;}\n#runPauseOverlay .pause-runline span {gap:8px;}\n#runPauseOverlay .pause-detail-stats {font-size:21px;gap:9px 18px;}\n}\n';
+    style.textContent += '\n    #runPauseOverlay[data-view="run"] .pause-tabs {display:none;}\n    #runPauseOverlay[data-view="guide"] .pause-footer-guide {display:none;}\n    #runPauseOverlay[data-view="run"] .pause-panel {padding:24px 28px;width:540px;}\n    #runPauseOverlay[data-view="run"] h2 {margin-bottom:18px;}\n    #runPauseOverlay .pause-scoreline {display:flex;justify-content:center;gap:50px;text-align:center;margin-bottom:14px;}\n    #runPauseOverlay .pause-scoreline span {display:block;font-size:20px;}\n    #runPauseOverlay .pause-scoreline strong {display:block;font-size:38px;color:#087f86;line-height:1.1;}\n    #runPauseOverlay .pause-statline {display:flex;justify-content:center;flex-wrap:wrap;gap:6px 18px;font-size:19px;padding-bottom:14px;border-bottom:1px solid #c0cf94;}\n    #runPauseOverlay .pause-statline b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] h3 {font-size:21px;margin:18px 0 8px;}\n    #runPauseOverlay[data-view="run"] .pause-upgrade-grid {gap:8px 14px;}\n    #runPauseOverlay[data-view="run"] .pause-row {border:0;padding:4px 0;gap:9px;}\n    #runPauseOverlay[data-view="run"] .pause-row strong {font-size:21px;font-weight:normal;}\n    #runPauseOverlay .pause-effect-list {display:flex;flex-wrap:wrap;gap:6px 18px;font-size:19px;}\n    #runPauseOverlay .pause-effect-list b {color:#087f86;font-weight:normal;}\n    #runPauseOverlay[data-view="run"] .pause-footer {display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;border:0;margin-top:18px;padding:0;}\n    #runPauseOverlay[data-view="run"] [data-action="resume"] {grid-column:1/-1;font-size:32px;padding:12px;}\n    #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:21px;}\n    @media(pointer:coarse),(max-width:600px) {\n      #runPauseOverlay[data-view="run"] .pause-panel {width:880px;padding:30px;}\n      #runPauseOverlay .pause-scoreline {gap:70px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:32px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:56px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:34px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:48px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:34px;}\n    }\n    @media(max-width:600px) and (pointer:fine) {\n      #runPauseOverlay[data-view="run"] .pause-panel {padding:20px;}\n      #runPauseOverlay .pause-scoreline {gap:36px;}\n      #runPauseOverlay .pause-scoreline span,#runPauseOverlay .pause-statline,#runPauseOverlay .pause-effect-list {font-size:20px;}\n      #runPauseOverlay .pause-scoreline strong {font-size:36px;}\n      #runPauseOverlay[data-view="run"] h3,#runPauseOverlay[data-view="run"] .pause-row strong {font-size:22px;}\n      #runPauseOverlay[data-view="run"] [data-action="resume"] {font-size:32px;}\n      #runPauseOverlay[data-view="run"] .pause-footer-guide,#runPauseOverlay[data-view="run"] [data-action="end"] {font-size:22px;}\n    }\n';
+    style.textContent += '\n#runPauseOverlay[data-view="run"] .pause-panel {width:520px;}\n#runPauseOverlay[data-view="run"] .pause-content {font-weight:400;font-synthesis:none;}\n#runPauseOverlay .pause-runline {display:flex;justify-content:space-between;gap:16px;padding:8px 0 14px;border-bottom:1px solid #c0cf94;font-size:23px;font-weight:400;}\n#runPauseOverlay .pause-runline span {display:flex;gap:12px;align-items:baseline;}\n#runPauseOverlay .pause-runline em {font-style:normal;font-weight:400;color:#087f86;}\n#runPauseOverlay .pause-detail-stats {display:grid;grid-template-columns:1fr 1fr;gap:9px 26px;margin:14px 0 18px;font-size:21px;}\n#runPauseOverlay .pause-detail-stats div {display:flex;justify-content:space-between;gap:10px;}\n#runPauseOverlay .pause-detail-stats dt,#runPauseOverlay .pause-detail-stats dd {margin:0;font-weight:400;}\n#runPauseOverlay .pause-detail-stats dd {color:#087f86;}\n#runPauseOverlay[data-view="run"] h3 {font-weight:400;text-align:left;border-top:1px solid #c0cf94;padding-top:12px;margin-top:10px;}\n#runPauseOverlay[data-view="run"] .pause-row strong,#runPauseOverlay[data-view="run"] .pause-effect-list b {font-weight:400;font-synthesis:none;}\n@media(pointer:coarse),(max-width:600px){\n#runPauseOverlay[data-view="run"] .pause-panel {width:880px;}\n#runPauseOverlay .pause-runline {font-size:36px;}\n#runPauseOverlay .pause-detail-stats {font-size:32px;gap:12px 32px;}\n}\n@media(max-width:600px) and (pointer:fine) {\n#runPauseOverlay .pause-runline {font-size:23px;gap:12px;}\n#runPauseOverlay .pause-runline span {gap:8px;}\n#runPauseOverlay .pause-detail-stats {font-size:21px;gap:9px 18px;}\n}\n';
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
@@ -3443,9 +3443,9 @@ function unmarkCannibalFrog(frog) {
 function computeDeathRattleChanceForFrog(frog) {
   let chance = frogDeathRattleChance || 0;
 
-  // Cannibal aura: +5% per cannibal frog alive (while they exist)
+  // Cannibal aura: +1% per cannibal frog alive (while they exist)
   if (cannibalFrogCount > 0) {
-    chance += cannibalFrogCount * 0.05;
+    chance += cannibalFrogCount * 0.01;
   }
 
   // Per-frog bonus (Zombie Horde, Cannibal stats, etc.)
@@ -3572,13 +3572,10 @@ function computeDeathRattleChanceForFrog(frog) {
 
     let drChance = computeDeathRattleChanceForFrog(frog);
 
-    // Last Stand: if active and this was the last frog, guarantee at least X%,
-    // but still never exceed the global cap.
+    // Last Stand: if active and this was the last frog, guarantee at least X%.
+    // Deliberately exempt from MAX_DEATHRATTLE_CHANCE, which would clamp it to 20%.
     if (lastStandActive && wasLastFrog) {
       drChance = Math.max(drChance, LAST_STAND_MIN_CHANCE);
-      if (drChance > MAX_DEATHRATTLE_CHANCE) {
-        drChance = MAX_DEATHRATTLE_CHANCE;
-      }
     }
 
     if (drChance > 0 && Math.random() < drChance) {
