@@ -1226,7 +1226,7 @@ const MAX_LUCK = 30;
   let runUpgradeLog = [];
   const pauseGuide = [
     ['Common','Afterglow','Requires Night Bloom. Its spawned frogs trigger the expired orb at half duration.'],
-    ['Common','Mutation','Frogs hop 15% faster and 15% higher, up to their limits.'],
+    ['Common','Mutation','Frogs hop 15% faster and 20% higher, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
@@ -6365,7 +6365,7 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     const upgrades = [
-      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +15% jump height." },
+      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +20% jump height." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they hop 20% faster." },
       { type: "mobility", label: "✂️ Ouroboros Curse", desc: "Makes the snake consume half its body and slows it." },
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
