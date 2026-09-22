@@ -1238,7 +1238,7 @@ const MAX_LUCK = 30;
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
     ['Common','Ouroboros Curse','Makes the snake consume half its body and slows it.'],
     ['Epic','Royal Apprenticeship','Spawning special frogs converts all ordinary crowned frogs to the spawned role. Consumes crowns and rerolls natural movement stats. Frogs already holding a special role stay unchanged.'],
-    ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Each snake can eat one orb every 3 seconds.'],
+    ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Lingering Hex extends these debuffs; luck does not. Each snake can eat one orb every 3 seconds.'],
     ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
     ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
     ['Epic','Peace of Mind','At 30 luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
@@ -5133,7 +5133,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         const orb=orbs.splice(idx,1)[0];orb.el.remove();snakeObj.fruitCooldown=3;
         const effects=[['fruitSlow',SNAKE_SLOW_DURATION],['fruitConfuse',SNAKE_CONFUSE_DURATION],['fruitShrink',SNAKE_SHRINK_DURATION]];
         const [key,duration]=effects[Math.floor(Math.random()*effects.length)];
-        snakeObj[key]=Math.max(snakeObj[key]||0,duration*.5);playSnakeMunch();
+        snakeObj[key]=Math.max(snakeObj[key]||0,duration*.5*(lingeringHexActive ? 1.15 : 1));playSnakeMunch();
       }
     }
     // 4. COLLISIONS
