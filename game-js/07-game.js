@@ -964,6 +964,7 @@ let greedyHandQueue = null;
   let roleDraftPending = false;
   let roleDraftChoices = [];
   let graveWaveUsed = false;
+  let ouroborosFeastUsed = false;
   let pairOfScissorsUsed = false;
   let epicChainPending = false;
   let secondWindActive = false;
@@ -1238,7 +1239,8 @@ const MAX_LUCK = 30;
     ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, as an exception to the ordinary revival cap.`],
     ['Common','Survival Instinct','Below 10 frogs, they hop 20% faster.'],
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
-    ['Epic','Ouroboros Curse','Makes the snake consume half its body and slows it.'],
+    ['Common','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
+    ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
     ['Epic','Royal Apprenticeship','Spawning special frogs converts all ordinary crowned frogs to the spawned role. Consumes crowns and rerolls natural movement stats. Frogs already holding a special role stay unchanged.'],
     ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Lingering Hex extends these debuffs; luck does not. Each snake can eat one orb every 3 seconds.'],
     ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
@@ -1539,7 +1541,7 @@ const MAX_LUCK = 30;
       pauseMenu.querySelector('.guide-pagination-slot').appendChild(content.querySelector('.pause-pages'));
       return;
     }
-    const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
+    const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','ouroborosFeast','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
     content.innerHTML= `
 <div class="summary-name"><div class="summary-editor"><input id="pauseTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || '')}" placeholder="Your name on the board"><button id="pauseTagSaveBtn">Save</button></div><p id="pauseTagMsg" role="status" aria-live="polite"></p></div>
@@ -2030,13 +2032,13 @@ function clearShedSequence() {
   }
   shedSequence = null;
 }
-function beginShedSequence(cycle) {
-  if (!snake || !snake.head || shedSequence || cycle > 2) return;
-  const nodes = [snake.head, ...snake.segments];
+function beginShedSequence(cycle, owner = snake, restoreOnly = false, onComplete = null) {
+  if (!owner || !owner.head || shedSequence || cycle > 2) return;
+  const nodes = [owner.head, ...owner.segments];
   const points = nodes.map(n => ({x:n.x,y:n.y}));
   let length = 0;
   const distances = points.map((point,i) => { if(i) length += Math.hypot(point.x-points[i-1].x,point.y-points[i-1].y); return length; });
-  const angle = snake.head.angle || 0;
+  const angle = owner.head.angle || 0;
   const dx = Math.cos(angle), dy = Math.sin(angle);
   let travel = 80;
   if(dx>0) travel=Math.min(travel,(window.innerWidth-SNAKE_SEGMENT_SIZE-points[0].x)/dx);
@@ -2064,7 +2066,7 @@ function beginShedSequence(cycle) {
     container.appendChild(skin);
     return {el, skin, transform: el.style.transform, filter: el.style.filter};
   });
-  shedSequence = {parts, nodes, points, distances, sample, travel, dx, dy, cycle, time:0, reduced:window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches};
+  shedSequence = {owner, restoreOnly, onComplete, parts, nodes, points, distances, sample, travel, dx, dy, cycle, time:0, reduced:window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches};
 }
 function updateShedSequence(dt) {
   const seq = shedSequence;
@@ -2102,13 +2104,21 @@ function updateShedSequence(dt) {
     const cycle = seq.cycle;
     seq.parts.forEach((part,i)=>{seq.nodes[i].x=part.finalPoint.x;seq.nodes[i].y=part.finalPoint.y;part.transform=part.finalTransform;});
     let pathDistance=0;
-    const oldPath=snake.path;
-    snake.path=oldPath.map((point,i)=>{
+    const oldPath=seq.owner.path;
+    seq.owner.path=oldPath.map((point,i)=>{
       if(i)pathDistance+=Math.hypot(point.x-oldPath[i-1].x,point.y-oldPath[i-1].y);
       return seq.sample(pathDistance-seq.travel);
     });
     clearShedSequence();
-    snakeShed(cycle);
+    if(seq.restoreOnly){
+      // A restorative red molt preserves length, color and every speed modifier.
+      delete seq.owner.selfConsume;
+      seq.owner.tailConsumed=false;
+      seq.owner.canGrow=true;
+      const tail=seq.owner.segments.at(-1);
+      if(tail)tail.el.className="snake-tail";
+    }else snakeShed(cycle);
+    if(seq.onComplete)seq.onComplete();
 
   }
 }
@@ -3589,12 +3599,26 @@ function activateSnakeEgg() {
       }
     }
   }
+function getCurseSnakes(){return [snake,...extraSnakes].filter(s=>s && s.head && !s.isBabySnake);}
+function getLargestCurseSnake(){return getCurseSnakes().reduce((best,s)=>!best||s.segments.length>best.segments.length?s:best,null);}
 function applyPairOfScissors() {
-  if (!snake || pairOfScissorsUsed || snake.segments.length < 8) return;
-  snake.speedFactor = (snake.speedFactor || 1) * 0.88;
-  snake.selfConsume = {delay:2.5, keep:Math.floor(snake.segments.length/2), biteCooldown:0};
-  snake.canGrow = false;
+  const owner=getLargestCurseSnake();
+  if (!owner || pairOfScissorsUsed || owner.segments.length < 8) return;
+  owner.speedFactor = (owner.speedFactor || 1) * 0.88;
+  owner.selfConsume = {delay:2.5, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
+  owner.canGrow = false;
   pairOfScissorsUsed = true;
+}
+function applyOuroborosFeast(){
+ const group=getCurseSnakes();
+ if(ouroborosFeastUsed || !pairOfScissorsUsed || group.length<2 || group.some(s=>s.selfConsume))return;
+ ouroborosFeastUsed=true;
+ const slow=group.length===2?0.90:0.95;
+ group.forEach((owner,i)=>{
+  owner.speedFactor=(owner.speedFactor||1)*slow;
+  owner.canGrow=false;
+  owner.selfConsume={delay:2.5,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,target:group[(i+1)%group.length]};
+ });
 }
 function updateSelfConsumption(obj, dt) {
   const c=obj.selfConsume;
@@ -3607,16 +3631,23 @@ function updateSelfConsumption(obj, dt) {
 function consumeReachedTail(obj, previousHead, dt) {
   const c=obj.selfConsume;
   if(!c || c.delay>0 || c.biteCooldown>0) return;
-  const tail=obj.segments.at(-1);
+  const victim=c.target || obj;
+  const keep=c.group?victim.selfConsume?.keep:c.keep;
+  if(keep===undefined || victim.segments.length<=keep)return;
+  const tail=victim.segments.at(-1);
   if(!tail) return;
   const dx=obj.head.x-previousHead.x,dy=obj.head.y-previousHead.y;
   const length2=dx*dx+dy*dy;
   const t=length2?Math.max(0,Math.min(1,((tail.x-previousHead.x)*dx+(tail.y-previousHead.y)*dy)/length2)):0;
   const shrink=(snakeShrinkTime>0 || obj.fruitShrink>0)?0.75:1;
   if(Math.hypot(tail.x-previousHead.x-t*dx,tail.y-previousHead.y-t*dy)>SNAKE_SEGMENT_SIZE*0.9*shrink)return;
-  obj.segments.pop().el.remove();obj.tailConsumed=true;c.biteCooldown=0.18;
+  victim.segments.pop().el.remove();victim.tailConsumed=true;c.biteCooldown=0.18;
   playSnakeMunch();
-  if(obj.segments.length<=c.keep){obj.canGrow=false;delete obj.selfConsume;}
+  if(c.group){
+    if(c.group.every(s=>s.segments.length<=s.selfConsume.keep)){
+      for(const member of c.group){member.canGrow=false;member.tailConsumed=true;delete member.selfConsume;}
+    }
+  }else if(obj.segments.length<=c.keep){obj.canGrow=false;delete obj.selfConsume;}
 }
 function clearScissorsAndOldSnakeState() {
   // remove detached scissors tail pieces still sitting in the DOM
@@ -5021,7 +5052,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     // 2. MOVEMENT
     let desiredAngle = head.angle;
     if (snakeObj.selfConsume && snakeObj.selfConsume.delay <= 0 && snakeObj.segments.length) {
-      const tail=snakeObj.segments.at(-1);
+      const tail=(snakeObj.selfConsume.target || snakeObj).segments.at(-1);
       desiredAngle=Math.atan2(tail.y-head.y,tail.x-head.x);
     } else if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
@@ -5046,7 +5077,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     head.angle += Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
 
     const speedFactor = getSnakeSpeedFactor(snakeObj);
-    const speed = SNAKE_BASE_SPEED * speedFactor;
+    const feeding=snakeObj.selfConsume && snakeObj.selfConsume.delay<=0;
+    const speed = SNAKE_BASE_SPEED * speedFactor * (feeding?0.55:1);
     const previousHead={x:head.x,y:head.y};
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
@@ -5241,6 +5273,13 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
+    if (!pairOfScissorsUsed && getLargestCurseSnake()?.segments.length >= 8) {
+      upgrades.push({
+        id: "pairOfScissors",
+        label: `✂️ Ouroboros Curse<br>Largest snake consumes half its body. <span class=menu-number-accent data-card-accent>Slows it</span>`,
+        apply: () => { applyPairOfScissors(); }
+      });
+    }
     if (!afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Expired orbs have a <span>25%</span> chance to activate at <span class=menu-number-accent data-card-accent>half duration</span>", apply:()=>{afterglowActive=true;}});
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
 
@@ -5406,13 +5445,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
-    if (!pairOfScissorsUsed && snake && snake.segments.length >= 8) {
-      upgrades.push({
-        id: "pairOfScissors",
-        label: `✂️ Ouroboros Curse<br>Snake consumes half its body. <span class=menu-number-accent data-card-accent>Slows it</span>`,
-        apply: () => { applyPairOfScissors(); }
-      });
-    }
+    if(pairOfScissorsUsed && !ouroborosFeastUsed && getCurseSnakes().length>=2 && !getCurseSnakes().some(s=>s.selfConsume))upgrades.push({id:"ouroborosFeast",label:"Ouroboros Feast<br>Snakes devour half of each other’s bodies and <span class=menu-number-accent data-card-accent>slow down</span>",apply:applyOuroborosFeast});
+
     if (!forbiddenFruitActive) upgrades.push({id:"forbiddenFruit",label:'Forbidden Fruit<br>Orbs briefly debuff snakes that <span class=menu-number-accent data-card-accent>eat</span> them.',apply:()=>{forbiddenFruitActive=true;}});
     if (!higherCallingActive && upgradeOverlayContext === "shed") upgrades.push({id:"higherCalling",label:'Higher Calling<br>Choose <span style="color:#006b83">2</span> epics at each shed.',apply:()=>{higherCallingActive=true;}});
     if (!secondHelpingPending && secondHelpingPicksRemaining === 0) upgrades.push({
@@ -8114,6 +8148,7 @@ doubleYolkerActive = false;
     toxicBloodActive = false;
     survivalInstinctActive = false;
 
+    ouroborosFeastUsed = false;
     pairOfScissorsUsed = false;
     orbCollectorActive       = false;
     orbCollectorChance       = 0;
@@ -8237,15 +8272,24 @@ doubleYolkerActive = false;
       }
 
       // ----- SNAKE SHED TIMER (every SHED_INTERVAL seconds) -----
-      if (elapsedTime >= nextShedTime) {
+      if (elapsedTime >= nextShedTime && !getCurseSnakes().some(s=>s.selfConsume)) {
         snakeShedCount++;
 
         // 1,2 = shed / speed up current primary snake
         // 3 = retain the red snake and bring in a fresh green snake.
         const cycleIndex = ((snakeShedCount - 1) % 3) + 1;
 
-        if (cycleIndex === 3) handleFourthShed();
-        else beginShedSequence(cycleIndex);
+        // Red cursed snakes restore at this milestone, even when already an extra snake.
+        const restorations=[snake,...extraSnakes].filter(owner=>owner &&
+          (owner.shedStage ?? (owner===snake?snakeShedStage:2))>=2 &&
+          (owner.tailConsumed || owner.selfConsume));
+        const finishCycle=()=>{if(cycleIndex===3)handleFourthShed();else beginShedSequence(cycleIndex);};
+        const restoreNext=()=>{
+          const owner=restorations.shift();
+          if(owner)beginShedSequence(2,owner,true,restoreNext);
+          else finishCycle();
+        };
+        restoreNext();
 
         nextShedTime += SHED_INTERVAL;
       }

@@ -264,3 +264,5 @@ window.approvedUpgrades["afterglow"]="./game-assets/sprites/approved/upgrade-aft
  });}
  new MutationObserver(update).observe(document.body,{childList:true,subtree:true});update();
 })();
+
+window.approvedUpgrades["ouroboros feast"]="./game-assets/sprites/approved/upgrade-ouroboros-feast-framed.svg";
