@@ -93,8 +93,8 @@
 #runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .guide-heading h2{font-size:var(--menu-title-font,36px)!important;line-height:1.15!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-row strong{font-size:var(--menu-name-font,23px)!important;line-height:1.2!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-row p{font-size:var(--menu-body-font,21px)!important;line-height:1.3!important}
-#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-row img{width:calc(30 * var(--menu-unit,1px))!important;height:calc(30 * var(--menu-unit,1px))!important}
-#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-row{grid-template-columns:calc(30 * var(--menu-unit,1px)) minmax(0,1fr)!important;gap:calc(12 * var(--menu-unit,1px))!important;padding:calc(12 * var(--menu-unit,1px)) 0!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-row img{width:calc(40 * var(--menu-unit,1px))!important;height:calc(40 * var(--menu-unit,1px))!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-row{grid-template-columns:calc(40 * var(--menu-unit,1px)) minmax(0,1fr)!important;gap:calc(12 * var(--menu-unit,1px))!important;padding:calc(12 * var(--menu-unit,1px)) 0!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-filters button,#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .guide-back,#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-pages button{font-size:var(--menu-control-font,23px)!important;line-height:1.2!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-pages{display:flex!important;justify-content:center!important;gap:20px!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-pages button{width:auto!important;flex:0 0 auto!important;text-align:center!important}
@@ -370,3 +370,11 @@ html.phone-secondary-menus #runPauseOverlay[data-view="run"] .sm-upgrade-columns
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .pause-pages{display:flex!important;justify-content:center!important;align-items:center!important;gap:18px!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .guide-menu-actions{display:flex!important;justify-content:center!important;align-items:center!important;gap:24px!important;width:100%!important}
 #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .guide-menu-actions button{width:auto!important;flex:0 0 auto!important;font-size:var(--menu-control-font,23px)!important;background:transparent!important;border:0!important;box-shadow:none!important;cursor:pointer!important}
+
+/* Keep frog-role sprites at their original size. */
+#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"][data-guide-category="Frogs"] .pause-row img{width:calc(30 * var(--menu-unit,1px))!important;height:calc(30 * var(--menu-unit,1px))!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"][data-guide-category="Frogs"] .pause-row{grid-template-columns:calc(30 * var(--menu-unit,1px)) minmax(0,1fr)!important}
+
+/* Give padded role artwork more room; physics and ordinary frog sizes stay unchanged. */
+#frog-game .frog-sprite:is([data-approved-role="bull"],[data-approved-role="poison"],[data-approved-role^="cannibal-"])::before{width:59.583%!important;height:59.583%!important;image-rendering:pixelated!important}
+@media(max-width:600px){#frog-game .frog-sprite:is([data-approved-role="bull"],[data-approved-role="poison"],[data-approved-role^="cannibal-"])::before{width:54.167%!important;height:54.167%!important}}

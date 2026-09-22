@@ -1020,6 +1020,7 @@ let lastingLegacyActive = false;
 let brittleScalesActive = false;
 let bruisedEggActive = false;
 let panicAttackActive = false;
+let peaceOfMindActive = false;
 const MAX_LUCK = 30;
   let fragileRealityActive = false;
   let frogScatterUsed      = false;
@@ -1222,7 +1223,7 @@ const MAX_LUCK = 30;
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
     ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
     ['Common','Spawn frogs',`${NORMAL_SPAWN_AMOUNT} frogs immediately, subject to the population cap.`],
-    ['Common','Orb Flow','Adds 10% orb spawn rate. With Alchemists, the total caps at 17%.'],
+    ['Common','Orb Flow','Adds 10% orb spawn rate.'],
     ['Common','Orb Whisperer','Orbs stay on the field 30% longer.'],
     ['Common','Ouroboros Pact','Dead frogs have a 10% base chance to drop an orb.'],
     ['Common','Luck','Gain 10 luck, up to 30. Improves supported chances, spawn rolls and positive orb durations.'],
@@ -1232,6 +1233,7 @@ const MAX_LUCK = 30;
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
     ['Common','Pair of Scissors','Cuts the snake in half and slows it.'],
     ['Epic','Royal Apprenticeship','Spawning special frogs converts all ordinary crowned frogs to the spawned role. Consumes crowns and rerolls natural movement stats. Frogs already holding a special role stay unchanged.'],
+    ['Epic','Peace of Mind','At 30 luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
     ['Epic','Role Draft','Choose between two roles and spawn 2–5 special frogs. Luck favors larger batches.'],
     ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
     ['Epic','Lasting Legacy','A dying special frog has a 20% chance to pass a role to an ordinary frog.'],
@@ -1258,7 +1260,7 @@ const MAX_LUCK = 30;
     ['Frogs','Zombie','Sacrifices itself to end Panic Hop for the swarm. Spawns one ordinary frog on any death.'],
     ['Frogs','Cannibal','Eats up to 5 ordinary frogs, gaining 5% shorter hop timing and 5% higher jumps per meal. On death, spawns 2–5 frogs, never more than it ate. Each living Cannibal adds 1 percentage point of Deathrattle; total chance cannot exceed 25%.'],
     ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs.'],
-    ['Frogs','Alchemist','Adds 2.5% orb spawn rate while alive. Alchemists add up to 10%; combined bonus caps at 17%.'],
+    ['Frogs','Alchemist','Spawns a frog every 15–25 seconds. Luck favors shorter waits.'],
     ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
     ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.'],
   ];
@@ -1481,6 +1483,7 @@ const MAX_LUCK = 30;
     pauseMenu.querySelector('.guide-pagination-slot')?.replaceChildren();
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
+      pauseMenu.dataset.guideCategory=filter;
       pauseGuideFilter=filter;
       const entries=pauseGuide.filter(x=>x[0]===filter);
       const perPage=4, pages=Math.ceil(entries.length/perPage);
@@ -2919,7 +2922,7 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
-  frog.alchemistTimer = 0; // Independently roll the first drop.
+  frog.alchemistTimer = 40 - getLuckBiasedInt(15, 25); // Luck favors shorter independent waits.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -2935,7 +2938,7 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
-  frog.alchemistTimer = 0; // Independently roll the first drop.
+  frog.alchemistTimer = 40 - getLuckBiasedInt(15, 25); // Luck favors shorter independent waits.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -3042,7 +3045,7 @@ function getRandomTriggeredOrbBuffType(excluded = []) {
     "lifeSteal"
   ];
 
-  const eligible = pool.filter(type => !excluded.includes(type));
+  const eligible = pool.filter(type => !excluded.includes(type) && !(peaceOfMindActive && type === "panicHop"));
   return eligible[Math.floor(Math.random() * eligible.length)];
 }
 
@@ -3272,7 +3275,7 @@ function showRoleDraftOverlayChoices() {
             : role.id === "zombie"
             ? "Sacrifices itself to stop Panic Hop. Spawns one frog on death."
             : role.id === "alchemist"
-            ? "+2.5% orb spawn rate per Alchemist"
+            ? "Spawns a frog every 15–25s. Luck helps."
             : role.id === "necromancer"
             ? "Deathrattle revivals become Zombies."
             : "Special frog role."
@@ -3856,7 +3859,7 @@ function computeDeathRattleChanceForFrog(frog) {
   function applyBuff(type, frog, durationMultiplier = 1, fixedDuration = false) {
     const isLuckyCollector = frog && frog.isLucky;
     // Lucky collectors reroll negative orb results, including chain reactions.
-    if (isLuckyCollector && type === "panicHop") {
+    if ((isLuckyCollector || peaceOfMindActive) && type === "panicHop") {
       type = getRandomTriggeredOrbBuffType(["panicHop"]);
     }
     const durBoost = isLuckyCollector
@@ -4175,6 +4178,14 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
   function updateFrogs(dt, width, height) {
+    // Snapshot avoids processing newly spawned frogs as Alchemists this frame.
+    for (const alchemist of frogs.filter(f => f.isAlchemist)) {
+      alchemist.alchemistTimer -= dt;
+      if (alchemist.alchemistTimer <= 0) {
+        spawnExtraFrogs(1);
+        alchemist.alchemistTimer = 40 - getLuckBiasedInt(15, 25);
+      }
+    }
     const marginY = 24;
     const marginX = 8;
     if (secondWindActive && !secondWindUsed && frogs.length > 0 && frogs.length <= 10) {
@@ -4286,8 +4297,9 @@ function computeDeathRattleChanceForFrog(frog) {
   ];
 
   function spawnOrb(type, x, y) {
-    if (!type) {
-      type = ORB_TYPES[Math.floor(Math.random() * ORB_TYPES.length)];
+    if (!type || (peaceOfMindActive && type === "panicHop")) {
+      const availableTypes = ORB_TYPES.filter(t => !(peaceOfMindActive && t === "panicHop"));
+      type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
     }
 
     if (typeof x !== "number" || typeof y !== "number") {
@@ -5278,11 +5290,33 @@ function samplePathAtDistance(path, startIdx, dist) {
     bruisedEggActive = true;
   }
 
+  function applyPeaceOfMind() {
+    if (peaceOfMindActive || luckStat < MAX_LUCK) return;
+    peaceOfMindActive = true;
+    addLuck(-luckStat);
+    panicHopTime = 0;
+    // Replace already spawned negative orbs with valid non-panic pickups.
+    for (let i = orbs.length - 1; i >= 0; i--) {
+      if (orbs[i].type !== "panicHop") continue;
+      const old = orbs.splice(i, 1)[0];
+      old.el.remove();
+      spawnOrb(getRandomTriggeredOrbBuffType(["panicHop"]), old.x, old.y);
+      const replacement = orbs[orbs.length - 1];
+      replacement.ttl = old.ttl;
+      replacement.maxTtl = old.maxTtl;
+      totalOrbsSpawned--; // Conversion is not an additional spawned orb.
+    }
+  }
+
   function getEpicUpgradeChoices() {
     const epicTitleColor = "yellow";
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!peaceOfMindActive && luckStat >= MAX_LUCK) upgrades.push({
+      id:"peaceOfMind", label:"Peace of Mind<br>Spend all <span>30 luck</span>. No more Panic Hop.",
+      apply:applyPeaceOfMind
+    });
     if (!eyeForEyeUsed && (snake ? 1 : 0) + extraSnakes.filter(Boolean).length >= 2) {
       upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>; excess frogs die.", apply:applyEyeForAnEye});
     }
@@ -7662,7 +7696,7 @@ function startRunFromMenu() {
   function triggerLegendaryFrenzy() {
     // 13-second Frenzy: snake faster + frogs panic hop randomly
     snakeFrenzyTime = 13;
-    panicHopTime = Math.max(panicHopTime, 13);
+    if (!peaceOfMindActive) panicHopTime = Math.max(panicHopTime, 13);
     resolveZombiePanic();
     setSnakeFrenzyVisual(true);
   }
@@ -7891,6 +7925,7 @@ luckStat = 0;
 lingeringHexActive = lastingLegacyActive = brittleScalesActive = false;
 bruisedEggActive = false;
 panicAttackActive = false;
+peaceOfMindActive = false;
     // Reset game state
     elapsedTime     = 0;
     lastTime        = 0;
@@ -8020,11 +8055,8 @@ doubleYolkerActive = false;
 
   let lastOrbSpawnFactor = 1;
   function getEffectiveOrbSpawnFactor() {
-    const alchemists = frogs.reduce((n, frog) => n + (frog.isAlchemist ? 1 : 0), 0);
     const upgradeBonus = Math.max(0, 1 - orbSpawnIntervalFactor);
-    const alchemistBonus = Math.min(0.10, alchemists * 0.025);
-    const totalBonus = Math.min(0.17, upgradeBonus + alchemistBonus);
-    return 1 / (1 + totalBonus);
+    return 1 / (1 + upgradeBonus);
   }
   function setNextOrbTime() {
     const factor = getEffectiveOrbSpawnFactor();

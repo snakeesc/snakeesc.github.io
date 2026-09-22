@@ -168,7 +168,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 
 // Approved menus share the exact preview styling; dimensions follow the established design viewport.
 (()=>{
- const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=approved-guide-actions-37';document.head.appendChild(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=approved-peace-roles-39';document.head.appendChild(css);
 
 })();
 
@@ -221,3 +221,6 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  function schedule(){if(!queued){queued=true;requestAnimationFrame(update);}}
  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true});schedule();
 })();
+
+// Approved Peace of Mind artwork supplied by the player.
+window.approvedUpgrades["peace of mind"]="./game-assets/sprites/approved/upgrade-peace-of-mind.png";
