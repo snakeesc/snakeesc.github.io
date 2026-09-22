@@ -1508,8 +1508,8 @@ const MAX_LUCK = 30;
     footer.hidden=false;
     footer.className = view === 'guide' ? 'pause-footer' : 'sm-actions';
     footer.innerHTML=view === 'guide'
-      ? '<div class="guide-pagination-slot"></div><div class="guide-menu-actions"><button data-action="guide-menu">Back to menu</button><button data-action="guide-start">Start run</button></div>'
-      : '<button data-action="resume">Resume</button><button data-action="end">End run</button>';
+      ? (fieldGuideFromHelp ? '<div class="guide-pagination-slot"></div><div class="guide-menu-actions"><button data-action="guide-menu">Back to menu</button><button data-action="guide-start">Start run</button></div>' : '<div class="guide-pagination-slot"></div><div class="guide-menu-actions"><button data-view="run">Back to pause</button><button data-action="resume">Resume</button></div>')
+      : '<button data-action="resume">Resume</button><button data-view="guide">Field Guide</button><button data-action="end">End run</button>';
     pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
     else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
@@ -2403,16 +2403,16 @@ function createFrogAt(x, y, tokenId) {
 
   if (personalityRoll < 0.25) {
     idleMin = 0.3; idleMax = 1.0;
-    hopMin = 0.25; hopMax = 0.55;
-    heightMin = 14; heightMax = 32;
+    hopMin = 0.25; hopMax = 0.50;
+    heightMin = 15.4; heightMax = 32;
   } else if (personalityRoll < 0.6) {
     idleMin = 0.8; idleMax = 3.0;
-    hopMin = 0.35; hopMax = 0.7;
-    heightMin = 10; heightMax = 26;
+    hopMin = 0.35; hopMax = 0.63;
+    heightMin = 11; heightMax = 26;
   } else {
     idleMin = 1.4; idleMax = 3.2;
-    hopMin = 0.35; hopMax = 0.7;
-    heightMin = 10; heightMax = 24;
+    hopMin = 0.35; hopMax = 0.63;
+    heightMin = 11; heightMax = 24;
   }
 
   const cosmetics = rollFrogCosmetics();
@@ -3163,10 +3163,10 @@ function rerollPromotedFrogStats(frog) {
   const energeticChance = 0.35 + 0.15 * luck;
   const roll = Math.random();
   const profile = roll < energeticChance
-    ? [0.3, 1.0, 0.25, 0.55, 14, 32]
+    ? [0.3, 1.0, 0.25, 0.50, 15.4, 32]
     : roll < energeticChance + 0.35
-      ? [0.8, 3.0, 0.35, 0.7, 10, 26]
-      : [1.4, 3.2, 0.35, 0.7, 10, 24];
+      ? [0.8, 3.0, 0.35, 0.63, 11, 26]
+      : [1.4, 3.2, 0.35, 0.63, 11, 24];
   [frog.idleMin, frog.idleMax, frog.hopDurMin, frog.hopDurMax,
     frog.hopHeightMin, frog.hopHeightMax] = profile;
   frog.starLevel = 0;
@@ -5558,12 +5558,12 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     if (personalityRoll < 0.25) {
       idleMin = 0.3; idleMax = 1.0;
-      hopMin = 0.25; hopMax = 0.55;
-      heightMin = 14; heightMax = 32;
+      hopMin = 0.25; hopMax = 0.50;
+      heightMin = 15.4; heightMax = 32;
     } else if (personalityRoll < 0.6) {
       idleMin = 0.8; idleMax = 3.0;
-      hopMin = 0.35; hopMax = 0.7;
-      heightMin = 10; heightMax = 26;
+      hopMin = 0.35; hopMax = 0.63;
+      heightMin = 11; heightMax = 26;
     } else {
       idleMin = 2.0; idleMax = 5.0;
       hopMin = 0.45; hopMax = 0.9;
