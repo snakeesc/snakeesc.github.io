@@ -165,7 +165,11 @@
       createPool("frogCrowned", "frog-crowned.mp3", {src:"./game-assets/audio/frog-crowned.mp3", poolSize:2, volume:0.85, minIntervalMs:220});
       createPool("runComplete", "run-complete.mp3", {src:"./game-assets/audio/run-complete.mp3", poolSize:1, volume:0.9, minIntervalMs:500});
       createPool("personalBest", "personal-best.mp3", {src:"./game-assets/audio/personal-best.mp3", poolSize:1, volume:0.9, minIntervalMs:500});
-      createPool("snakeEntry", "snake-shed.mp3", {src:"./game-assets/audio/snake-shed.mp3", poolSize:1, volume:0.9, minIntervalMs:450});
+      createPool("snakeShedCue", "snake-shed.mp3", {src:"./game-assets/audio/snake-shed.mp3", poolSize:1, volume:0.9, minIntervalMs:450});
+      createPool("snakeEntry", "new-snake.mp3", {src:"./game-assets/audio/new-snake.mp3", poolSize:1, volume:0.9, minIntervalMs:450});
+      createPool("graveWave", "grave-wave.mp3", {src:"./game-assets/audio/grave-wave.mp3", poolSize:1, volume:0.75, minIntervalMs:600});
+      createPool("deathrattleRevival", "deathrattle-revival.mp3", {src:"./game-assets/audio/deathrattle-revival.mp3", poolSize:2, volume:0.55, minIntervalMs:180});
+      createPool("eyeForEye", "eye-for-eye.mp3", {src:"./game-assets/audio/eye-for-eye.mp3", poolSize:1, volume:0.9, minIntervalMs:400});
       audioInitialized = true;
     } catch (e) {
       // If audio init fails for some reason, fail silently.
@@ -335,6 +339,10 @@
     playFrogCrowned: () => playFromPool("frogCrowned"),
     playRunComplete: isBest => playFromPool(isBest ? "personalBest" : "runComplete"),
     playSnakeEntry: () => playFromPool("snakeEntry"),
+    playSnakeShedCue: () => playFromPool("snakeShedCue"),
+    playGraveWave: () => playFromPool("graveWave"),
+    playDeathrattleRevival: () => playFromPool("deathrattleRevival"),
+    playEyeForEye: () => playFromPool("eyeForEye"),
     playSaveResult: success => playFromPool(success ? "save_success" : "save_error"),
     playBullfrogEscape: () => playFromPool("bullEscape"),
     playButtonClick,

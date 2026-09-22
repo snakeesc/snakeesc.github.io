@@ -2223,9 +2223,7 @@ function snakeShed(stage) {
     // The cut snake reclaims its own body at the next milestone.
     startScissorsRemnantChase(snake);
 
-    if (graveWaveActive) {
-      spawnExtraFrogs(getLuckBiasedInt(7, 15));
-    }
+    triggerGraveWave();
 
     if (moltFortuneActive) spawnMoltFortuneOrbs(oldSnake);
   }
@@ -2246,6 +2244,7 @@ function snakeShed(stage) {
     // Create a brand-new fresh snake
     const newSnake = spawnAdditionalSnake(width, height);
     if (!newSnake) return;
+    triggerGraveWave();
 
     // A red snake does not molt again, but must still reclaim its Scissors tail.
     // Arm the owner before the new green snake becomes primary.
@@ -2581,6 +2580,13 @@ function createFrogAt(x, y, tokenId) {
     if (swarmDivideActive) {
       assignSwarmDivideLanes();
     }
+  }
+
+  function triggerGraveWave() {
+    if (!graveWaveActive) return;
+    const before = frogs.length;
+    spawnExtraFrogs(getLuckBiasedInt(7, 15));
+    if (frogs.length > before) AudioMod.playGraveWave?.();
   }
 
   function spawnFrogPromotion(count) {
@@ -3871,6 +3877,7 @@ function computeDeathRattleChanceForFrog(frog) {
       // Spawn a replacement frog
       const newFrog = createRandomFrog();
       if (newFrog) {
+        AudioMod.playDeathrattleRevival?.();
         if (ouroborosPactUsed) spawnOrb(null, deathX, deathY);
         // 🧙‍♂️ Necromancer Check
         const hasNecromancer = frogs.some(f => f.isNecromancer);
@@ -4848,6 +4855,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
     if (eyeForEyeUsed || snakes.length < 2) return;
     eyeForEyeUsed = true;
+    AudioMod.playEyeForEye?.();
 
     let slowest = snakes[0];
     let slowestSpeed = getSnakeSpeedFactor(slowest);
@@ -8358,6 +8366,7 @@ doubleYolkerActive = false;
       // ----- SNAKE SHED TIMER (every SHED_INTERVAL seconds) -----
       if (elapsedTime >= nextShedTime && !getCurseSnakes().some(s=>s.selfConsume)) {
         snakeShedCount++;
+        AudioMod.playSnakeShedCue?.();
 
         // 1,2 = shed / speed up current primary snake
         // 3 = retain the red snake and bring in a fresh green snake.
