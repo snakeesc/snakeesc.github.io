@@ -77,7 +77,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  const descriptions={
  'Royal Apprenticeship':'Spawned roles replace crowns on ordinary crowned frogs. Movement stats reroll; special frogs keep their role.',
  'Greedy Hand':'Take every offer; another snake joins. Requires Loaded Hand. 20% offer chance; once per run. Never paired with Eye for Eye.',
- 'Eye for Eye':'With 2+ snakes, kill the slowest. Cap drops to 55; excess frogs die without death rewards. Once per run.',
+ 'Eye for Eye':'With 2+ snakes, flatten the slowest. Its body is eaten after the next shed. Frog cap drops to 55. Once per run.',
  'Snake Egg':'One snake gains 25% less speed per shed. Targets the fewest sheds; future snakes are unaffected.',
  'Wild Company':'Spawn 1–3 Bull, Magnet or Poison frogs—all one random role. Luck favors more.',
  'Frog Scatter':'Respawn the swarm, keeping roles, crowns and stats. Triggers death effects; bonus frogs respect the cap. Once per run.',
