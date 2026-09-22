@@ -1431,6 +1431,15 @@ const MAX_LUCK = 30;
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
       e.stopPropagation();const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.action==='guide-menu' || b.dataset.action==='guide-start') {
+        pauseMenu.style.display='none';
+        fieldGuideFromHelp=false;
+        startAfterHowTo=false;
+        if(howToOverlay) howToOverlay.style.display='none';
+        if(b.dataset.action==='guide-start') startRunFromMenu();
+        else showMainMenu();
+        return;
+      }
       if(b.dataset.action==='guide-back') { closePauseMenu(); return; }
       if(b.dataset.view) renderPauseContent(b.dataset.view);
       if(b.dataset.filter) { pauseGuidePage=0; renderPauseContent('guide',b.dataset.filter); }
@@ -1462,7 +1471,7 @@ const MAX_LUCK = 30;
     footer.hidden=false;
     footer.className = view === 'guide' ? 'pause-footer' : 'sm-actions';
     footer.innerHTML=view === 'guide'
-      ? '<button class="guide-back" data-action="guide-back">Back</button><div class="guide-pagination-slot"></div>'
+      ? '<div class="guide-pagination-slot"></div><div class="guide-menu-actions"><button data-action="guide-menu">Back to menu</button><button data-action="guide-start">Start run</button></div>'
       : '<button data-action="resume">Resume</button><button data-action="end">End run</button>';
     pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
@@ -5885,11 +5894,20 @@ function closeAnimatedOverlay(overlayEl) {
         <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
       <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
-      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back to menu</button></div>
+      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back to menu</button><button id="howToFieldGuideBtn" class="frog-btn frog-btn-secondary">Field Guide</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
+    document.getElementById('howToFieldGuideBtn').addEventListener('click', () => {
+      ensurePauseMenu();
+      fieldGuideFromHelp = true;
+      pauseGuidePage = 0;
+      closeAnimatedOverlay(howToOverlay);
+      renderPauseContent('guide', 'Common');
+      pauseMenu.style.display = 'flex';
+      pauseMenu.querySelector('[data-action="guide-menu"]').focus();
+    });
 
     rememberHowTo();
     openAnimatedOverlay(howToOverlay);
