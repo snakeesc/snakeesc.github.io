@@ -3100,6 +3100,7 @@ function grantStarUpgrade(frog) {
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
   showCrownUpgrade(frog);
+  AudioMod.playFrogCrowned?.();
 }
 
 function frogHasSpecialRole(frog) {
@@ -8008,6 +8009,14 @@ function startRunFromMenu() {
 
     lastRunScore = Math.floor(Number(score) || 0);
     lastRunTime = Number(elapsedTime) || 0;
+
+    // Compare before recording this run; recordRunToDashboard updates bestRun.
+    const priorStats = loadDashboardStats();
+    const priorLocalBest = Math.max(0, Number(priorStats.bestRun?.score) || 0,
+      ...(priorStats.recentRuns || []).map(run => Number(run.score) || 0));
+    const priorServerBest = window.FrogGameLeaderboard?._lastMyEntry
+      ? getLeaderboardEntryScore(window.FrogGameLeaderboard._lastMyEntry) : 0;
+    AudioMod.playRunComplete?.(lastRunScore > 0 && lastRunScore > Math.max(priorLocalBest, priorServerBest));
 
     latestCompletedRun = {
       score: lastRunScore,
