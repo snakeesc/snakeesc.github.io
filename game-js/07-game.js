@@ -1216,7 +1216,7 @@ const MAX_LUCK = 30;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
-    ['Common','Mutation','Frogs hop 15% faster and 15% higher, up to their limits.'],
+    ['Common','Mutation','Frogs hop 15% faster and 20% higher, up to their limits. Limited to 2 picks per run.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
@@ -2736,10 +2736,12 @@ function createFrogAt(x, y, tokenId) {
     ) * (brittleScalesActive ? 0.5 : 1);
   }
 
+const MAX_MUTATION_PICKS = 2;
 function getRandomMutationUpgrade() {
   const speedCanImprove = frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4;
+  const picksSoFar = runUpgradeLog.find(x => x.id === "mutation")?.count || 0;
 
-  if (!speedCanImprove) {
+  if (!speedCanImprove || picksSoFar >= MAX_MUTATION_PICKS) {
     return null;
   }
 
@@ -2748,7 +2750,7 @@ function getRandomMutationUpgrade() {
     label: `
       🧬 Mutation<br>
       <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+15%</span> jump speed
-      & <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+15%</span> jump height
+      & <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+20%</span> jump height
     `,
     apply: () => {
       applyMutationUpgrade();
@@ -2761,7 +2763,7 @@ function applyMutationUpgrade() {
     frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
   }
 
-  frogPermanentJumpFactor *= 1.15; // 15% higher jumps
+  frogPermanentJumpFactor *= 1.20; // 20% higher jumps
   if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
@@ -6199,7 +6201,7 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     const upgrades = [
-      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +15% jump height." },
+      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +20% jump height. Limited to 2 picks per run." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they hop 20% faster." },
       { type: "mobility", label: "✂️ Pair of Scissors", desc: "Cuts the snake in half and slows it by 20%." },
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
