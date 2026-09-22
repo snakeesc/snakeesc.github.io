@@ -1264,6 +1264,40 @@ const MAX_LUCK = 30;
     ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
     ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.'],
   ];
+  // Discoveries survive run resets; no unlocks from merely viewing an offer.
+  function guideDiscoveryKey(category, name) {
+    return (category === 'Frogs' ? 'frog:' : 'upgrade:') + name.trim().toLowerCase();
+  }
+  function guideDiscoveries() {
+    if (!guideDiscoveries.cache) {
+      let saved=[];
+      try { saved=JSON.parse(localStorage.getItem('escapeSnake.discoveries.v1') || '[]'); } catch (_) {}
+      guideDiscoveries.cache=new Set(Array.isArray(saved)?saved.filter(x=>typeof x==='string'):[]);
+    }
+    return guideDiscoveries.cache;
+  }
+  function discoverGuideEntry(category,name) {
+    const entries=guideDiscoveries(), key=guideDiscoveryKey(category,name);
+    if(entries.has(key)) return;
+    entries.add(key);
+    try { localStorage.setItem('escapeSnake.discoveries.v1',JSON.stringify([...entries])); } catch (_) {}
+  }
+  function guideHasEntry(category,name) {return guideDiscoveries().has(guideDiscoveryKey(category,name));}
+  function discoverUpgradeName(name) {
+    const entry=pauseGuide.find(([category,title])=>category!=='Frogs' && title.toLowerCase()===name.toLowerCase());
+    if(entry) discoverGuideEntry(entry[0],entry[1]);
+  }
+  function restoreKnownGuideEntries() {
+    // Only migrate records that actually contain selected upgrades.
+    const stats=loadDashboardStats();
+    for(const run of [stats.bestRun,...(stats.recentRuns||[])].filter(Boolean)) {
+      for(const upgrade of (Array.isArray(run.upgrades)?run.upgrades:[])) {
+        const name=typeof upgrade==='string'?upgrade:upgrade?.name;
+        if(typeof name==='string') discoverUpgradeName(name);
+      }
+    }
+    for(const upgrade of runUpgradeLog) discoverUpgradeName(upgrade.name);
+  }
   function pauseEscape(value) {
     return String(value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
@@ -1277,6 +1311,7 @@ const MAX_LUCK = 30;
     const title=el.querySelector('br') ? choice.label.split(/<br\s*\/?\s*>/i)[0] : choice.label;
     el.innerHTML=title;
     const name=el.textContent.replace(/^[^\p{L}\p{N}]+/u,'').trim();
+    discoverUpgradeName(name);
     const found=runUpgradeLog.find(x=>x.id===choice.id);
     if(found) found.count++; else runUpgradeLog.push({id:choice.id,name,count:1});
   }
@@ -1483,12 +1518,13 @@ const MAX_LUCK = 30;
     pauseMenu.querySelector('.guide-pagination-slot')?.replaceChildren();
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
+      restoreKnownGuideEntries();
       pauseMenu.dataset.guideCategory=filter;
       pauseGuideFilter=filter;
       const entries=pauseGuide.filter(x=>x[0]===filter);
       const perPage=4, pages=Math.ceil(entries.length/perPage);
       pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
-      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;
+      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}<small class="guide-discovery-count">${pauseGuide.filter(e=>e[0]===x && guideHasEntry(e[0],e[1])).length}/${pauseGuide.filter(e=>e[0]===x).length}</small></button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([category,name,desc])=>{const known=guideHasEntry(category,name);return `<article class="pause-row${known?'':' guide-undiscovered'}">${pauseIcon(name)}<div><strong>${known?pauseEscape(name):'???'}</strong><p>${known?pauseEscape(desc):'Not discovered yet.'}</p></div></article>`;}).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;
       pauseMenu.querySelector('.guide-category-slot').appendChild(content.querySelector('.pause-filters'));
       pauseMenu.querySelector('.guide-pagination-slot').appendChild(content.querySelector('.pause-pages'));
       return;
@@ -2984,6 +3020,11 @@ function updateFrogRoleEmoji(frog) {
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
  const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
  const role=roles.find(([flag])=>frog[flag]);const key=role?(role[1]==='cannibal'?'cannibal-'+Math.min(5,Math.max(0,frog.cannibalMeals||0)):role[1]):(frog.starLevel>0?'crowned':'');
+ if (role) {
+   const names={poison:'Poison Toad',bull:'Bull Frog',necromancer:'Necromancer',alchemist:'Alchemist',zombie:'Zombie',cannibal:'Cannibal',aura:'Aura',shield:'Shield',magnet:'Magnet',lucky:'Lucky'};
+   discoverGuideEntry('Frogs',names[role[1]]);
+ }
+ if (frog.starLevel>0) discoverGuideEntry('Frogs','Crowned');
  if(role && frog.el.dataset.approvedRole!==key && !(frog.isCannibal && (frog.el.dataset.approvedRole||'').startsWith('cannibal-')))showRoleSpotlight(frog);
  if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
  else {delete frog.el.dataset.approvedRole;frog.el.style.removeProperty('--approved-frog');}

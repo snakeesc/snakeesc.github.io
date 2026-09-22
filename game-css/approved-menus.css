@@ -378,3 +378,7 @@ html.phone-secondary-menus #runPauseOverlay[data-view="run"] .sm-upgrade-columns
 /* Give padded role artwork more room; physics and ordinary frog sizes stay unchanged. */
 #frog-game .frog-sprite:is([data-approved-role="bull"],[data-approved-role="poison"],[data-approved-role^="cannibal-"])::before{width:59.583%!important;height:59.583%!important;image-rendering:pixelated!important}
 @media(max-width:600px){#frog-game .frog-sprite:is([data-approved-role="bull"],[data-approved-role="poison"],[data-approved-role^="cannibal-"])::before{width:54.167%!important;height:54.167%!important}}
+
+/* Undiscovered entries retain their slots without revealing their descriptions. */
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .guide-undiscovered img{filter:brightness(0)!important;opacity:.45!important}
+#runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay[data-view="guide"] .guide-discovery-count{display:block!important;font:inherit!important;font-size:.75em!important;line-height:1!important;margin-top:3px!important;color:inherit!important}
