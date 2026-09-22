@@ -7477,7 +7477,7 @@ function initUpgradeOverlay() {
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
       if (upgradeOverlayContext === "start") {
-        pool = pool.filter(choice => choice.id !== "frogScatter");
+        pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors");
       }
       if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
         pool = pool.filter(c=>c.id!=="eyeForEye");
