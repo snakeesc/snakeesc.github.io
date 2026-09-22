@@ -1239,7 +1239,7 @@ const MAX_LUCK = 30;
     ['Epic','Peace of Mind','At 30 luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
     ['Epic','Role Draft','Choose between two roles and spawn 2–5 special frogs. Luck favors larger batches.'],
     ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
-    ['Epic','Lasting Legacy','A dying special frog has a 20% chance to pass a role to an ordinary frog.'],
+    ['Epic','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
     ['Epic','Snake Egg','Targets the lowest-shed snake when selected. It gains 25% less added speed from its remaining sheds. Other and future snakes are unaffected.'],
     ['Epic','Brittle Scales','Halves snake debuff resistance.'],
     ['Epic','Chain Reaction','An orb pickup has a 15% chance to trigger an additional orb effect.'],
@@ -1837,13 +1837,13 @@ function getLuckBuffDurationMultiplier() {
   return 1 + (luckStat * 0.01);
 }
 
-function getLuckChanceBonus(multiplier = 1) {
-  // each 1 luck = +0.5% absolute chance
-  return luckStat * 0.005 * multiplier;
+function getLuckChanceBonus(baseChance, multiplier = 1) {
+  // Each 10 luck adds 10% of the base chance, not 10 percentage points.
+  return baseChance * clampLuck(luckStat) * 0.01 * multiplier;
 }
 
 function getLuckBoostedChance(baseChance, maxChance = 0.95, multiplier = 1) {
-  return Math.max(0, Math.min(maxChance, baseChance + getLuckChanceBonus(multiplier)));
+  return Math.max(0, Math.min(maxChance, baseChance + getLuckChanceBonus(baseChance, multiplier)));
 }
 
 function getLuckBiasedInt(min, max) {
@@ -2865,8 +2865,23 @@ function styleEventPanel(el) {
   Object.assign(el.style,{fontFamily:titleStyle?.fontFamily || 'ReferencePixel, Pocket, monospace',fontSize:(Number.isFinite(size)?size:26)+'px',fontWeight:'400',lineHeight:'1.1',color:'#073720',background:'#fff8db',border:'3px solid #073720',borderRadius:panelStyle?.borderRadius || '7px',boxShadow:'3px 3px 0 #497b36',padding:'8px 12px',gap:'10px',boxSizing:'border-box',maxWidth:'min(420px, 90%)'});
 }
 const eventVisuals = [];
-function clearEventVisuals(){for(const effect of eventVisuals)effect.el.remove();eventVisuals.length=0;}
+const upgradeAnnouncementQueue = [];
 function showUpgradeFeedback(choice, sourceButton) {
+  if (!choice || choice.id === "luckyRoll") return;
+  upgradeAnnouncementQueue.push({kind:"upgrade", choice:{id:choice.id,label:choice.label}});
+}
+function showLuckyShuffle(result) {
+  upgradeAnnouncementQueue.push({kind:"roll",result});
+}
+function startNextUpgradeAnnouncement() {
+  if (gamePaused || gameOver || eventVisuals.some(e=>e.kind==="upgrade" || e.kind==="roll")) return;
+  const next=upgradeAnnouncementQueue.shift();
+  if (!next) return;
+  if(next.kind==="roll") renderLuckyShuffle(next.result);
+  else renderUpgradeFeedback(next.choice);
+}
+function clearEventVisuals(){upgradeAnnouncementQueue.length=0;for(const effect of eventVisuals)effect.el.remove();eventVisuals.length=0;}
+function renderUpgradeFeedback(choice, sourceButton) {
   if(choice.id === "luckyRoll") return;
   const title = document.createElement("div");
   title.innerHTML=String(choice.label||choice.id||"Upgrade").split(/<br\s*\/?>/i)[0];
@@ -2888,7 +2903,7 @@ function showRoleSpotlight(frog){
   Object.assign(el.style,{position:"absolute",width:"38px",height:"18px",background:"#fff3ad",boxShadow:"inset 0 -4px #a6cc62",clipPath:"polygon(15% 0,85% 0,85% 20%,100% 20%,100% 80%,85% 80%,85% 100%,15% 100%,15% 80%,0 80%,0 20%,15% 20%)",pointerEvents:"none",zIndex:"9"});container.appendChild(el);
   eventVisuals.push({el,frog,time:0,duration:1.1,kind:"spotlight"});
 }
-function showLuckyShuffle(result){
+function renderLuckyShuffle(result){
   const outcomes=["speed","jump","snakeSlow","snakeConfuse","snakeShrink","frogShield","orbMagnet","scoreMulti","lifeSteal"];
   const labels={speed:"Speed",jump:"Jump",snakeSlow:"Snake Slow",snakeConfuse:"Snake Confusion",snakeShrink:"Snake Shrink",frogShield:"Frog Shield",orbMagnet:"Orb Magnet",scoreMulti:"Score Multiplier",lifeSteal:"Life Steal"};
   // Orb effects do not each have their own upgrade-menu artwork. Shuffle the
@@ -2924,6 +2939,7 @@ function resolveZombiePanic() {
 }
 
 function updateEventVisuals(dt){
+ startNextUpgradeAnnouncement();
  for(let i=eventVisuals.length-1;i>=0;i--){const e=eventVisuals[i];e.time+=dt;if(e.time>=e.duration || (e.frog&&!e.frog.el.isConnected)){e.el.remove();eventVisuals.splice(i,1);continue;}
  const fade=Math.min(1,(e.duration-e.time)/.3);e.el.style.opacity=String(fade);
  if(e.kind==="roll" || e.kind==="zombieSacrifice"){e.render(e.time);continue;}
@@ -3300,7 +3316,7 @@ function showRoleDraftOverlayChoices() {
   armUpgradeTapGuard();
   if (!upgradeOverlayButtonsContainer) return;
 
-  if (soundEnabled) { initAudio(); playPermanentChoiceSound(); }
+  // Role Draft opens silently; role-granted audio still plays on selection.
   roleDraftChoices = getTwoRandomRoleDraftChoices();
   roleDraftPending = true;
 
@@ -3699,7 +3715,7 @@ function computeDeathRattleChanceForFrog(frog) {
     const ordinary = frogs.filter(f => f !== deadFrog && f.el && f.el.isConnected &&
       !f.isGhost && !f.isMutationZombie && !(f.starLevel > 0) &&
       !grants.some(([flag]) => f[flag]));
-    if (!ordinary.length || Math.random() >= 0.20) return;
+    if (!ordinary.length || Math.random() >= getLuckBoostedChance(0.20)) return;
     const recipient = ordinary[Math.floor(Math.random() * ordinary.length)];
     const grant = roles[Math.floor(Math.random() * roles.length)][1];
     grant(recipient);
@@ -5368,7 +5384,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     const upgrades = [];
     if (!secondHelpingPending && secondHelpingPicksRemaining === 0) upgrades.push({
-      id:"secondHelping", label:"Second Helping<br>Your next common upgrade offers <span>3 picks</span>.",
+      id:"secondHelping", label:'Second Helping<br>Your next common upgrade offers <span class="stat-highlight" style="color:#006b83;">3</span> picks.',
       apply:()=>{ secondHelpingPending = true; }
     });
     if (!peaceOfMindActive && luckStat >= MAX_LUCK) upgrades.push({
@@ -7372,6 +7388,10 @@ function initUpgradeOverlay() {
 
   function selectUpgrade(choice) {
     if (!choice) return;
+    if (currentUpgradeOverlayMode === "normal" && secondHelpingPicksRemaining > 0 && soundEnabled) {
+      initAudio();
+      if (AudioMod.playSecondHelpingPick) AudioMod.playSecondHelpingPick();
+    }
     if (choice.id === "greedyHand") {
       if (greedyHandUsed) return;
       greedyHandUsed = true;

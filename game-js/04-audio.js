@@ -119,6 +119,7 @@
       // Death / snake / orb
       createPool("frogDeath", "frogDeath.mp3", { poolSize: 3, volume: 0.9, minIntervalMs: 120 });
       createPool("zombieSacrifice", "frogDeath2.mp3", { poolSize: 2, volume: 0.9, minIntervalMs: 0 });
+      createPool("secondHelpingPick", "munch3.mp3", { src:"./game-assets/audio/munch3.mp3", poolSize:3, volume:0.9, minIntervalMs:0 });
       createPool("snakeMunch", "munch.mp3",    { poolSize: 4, volume: 0.9, minIntervalMs: 50 });
 
       createPool("buttonClick", "button-click.mp3",    { poolSize: 2, volume: 0.9, minIntervalMs: 120 });
@@ -231,7 +232,7 @@
   }
 
   function playPermanentChoiceSound() {
-    // Upgrade-menu opening sound temporarily disabled. Keep the asset for later.
+    playFromPool("permanentChoice");
   }
 
   /**
@@ -322,6 +323,7 @@
     playFrogDeath,
     playZombieSacrifice,
     playSnakeMunch,
+    playSecondHelpingPick: () => playFromPool("secondHelpingPick"),
     playRandomOrbSpawnSound,
     playBuffSound,
     playPermanentChoiceSound,
