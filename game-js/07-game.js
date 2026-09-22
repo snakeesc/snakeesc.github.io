@@ -2958,6 +2958,7 @@ function grantRandomPermaFrogUpgrade(frog) {
 function grantNecromancerFrog(frog) {
   if (frog.isNecromancer) return;
   frog.isNecromancer = true;
+  playPerFrogUpgradeSound("necromancer");
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -2975,6 +2976,7 @@ function grantAlchemistFrog(frog) {
 function grantNecromancerFrog(frog) {
   if (frog.isNecromancer) return;
   frog.isNecromancer = true;
+  playPerFrogUpgradeSound("necromancer");
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -3131,7 +3133,9 @@ function spawnTidalWave() {
 }
 
 function grantPoisonToad(frog) {
+  if (frog.isPoisonToad) return;
   frog.isPoisonToad = true;
+  playPerFrogUpgradeSound("poison");
   updateFrogRoleEmoji(frog);
 }
 

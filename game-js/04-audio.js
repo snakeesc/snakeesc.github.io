@@ -159,6 +159,8 @@
       createPool("perfrog_cannibal", "cannibal-frog-granted.mp3", {src:"./game-assets/audio/cannibal-frog-granted.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
       createPool("save_success", "save-success.mp3", {src:"./game-assets/audio/save-success.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
       createPool("save_error", "save-error.mp3", {src:"./game-assets/audio/save-error.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
+      createPool("perfrog_poison", "poison-toad-granted.mp3", {src:"./game-assets/audio/poison-toad-granted.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
+      createPool("perfrog_necromancer", "necromancer-frog-granted.mp3", {src:"./game-assets/audio/necromancer-frog-granted.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
       audioInitialized = true;
     } catch (e) {
       // If audio init fails for some reason, fail silently.
@@ -239,6 +241,8 @@
   function playPerFrogUpgradeSound(role) {
     let key = null;
     switch (role) {
+      case "necromancer": key = "perfrog_necromancer"; break;
+      case "poison": key = "perfrog_poison"; break;
       case "cannibal": key = "perfrog_cannibal"; break;
       case "alchemist": key = "perfrog_alchemist"; break;
       case "bull": key = "perfrog_bull"; break;
