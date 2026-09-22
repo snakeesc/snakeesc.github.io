@@ -3585,7 +3585,7 @@ function updateSelfConsumption(obj, dt) {
   c.t += dt;
   const curl=Math.min(1,c.t/0.8);
   const eaten=Math.floor(Math.min(1,Math.max(0,(c.t-0.8)/2.2))*(c.total-c.keep));
-  while(obj.segments.length>c.total-eaten) obj.segments.pop().el.remove();
+  while(obj.segments.length>c.total-eaten) { obj.segments.pop().el.remove(); playSnakeMunch(); }
   const radius=Math.max(18,Math.min(65,obj.segments.length*SEGMENT_VISUAL_SPACING/(2*Math.PI)));
   const scale=snakeShrinkTime>0?0.75:1;
   obj.segments.forEach((seg,i)=>{
