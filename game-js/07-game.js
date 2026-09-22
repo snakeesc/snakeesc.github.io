@@ -597,6 +597,9 @@ function getDashboardLevelData(totalOrbsCollected) {
       isLatest: true
     });
 
+    // Preserve the best run before recent history is trimmed.
+    stats.bestRun = [stats.bestRun, ...stats.recentRuns].filter(Boolean)
+      .sort((a,b) => Number(b.score)-Number(a.score) || Number(b.time)-Number(a.time))[0] || null;
     stats.recentRuns = stats.recentRuns.slice(0, 5);
 
     saveDashboardStats(stats);
@@ -6492,16 +6495,24 @@ async function showDashboardOverlay(cachedLeaderboard) {
     `
     : "";
 
-  content.innerHTML = menuHeader('My stats')+`
-    <div class="sm-profile">${menuSprite('frog-crowned.png')}<div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level <b class="menu-value">${levelData.level}</b>${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #<b class="menu-value">${bestRecordRank + 1}</b>` : ''}</span></div></div>
-    <div class="sm-progress-label"><span>Next level</span><span><b class="menu-value">${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan}</b> orbs</span></div>
-    <div class="sm-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i class="${i<Math.floor(levelData.progressPercent/5)?'is-filled':''}" aria-hidden="true"></i>`).join('')}</div>
-    <p class="sm-hint"><b class="menu-value">${levelData.orbsNeededForNextLevel}</b> more orbs to level <b class="menu-value">${levelData.nextLevel}</b></p>
-    <div class="sm-records">${menuStat('Personal best',leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : '—')}${menuStat('Best-run time',leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime || 0) : '—')}${menuStat('Runs played',localStats.totalRuns || 0)}${menuStat('Orbs collected',localStats.totalOrbsCollected || 0)}</div>
-    <label class="sm-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label>
-    <div class="sm-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div>
-    <p class="sm-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>
-`;
+  const storedRuns = [localStats.bestRun, ...(localStats.recentRuns || [])].filter(Boolean);
+  const localBest = storedRuns.slice().sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.time)-Number(a.time))[0];
+  const bestScore = Math.max(leaderboardBest.bestRun || 0, Number(localBest?.score)||0);
+  const useServerBest = leaderboardBest.found && leaderboardBest.bestRun === bestScore;
+  const bestTime = useServerBest ? leaderboardBest.bestTime : localBest?.time;
+  const bestRun = storedRuns.find(r=>Number(r.score)===bestScore && Math.abs(Number(r.time)-Number(bestTime))<0.01);
+  const bestValue = key => bestRun && Number.isFinite(Number(bestRun[key])) ? Number(bestRun[key]).toLocaleString() : '—';
+  content.innerHTML = `
+    <div class="summary-name"><div class="summary-editor"><input id="dashboardTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Your name on the board"><button id="dashboardSaveTagBtn">Save</button></div><p id="dashboardTagMessage" role="status" aria-live="polite"></p></div>
+    <p class="identity-best">Level <b>${levelData.level}</b>${bestRecordRank>=0 ? ` · Rank <b>#${bestRecordRank+1}</b>` : ''}</p>
+    <div class="summary-score"><strong>${bestScore.toLocaleString()}</strong><span>Best run</span></div>
+    <div class="summary-details"><span><b>${bestTime == null ? '—' : formatTime(bestTime)}</b> survived</span><span><b>${bestValue('orbs')}</b> orbs</span><span><b>${bestValue('sheds')}</b> sheds</span></div>
+    <div class="career-stats">${[['Runs played',localStats.totalRuns||0],['Total orbs',localStats.totalOrbsCollected||0],['Time played',formatDashboardDuration(localStats.totalPlayTime)],['Frogs spawned',localStats.totalFrogsLost||0]].map(([label,value])=>`<div><b>${typeof value==='number'?value.toLocaleString():value}</b><span>${label}</span></div>`).join('')}</div>
+    <div class="career-progress-label"><span>Level ${levelData.nextLevel}</span><span><b>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan}</b> orbs</span></div>
+    <div class="career-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}"><div style="width:${Math.max(0,Math.min(100,levelData.progressPercent))}%"></div></div>
+    <p class="career-progress-note">${levelData.orbsNeededForNextLevel} orbs to next level</p>
+  `;
+  setupPlayerHeading(content,'dashboardTagInput');
 
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
@@ -6535,8 +6546,9 @@ async function showDashboardOverlay(cachedLeaderboard) {
 
         // Server accepted — now save locally
         await saveDashboardTag(newTag);
-        if (currentTagEl) currentTagEl.textContent = newTag;
-        if (msgEl) { msgEl.textContent = "Tag saved."; msgEl.style.color = "#bef264"; }
+        tagInput.closest('.summary-name').finishNameEdit(newTag);
+        if (msgEl) msgEl.textContent = '';
+        if (window.FrogGameLeaderboard?._lastMyEntry) window.FrogGameLeaderboard._lastMyEntry.tag = newTag;
 
         const refreshed = await fetchLeaderboard();
         updateMiniLeaderboard(refreshed);
