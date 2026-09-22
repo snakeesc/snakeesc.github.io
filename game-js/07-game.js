@@ -5139,6 +5139,7 @@ function samplePathAtDistance(path, startIdx, dist) {
           if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
           scissorsRemnantSegments.splice(i, 1);
           growSnakeForSnake(snakeObj, 1);
+          playSnakeMunch();
         }
       }
       if (scissorsRemnantSegments.length === 0) {
