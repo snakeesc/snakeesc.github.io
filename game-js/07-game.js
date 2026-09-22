@@ -1226,7 +1226,7 @@ const MAX_LUCK = 30;
   let runUpgradeLog = [];
   const pauseGuide = [
     ['Common','Afterglow','Requires Night Bloom. Its spawned frogs trigger the expired orb at half duration.'],
-    ['Common','Mutation','Frogs hop 15% faster and 20% higher, up to their limits.'],
+    ['Common','Mutation','Frogs hop 15% faster and 15% higher, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
@@ -1257,7 +1257,7 @@ const MAX_LUCK = 30;
     ['Epic','Greedy Hand','Requires Loaded Hand; 20% chance to appear per epic offer. Take all other offered upgrades, then another snake enters. Once per run. Never offered alongside Eye for Eye.'],
     ['Epic','Loaded Hand','Future upgrade menus offer four choices instead of three.'],
     ['Epic','Tidal Wave','Spawns as many frogs as are alive, with a minimum of 15 added frogs. Population cap still applies.'],
-    ['Epic','Eye for Eye','Kill the slowest snake; its flattened body is eaten after the next shed. Frog cap becomes 55. Once per run.'],
+    ['Epic','Eye for Eye','Kill the slowest snake; survivors immediately devour its body. Frog cap becomes 55. Once per run.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
     ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
     ['Epic','Second Wind','Once per run: below 10 frogs, spawn 20.'],
@@ -2112,7 +2112,6 @@ function updateShedSequence(dt) {
       return seq.sample(pathDistance-seq.travel);
     });
     clearShedSequence();
-    if (eyeForEyeRemains.length) eyeForEyeRemainsReady = true;
     if(seq.restoreOnly){
       // A restorative red molt preserves length, color and every speed modifier.
       delete seq.owner.selfConsume;
@@ -2228,12 +2227,7 @@ function snakeShed(stage) {
       spawnExtraFrogs(getLuckBiasedInt(7, 15));
     }
 
-    if (moltFortuneActive) {
-      const orbCount = getLuckBiasedInt(5, 10);
-      for (let i = 0; i < orbCount; i++) {
-        spawnOrbRandom(width, height);
-      }
-    }
+    if (moltFortuneActive) spawnMoltFortuneOrbs(oldSnake);
   }
   function startScissorsRemnantChase(owner) {
     if (!owner?.scissorsOwner || scissorsRemnantSegments.length === 0 || snakeEatingOldBody) return;
@@ -2246,10 +2240,12 @@ function snakeShed(stage) {
     const width  = window.innerWidth;
     const height = window.innerHeight;
 
+    // The red snake's final molt is a shed too, even though a new snake enters.
+    if (moltFortuneActive) spawnMoltFortuneOrbs(snake);
+
     // Create a brand-new fresh snake
     const newSnake = spawnAdditionalSnake(width, height);
     if (!newSnake) return;
-    if (eyeForEyeRemains.length) eyeForEyeRemainsReady = true;
 
     // A red snake does not molt again, but must still reclaim its Scissors tail.
     // Arm the owner before the new green snake becomes primary.
@@ -4459,11 +4455,34 @@ function computeDeathRattleChanceForFrog(frog) {
     container.appendChild(el);
 
     const ttl = ORB_TTL * orbTtlFactor;
-    orbs.push({ type, x, y, ttl, maxTtl: ttl, el });
+    const orb = { type, x, y, ttl, maxTtl: ttl, el };
+    orbs.push(orb);
 
     totalOrbsSpawned++;
 
     playRandomOrbSpawnSound();
+    return orb;
+  }
+
+  function spawnMoltFortuneOrbs(owner) {
+    if (!owner?.head || frogs.length === 0) return;
+    const parts = [owner.head, ...owner.segments].filter(part =>
+      part && Number.isFinite(part.x) && Number.isFinite(part.y) &&
+      part.x > -SNAKE_SEGMENT_SIZE && part.x < window.innerWidth &&
+      part.y > -SNAKE_SEGMENT_SIZE && part.y < window.innerHeight);
+    if (!parts.length) return;
+    const count = getLuckBiasedInt(5, 10);
+    for (let i = 0; i < count; i++) {
+      const part = parts[Math.floor((i + 0.5) * parts.length / count)] || parts.at(-1);
+      const sx = part.x + SNAKE_SEGMENT_SIZE / 2;
+      const sy = part.y + SNAKE_SEGMENT_SIZE / 2;
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
+      const distance = 70 + Math.random() * 105;
+      const tx = Math.max(ORB_RADIUS + 14, Math.min(window.innerWidth - ORB_RADIUS - 14, sx + Math.cos(angle) * distance));
+      const ty = Math.max(ORB_RADIUS + 30, Math.min(window.innerHeight - ORB_RADIUS - 30, sy + Math.sin(angle) * distance));
+      const orb = spawnOrb(null, sx, sy);
+      orb.moltFlight = { sx, sy, tx, ty, elapsed: 0, duration: 0.45 + Math.random() * 0.25 };
+    }
   }
 
   function spawnOrbRandom(width, height) {
@@ -4502,8 +4521,18 @@ function computeDeathRattleChanceForFrog(frog) {
         continue;
       }
 
+      if (orb.moltFlight) {
+        const flight = orb.moltFlight;
+        flight.elapsed = Math.min(flight.duration, flight.elapsed + dt);
+        const t = flight.elapsed / flight.duration;
+        const ease = 1 - (1 - t) * (1 - t);
+        orb.x = flight.sx + (flight.tx - flight.sx) * ease;
+        orb.y = flight.sy + (flight.ty - flight.sy) * ease - Math.sin(Math.PI * t) * 34;
+        if (t >= 1) delete orb.moltFlight;
+      }
+
       const magnetFrogs = frogs.filter(f => f.isMagnet);
-      if ((orbMagnetTime > 0 || magnetFrogs.length > 0) && frogs.length > 0) {
+      if (!orb.moltFlight && (orbMagnetTime > 0 || magnetFrogs.length > 0) && frogs.length > 0) {
         let target = null;
         let bestD2 = Infinity;
 
@@ -4829,18 +4858,17 @@ function computeDeathRattleChanceForFrog(frog) {
       }
     }
 
-    // Leave the defeated snake on the field. It collapses in place and
-    // surviving snakes can reclaim the body once the next shed finishes.
+    // Keep the defeated snake's normal sprites in place. Survivors start
+    // chasing its body immediately, with the same bite/growth path as remnants.
     eyeForEyeRemains = [slowest.head, ...slowest.segments].filter(part => part?.el).map(part => {
       const el = part.el;
-      el.style.transition = 'transform 0.35s steps(4), opacity 0.35s steps(4)';
-      el.style.transform = `translate3d(${part.x}px,${part.y + SNAKE_SEGMENT_SIZE * 0.25}px,0) scaleY(0.45)`;
-      el.style.filter = 'grayscale(1) brightness(0.7)';
-      el.style.opacity = '0.75';
       el.style.zIndex = '19';
       return {el, x:part.x, y:part.y};
     });
-    eyeForEyeRemainsReady = false;
+    eyeForEyeRemainsReady = true;
+    for (const survivor of snakes) {
+      if (survivor !== slowest && survivor.selfConsume?.target === slowest) delete survivor.selfConsume;
+    }
     if (slowest === snake) snake = null;
     else extraSnakes.splice(extraSnakes.indexOf(slowest), 1);
 
@@ -5503,7 +5531,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       apply:applyPeaceOfMind
     });
     if (!eyeForEyeUsed && (snake ? 1 : 0) + extraSnakes.filter(Boolean).length >= 2) {
-      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Flatten the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
+      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
     }
 
     if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Spawning special frogs turns <span class=menu-number-accent data-card-accent>crowned frogs</span> into that role", apply:()=>{royalApprenticeshipActive=true;}});
@@ -6326,7 +6354,7 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     const upgrades = [
-      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +20% jump height." },
+      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +15% jump height." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they hop 20% faster." },
       { type: "mobility", label: "✂️ Ouroboros Curse", desc: "Makes the snake consume half its body and slows it." },
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
