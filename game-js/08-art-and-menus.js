@@ -229,3 +229,6 @@ window.approvedUpgrades["second helping"]="./game-assets/sprites/approved/upgrad
 
 window.approvedUpgrades["ouroboros curse"]="./game-assets/sprites/approved/upgrade-ouroboros-curse.png";
 window.approvedUpgrades["soul offering"]="./game-assets/sprites/approved/upgrade-soul-offering.png";
+
+window.approvedUpgrades["forbidden fruit"]="./game-assets/sprites/approved/upgrade-forbidden-fruit.svg";
+window.approvedUpgrades["higher calling"]="./game-assets/sprites/approved/upgrade-higher-calling.svg";

@@ -1021,6 +1021,9 @@ let brittleScalesActive = false;
 let bruisedEggActive = false;
 let panicAttackActive = false;
 let peaceOfMindActive = false;
+let forbiddenFruitActive = false;
+let higherCallingActive = false;
+let higherCallingPicksRemaining = 0;
 let secondHelpingPending = false;
 let secondHelpingPicksRemaining = 0;
 const MAX_LUCK = 30;
@@ -1235,6 +1238,8 @@ const MAX_LUCK = 30;
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
     ['Common','Ouroboros Curse','Makes the snake consume half its body and slows it.'],
     ['Epic','Royal Apprenticeship','Spawning special frogs converts all ordinary crowned frogs to the spawned role. Consumes crowns and rerolls natural movement stats. Frogs already holding a special role stay unchanged.'],
+    ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Each snake can eat one orb every 3 seconds.'],
+    ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
     ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
     ['Epic','Peace of Mind','At 30 luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
     ['Epic','Role Draft','Choose between two roles and spawn 2–5 special frogs. Luck favors larger batches.'],
@@ -2689,7 +2694,7 @@ function createFrogAt(x, y, tokenId) {
       factor += overcrowdingPenalty;
     }
 
-    if (snakeSlowTime > 0) factor *= SNAKE_SLOW_FACTOR;
+    if (snakeSlowTime > 0 || snakeObj?.fruitSlow > 0) factor *= SNAKE_SLOW_FACTOR;
     if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR;
 
     return factor;
@@ -4907,9 +4912,9 @@ function samplePathAtDistance(path, startIdx, dist) {
   }
   function updateSnakeDebuffCue(obj, dt, active, size) {
     const head = obj.head;
-    const confused = active && snakeConfuseTime > 0;
-    const slowed = active && snakeSlowTime > 0 && snakeSlowCueTime > 0;
-    const shrunk = active && snakeShrinkTime > 0;
+    const confused = active && (snakeConfuseTime > 0 || obj.fruitConfuse > 0);
+    const slowed = active && ((snakeSlowTime > 0 && snakeSlowCueTime > 0) || obj.fruitSlow > 0);
+    const shrunk = active && (snakeShrinkTime > 0 || obj.fruitShrink > 0);
     let c = debuffCues.get(head.el);
     if (!c && !confused && !slowed && !shrunk) return;
     if (!c) {
@@ -4964,6 +4969,9 @@ function samplePathAtDistance(path, startIdx, dist) {
 
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
+    snakeObj.fruitCooldown=Math.max(0,(snakeObj.fruitCooldown||0)-dt);
+    const fruitTick=dt*(1+getSnakeResistance());
+    for(const key of ['fruitSlow','fruitConfuse','fruitShrink']) snakeObj[key]=Math.max(0,(snakeObj[key]||0)-fruitTick);
     if (snakeObj.selfConsume && updateSelfConsumption(snakeObj,dt)) return;
 
     const frogList = Array.isArray(opts.frogsList) ? opts.frogsList : frogs;
@@ -4974,7 +4982,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const head = snakeObj.head;
     if (!head) return;
 
-    const shrinkScale = snakeShrinkTime > 0 ? 0.75 : 1.0;
+    const shrinkScale = (snakeShrinkTime > 0 || snakeObj.fruitShrink > 0) ? 0.75 : 1.0;
 
     // 1. TARGETING
     let targetFrog = null;
@@ -5010,7 +5018,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     let desiredAngle = head.angle;
     if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
-    } else if (snakeConfuseTime > 0) {
+    } else if (snakeConfuseTime > 0 || snakeObj.fruitConfuse > 0) {
       desiredAngle = panicAttackActive && !isMainMenu && targetFrog
         ? Math.atan2(head.y - (targetFrog.baseY + FROG_SIZE / 2), head.x - (targetFrog.x + FROG_SIZE / 2))
         : head.angle + (Math.random() - 0.5) * Math.PI;
@@ -5118,10 +5126,20 @@ function samplePathAtDistance(path, startIdx, dist) {
         `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
     }
 
+    if (!isMainMenu && forbiddenFruitActive && !snakeObj.entering && !snakeObj.fruitCooldown) {
+      const radius=(snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius())+ORB_RADIUS;
+      const idx=orbs.findIndex(o=>Math.hypot(o.x+ORB_RADIUS-head.x-SNAKE_SEGMENT_SIZE/2,o.y+ORB_RADIUS-head.y-SNAKE_SEGMENT_SIZE/2)<radius);
+      if(idx>=0){
+        const orb=orbs.splice(idx,1)[0];orb.el.remove();snakeObj.fruitCooldown=3;
+        const effects=[['fruitSlow',SNAKE_SLOW_DURATION],['fruitConfuse',SNAKE_CONFUSE_DURATION],['fruitShrink',SNAKE_SHRINK_DURATION]];
+        const [key,duration]=effects[Math.floor(Math.random()*effects.length)];
+        snakeObj[key]=Math.max(snakeObj[key]||0,duration*.5);playSnakeMunch();
+      }
+    }
     // 4. COLLISIONS
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
-    const eatR2 = Math.pow(getSnakeEatRadius(), 2);
+    const eatR2 = Math.pow((snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius()), 2);
 
     for (let i = frogList.length - 1; i >= 0; i--) {
       const f = frogList[i];
@@ -5383,6 +5401,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!forbiddenFruitActive) upgrades.push({id:"forbiddenFruit",label:'Forbidden Fruit<br>Orbs briefly debuff snakes that eat them.',apply:()=>{forbiddenFruitActive=true;}});
+    if (!higherCallingActive && upgradeOverlayContext === "shed") upgrades.push({id:"higherCalling",label:'Higher Calling<br>Choose <span style="color:#006b83">2</span> epics at each shed.',apply:()=>{higherCallingActive=true;}});
     if (!secondHelpingPending && secondHelpingPicksRemaining === 0) upgrades.push({
       id:"secondHelping", label:'Second Helping<br>Your next common upgrade offers <span class="stat-highlight" style="color:#006b83;">3</span> picks.',
       apply:()=>{ secondHelpingPending = true; }
@@ -7802,6 +7822,11 @@ function startRunFromMenu() {
         return;
       }
     }
+    if (!gameOver && currentUpgradeOverlayMode === "epic" && higherCallingPicksRemaining > 0) {
+      higherCallingPicksRemaining--;
+      if(higherCallingPicksRemaining>0){openUpgradeOverlay("epic",{context:"shed"});return;}
+      nextPermanentChoiceTime=elapsedTime+60;
+    }
     const shouldOpenEpicNow =
       !gameOver && epicChainPending && currentUpgradeOverlayMode === "normal";
 
@@ -7819,7 +7844,7 @@ function startRunFromMenu() {
       }
 
       gamePaused = true;
-      openUpgradeOverlay("epic");
+      openUpgradeOverlay("epic", {context:"shed"});
       return;
     }
 
@@ -8014,6 +8039,9 @@ lingeringHexActive = lastingLegacyActive = brittleScalesActive = false;
 bruisedEggActive = false;
 panicAttackActive = false;
 peaceOfMindActive = false;
+forbiddenFruitActive = false;
+higherCallingActive = false;
+higherCallingPicksRemaining = 0;
 secondHelpingPending = false;
 secondHelpingPicksRemaining = 0;
     // Reset game state
@@ -8218,8 +8246,13 @@ doubleYolkerActive = false;
         // Epic chain: normal -> epic back-to-back at epic marks
         if (elapsedTime >= nextEpicChoiceTime &&
                  elapsedTime >= nextPermanentChoiceTime) {
-          epicChainPending = true;
-          openUpgradeOverlay("normal"); // epic half handled in closeUpgradeOverlay
+          if(higherCallingActive){
+            epicChainPending=false;higherCallingPicksRemaining=2;
+            openUpgradeOverlay("epic",{context:"shed"});
+          }else{
+            epicChainPending = true;
+            openUpgradeOverlay("normal",{context:"shed"});
+          } // epic half handled in closeUpgradeOverlay
         }
         // Regular common upgrade
         else if (elapsedTime >= nextPermanentChoiceTime) {
