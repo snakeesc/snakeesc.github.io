@@ -165,6 +165,7 @@
       createPool("frogCrowned", "frog-crowned.mp3", {src:"./game-assets/audio/frog-crowned.mp3", poolSize:2, volume:0.85, minIntervalMs:220});
       createPool("runComplete", "run-complete.mp3", {src:"./game-assets/audio/run-complete.mp3", poolSize:1, volume:0.9, minIntervalMs:500});
       createPool("personalBest", "personal-best.mp3", {src:"./game-assets/audio/personal-best.mp3", poolSize:1, volume:0.9, minIntervalMs:500});
+      createPool("snakeEntry", "snake-shed.mp3", {src:"./game-assets/audio/snake-shed.mp3", poolSize:1, volume:0.9, minIntervalMs:450});
       audioInitialized = true;
     } catch (e) {
       // If audio init fails for some reason, fail silently.
@@ -333,6 +334,7 @@
     playPerFrogUpgradeSound,
     playFrogCrowned: () => playFromPool("frogCrowned"),
     playRunComplete: isBest => playFromPool(isBest ? "personalBest" : "runComplete"),
+    playSnakeEntry: () => playFromPool("snakeEntry"),
     playSaveResult: success => playFromPool(success ? "save_success" : "save_error"),
     playBullfrogEscape: () => playFromPool("bullEscape"),
     playButtonClick,
