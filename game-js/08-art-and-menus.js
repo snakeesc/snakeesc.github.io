@@ -235,3 +235,5 @@ window.approvedUpgrades["higher calling"]="./game-assets/sprites/approved/upgrad
 
 // Approved Greedy Hand artwork uses a tight viewport; no legacy oversizing.
 (()=>{const style=document.createElement("style");style.textContent=".frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"greedy hand\"]{background-size:contain!important;background-position:center!important;}";document.head.appendChild(style);})();
+
+window.approvedUpgrades["afterglow"]="./game-assets/sprites/approved/upgrade-afterglow-framed.svg";

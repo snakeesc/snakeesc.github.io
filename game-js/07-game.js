@@ -1010,6 +1010,7 @@ let greedyHandQueue = null;
   let orbLingerBonusUsed   = false;
   let ouroborosPactUsed    = false;
 let chainReactionActive = false;
+let afterglowActive = false;
 let nightBloomActive = false;
 let royalApprenticeshipActive = false;
 let royalBatchActive = false;
@@ -1221,6 +1222,7 @@ const MAX_LUCK = 30;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
+    ['Common','Afterglow','Expired orbs have a 25% chance to activate at half base duration, including Panic Hop. Instant effects retain their normal result. Rolls independently of Night Bloom.'],
     ['Common','Mutation','Frogs hop 15% faster and 15% higher, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
@@ -3104,6 +3106,23 @@ function grantOrbCrowning(frog) {
   grantStarUpgrade(frog);
 }
 
+function chooseOrbTypeWithLuck(pool) {
+  if (!pool.length) return null;
+  const nonPanic = pool.filter(t => t !== "panicHop");
+  if (!pool.includes("panicHop") || !nonPanic.length) return pool[Math.floor(Math.random()*pool.length)];
+  const panicChance = (peaceOfMindActive ? 0 : (1 - Math.max(0, Math.min(30, luckStat)) / 100)) / pool.length;
+  if (Math.random() < panicChance) return "panicHop";
+  return nonPanic[Math.floor(Math.random()*nonPanic.length)];
+}
+function triggerAfterglow(orb) {
+  if (orb.type === "permaFrog") {
+    const frog = frogs[Math.floor(Math.random()*frogs.length)];
+    if (frog) grantOrbCrowning(frog);
+  } else {
+    // No collector bonuses or collection rewards. Timed effects use half base duration.
+    applyBuff(orb.type, null, 0.5, true);
+  }
+}
 function getRandomTriggeredOrbBuffType(excluded = []) {
   const pool = [
     "speed",
@@ -3121,7 +3140,7 @@ function getRandomTriggeredOrbBuffType(excluded = []) {
   ];
 
   const eligible = pool.filter(type => !excluded.includes(type) && !(peaceOfMindActive && type === "panicHop"));
-  return eligible[Math.floor(Math.random() * eligible.length)];
+  return chooseOrbTypeWithLuck(eligible);
 }
 
 function triggerLuckyRoll() {
@@ -3573,42 +3592,60 @@ function activateSnakeEgg() {
 function applyPairOfScissors() {
   if (!snake || pairOfScissorsUsed || snake.segments.length < 8) return;
   snake.speedFactor = (snake.speedFactor || 1) * 0.88;
-  snake.selfConsume = {t:0, total:snake.segments.length,
-    keep:Math.floor(snake.segments.length/2), canGrow:snake.canGrow,
-    origin:snake.segments.map(seg=>({x:seg.x,y:seg.y}))};
+  snake.selfConsume = {delay:0.8, t:0, biteClock:0};
   snake.canGrow = false;
   pairOfScissorsUsed = true;
 }
 function updateSelfConsumption(obj, dt) {
   const c=obj.selfConsume;
   if (!c) return false;
-  c.t += dt;
-  const curl=Math.min(1,c.t/0.8);
-  const eaten=Math.floor(Math.min(1,Math.max(0,(c.t-0.8)/2.2))*(c.total-c.keep));
-  while(obj.segments.length>c.total-eaten) obj.segments.pop().el.remove();
-  const radius=Math.max(18,Math.min(65,obj.segments.length*SEGMENT_VISUAL_SPACING/(2*Math.PI)));
-  const scale=snakeShrinkTime>0?0.75:1;
-  obj.segments.forEach((seg,i)=>{
-    const angle=(i+1)/(obj.segments.length+0.25)*Math.PI*2;
-    const x=obj.head.x+Math.sin(angle)*radius;
-    const y=obj.head.y+(1-Math.cos(angle))*radius;
-    seg.x=c.origin[i].x+(x-c.origin[i].x)*curl;
-    seg.y=c.origin[i].y+(y-c.origin[i].y)*curl;
-    const tail=i===obj.segments.length-1;
-    seg.el.className=tail?'snake-tail':'snake-body';
-    seg.el.style.transform=`translate3d(${seg.x}px,${seg.y}px,0) rotate(${angle+(tail?Math.PI:0)}rad) scale(${scale})`;
+  if(c.delay>0){c.delay-=dt;return false;}
+  if(!c.origin){
+    c.origin=[obj.head,...obj.segments].map(p=>({x:p.x,y:p.y}));
+    c.total=obj.segments.length;c.keep=Math.floor(c.total/2);c.eaten=0;
+    c.radius=Math.max(18,c.total*SEGMENT_VISUAL_SPACING/(2*Math.PI));
+    c.cx=obj.head.x;c.cy=obj.head.y+c.radius;
+  }
+  c.t+=dt;
+  const curl=Math.min(1,c.t/1.2),ease=curl*curl*(3-2*curl);
+  const biteInterval=Math.max(0.16,3.2/(c.total-c.keep));
+  if(curl===1){
+    c.biteClock+=dt;
+    // At most one audible bite per frame, including after a long frame.
+    if(c.biteClock>=biteInterval && obj.segments.length>c.keep){
+      c.biteClock-=biteInterval;obj.segments.pop().el.remove();c.eaten++;
+      obj.tailConsumed=true;playSnakeMunch();
+    }
+  }
+  const progress=c.eaten/(c.total-c.keep);
+  const travel=-progress*Math.PI*1.3;
+  const radius=c.radius*(1-progress*0.48);
+  const scale=(snakeShrinkTime>0 || obj.fruitShrink>0)?0.75:1;
+  const points=[obj.head,...obj.segments];
+  points.forEach((p,i)=>{
+    const angle=travel+i/(points.length)*Math.PI*2;
+    const targetX=c.cx+Math.sin(angle)*radius;
+    const targetY=c.cy-Math.cos(angle)*radius;
+    p.x=c.origin[i].x+(targetX-c.origin[i].x)*ease;
+    p.y=c.origin[i].y+(targetY-c.origin[i].y)*ease;
+    if(i){
+      const tail=!obj.tailConsumed && i===points.length-1;
+      p.el.className=tail?'snake-tail':'snake-body';
+      p.el.style.transform=`translate3d(${Math.round(p.x)}px,${Math.round(p.y)}px,0) rotate(${angle+(tail?Math.PI:0)}rad) scale(${scale})`;
+    }else{
+      const bite=curl===1 && c.biteClock<0.09?0.06:0;
+      p.el.style.transform=`translate3d(${Math.round(p.x)}px,${Math.round(p.y)}px,0) scale(${scale*(1+bite)},${scale*(1-bite)})`;
+    }
   });
-  // Small bite pulses at the point where the tail enters the head.
-  const bite=c.t>0.8?Math.sin(c.t*28)*0.035:0;
-  obj.head.el.style.transform=`translate3d(${obj.head.x}px,${obj.head.y}px,0) scale(${scale*(1+bite)},${scale*(1-bite)})`;
   updateSnakeDebuffCue(obj,dt,true,SNAKE_SEGMENT_SIZE);
-  if(c.t>=3){
-    const points=[obj.head,...obj.segments];obj.path=[];
+  if(obj.segments.length<=c.keep){
+    obj.path=[];
     for(let i=0;i<points.length-1;i++){
       const a=points[i],b=points[i+1],n=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)));
       for(let j=0;j<n;j++)obj.path.push({x:a.x+(b.x-a.x)*j/n,y:a.y+(b.y-a.y)*j/n});
     }
-    obj.canGrow=c.canGrow;delete obj.selfConsume;
+    obj.path.push({x:points.at(-1).x,y:points.at(-1).y});
+    obj.canGrow=false;obj.tailConsumed=true;delete obj.selfConsume;
   }
   return true;
 }
@@ -3937,7 +3974,7 @@ function computeDeathRattleChanceForFrog(frog) {
       ? LUCKY_BUFF_DURATION_BOOST
       : 1.0;
 
-    const durationScale = type === "panicHop" ? 1 : fixedDuration ? durationMultiplier :
+    const durationScale = fixedDuration ? durationMultiplier : type === "panicHop" ? 1 :
       buffDurationFactor *
       durationMultiplier *
       durBoost *
@@ -4370,7 +4407,7 @@ function computeDeathRattleChanceForFrog(frog) {
   function spawnOrb(type, x, y) {
     if (!type || (peaceOfMindActive && type === "panicHop")) {
       const availableTypes = ORB_TYPES.filter(t => !(peaceOfMindActive && t === "panicHop"));
-      type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+      type = chooseOrbTypeWithLuck(availableTypes);
     }
 
     if (typeof x !== "number" || typeof y !== "number") {
@@ -4454,6 +4491,7 @@ function computeDeathRattleChanceForFrog(frog) {
           container.removeChild(orb.el);
         }
         orbs.splice(i, 1);
+        if (orb.ttl <= 0 && afterglowActive && Math.random() < 0.25) triggerAfterglow(orb);
         continue;
       }
 
@@ -5116,7 +5154,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         angle = head.angle;
       }
 
-      const isTail = i === snakeObj.segments.length - 1;
+      const isTail = !snakeObj.tailConsumed && i === snakeObj.segments.length - 1;
       seg.el.className = isTail ? "snake-tail" : "snake-body";
       const renderAngle = isTail ? angle + Math.PI : angle;
       seg.el.style.transform =
@@ -5228,6 +5266,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
+    if (!afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Expired orbs have a <span>25%</span> chance to activate at <span class=menu-number-accent data-card-accent>half duration</span>", apply:()=>{afterglowActive=true;}});
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
 
     upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>1–3</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],1,3)});
@@ -8082,6 +8121,7 @@ snakeOldBodySpeedBonusPending = false;
     secondWindUsed = false;
 doubleYolkerActive = false;
     chainReactionActive = false;
+    afterglowActive = false;
     nightBloomActive = false;
     royalApprenticeshipActive = false;
     royalBatchActive = false;
