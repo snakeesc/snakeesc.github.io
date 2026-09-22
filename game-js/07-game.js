@@ -3592,62 +3592,31 @@ function activateSnakeEgg() {
 function applyPairOfScissors() {
   if (!snake || pairOfScissorsUsed || snake.segments.length < 8) return;
   snake.speedFactor = (snake.speedFactor || 1) * 0.88;
-  snake.selfConsume = {delay:0.8, t:0, biteClock:0};
+  snake.selfConsume = {delay:2.5, keep:Math.floor(snake.segments.length/2), biteCooldown:0};
   snake.canGrow = false;
   pairOfScissorsUsed = true;
 }
 function updateSelfConsumption(obj, dt) {
   const c=obj.selfConsume;
   if (!c) return false;
-  if(c.delay>0){c.delay-=dt;return false;}
-  if(!c.origin){
-    c.origin=[obj.head,...obj.segments].map(p=>({x:p.x,y:p.y}));
-    c.total=obj.segments.length;c.keep=Math.floor(c.total/2);c.eaten=0;
-    c.radius=Math.max(18,c.total*SEGMENT_VISUAL_SPACING/(2*Math.PI));
-    c.cx=obj.head.x;c.cy=obj.head.y+c.radius;
-  }
-  c.t+=dt;
-  const curl=Math.min(1,c.t/1.2),ease=curl*curl*(3-2*curl);
-  const biteInterval=Math.max(0.16,3.2/(c.total-c.keep));
-  if(curl===1){
-    c.biteClock+=dt;
-    // At most one audible bite per frame, including after a long frame.
-    if(c.biteClock>=biteInterval && obj.segments.length>c.keep){
-      c.biteClock-=biteInterval;obj.segments.pop().el.remove();c.eaten++;
-      obj.tailConsumed=true;playSnakeMunch();
-    }
-  }
-  const progress=c.eaten/(c.total-c.keep);
-  const travel=-progress*Math.PI*1.3;
-  const radius=c.radius*(1-progress*0.48);
-  const scale=(snakeShrinkTime>0 || obj.fruitShrink>0)?0.75:1;
-  const points=[obj.head,...obj.segments];
-  points.forEach((p,i)=>{
-    const angle=travel+i/(points.length)*Math.PI*2;
-    const targetX=c.cx+Math.sin(angle)*radius;
-    const targetY=c.cy-Math.cos(angle)*radius;
-    p.x=c.origin[i].x+(targetX-c.origin[i].x)*ease;
-    p.y=c.origin[i].y+(targetY-c.origin[i].y)*ease;
-    if(i){
-      const tail=!obj.tailConsumed && i===points.length-1;
-      p.el.className=tail?'snake-tail':'snake-body';
-      p.el.style.transform=`translate3d(${Math.round(p.x)}px,${Math.round(p.y)}px,0) rotate(${angle+(tail?Math.PI:0)}rad) scale(${scale})`;
-    }else{
-      const bite=curl===1 && c.biteClock<0.09?0.06:0;
-      p.el.style.transform=`translate3d(${Math.round(p.x)}px,${Math.round(p.y)}px,0) scale(${scale*(1+bite)},${scale*(1-bite)})`;
-    }
-  });
-  updateSnakeDebuffCue(obj,dt,true,SNAKE_SEGMENT_SIZE);
-  if(obj.segments.length<=c.keep){
-    obj.path=[];
-    for(let i=0;i<points.length-1;i++){
-      const a=points[i],b=points[i+1],n=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)));
-      for(let j=0;j<n;j++)obj.path.push({x:a.x+(b.x-a.x)*j/n,y:a.y+(b.y-a.y)*j/n});
-    }
-    obj.path.push({x:points.at(-1).x,y:points.at(-1).y});
-    obj.canGrow=false;obj.tailConsumed=true;delete obj.selfConsume;
-  }
-  return true;
+  c.delay=Math.max(0,c.delay-dt);
+  c.biteCooldown=Math.max(0,c.biteCooldown-dt);
+  // The regular movement/path renderer owns every head and body position.
+  return false;
+}
+function consumeReachedTail(obj, previousHead, dt) {
+  const c=obj.selfConsume;
+  if(!c || c.delay>0 || c.biteCooldown>0) return;
+  const tail=obj.segments.at(-1);
+  if(!tail) return;
+  const dx=obj.head.x-previousHead.x,dy=obj.head.y-previousHead.y;
+  const length2=dx*dx+dy*dy;
+  const t=length2?Math.max(0,Math.min(1,((tail.x-previousHead.x)*dx+(tail.y-previousHead.y)*dy)/length2)):0;
+  const shrink=(snakeShrinkTime>0 || obj.fruitShrink>0)?0.75:1;
+  if(Math.hypot(tail.x-previousHead.x-t*dx,tail.y-previousHead.y-t*dy)>SNAKE_SEGMENT_SIZE*0.9*shrink)return;
+  obj.segments.pop().el.remove();obj.tailConsumed=true;c.biteCooldown=0.18;
+  playSnakeMunch();
+  if(obj.segments.length<=c.keep){obj.canGrow=false;delete obj.selfConsume;}
 }
 function clearScissorsAndOldSnakeState() {
   // remove detached scissors tail pieces still sitting in the DOM
@@ -5051,7 +5020,10 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     // 2. MOVEMENT
     let desiredAngle = head.angle;
-    if (snakeObj.entering) {
+    if (snakeObj.selfConsume && snakeObj.selfConsume.delay <= 0 && snakeObj.segments.length) {
+      const tail=snakeObj.segments.at(-1);
+      desiredAngle=Math.atan2(tail.y-head.y,tail.x-head.x);
+    } else if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
     } else if (snakeConfuseTime > 0 || snakeObj.fruitConfuse > 0) {
       desiredAngle = panicAttackActive && !isMainMenu && targetFrog
@@ -5075,6 +5047,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     const speedFactor = getSnakeSpeedFactor(snakeObj);
     const speed = SNAKE_BASE_SPEED * speedFactor;
+    const previousHead={x:head.x,y:head.y};
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
 
@@ -5160,6 +5133,8 @@ function samplePathAtDistance(path, startIdx, dist) {
       seg.el.style.transform =
         `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
     }
+
+    consumeReachedTail(snakeObj,previousHead,dt);
 
     if (!isMainMenu && forbiddenFruitActive && !snakeObj.entering && !snakeObj.fruitCooldown) {
       const radius=(snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius())+ORB_RADIUS;
