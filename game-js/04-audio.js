@@ -231,7 +231,7 @@
   }
 
   function playPermanentChoiceSound() {
-    // Upgrade-menu opening sound temporarily disabled. Keep the asset for later.
+    playFromPool("permanentChoice");
   }
 
   /**
