@@ -1543,17 +1543,18 @@ const MAX_LUCK = 30;
     const input=content.querySelector('#pauseTagInput'),save=content.querySelector('#pauseTagSaveBtn'),msg=content.querySelector('#pauseTagMsg');
     save.onclick=async()=>{
       const validation=validateDashboardTag(input.value);
-      if(!validation.ok){msg.textContent=validation.message;return;}
+      if(!validation.ok){AudioMod.playSaveResult?.(false);msg.textContent=validation.message;return;}
       save.disabled=true;msg.textContent='Saving…';
       try{
         // Rename using the saved best record, never submit the unfinished run.
         const best=await getMyDashboardBestFromLeaderboard();
         const result=await submitScoreToServer(best?.bestRun || 0,best?.bestTime || 0,null,validation.tag);
-        if(!result || result._error){msg.textContent=result?.error==='tag_taken'?'That name is already taken.':(result?.message || 'Could not save. Try again.');return;}
+        if(!result || result._error){AudioMod.playSaveResult?.(false);msg.textContent=result?.error==='tag_taken'?'That name is already taken.':(result?.message || 'Could not save. Try again.');return;}
         await saveDashboardTag(validation.tag);
         if(window.FrogGameLeaderboard?._lastMyEntry)window.FrogGameLeaderboard._lastMyEntry.tag=validation.tag;
         msg.textContent='';input.closest('.summary-name').finishNameEdit(validation.tag);
-      }catch(e){msg.textContent='Connection error. Try again.';}
+        AudioMod.playSaveResult?.(true);
+      }catch(e){AudioMod.playSaveResult?.(false);msg.textContent='Connection error. Try again.';}
       finally{save.disabled=false;}
     };
     input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(!save.disabled)save.click();}});
@@ -1783,6 +1784,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
     tagSaveBtn.addEventListener("click", async () => {
       const validation = validateDashboardTag(tagInput.value);
       if (!validation.ok) {
+        AudioMod.playSaveResult?.(false);
         if (tagMsg) { tagMsg.textContent = validation.message; tagMsg.style.color = "#fca5a5"; }
         return;
       }
@@ -1795,6 +1797,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
           newTag
         );
         if (!result || result._error) {
+          AudioMod.playSaveResult?.(false);
           const msg = result?.error === "tag_taken"
             ? "That tag is already taken — try another."
             : (result?.message || "Could not save tag. Try again.");
@@ -1802,13 +1805,17 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
           return;
         }
         await saveDashboardTag(newTag);
+        AudioMod.playSaveResult?.(true);
         activePlayerTag = newTag;
         if (myEntry) myEntry.tag = newTag;
         if (tagMsg) tagMsg.textContent = "";
         tagInput.closest(".summary-name").finishNameEdit(newTag);
-        const refreshed = await fetchLeaderboard();
-        updateMiniLeaderboard(refreshed);
+        try {
+          const refreshed = await fetchLeaderboard();
+          updateMiniLeaderboard(refreshed);
+        } catch (_) { /* Name saved; leaderboard refresh is optional. */ }
       } catch (e) {
+        AudioMod.playSaveResult?.(false);
         if (tagMsg) { tagMsg.textContent = "Connection error. Try again."; tagMsg.style.color = "#fca5a5"; }
       }
     });
@@ -2958,6 +2965,7 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
+  playPerFrogUpgradeSound("alchemist");
   frog.alchemistTimer = 40 - getLuckBiasedInt(15, 25); // Luck favors shorter independent waits.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
@@ -2974,6 +2982,7 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
+  playPerFrogUpgradeSound("alchemist");
   frog.alchemistTimer = 40 - getLuckBiasedInt(15, 25); // Luck favors shorter independent waits.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
@@ -3127,8 +3136,10 @@ function grantPoisonToad(frog) {
 }
 
 function grantBullFrog(frog) {
+  const newlyGranted = !frog.isBull;
   frog.isBull = true;
   frog.bullArmor = true;
+  if (newlyGranted) playPerFrogUpgradeSound("bull");
   updateFrogRoleEmoji(frog);
 }
 
@@ -3621,6 +3632,7 @@ function clearScissorsAndOldSnakeState() {
 function markCannibalFrog(frog) {
   if (!frog || frog.isCannibal) return;
   frog.isCannibal = true;
+  playPerFrogUpgradeSound("cannibal");
   frog.cannibalMeals = 0;
   frog.cannibalNextMeal = elapsedTime + 15;
   cannibalFrogCount++;
@@ -3713,6 +3725,7 @@ function computeDeathRattleChanceForFrog(frog) {
       if ((frog.bullEscapeUntil || 0) > elapsedTime) return false;
       if (frog.isBull && frog.bullArmor) {
         frog.bullArmor = false;
+        AudioMod.playBullfrogEscape?.();
         frog.bullEscapeUntil = elapsedTime + 1.0;
         const head = (bitingSnake || snake)?.head;
         let dx = frog.x - (head?.x ?? frog.x - 1);
@@ -6617,6 +6630,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
       const validation = validateDashboardTag(tagInput.value);
 
       if (!validation.ok) {
+        AudioMod.playSaveResult?.(false);
         if (msgEl) { msgEl.textContent = validation.message; msgEl.style.color = "#fca5a5"; }
         return;
       }
@@ -6630,6 +6644,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
         const result = await submitScoreToServer(bestScore, bestTime, null, newTag);
 
         if (!result || result._error) {
+          AudioMod.playSaveResult?.(false);
           const msg = result?.error === "tag_taken"
             ? "That tag is already taken — try another."
             : (result?.message || "Could not save tag. Try again.");
@@ -6639,13 +6654,17 @@ async function showDashboardOverlay(cachedLeaderboard) {
 
         // Server accepted — now save locally
         await saveDashboardTag(newTag);
+        AudioMod.playSaveResult?.(true);
         tagInput.closest('.summary-name').finishNameEdit(newTag);
         if (msgEl) msgEl.textContent = '';
         if (window.FrogGameLeaderboard?._lastMyEntry) window.FrogGameLeaderboard._lastMyEntry.tag = newTag;
 
-        const refreshed = await fetchLeaderboard();
-        updateMiniLeaderboard(refreshed);
+        try {
+          const refreshed = await fetchLeaderboard();
+          updateMiniLeaderboard(refreshed);
+        } catch (_) { /* Name saved; leaderboard refresh is optional. */ }
       } catch (e) {
+        AudioMod.playSaveResult?.(false);
         if (msgEl) { msgEl.textContent = "Connection error. Try again."; msgEl.style.color = "#fca5a5"; }
       }
     });

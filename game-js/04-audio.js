@@ -29,7 +29,7 @@
     const players = [];
     for (let i = 0; i < poolSize; i++) {
       try {
-        const a = new Audio(key === "buttonClick" ? "./game-assets/audio/button-click.mp3" : assetURL(AUDIO_BASE + filename));
+        const a = new Audio(options?.src || (key === "buttonClick" ? "./game-assets/audio/button-click.mp3" : assetURL(AUDIO_BASE + filename)));
         a.preload = "auto";
         a.volume = volume;
         a.crossOrigin = "anonymous";
@@ -153,6 +153,12 @@
       createPool("perfrog_lucky",    "luckyFrog.mp3",     { poolSize: 1, volume: 1.0, minIntervalMs: 250 });
       createPool("perfrog_zombie",   "zombieFrog.mp3",    { poolSize: 1, volume: 1.0, minIntervalMs: 250 });
 
+      createPool("perfrog_bull", "bullfrog-granted.mp3", {src:"./game-assets/audio/bullfrog-granted.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
+      createPool("bullEscape", "bullfrog-escape.mp3", {src:"./game-assets/audio/bullfrog-escape.mp3", poolSize:2, volume:0.9, minIntervalMs:100});
+      createPool("perfrog_alchemist", "alchemist-frog-granted.mp3", {src:"./game-assets/audio/alchemist-frog-granted.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
+      createPool("perfrog_cannibal", "cannibal-frog-granted.mp3", {src:"./game-assets/audio/cannibal-frog-granted.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
+      createPool("save_success", "save-success.mp3", {src:"./game-assets/audio/save-success.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
+      createPool("save_error", "save-error.mp3", {src:"./game-assets/audio/save-error.mp3", poolSize:1, volume:0.9, minIntervalMs:250});
       audioInitialized = true;
     } catch (e) {
       // If audio init fails for some reason, fail silently.
@@ -233,6 +239,9 @@
   function playPerFrogUpgradeSound(role) {
     let key = null;
     switch (role) {
+      case "cannibal": key = "perfrog_cannibal"; break;
+      case "alchemist": key = "perfrog_alchemist"; break;
+      case "bull": key = "perfrog_bull"; break;
       case "champion": key = "perfrog_champion"; break;
       case "aura":     key = "perfrog_aura";     break;
       case "shield":   key = "perfrog_shield";   break;
@@ -313,6 +322,8 @@
     playBuffSound,
     playPermanentChoiceSound,
     playPerFrogUpgradeSound,
+    playSaveResult: success => playFromPool(success ? "save_success" : "save_error"),
+    playBullfrogEscape: () => playFromPool("bullEscape"),
     playButtonClick,
     setButtonClicksMuted: muted => {
       buttonClicksMuted = !!muted;
