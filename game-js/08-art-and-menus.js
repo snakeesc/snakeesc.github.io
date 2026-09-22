@@ -64,7 +64,7 @@ window.approvedFrogs.cannibal=window.approvedFrogs["cannibal-0"];
 window.approvedUpgrades["eye for eye"]="./game-assets/sprites/approved/upgrade-eye-for-eye.png";
 
 window.approvedUpgrades["wild company"]="./game-assets/sprites/approved/upgrade-wild-company.png";
-window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-greedy-hand.png";
+window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-greedy-hand-framed.svg";
 
 // Small visual adjustment only; retain the icon's layout space and centering.
 (()=>{const style=document.createElement('style');style.textContent='.frog-upgrade-choice .frog-upgrade-emoji[data-approved="loaded hand"] { scale:1.08; transform-origin:center; }';document.head.appendChild(style);})();
@@ -120,19 +120,19 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
   const read=s=>getComputedStyle(probe.querySelector(s));
   const panel=read('.pp-board'),heading=read('.pp-heading'),name=read('.pp-player strong'),body=read('.pp-time'),button=read('button'),points=read('.pp-points strong');
   // Typography follows the scoreboard's responsive values, independently of panel geometry.
-  for(const [key,value] of Object.entries({'--menu-unit':(parseFloat(body.fontSize)/21)+'px','--menu-panel-width':panel.width,'--menu-panel-padding':panel.padding,'--menu-frame-border':panel.border,'--menu-frame-shadow':panel.boxShadow,'--menu-frame-radius':panel.borderRadius,'--menu-frame-background':panel.backgroundColor,'--menu-body-font':body.fontSize,'--menu-name-font':name.fontSize,'--menu-title-font':heading.fontSize,'--menu-control-font':button.fontSize})) {
+  for(const [key,value] of Object.entries({'--menu-text-color':panel.color,'--menu-label-color':body.color,'--menu-value-color':points.color,'--menu-unit':(parseFloat(body.fontSize)/21)+'px','--menu-panel-width':panel.width,'--menu-panel-padding':panel.padding,'--menu-frame-border':panel.border,'--menu-frame-shadow':panel.boxShadow,'--menu-frame-radius':panel.borderRadius,'--menu-frame-background':panel.backgroundColor,'--menu-body-font':body.fontSize,'--menu-name-font':name.fontSize,'--menu-title-font':heading.fontSize,'--menu-control-font':button.fontSize})) {
    if(document.documentElement.style.getPropertyValue(key)!==value)document.documentElement.style.setProperty(key,value);
   }
   const font={'font-family':name.fontFamily,'font-weight':'400','text-shadow':'none','letter-spacing':'normal'};
   document.querySelectorAll(targets).forEach(root=>{
-   if(root.querySelector('.mp-panel') || root.id==='howToOverlay') return;
+   if(root.querySelector('.sm-panel') || (root.id==='runPauseOverlay' && root.dataset.view==='guide')) return;
    apply(root,'.frog-panel,.pp-board,.pause-panel',{'background':panel.backgroundColor,'color':panel.color,'border':panel.border,'border-radius':panel.borderRadius,'box-shadow':panel.boxShadow,'clip-path':'none',...font});
-   apply(root,'h2,.pp-heading', {...font,'font-size':heading.fontSize,'color':heading.color,'background':'transparent','line-height':'1.15','text-align':'center','border':'0','padding':'0','margin':'4px 0 20px'});
-   apply(root,'p,label,dt,dd,.ui-records span,.ui-tag-label,.ui-progress-caption,.rest-runline,.rest-facts,.rest-label,.rest-effects,.pause-pages span,.pp-metrics span,.pp-tag label,.pp-result>span,.pp-result>small', {...font,'font-size':body.fontSize,'line-height':'1.3','color':body.color});
-   apply(root,'h3,.rest-name,.pause-row strong,#dashboardCurrentTag,.ui-help-steps h3', {...font,'font-size':name.fontSize,'line-height':'1.2','color':panel.color});
-   apply(root,'.ui-records strong,.rest-runline b,.rest-facts dd,.rest-effects b,.pp-metrics strong', {...font,'font-size':name.fontSize,'color':points.color});
-   apply(root,'button', {...font,'font-size':button.fontSize,'line-height':'1.2','color':panel.color,'background':'transparent','border':'0','box-shadow':'none','clip-path':'none','border-radius':'7px','padding':button.padding,'min-height':button.minHeight});
-   apply(root,'input[type="text"],#dashboardTagInput,#endSummaryTagInput', {...font,'font-size':name.fontSize,'line-height':'1.2','color':panel.color,'background':panel.backgroundColor,'border':'1px solid #bdcb9e','border-radius':'7px','padding':'8px 12px','min-width':'0','box-sizing':'border-box'});
+   apply(root,'h2,.pp-heading', {...font,'font-size':'var(--menu-title-font)','color':heading.color,'background':'transparent','line-height':'1.15','text-align':'center','border':'0','padding':'0','margin':'4px 0 20px'});
+   apply(root,'p,label,dt,dd,.ui-records span,.ui-tag-label,.ui-progress-caption,.rest-runline,.rest-facts,.rest-label,.rest-effects,.pause-pages span,.pp-metrics span,.pp-tag label,.pp-result>span,.pp-result>small', {...font,'font-size':'var(--menu-body-font)','line-height':'1.3','color':body.color});
+   apply(root,'h3,.rest-name,.pause-row strong,#dashboardCurrentTag,.ui-help-steps h3', {...font,'font-size':'var(--menu-name-font)','line-height':'1.2','color':panel.color});
+   apply(root,'.ui-records strong,.rest-runline b,.rest-facts dd,.rest-effects b,.pp-metrics strong', {...font,'font-size':'var(--menu-name-font)','color':points.color});
+   apply(root,'button', {...font,'font-size':'var(--menu-control-font)','line-height':'1.2','color':panel.color,'background':'transparent','border':'0','box-shadow':'none','clip-path':'none','border-radius':'7px','padding':button.padding,'min-height':button.minHeight});
+   apply(root,'input[type="text"],#dashboardTagInput,#endSummaryTagInput', {...font,'font-size':'var(--menu-name-font)','line-height':'1.2','color':panel.color,'background':panel.backgroundColor,'border':'1px solid #bdcb9e','border-radius':'7px','padding':'8px 12px','min-width':'0','box-sizing':'border-box'});
    apply(root,'.guide-heading,.pause-filters',{'background':'transparent','color':panel.color,'box-shadow':'none','border-bottom':'1px solid #bdcb9e'});
    apply(root,'.pause-footer,.pp-pager,.rest-label',{'border-top':'1px solid #bdcb9e'});
    apply(root,'.rest-entry,.pause-guide-entries .pause-row',{'background':'transparent','box-shadow':'none','border':'0','border-bottom':'1px solid #bdcb9e','border-radius':'0','clip-path':'none'});
@@ -168,7 +168,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 
 // Approved menus share the exact preview styling; dimensions follow the established design viewport.
 (()=>{
- const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css';document.head.appendChild(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='game-css/approved-menus.css?v=approved-pause-guide-43';document.head.appendChild(css);
 
 })();
 
@@ -178,3 +178,60 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 @media(pointer:coarse),(max-width:600px){.frog-upgrade-choice .frog-upgrade-emoji[data-approved="loaded hand"]{scale:1.18;}}
 .frog-upgrade-choice .frog-upgrade-emoji[data-approved="poisonous skin"]{background-size:129.6521739130435% 124.78260869565219%!important;background-position:59.579667644183765% 54.093567251461984%!important;}
 `;document.head.appendChild(style);})();
+
+// Keep secondary menus readable independently of desktop world scaling.
+(()=>{
+  const desktop=matchMedia('(min-width:601px) and (hover:hover) and (pointer:fine)');
+  function resizeMenus(){
+    const active=desktop.matches && !window.Capacitor;
+    const scale=Number(window.__escapeSnakeRenderScale)||1;
+    // 21px body text renders at about 20px, without reducing larger displays.
+    const zoom=active ? Math.max(1,.95/scale) : 1;
+    const effective=scale*zoom;
+    document.documentElement.classList.toggle('desktop-readable-menus',active);
+    document.documentElement.style.setProperty('--desktop-menu-zoom',String(zoom));
+    document.documentElement.style.setProperty('--desktop-menu-max-width',Math.max(1,(document.documentElement.clientWidth-32)/effective)+'px');
+    document.documentElement.style.setProperty('--desktop-menu-max-height',Math.max(1,(document.documentElement.clientHeight-40)/effective)+'px');
+  }
+  window.addEventListener('resize',resizeMenus);
+  desktop.addEventListener?.('change',resizeMenus);
+  resizeMenus();
+})();
+
+// Phone menu proportions only; the world, HUD and upgrade chooser keep their existing scale.
+(()=>{
+ function update(){
+  const phone=(matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints>0) && Math.min(screen.width,screen.height)<=600;
+  document.documentElement.classList.toggle('phone-secondary-menus',phone);
+ }
+ window.addEventListener('resize',update);update();
+})();
+
+// Accent only compact numeric highlights, never description wrappers or full sentences.
+(()=>{
+ const scope='#upgradeOverlay,#howToOverlay,#dashboardOverlay,#endGameSummaryOverlay,#runPauseOverlay,#buffGuideOverlay';
+ let queued=false;
+ function update(){queued=false;
+  document.querySelectorAll(scope).forEach(root=>root.querySelectorAll('.stat-highlight,.frog-upgrade-desc span').forEach(el=>{
+   const text=el.textContent.trim();
+   const numeric=/^[+−–×x-]?\s*\d[\d,.]*(?:\s*[–−-]\s*\d[\d,.]*)?\s*[%×x]?$/.test(text);
+   el.classList.toggle('menu-number-accent',(numeric || (el.closest('#upgradeOverlay') && el.hasAttribute('data-card-accent'))) && !el.children.length);
+  }));
+ }
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(update);}}
+ new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true});schedule();
+})();
+
+// Approved Peace of Mind artwork supplied by the player.
+window.approvedUpgrades["peace of mind"]="./game-assets/sprites/approved/upgrade-peace-of-mind.png";
+
+window.approvedUpgrades["second helping"]="./game-assets/sprites/approved/upgrade-second-helping.png";
+
+window.approvedUpgrades["ouroboros curse"]="./game-assets/sprites/approved/upgrade-ouroboros-curse.png";
+window.approvedUpgrades["soul offering"]="./game-assets/sprites/approved/upgrade-soul-offering-framed.svg";
+
+window.approvedUpgrades["forbidden fruit"]="./game-assets/sprites/approved/upgrade-forbidden-fruit.svg";
+window.approvedUpgrades["higher calling"]="./game-assets/sprites/approved/upgrade-higher-calling.svg";
+
+// Approved Greedy Hand artwork uses a tight viewport; no legacy oversizing.
+(()=>{const style=document.createElement("style");style.textContent=".frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"greedy hand\"]{background-size:contain!important;background-position:center!important;}";document.head.appendChild(style);})();

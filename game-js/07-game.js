@@ -597,6 +597,9 @@ function getDashboardLevelData(totalOrbsCollected) {
       isLatest: true
     });
 
+    // Preserve the best run before recent history is trimmed.
+    stats.bestRun = [stats.bestRun, ...stats.recentRuns].filter(Boolean)
+      .sort((a,b) => Number(b.score)-Number(a.score) || Number(b.time)-Number(a.time))[0] || null;
     stats.recentRuns = stats.recentRuns.slice(0, 5);
 
     saveDashboardStats(stats);
@@ -1003,7 +1006,6 @@ let greedyHandQueue = null;
   let orbCollectorActive   = false;
   let orbCollectorChance   = 0;    // current chance (0–1) that an orb spawns a frog
   let orbSpecialistActive  = false;
-  let frogDeathOrbChance   = 0;    // chance that a dead frog drops an orb
   let orbTtlFactor         = 1.0;  // multiplier for new orb lifetime
   let orbLingerBonusUsed   = false;
   let ouroborosPactUsed    = false;
@@ -1017,6 +1019,12 @@ let lastingLegacyActive = false;
 let brittleScalesActive = false;
 let bruisedEggActive = false;
 let panicAttackActive = false;
+let peaceOfMindActive = false;
+let forbiddenFruitActive = false;
+let higherCallingActive = false;
+let higherCallingPicksRemaining = 0;
+let secondHelpingPending = false;
+let secondHelpingPicksRemaining = 0;
 const MAX_LUCK = 30;
   let fragileRealityActive = false;
   let frogScatterUsed      = false;
@@ -1026,6 +1034,7 @@ const MAX_LUCK = 30;
   let snakeFrenzyTime = 0;
 
   // global permanent buffs
+  let mutationPicks = 0;
   let frogPermanentSpeedFactor = 1.0; // <1 = faster hops
   let frogPermanentJumpFactor  = 1.0; // >1 = higher hops
   let snakePermanentSpeedFactor= 1.0;
@@ -1219,30 +1228,34 @@ const MAX_LUCK = 30;
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
     ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
     ['Common','Spawn frogs',`${NORMAL_SPAWN_AMOUNT} frogs immediately, subject to the population cap.`],
-    ['Common','Orb Flow','Adds 10% orb spawn rate. With Alchemists, the total caps at 17%.'],
+    ['Common','Orb Flow','Adds 10% orb spawn rate.'],
     ['Common','Orb Whisperer','Orbs stay on the field 30% longer.'],
-    ['Common','Ouroboros Pact','Dead frogs have a 10% base chance to drop an orb.'],
+    ['Common','Soul Offering','Successful Deathrattle revivals leave an orb. Requires permanent Deathrattle chance.'],
     ['Common','Luck','Gain 10 luck, up to 30. Improves supported chances, spawn rolls and positive orb durations.'],
     ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
-    ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, within the revival cap.`],
+    ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, as an exception to the ordinary revival cap.`],
     ['Common','Survival Instinct','Below 10 frogs, they hop 20% faster.'],
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
-    ['Common','Pair of Scissors','Cuts the snake in half and slows it.'],
+    ['Epic','Ouroboros Curse','Makes the snake consume half its body and slows it.'],
     ['Epic','Royal Apprenticeship','Spawning special frogs converts all ordinary crowned frogs to the spawned role. Consumes crowns and rerolls natural movement stats. Frogs already holding a special role stay unchanged.'],
+    ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Lingering Hex extends these debuffs; luck does not. Each snake can eat one orb every 3 seconds.'],
+    ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
+    ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
+    ['Epic','Peace of Mind','At 20+ luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
     ['Epic','Role Draft','Choose between two roles and spawn 2–5 special frogs. Luck favors larger batches.'],
     ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
-    ['Epic','Lasting Legacy','A dying special frog has a 20% chance to pass a role to an ordinary frog.'],
+    ['Epic','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
     ['Epic','Snake Egg','Targets the lowest-shed snake when selected. It gains 25% less added speed from its remaining sheds. Other and future snakes are unaffected.'],
     ['Epic','Brittle Scales','Halves snake debuff resistance.'],
     ['Epic','Chain Reaction','An orb pickup has a 15% chance to trigger an additional orb effect.'],
     ['Epic','Greedy Hand','Requires Loaded Hand; 20% chance to appear per epic offer. Take all other offered upgrades, then another snake enters. Once per run. Never offered alongside Eye for Eye.'],
     ['Epic','Loaded Hand','Future upgrade menus offer four choices instead of three.'],
-    ['Epic','Tidal Wave','Spawns as many frogs as are currently alive, up to the population cap.'],
+    ['Epic','Tidal Wave','Spawns as many frogs as are alive, with a minimum of 15 added frogs. Population cap still applies.'],
     ['Epic','Eye for Eye','Once per run, with at least 2 snakes: kill the slowest snake and reduce the frog cap to 55. Excess frogs die immediately without revival or death rewards.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
     ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
     ['Epic','Second Wind','Once per run: below 10 frogs, spawn 20.'],
-    ['Epic','Grave Wave','Each shed spawns 10–15 frogs.'],
+    ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
     ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
     ['Epic','Promotion','Adds a crown level to up to 10 random frogs, within crown limits.'],
     ['Epic','Frog Scatter','Respawns the swarm with roles, crowns and stats intact, triggering death effects. Bonus frogs respect the population cap. Once per run.'],
@@ -1255,10 +1268,44 @@ const MAX_LUCK = 30;
     ['Frogs','Zombie','Sacrifices itself to end Panic Hop for the swarm. Spawns one ordinary frog on any death.'],
     ['Frogs','Cannibal','Eats up to 5 ordinary frogs, gaining 5% shorter hop timing and 5% higher jumps per meal. On death, spawns 2–5 frogs, never more than it ate. Each living Cannibal adds 1 percentage point of Deathrattle; total chance cannot exceed 25%.'],
     ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs.'],
-    ['Frogs','Alchemist','Adds 2.5% orb spawn rate while alive. Alchemists add up to 10%; combined bonus caps at 17%.'],
+    ['Frogs','Alchemist','Spawns a frog every 15–25 seconds. Luck favors shorter waits.'],
     ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
     ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.'],
   ];
+  // Discoveries survive run resets; no unlocks from merely viewing an offer.
+  function guideDiscoveryKey(category, name) {
+    return (category === 'Frogs' ? 'frog:' : 'upgrade:') + name.trim().toLowerCase();
+  }
+  function guideDiscoveries() {
+    if (!guideDiscoveries.cache) {
+      let saved=[];
+      try { saved=JSON.parse(localStorage.getItem('escapeSnake.discoveries.v1') || '[]'); } catch (_) {}
+      guideDiscoveries.cache=new Set(Array.isArray(saved)?saved.filter(x=>typeof x==='string'):[]);
+    }
+    return guideDiscoveries.cache;
+  }
+  function discoverGuideEntry(category,name) {
+    const entries=guideDiscoveries(), key=guideDiscoveryKey(category,name);
+    if(entries.has(key)) return;
+    entries.add(key);
+    try { localStorage.setItem('escapeSnake.discoveries.v1',JSON.stringify([...entries])); } catch (_) {}
+  }
+  function guideHasEntry(category,name) {return guideDiscoveries().has(guideDiscoveryKey(category,name));}
+  function discoverUpgradeName(name) {
+    const entry=pauseGuide.find(([category,title])=>category!=='Frogs' && title.toLowerCase()===name.toLowerCase());
+    if(entry) discoverGuideEntry(entry[0],entry[1]);
+  }
+  function restoreKnownGuideEntries() {
+    // Only migrate records that actually contain selected upgrades.
+    const stats=loadDashboardStats();
+    for(const run of [stats.bestRun,...(stats.recentRuns||[])].filter(Boolean)) {
+      for(const upgrade of (Array.isArray(run.upgrades)?run.upgrades:[])) {
+        const name=typeof upgrade==='string'?upgrade:upgrade?.name;
+        if(typeof name==='string') discoverUpgradeName(name);
+      }
+    }
+    for(const upgrade of runUpgradeLog) discoverUpgradeName(upgrade.name);
+  }
   function pauseEscape(value) {
     return String(value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
@@ -1272,17 +1319,67 @@ const MAX_LUCK = 30;
     const title=el.querySelector('br') ? choice.label.split(/<br\s*\/?\s*>/i)[0] : choice.label;
     el.innerHTML=title;
     const name=el.textContent.replace(/^[^\p{L}\p{N}]+/u,'').trim();
+    discoverUpgradeName(name);
     const found=runUpgradeLog.find(x=>x.id===choice.id);
     if(found) found.count++; else runUpgradeLog.push({id:choice.id,name,count:1});
   }
   function menuSprite(name) {
-    return `<img class="mp-sprite" src="game-assets/sprites/approved/${pauseEscape(name)}" alt="">`;
+    return `<img class="sm-sprite" src="game-assets/sprites/approved/${pauseEscape(name)}" alt="">`;
+  }
+  function menuPersonalBest(currentScore = 0, serverBest = 0) {
+    const entry = window.FrogGameLeaderboard?._lastMyEntry;
+    return Math.max(0, Number(currentScore)||0, Number(serverBest)||0,
+      entry ? getLeaderboardEntryScore(entry) : 0,
+      ...(loadDashboardStats().recentRuns || []).map(r=>Number(r.score)||0));
+  }
+  function renderRunUpgrades(host, entries) {
+    if (!host) return;
+    let page=0;
+    const pages=Math.max(1,Math.ceil(entries.length/6));
+    const row=x=>`<div class="upgrade-entry">${pauseIcon(x.name)}<span>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</span></div>`;
+    host.innerHTML='<label>Run upgrades</label><div class="upgrade-grid"></div><nav class="upgrade-pages" aria-label="Upgrade pages"><button data-step="-1">Prev</button><span></span><button data-step="1">Next</button></nav>';
+    const grid=host.querySelector('.upgrade-grid'),nav=host.querySelector('nav');
+    function draw(){
+      grid.innerHTML=entries.length?entries.slice(page*6,page*6+6).map(row).join(''):'<span>No upgrades yet.</span>';
+      nav.hidden=pages===1;nav.querySelector('span').textContent=`${page+1} / ${pages}`;
+      nav.querySelector('[data-step="-1"]').disabled=page===0;
+      nav.querySelector('[data-step="1"]').disabled=page===pages-1;
+    }
+    function fit(){
+      if(!host.isConnected)return;
+      grid.style.minHeight='0px';if(pages===1)return;
+      const probe=grid.cloneNode(false);probe.style.cssText='position:absolute;visibility:hidden;pointer-events:none;width:'+grid.getBoundingClientRect().width+'px;';host.appendChild(probe);
+      let height=0;for(let i=0;i<pages;i++){probe.innerHTML=entries.slice(i*6,i*6+6).map(row).join('');height=Math.max(height,probe.getBoundingClientRect().height);}
+      probe.remove();grid.style.minHeight=Math.ceil(height)+'px';
+    }
+    nav.onclick=e=>{const b=e.target.closest('button[data-step]');if(!b||b.disabled)return;page+=Number(b.dataset.step);draw();};
+    draw();requestAnimationFrame(fit);document.fonts?.ready.then(fit);
+    const observer=new ResizeObserver(()=>{if(!host.isConnected){observer.disconnect();return;}const width=host.clientWidth;if(width!==host._lastUpgradeWidth){host._lastUpgradeWidth=width;fit();}});observer.observe(host);
+  }
+  function setupPlayerHeading(content,inputId) {
+    const input=content.querySelector('#'+inputId), section=input.closest('.summary-name');
+    const editor=section.querySelector('.summary-editor');
+    const heading=document.createElement('button');heading.type='button';heading.className='player-heading';heading.setAttribute('aria-label','Edit player name');
+    const edit=document.createElement('button');edit.type='button';edit.className='player-edit-below';edit.textContent='Edit';
+    const cancel=document.createElement('button');cancel.type='button';cancel.textContent='×';cancel.setAttribute('aria-label','Cancel editing');editor.appendChild(cancel);
+    let saved=input.value;
+    function showName(){
+      heading.replaceChildren(document.createTextNode(saved || 'Your name'));
+
+      heading.hidden=false;edit.hidden=false;editor.hidden=true;
+    }
+    const headingRow=document.createElement('div');headingRow.className='player-heading-row';headingRow.append(heading,edit);section.prepend(headingRow);section.classList.add('player-identity');
+    heading.onclick=()=>{input.value=saved;heading.hidden=true;edit.hidden=true;editor.hidden=false;input.focus();input.select();};
+    edit.onclick=()=>heading.click();
+    cancel.onclick=()=>{input.value=saved;showName();};
+    input.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();cancel.click();}});
+    section.finishNameEdit=value=>{saved=value;input.value=value;showName();};showName();
   }
   function menuHeader(title, subtitle = '') {
-    return `<header class="mp-header"><div class="mp-eyebrow">ESCAPE THE SNAKE</div><h1>${pauseEscape(title)}</h1>${subtitle ? `<p>${pauseEscape(subtitle)}</p>` : ''}</header>`;
+    return `<header class="sm-header"><div class="sm-eyebrow">ESCAPE THE SNAKE</div><h1>${pauseEscape(title)}</h1>${subtitle ? `<p>${pauseEscape(subtitle)}</p>` : ''}</header>`;
   }
   function menuStat(label, value) {
-    return `<div class="mp-stat"><span>${pauseEscape(label)}</span><b>${pauseEscape(value)}</b></div>`;
+    return `<div class="sm-stat"><span>${pauseEscape(label)}</span><b>${pauseEscape(value)}</b></div>`;
   }
   function ensurePauseMenu() {
     if(pauseMenu) return;
@@ -1374,11 +1471,20 @@ const MAX_LUCK = 30;
     document.head.appendChild(style);
     pauseMenu=document.createElement('div'); pauseMenu.id='runPauseOverlay';
     pauseMenu.setAttribute('role','dialog');pauseMenu.setAttribute('aria-modal','true');pauseMenu.setAttribute('aria-labelledby','pauseTitle');
-    pauseMenu.innerHTML=`<div class="mp-panel" data-menu-panel><h2 id="pauseTitle" hidden>Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back to How to Play</button><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
+    pauseMenu.innerHTML=`<div class="sm-panel" data-menu-panel><h2 id="pauseTitle" hidden>Paused</h2><header class="guide-heading" hidden><div class="guide-eyebrow">ESCAPE THE SNAKE</div><h2>Field Guide</h2><div class="guide-category-slot"></div></header><div class="pause-content"></div><footer class="pause-footer"><div class="guide-pagination-slot"></div><button class="guide-back" data-action="guide-back" hidden>Back</button><button data-action="resume">Resume</button><button data-action="end">End Run</button></footer></div>`;
     document.body.appendChild(pauseMenu);
     pauseMenu.addEventListener('pointerdown',e=>e.stopPropagation());
     pauseMenu.addEventListener('click',e=>{
       e.stopPropagation();const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.action==='guide-menu' || b.dataset.action==='guide-start') {
+        pauseMenu.style.display='none';
+        fieldGuideFromHelp=false;
+        startAfterHowTo=false;
+        if(howToOverlay) howToOverlay.style.display='none';
+        if(b.dataset.action==='guide-start') startRunFromMenu();
+        else showMainMenu();
+        return;
+      }
       if(b.dataset.action==='guide-back') { closePauseMenu(); return; }
       if(b.dataset.view) renderPauseContent(b.dataset.view);
       if(b.dataset.filter) { pauseGuidePage=0; renderPauseContent('guide',b.dataset.filter); }
@@ -1386,8 +1492,9 @@ const MAX_LUCK = 30;
       if(b.dataset.page) { pauseGuidePage+=Number(b.dataset.page); renderPauseContent('guide',pauseGuideFilter); }
       if(b.dataset.action==='resume') closePauseMenu();
       if(b.dataset.action==='end') {
-        pauseMenu.querySelector('footer').hidden=true;
-        pauseMenu.querySelector('.pause-content').innerHTML=menuHeader('End this run?','Your score will go to the run summary.')+'<div class="mp-actions"><button class="mp-primary" data-action="confirm-end">End run</button><button class="mp-primary" data-action="resume">Keep playing</button></div>';
+        pauseMenu.dataset.view='confirm';
+        pauseMenu.querySelector('.pause-content').innerHTML=menuHeader('End this run?','Your score will be saved to the run summary.');
+        pauseMenu.querySelector('footer').innerHTML='<button data-action="confirm-end">End run</button><button data-action="resume">Keep playing</button>';
       }
       if(b.dataset.action==='confirm-end') {pauseMenu.style.display='none';endGame();}
     });
@@ -1399,51 +1506,67 @@ const MAX_LUCK = 30;
   function renderPauseContent(view='run',filter=pauseGuideFilter) {
     pauseMenu.dataset.view = view;
     pauseMenu.querySelector('#pauseTitle').hidden = true;
-    pauseMenu.querySelector('[data-menu-panel]').className = view === 'guide' ? 'pause-panel' : 'mp-panel';
+    pauseMenu.querySelector('[data-menu-panel]').className = view === 'guide' ? 'pause-panel' : 'sm-panel';
     if(view !== 'guide') {
       pauseMenu.querySelector('[data-menu-panel]').removeAttribute('style');
       pauseMenu.querySelectorAll('footer,footer button').forEach(el=>el.removeAttribute('style'));
     }
-    pauseMenu.querySelector('.pause-content').classList.toggle('mp-content', view !== 'guide');
+    pauseMenu.querySelector('.pause-content').classList.toggle('sm-content', view !== 'guide');
     const footer = pauseMenu.querySelector('footer');
     footer.hidden=false;
-    footer.className = view === 'guide' ? 'pause-footer' : 'mp-actions';
-    footer.querySelector('[data-action="resume"]').textContent='Resume run';
-    footer.querySelector('[data-action="resume"]').className=view === 'guide' ? '' : 'mp-primary';
-    footer.querySelector('[data-action="end"]').textContent='End run';
+    footer.className = view === 'guide' ? 'pause-footer' : 'sm-actions';
+    footer.innerHTML=view === 'guide'
+      ? (fieldGuideFromHelp ? '<div class="guide-pagination-slot"></div><div class="guide-menu-actions"><button data-action="guide-menu">Back to menu</button><button data-action="guide-start">Start run</button></div>' : '<div class="guide-pagination-slot"></div><div class="guide-menu-actions"><button data-view="run">Back to menu</button><button data-action="resume">Resume</button></div>')
+      : '<button data-action="resume">Resume</button><button data-view="guide">Field Guide</button><button data-action="end">End run</button>';
     pauseMenu.setAttribute('aria-label', view === 'guide' ? 'Field Guide' : 'Paused');
     if (view === 'guide') pauseMenu.removeAttribute('aria-labelledby');
     else pauseMenu.setAttribute('aria-labelledby', 'pauseTitle');
-    pauseMenu.querySelector('.guide-back').hidden=view!=='guide';
     pauseMenu.querySelector('.guide-heading').hidden=view!=='guide';
     pauseMenu.querySelector('.guide-category-slot').replaceChildren();
-    pauseMenu.querySelector('.guide-pagination-slot').replaceChildren();
+    pauseMenu.querySelector('.guide-pagination-slot')?.replaceChildren();
     const content=pauseMenu.querySelector('.pause-content');content.scrollTop=0;
     if(view==='guide') {
+      restoreKnownGuideEntries();
+      pauseMenu.dataset.guideCategory=filter;
       pauseGuideFilter=filter;
       const entries=pauseGuide.filter(x=>x[0]===filter);
       const perPage=4, pages=Math.ceil(entries.length/perPage);
       pauseGuidePage=Math.max(0,Math.min(pages-1,pauseGuidePage));
-      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}</button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([,name,desc])=>`<article class="pause-row">${pauseIcon(name)}<div><strong>${pauseEscape(name)}</strong><p>${pauseEscape(desc)}</p></div></article>`).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;
+      content.innerHTML=`<div class="pause-filters">${['Common','Epic','Frogs'].map(x=>`<button data-filter="${x}" aria-selected="${x===filter}">${x}<small class="guide-discovery-count">${pauseGuide.filter(e=>e[0]===x && guideHasEntry(e[0],e[1])).length}/${pauseGuide.filter(e=>e[0]===x).length}</small></button>`).join('')}</div><div class="pause-guide-entries">`+entries.slice(pauseGuidePage*perPage,(pauseGuidePage+1)*perPage).map(([category,name,desc])=>{const known=guideHasEntry(category,name);return `<article class="pause-row${known?'':' guide-undiscovered'}">${pauseIcon(name)}<div><strong>${known?pauseEscape(name):'???'}</strong><p>${known?pauseEscape(desc):'Not discovered yet.'}</p></div></article>`;}).join('')+`</div><nav class="pause-pages" aria-label="Guide pages"><button data-page="-1" ${pauseGuidePage===0?'disabled':''}>Prev</button><span>${pauseGuidePage+1} / ${pages}</span><button data-page="1" ${pauseGuidePage===pages-1?'disabled':''}>Next</button></nav>`;
       pauseMenu.querySelector('.guide-category-slot').appendChild(content.querySelector('.pause-filters'));
       pauseMenu.querySelector('.guide-pagination-slot').appendChild(content.querySelector('.pause-pages'));
       return;
     }
     const instantIds=new Set(['wildCompany','greedyHand','roleDraft','epicOrbStorm','spawn20','bullRecruits','magnetRecruits','poisonRecruits','luckyRoll','pairOfScissors','tidalWave','promotionEpic','frogScatter']);
     const current=runUpgradeLog.filter(x=>!instantIds.has(x.id) && !(x.id==='secondWind' && secondWindUsed) && !(x.id==='bruisedEgg' && ![snake,...extraSnakes].some(s=>s?.snakeEggProtected)));
-    const descriptions={'loaded hand':'Four choices at each upgrade pick.','royal apprenticeship':'Spawned roles promote crowned frogs.','snake egg':'Less speed gained when shedding.'};
-    const upgradesPerPage=4;
-    const upgradePages=Math.max(1,Math.ceil(current.length/upgradesPerPage));
-    pauseUpgradePage=Math.max(0,Math.min(upgradePages-1,pauseUpgradePage));
-    const pageUpgrades=current.slice(pauseUpgradePage*upgradesPerPage,(pauseUpgradePage+1)*upgradesPerPage);
-    const rows=pageUpgrades.map(x=>`<div class="mp-upgrade">${pauseIcon(x.name)}<div><b>${pauseEscape(x.name)}${x.count>1?' ×'+x.count:''}</b><span>${pauseEscape(descriptions[x.name.toLowerCase()] || (pauseGuide.find(e=>e[0]!=='Frogs' && e[1].toLowerCase()===x.name.toLowerCase())||[])[2] || 'Active for this run.')}</span></div></div>`).join('');
-    // Keep the pause header compact and consistent with Scores.
-    content.innerHTML=menuHeader('Paused')+
-      `<div class="mp-runline"><span>SCORE<b>${Math.floor(score).toLocaleString()}</b></span><span>TIME<b>${formatTime(elapsedTime)}</b></span></div>
-      <div class="mp-facts">${menuStat('Frogs',frogs.length+' / '+maxFrogsCap)}${menuStat('Luck',luckStat+' / '+MAX_LUCK)}${menuStat('Revive',Math.round(computeDeathRattleChanceForFrog(null)*100)+'%')}${menuStat('Sheds',snakeShedCount)}</div>
-      <div class="mp-section-label">YOUR UPGRADES <span>${current.reduce((n,x)=>n+x.count,0)} active</span></div>
-      ${rows || '<p class="mp-hint">No lasting upgrades yet.</p>'}
-      ${upgradePages>1 ? `<nav class="mp-upgrade-pages" aria-label="Your upgrade pages"><button data-upgrade-page="-1" ${pauseUpgradePage===0?'disabled':''}>Prev</button><span aria-live="polite">${pauseUpgradePage+1} / ${upgradePages}</span><button data-upgrade-page="1" ${pauseUpgradePage===upgradePages-1?'disabled':''}>Next</button></nav>` : ''}`;
+    content.innerHTML= `
+<div class="summary-name"><div class="summary-editor"><input id="pauseTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(getSavedPlayerTag() || getSavedDashboardTag() || '')}" placeholder="Your name on the board"><button id="pauseTagSaveBtn">Save</button></div><p id="pauseTagMsg" role="status" aria-live="polite"></p></div>
+      
+      <p class="identity-best">Personal best <b id="pausePersonalBest">${menuPersonalBest(Math.floor(score)).toLocaleString()}</b></p><div class="summary-score"><strong>${Math.floor(score).toLocaleString()}</strong><span>Current score</span></div>
+      <div class="summary-details"><span><b>${formatLeaderboardTime(elapsedTime)}</b> survived</span><span><b>${totalOrbsCollected || 0}</b> orbs</span><span><b>${snakeShedCount}</b> sheds</span></div>
+      <section class="run-upgrades"></section>`;
+    renderRunUpgrades(content.querySelector('.run-upgrades'),current);
+    content.querySelector('.run-upgrades>label').textContent="Current upgrades";
+    setupPlayerHeading(content,'pauseTagInput');
+    const input=content.querySelector('#pauseTagInput'),save=content.querySelector('#pauseTagSaveBtn'),msg=content.querySelector('#pauseTagMsg');
+    save.onclick=async()=>{
+      const validation=validateDashboardTag(input.value);
+      if(!validation.ok){AudioMod.playSaveResult?.(false);msg.textContent=validation.message;return;}
+      save.disabled=true;msg.textContent='Saving…';
+      try{
+        // Rename using the saved best record, never submit the unfinished run.
+        const best=await getMyDashboardBestFromLeaderboard();
+        const result=await submitScoreToServer(best?.bestRun || 0,best?.bestTime || 0,null,validation.tag);
+        if(!result || result._error){AudioMod.playSaveResult?.(false);msg.textContent=result?.error==='tag_taken'?'That name is already taken.':(result?.message || 'Could not save. Try again.');return;}
+        await saveDashboardTag(validation.tag);
+        if(window.FrogGameLeaderboard?._lastMyEntry)window.FrogGameLeaderboard._lastMyEntry.tag=validation.tag;
+        msg.textContent='';input.closest('.summary-name').finishNameEdit(validation.tag);
+        AudioMod.playSaveResult?.(true);
+      }catch(e){AudioMod.playSaveResult?.(false);msg.textContent='Connection error. Try again.';}
+      finally{save.disabled=false;}
+    };
+    input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(!save.disabled)save.click();}});
+
 
   }
   function openPauseMenu() {
@@ -1453,6 +1576,11 @@ const MAX_LUCK = 30;
     AudioMod.setShedAudioActive?.(false);
     pauseUpgradePage=0;renderPauseContent();pauseMenu.style.display='flex';
     pauseMenu.querySelector('[data-action="resume"]').focus();
+    getMyDashboardBestFromLeaderboard().then(best=>{
+      const label=pauseMenu?.querySelector('#pausePersonalBest');
+      if(label) label.textContent=menuPersonalBest(Math.floor(score),best?.bestRun).toLocaleString();
+    }).catch(()=>{});
+
   }
   function closePauseMenu() {
     if(!pauseMenu || pauseMenu.style.display!=='flex')return;
@@ -1486,7 +1614,7 @@ function initEndGameSummaryOverlay() {
   endGameSummaryOverlay.className = "frog-overlay";
   endGameSummaryOverlay.style.zIndex = "1400";
   endGameSummaryOverlay.style.background = "rgba(0,0,0,0.18)";
-  endGameSummaryOverlay.innerHTML = `<section class="mp-panel"><div id="endGameSummaryContent"></div><div class="mp-actions"><button id="endSummaryPlayAgainBtn" class="mp-primary">Play again</button><div class="mp-secondary"><button id="endSummaryScoresBtn">Scores</button><button id="endSummaryMenuBtn">Main menu</button></div></div></section>`;
+  endGameSummaryOverlay.innerHTML = `<section class="sm-panel"><div id="endGameSummaryContent"></div><div class="sm-actions"><button id="endSummaryPlayAgainBtn" class="sm-primary">Play again</button><button id="endSummaryMenuBtn">Main menu</button></div></section>`;
   container.appendChild(endGameSummaryOverlay);
 
   document.addEventListener("keydown", (e) => {
@@ -1499,8 +1627,6 @@ function initEndGameSummaryOverlay() {
     }
   });
 
-  const scoresBtn = document.getElementById("endSummaryScoresBtn");
-  if (scoresBtn) scoresBtn.addEventListener('click',()=>{hideEndGameSummaryOverlay();showLeaderboardOverlay();});
   const dashboardBtn = document.getElementById("endSummaryDashboardBtn");
   const playAgainBtn = document.getElementById("endSummaryPlayAgainBtn");
   const menuBtn = document.getElementById("endSummaryMenuBtn");
@@ -1643,13 +1769,16 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
       </li>`
     : `<li style="font-size:13px;line-height:1.6;color:#f5f5f4;">No leaderboard entry yet.</li>`;
 
-  content.innerHTML = menuHeader('Run complete')+`
- <div class="mp-bigscore"><span>FINAL SCORE</span><strong>${Math.floor(run.score || 0).toLocaleString()}</strong></div>
- <div class="mp-best">${menuSprite('frog-crowned.png')}Personal best · ${Math.max(leaderboardBest.bestRun || 0,Math.max(0,...(localStats.recentRuns || []).map(r=>Number(r.score)||0)),run.score || 0).toLocaleString()}</div>
- <div class="mp-result-details"><div><b>${formatLeaderboardTime(run.time || 0)}</b><span>Survived</span></div><div><b>${run.orbs || 0}</b><span>Orbs</span></div><div><b>${run.sheds || 0}</b><span>Sheds</span></div></div>
- <label class="mp-tag-label" for="endSummaryTagInput">YOUR NAME ON THE BOARD</label><div class="mp-tag-row"><input id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="endSummaryTagSaveBtn">Save</button></div><p class="mp-hint" id="endSummaryTagMsg" aria-live="polite"></p>`;
+  content.innerHTML = `
+<div class="summary-name"><div class="summary-editor"><input aria-label="Your name on the board" id="endSummaryTagInput" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Your name on the board"><button id="endSummaryTagSaveBtn">Save</button></div><p id="endSummaryTagMsg" aria-live="polite"></p></div>
+ 
+ <p class="identity-best">Personal best <b>${menuPersonalBest(run.score,leaderboardBest.bestRun).toLocaleString()}</b></p><div class="summary-score"><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><span>Final score</span></div>
+ <div class="summary-details"><span><b>${formatLeaderboardTime(run.time || 0)}</b> survived</span><span><b>${run.orbs || 0}</b> orbs</span><span><b>${run.sheds || 0}</b> sheds</span></div>
+ <section class="run-upgrades"></section>`;
+  renderRunUpgrades(content.querySelector('.run-upgrades'),runUpgradeLog.map(x=>({...x})));
   openAnimatedOverlay(endGameSummaryOverlay);
 
+  setupPlayerHeading(content,'endSummaryTagInput');
   const tagInput = document.getElementById("endSummaryTagInput");
   const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
   const tagMsg = document.getElementById("endSummaryTagMsg");
@@ -1663,6 +1792,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
     tagSaveBtn.addEventListener("click", async () => {
       const validation = validateDashboardTag(tagInput.value);
       if (!validation.ok) {
+        AudioMod.playSaveResult?.(false);
         if (tagMsg) { tagMsg.textContent = validation.message; tagMsg.style.color = "#fca5a5"; }
         return;
       }
@@ -1674,20 +1804,26 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
           null,
           newTag
         );
-        if (result && result._error) {
-          const msg = result.error === "tag_taken"
+        if (!result || result._error) {
+          AudioMod.playSaveResult?.(false);
+          const msg = result?.error === "tag_taken"
             ? "That tag is already taken — try another."
-            : (result.message || "Could not save tag. Try again.");
+            : (result?.message || "Could not save tag. Try again.");
           if (tagMsg) { tagMsg.textContent = msg; tagMsg.style.color = "#fca5a5"; }
           return;
         }
         await saveDashboardTag(newTag);
+        AudioMod.playSaveResult?.(true);
         activePlayerTag = newTag;
         if (myEntry) myEntry.tag = newTag;
-        if (tagMsg) { tagMsg.textContent = "Tag saved!"; tagMsg.style.color = "#a3e635"; }
-        const refreshed = await fetchLeaderboard();
-        updateMiniLeaderboard(refreshed);
+        if (tagMsg) tagMsg.textContent = "";
+        tagInput.closest(".summary-name").finishNameEdit(newTag);
+        try {
+          const refreshed = await fetchLeaderboard();
+          updateMiniLeaderboard(refreshed);
+        } catch (_) { /* Name saved; leaderboard refresh is optional. */ }
       } catch (e) {
+        AudioMod.playSaveResult?.(false);
         if (tagMsg) { tagMsg.textContent = "Connection error. Try again."; tagMsg.style.color = "#fca5a5"; }
       }
     });
@@ -1706,13 +1842,13 @@ function getLuckBuffDurationMultiplier() {
   return 1 + (luckStat * 0.01);
 }
 
-function getLuckChanceBonus(multiplier = 1) {
-  // each 1 luck = +0.5% absolute chance
-  return luckStat * 0.005 * multiplier;
+function getLuckChanceBonus(baseChance, multiplier = 1) {
+  // Each 10 luck adds 10% of the base chance, not 10 percentage points.
+  return baseChance * clampLuck(luckStat) * 0.01 * multiplier;
 }
 
 function getLuckBoostedChance(baseChance, maxChance = 0.95, multiplier = 1) {
-  return Math.max(0, Math.min(maxChance, baseChance + getLuckChanceBonus(multiplier)));
+  return Math.max(0, Math.min(maxChance, baseChance + getLuckChanceBonus(baseChance, multiplier)));
 }
 
 function getLuckBiasedInt(min, max) {
@@ -2070,15 +2206,11 @@ function snakeShed(stage) {
 
     applySnakeAppearance();
 
-    // Re-trigger Scissors Remnant Chase if needed
-    if (snake.scissorsOwner && scissorsRemnantSegments.length > 0) {
-      snakeEatingOldBody = true;
-      snakeOldBodySpeedBonusPending = true;
-      snakeOldBodyChaseTime = 0;
-    }
+    // The cut snake reclaims its own body at the next milestone.
+    startScissorsRemnantChase(snake);
 
     if (graveWaveActive) {
-      spawnExtraFrogs(getLuckBiasedInt(10, 15));
+      spawnExtraFrogs(getLuckBiasedInt(7, 15));
     }
 
     if (moltFortuneActive) {
@@ -2088,6 +2220,13 @@ function snakeShed(stage) {
       }
     }
   }
+  function startScissorsRemnantChase(owner) {
+    if (!owner?.scissorsOwner || scissorsRemnantSegments.length === 0 || snakeEatingOldBody) return;
+    owner.canGrow = true;
+    snakeEatingOldBody = true;
+    snakeOldBodySpeedBonusPending = true;
+    snakeOldBodyChaseTime = 0;
+  }
   function handleFourthShed() {
     const width  = window.innerWidth;
     const height = window.innerHeight;
@@ -2096,6 +2235,9 @@ function snakeShed(stage) {
     const newSnake = spawnAdditionalSnake(width, height);
     if (!newSnake) return;
 
+    // A red snake does not molt again, but must still reclaim its Scissors tail.
+    // Arm the owner before the new green snake becomes primary.
+    startScissorsRemnantChase(snake);
     // Demote the current primary snake into the extras array (if it exists)
     if (snake) {
       extraSnakes.push(snake);
@@ -2269,16 +2411,16 @@ function createFrogAt(x, y, tokenId) {
 
   if (personalityRoll < 0.25) {
     idleMin = 0.3; idleMax = 1.0;
-    hopMin = 0.25; hopMax = 0.55;
-    heightMin = 14; heightMax = 32;
+    hopMin = 0.25; hopMax = 0.50;
+    heightMin = 15.4; heightMax = 32;
   } else if (personalityRoll < 0.6) {
     idleMin = 0.8; idleMax = 3.0;
-    hopMin = 0.35; hopMax = 0.7;
-    heightMin = 10; heightMax = 26;
+    hopMin = 0.35; hopMax = 0.63;
+    heightMin = 11; heightMax = 26;
   } else {
     idleMin = 1.4; idleMax = 3.2;
-    hopMin = 0.35; hopMax = 0.7;
-    heightMin = 10; heightMax = 24;
+    hopMin = 0.35; hopMax = 0.63;
+    heightMin = 11; heightMax = 24;
   }
 
   const cosmetics = rollFrogCosmetics();
@@ -2545,14 +2687,11 @@ function createFrogAt(x, y, tokenId) {
   function getSnakeSpeedFactor(snakeObj) {
     let factor = snakeObj?.speedFactor || snakePermanentSpeedFactor;
 
-    // --- NEW: SQUAD SIZE SCALING ---
-    // If player has > 50 frogs, snake gains 1% speed for every 2 frogs over 50.
-    if (frogs.length > 75) {
-      const overcrowdingPenalty = (frogs.length - 50) * 0.005; 
-      factor += overcrowdingPenalty;
-    }
+    // Population speed bonus: starts above 75 frogs; capped at +0.15 at 100.
+    const overcrowdingPenalty = Math.min(0.15, Math.max(0, frogs.length - 75) * 0.006);
+    factor += overcrowdingPenalty;
 
-    if (snakeSlowTime > 0) factor *= SNAKE_SLOW_FACTOR;
+    if (snakeSlowTime > 0 || snakeObj?.fruitSlow > 0) factor *= SNAKE_SLOW_FACTOR;
     if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR;
 
     return factor;
@@ -2605,7 +2744,7 @@ function createFrogAt(x, y, tokenId) {
 function getRandomMutationUpgrade() {
   const speedCanImprove = frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4;
 
-  if (!speedCanImprove) {
+  if (mutationPicks >= 2 || !speedCanImprove) {
     return null;
   }
 
@@ -2614,7 +2753,7 @@ function getRandomMutationUpgrade() {
     label: `
       🧬 Mutation<br>
       <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+15%</span> jump speed
-      & <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+15%</span> jump height
+      & <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+20%</span> jump height
     `,
     apply: () => {
       applyMutationUpgrade();
@@ -2622,12 +2761,14 @@ function getRandomMutationUpgrade() {
   };
 }
 function applyMutationUpgrade() {
+  if (mutationPicks >= 2) return;
+  mutationPicks++;
   frogPermanentSpeedFactor *= 0.85; // 15% faster hops
   if (frogPermanentSpeedFactor < MIN_FROG_SPEED_FACTOR) {
     frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
   }
 
-  frogPermanentJumpFactor *= 1.15; // 15% higher jumps
+  frogPermanentJumpFactor *= 1.20; // 20% higher jumps
   if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
@@ -2728,8 +2869,23 @@ function styleEventPanel(el) {
   Object.assign(el.style,{fontFamily:titleStyle?.fontFamily || 'ReferencePixel, Pocket, monospace',fontSize:(Number.isFinite(size)?size:26)+'px',fontWeight:'400',lineHeight:'1.1',color:'#073720',background:'#fff8db',border:'3px solid #073720',borderRadius:panelStyle?.borderRadius || '7px',boxShadow:'3px 3px 0 #497b36',padding:'8px 12px',gap:'10px',boxSizing:'border-box',maxWidth:'min(420px, 90%)'});
 }
 const eventVisuals = [];
-function clearEventVisuals(){for(const effect of eventVisuals)effect.el.remove();eventVisuals.length=0;}
+const upgradeAnnouncementQueue = [];
 function showUpgradeFeedback(choice, sourceButton) {
+  if (!choice || choice.id === "luckyRoll") return;
+  upgradeAnnouncementQueue.push({kind:"upgrade", choice:{id:choice.id,label:choice.label}});
+}
+function showLuckyShuffle(result) {
+  upgradeAnnouncementQueue.push({kind:"roll",result});
+}
+function startNextUpgradeAnnouncement() {
+  if (gamePaused || gameOver || eventVisuals.some(e=>e.kind==="upgrade" || e.kind==="roll")) return;
+  const next=upgradeAnnouncementQueue.shift();
+  if (!next) return;
+  if(next.kind==="roll") renderLuckyShuffle(next.result);
+  else renderUpgradeFeedback(next.choice);
+}
+function clearEventVisuals(){upgradeAnnouncementQueue.length=0;for(const effect of eventVisuals)effect.el.remove();eventVisuals.length=0;}
+function renderUpgradeFeedback(choice, sourceButton) {
   if(choice.id === "luckyRoll") return;
   const title = document.createElement("div");
   title.innerHTML=String(choice.label||choice.id||"Upgrade").split(/<br\s*\/?>/i)[0];
@@ -2751,7 +2907,7 @@ function showRoleSpotlight(frog){
   Object.assign(el.style,{position:"absolute",width:"38px",height:"18px",background:"#fff3ad",boxShadow:"inset 0 -4px #a6cc62",clipPath:"polygon(15% 0,85% 0,85% 20%,100% 20%,100% 80%,85% 80%,85% 100%,15% 100%,15% 80%,0 80%,0 20%,15% 20%)",pointerEvents:"none",zIndex:"9"});container.appendChild(el);
   eventVisuals.push({el,frog,time:0,duration:1.1,kind:"spotlight"});
 }
-function showLuckyShuffle(result){
+function renderLuckyShuffle(result){
   const outcomes=["speed","jump","snakeSlow","snakeConfuse","snakeShrink","frogShield","orbMagnet","scoreMulti","lifeSteal"];
   const labels={speed:"Speed",jump:"Jump",snakeSlow:"Snake Slow",snakeConfuse:"Snake Confusion",snakeShrink:"Snake Shrink",frogShield:"Frog Shield",orbMagnet:"Orb Magnet",scoreMulti:"Score Multiplier",lifeSteal:"Life Steal"};
   // Orb effects do not each have their own upgrade-menu artwork. Shuffle the
@@ -2787,6 +2943,7 @@ function resolveZombiePanic() {
 }
 
 function updateEventVisuals(dt){
+ startNextUpgradeAnnouncement();
  for(let i=eventVisuals.length-1;i>=0;i--){const e=eventVisuals[i];e.time+=dt;if(e.time>=e.duration || (e.frog&&!e.frog.el.isConnected)){e.el.remove();eventVisuals.splice(i,1);continue;}
  const fade=Math.min(1,(e.duration-e.time)/.3);e.el.style.opacity=String(fade);
  if(e.kind==="roll" || e.kind==="zombieSacrifice"){e.render(e.time);continue;}
@@ -2824,6 +2981,7 @@ function grantRandomPermaFrogUpgrade(frog) {
 function grantNecromancerFrog(frog) {
   if (frog.isNecromancer) return;
   frog.isNecromancer = true;
+  playPerFrogUpgradeSound("necromancer");
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -2831,7 +2989,8 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
-  frog.alchemistTimer = 0; // Independently roll the first drop.
+  playPerFrogUpgradeSound("alchemist");
+  frog.alchemistTimer = 40 - getLuckBiasedInt(15, 25); // Luck favors shorter independent waits.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -2840,6 +2999,7 @@ function grantAlchemistFrog(frog) {
 function grantNecromancerFrog(frog) {
   if (frog.isNecromancer) return;
   frog.isNecromancer = true;
+  playPerFrogUpgradeSound("necromancer");
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -2847,7 +3007,8 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
-  frog.alchemistTimer = 0; // Independently roll the first drop.
+  playPerFrogUpgradeSound("alchemist");
+  frog.alchemistTimer = 40 - getLuckBiasedInt(15, 25); // Luck favors shorter independent waits.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -2893,6 +3054,11 @@ function updateFrogRoleEmoji(frog) {
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
  const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
  const role=roles.find(([flag])=>frog[flag]);const key=role?(role[1]==='cannibal'?'cannibal-'+Math.min(5,Math.max(0,frog.cannibalMeals||0)):role[1]):(frog.starLevel>0?'crowned':'');
+ if (role) {
+   const names={poison:'Poison Toad',bull:'Bull Frog',necromancer:'Necromancer',alchemist:'Alchemist',zombie:'Zombie',cannibal:'Cannibal',aura:'Aura',shield:'Shield',magnet:'Magnet',lucky:'Lucky'};
+   discoverGuideEntry('Frogs',names[role[1]]);
+ }
+ if (frog.starLevel>0) discoverGuideEntry('Frogs','Crowned');
  if(role && frog.el.dataset.approvedRole!==key && !(frog.isCannibal && (frog.el.dataset.approvedRole||'').startsWith('cannibal-')))showRoleSpotlight(frog);
  if(key&&window.approvedFrogs?.[key]){frog.el.dataset.approvedRole=key;frog.el.style.setProperty('--approved-frog',`url("${new URL(window.approvedFrogs[key],document.baseURI).href}")`);}
  else {delete frog.el.dataset.approvedRole;frog.el.style.removeProperty('--approved-frog');}
@@ -2954,7 +3120,7 @@ function getRandomTriggeredOrbBuffType(excluded = []) {
     "lifeSteal"
   ];
 
-  const eligible = pool.filter(type => !excluded.includes(type));
+  const eligible = pool.filter(type => !excluded.includes(type) && !(peaceOfMindActive && type === "panicHop"));
   return eligible[Math.floor(Math.random() * eligible.length)];
 }
 
@@ -2986,17 +3152,21 @@ function spawnTidalWave() {
   const alive = frogs.length;
   const room = Math.max(0, maxFrogsCap - frogs.length);
   if (room <= 0 || alive <= 0) return;
-  spawnExtraFrogs(Math.min(alive, room));
+  spawnExtraFrogs(Math.min(Math.max(15, alive), room));
 }
 
 function grantPoisonToad(frog) {
+  if (frog.isPoisonToad) return;
   frog.isPoisonToad = true;
+  playPerFrogUpgradeSound("poison");
   updateFrogRoleEmoji(frog);
 }
 
 function grantBullFrog(frog) {
+  const newlyGranted = !frog.isBull;
   frog.isBull = true;
   frog.bullArmor = true;
+  if (newlyGranted) playPerFrogUpgradeSound("bull");
   updateFrogRoleEmoji(frog);
 }
 
@@ -3016,10 +3186,10 @@ function rerollPromotedFrogStats(frog) {
   const energeticChance = 0.35 + 0.15 * luck;
   const roll = Math.random();
   const profile = roll < energeticChance
-    ? [0.3, 1.0, 0.25, 0.55, 14, 32]
+    ? [0.3, 1.0, 0.25, 0.50, 15.4, 32]
     : roll < energeticChance + 0.35
-      ? [0.8, 3.0, 0.35, 0.7, 10, 26]
-      : [1.4, 3.2, 0.35, 0.7, 10, 24];
+      ? [0.8, 3.0, 0.35, 0.63, 11, 26]
+      : [1.4, 3.2, 0.35, 0.63, 11, 24];
   [frog.idleMin, frog.idleMax, frog.hopDurMin, frog.hopDurMax,
     frog.hopHeightMin, frog.hopHeightMax] = profile;
   frog.starLevel = 0;
@@ -3147,9 +3317,10 @@ function applyRoleDraft(roleId) {
 
 function showRoleDraftOverlayChoices() {
   initUpgradeOverlay();
+  armUpgradeTapGuard();
   if (!upgradeOverlayButtonsContainer) return;
 
-  if (soundEnabled) { initAudio(); playPermanentChoiceSound(); }
+  // Role Draft opens silently; role-granted audio still plays on selection.
   roleDraftChoices = getTwoRandomRoleDraftChoices();
   roleDraftPending = true;
 
@@ -3183,7 +3354,7 @@ function showRoleDraftOverlayChoices() {
             : role.id === "zombie"
             ? "Sacrifices itself to stop Panic Hop. Spawns one frog on death."
             : role.id === "alchemist"
-            ? "+2.5% orb spawn rate per Alchemist"
+            ? "Spawns a frog every 15–25s. Luck helps."
             : role.id === "necromancer"
             ? "Deathrattle revivals become Zombies."
             : "Special frog role."
@@ -3400,54 +3571,46 @@ function activateSnakeEgg() {
     }
   }
 function applyPairOfScissors() {
-  if (!snake || !Array.isArray(snake.segments) || snake.segments.length < 8) return;
-
-  const original = snake;
-  const originalSegments = original.segments.slice();
-  const cutIndex = Math.floor(originalSegments.length / 2);
-
-  const frontSegments = originalSegments.slice(0, cutIndex);
-  const detachedSegments = originalSegments.slice(cutIndex);
-
-  if (!frontSegments.length || !detachedSegments.length) return;
-
-  // Keep only the front half alive
-  original.segments = frontSegments;
-  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.80);
-  original.canGrow = false;
-  original.scissorsOwner = true;
-
-  // Mark the cut point on the living snake
-  const frontLast = frontSegments[frontSegments.length - 1];
-
-  // Detached body stays where it was until next shed
-  if (detachedSegments.length) {
-    scissorsRemnantSegments = detachedSegments
-      .map(seg => ({
-        el: seg.el,
-        x: seg.x,
-        y: seg.y
-      }))
-      .filter(seg => seg.el);
-  }
-
-  // Resize the live snake path to match its shorter body
-  const desiredPathLength =
-    (original.segments.length + 2) * computeSegmentGap() + 2;
-
-  while (original.path.length > desiredPathLength) {
-    original.path.pop();
-  }
-  while (original.path.length < desiredPathLength) {
-    const last = original.path[original.path.length - 1] || {
-      x: original.head.x,
-      y: original.head.y
-    };
-    original.path.push({ x: last.x, y: last.y });
-  }
-
-  scissorsGrowthLocked = true;
+  if (!snake || pairOfScissorsUsed || snake.segments.length < 8) return;
+  snake.speedFactor = (snake.speedFactor || 1) * 0.88;
+  snake.selfConsume = {t:0, total:snake.segments.length,
+    keep:Math.floor(snake.segments.length/2), canGrow:snake.canGrow,
+    origin:snake.segments.map(seg=>({x:seg.x,y:seg.y}))};
+  snake.canGrow = false;
   pairOfScissorsUsed = true;
+}
+function updateSelfConsumption(obj, dt) {
+  const c=obj.selfConsume;
+  if (!c) return false;
+  c.t += dt;
+  const curl=Math.min(1,c.t/0.8);
+  const eaten=Math.floor(Math.min(1,Math.max(0,(c.t-0.8)/2.2))*(c.total-c.keep));
+  while(obj.segments.length>c.total-eaten) obj.segments.pop().el.remove();
+  const radius=Math.max(18,Math.min(65,obj.segments.length*SEGMENT_VISUAL_SPACING/(2*Math.PI)));
+  const scale=snakeShrinkTime>0?0.75:1;
+  obj.segments.forEach((seg,i)=>{
+    const angle=(i+1)/(obj.segments.length+0.25)*Math.PI*2;
+    const x=obj.head.x+Math.sin(angle)*radius;
+    const y=obj.head.y+(1-Math.cos(angle))*radius;
+    seg.x=c.origin[i].x+(x-c.origin[i].x)*curl;
+    seg.y=c.origin[i].y+(y-c.origin[i].y)*curl;
+    const tail=i===obj.segments.length-1;
+    seg.el.className=tail?'snake-tail':'snake-body';
+    seg.el.style.transform=`translate3d(${seg.x}px,${seg.y}px,0) rotate(${angle+(tail?Math.PI:0)}rad) scale(${scale})`;
+  });
+  // Small bite pulses at the point where the tail enters the head.
+  const bite=c.t>0.8?Math.sin(c.t*28)*0.035:0;
+  obj.head.el.style.transform=`translate3d(${obj.head.x}px,${obj.head.y}px,0) scale(${scale*(1+bite)},${scale*(1-bite)})`;
+  updateSnakeDebuffCue(obj,dt,true,SNAKE_SEGMENT_SIZE);
+  if(c.t>=3){
+    const points=[obj.head,...obj.segments];obj.path=[];
+    for(let i=0;i<points.length-1;i++){
+      const a=points[i],b=points[i+1],n=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)));
+      for(let j=0;j<n;j++)obj.path.push({x:a.x+(b.x-a.x)*j/n,y:a.y+(b.y-a.y)*j/n});
+    }
+    obj.canGrow=c.canGrow;delete obj.selfConsume;
+  }
+  return true;
 }
 function clearScissorsAndOldSnakeState() {
   // remove detached scissors tail pieces still sitting in the DOM
@@ -3488,6 +3651,7 @@ function clearScissorsAndOldSnakeState() {
 function markCannibalFrog(frog) {
   if (!frog || frog.isCannibal) return;
   frog.isCannibal = true;
+  playPerFrogUpgradeSound("cannibal");
   frog.cannibalMeals = 0;
   frog.cannibalNextMeal = elapsedTime + 15;
   cannibalFrogCount++;
@@ -3555,7 +3719,7 @@ function computeDeathRattleChanceForFrog(frog) {
     const ordinary = frogs.filter(f => f !== deadFrog && f.el && f.el.isConnected &&
       !f.isGhost && !f.isMutationZombie && !(f.starLevel > 0) &&
       !grants.some(([flag]) => f[flag]));
-    if (!ordinary.length || Math.random() >= 0.20) return;
+    if (!ordinary.length || Math.random() >= getLuckBoostedChance(0.20)) return;
     const recipient = ordinary[Math.floor(Math.random() * ordinary.length)];
     const grant = roles[Math.floor(Math.random() * roles.length)][1];
     grant(recipient);
@@ -3580,6 +3744,7 @@ function computeDeathRattleChanceForFrog(frog) {
       if ((frog.bullEscapeUntil || 0) > elapsedTime) return false;
       if (frog.isBull && frog.bullArmor) {
         frog.bullArmor = false;
+        AudioMod.playBullfrogEscape?.();
         frog.bullEscapeUntil = elapsedTime + 1.0;
         const head = (bitingSnake || snake)?.head;
         let dx = frog.x - (head?.x ?? frog.x - 1);
@@ -3655,17 +3820,17 @@ function computeDeathRattleChanceForFrog(frog) {
     let drChance = computeDeathRattleChanceForFrog(frog);
 
     // Last Stand: if active and this was the last frog, guarantee at least X%,
-    // but still never exceed the global cap.
+    // with a dedicated final-frog exception to the ordinary cap.
     if (lastStandActive && wasLastFrog) {
       drChance = Math.max(drChance, LAST_STAND_MIN_CHANCE);
-      const reviveCap = Math.min(0.25, MAX_DEATHRATTLE_CHANCE + frogs.filter(f => f.isCannibal).length * 0.01);
-      drChance = Math.min(drChance, reviveCap);
+      // Last Stand is an explicit final-frog exception to the ordinary revival cap.
     }
 
     if (drChance > 0 && Math.random() < drChance) {
       // Spawn a replacement frog
       const newFrog = createRandomFrog();
       if (newFrog) {
+        if (ouroborosPactUsed) spawnOrb(null, deathX, deathY);
         // 🧙‍♂️ Necromancer Check
         const hasNecromancer = frogs.some(f => f.isNecromancer);
 
@@ -3691,9 +3856,7 @@ function computeDeathRattleChanceForFrog(frog) {
       playFrogDeath();
     }
 
-    if (frogDeathOrbChance > 0 && Math.random() < getLuckBoostedChance(frogDeathOrbChance, 0.60)) {
-      spawnOrb(null, deathX, deathY);
-    }
+
 
   }
 
@@ -3767,7 +3930,7 @@ function computeDeathRattleChanceForFrog(frog) {
   function applyBuff(type, frog, durationMultiplier = 1, fixedDuration = false) {
     const isLuckyCollector = frog && frog.isLucky;
     // Lucky collectors reroll negative orb results, including chain reactions.
-    if (isLuckyCollector && type === "panicHop") {
+    if ((isLuckyCollector || peaceOfMindActive) && type === "panicHop") {
       type = getRandomTriggeredOrbBuffType(["panicHop"]);
     }
     const durBoost = isLuckyCollector
@@ -4086,6 +4249,14 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
   function updateFrogs(dt, width, height) {
+    // Snapshot avoids processing newly spawned frogs as Alchemists this frame.
+    for (const alchemist of frogs.filter(f => f.isAlchemist)) {
+      alchemist.alchemistTimer -= dt;
+      if (alchemist.alchemistTimer <= 0) {
+        spawnExtraFrogs(1);
+        alchemist.alchemistTimer = 40 - getLuckBiasedInt(15, 25);
+      }
+    }
     const marginY = 24;
     const marginX = 8;
     if (secondWindActive && !secondWindUsed && frogs.length > 0 && frogs.length <= 10) {
@@ -4197,8 +4368,9 @@ function computeDeathRattleChanceForFrog(frog) {
   ];
 
   function spawnOrb(type, x, y) {
-    if (!type) {
-      type = ORB_TYPES[Math.floor(Math.random() * ORB_TYPES.length)];
+    if (!type || (peaceOfMindActive && type === "panicHop")) {
+      const availableTypes = ORB_TYPES.filter(t => !(peaceOfMindActive && t === "panicHop"));
+      type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
     }
 
     if (typeof x !== "number" || typeof y !== "number") {
@@ -4737,9 +4909,9 @@ function samplePathAtDistance(path, startIdx, dist) {
   }
   function updateSnakeDebuffCue(obj, dt, active, size) {
     const head = obj.head;
-    const confused = active && snakeConfuseTime > 0;
-    const slowed = active && snakeSlowTime > 0 && snakeSlowCueTime > 0;
-    const shrunk = active && snakeShrinkTime > 0;
+    const confused = active && (snakeConfuseTime > 0 || obj.fruitConfuse > 0);
+    const slowed = active && ((snakeSlowTime > 0 && snakeSlowCueTime > 0) || obj.fruitSlow > 0);
+    const shrunk = active && (snakeShrinkTime > 0 || obj.fruitShrink > 0);
     let c = debuffCues.get(head.el);
     if (!c && !confused && !slowed && !shrunk) return;
     if (!c) {
@@ -4794,6 +4966,10 @@ function samplePathAtDistance(path, startIdx, dist) {
 
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
+    snakeObj.fruitCooldown=Math.max(0,(snakeObj.fruitCooldown||0)-dt);
+    const fruitTick=dt*(1+getSnakeResistance());
+    for(const key of ['fruitSlow','fruitConfuse','fruitShrink']) snakeObj[key]=Math.max(0,(snakeObj[key]||0)-fruitTick);
+    if (snakeObj.selfConsume && updateSelfConsumption(snakeObj,dt)) return;
 
     const frogList = Array.isArray(opts.frogsList) ? opts.frogsList : frogs;
     const isMainMenu = !!opts.mainMenu;
@@ -4803,7 +4979,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const head = snakeObj.head;
     if (!head) return;
 
-    const shrinkScale = snakeShrinkTime > 0 ? 0.75 : 1.0;
+    const shrinkScale = (snakeShrinkTime > 0 || snakeObj.fruitShrink > 0) ? 0.75 : 1.0;
 
     // 1. TARGETING
     let targetFrog = null;
@@ -4839,7 +5015,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     let desiredAngle = head.angle;
     if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
-    } else if (snakeConfuseTime > 0) {
+    } else if (snakeConfuseTime > 0 || snakeObj.fruitConfuse > 0) {
       desiredAngle = panicAttackActive && !isMainMenu && targetFrog
         ? Math.atan2(head.y - (targetFrog.baseY + FROG_SIZE / 2), head.x - (targetFrog.x + FROG_SIZE / 2))
         : head.angle + (Math.random() - 0.5) * Math.PI;
@@ -4947,10 +5123,20 @@ function samplePathAtDistance(path, startIdx, dist) {
         `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${renderAngle}rad) scale(${shrinkScale})`;
     }
 
+    if (!isMainMenu && forbiddenFruitActive && !snakeObj.entering && !snakeObj.fruitCooldown) {
+      const radius=(snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius())+ORB_RADIUS;
+      const idx=orbs.findIndex(o=>Math.hypot(o.x+ORB_RADIUS-head.x-SNAKE_SEGMENT_SIZE/2,o.y+ORB_RADIUS-head.y-SNAKE_SEGMENT_SIZE/2)<radius);
+      if(idx>=0){
+        const orb=orbs.splice(idx,1)[0];orb.el.remove();snakeObj.fruitCooldown=3;
+        const effects=[['fruitSlow',SNAKE_SLOW_DURATION],['fruitConfuse',SNAKE_CONFUSE_DURATION],['fruitShrink',SNAKE_SHRINK_DURATION]];
+        const [key,duration]=effects[Math.floor(Math.random()*effects.length)];
+        snakeObj[key]=Math.max(snakeObj[key]||0,duration*.5*(lingeringHexActive ? 1.15 : 1));playSnakeMunch();
+      }
+    }
     // 4. COLLISIONS
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
-    const eatR2 = Math.pow(getSnakeEatRadius(), 2);
+    const eatR2 = Math.pow((snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius()), 2);
 
     for (let i = frogList.length - 1; i >= 0; i--) {
       const f = frogList[i];
@@ -5042,9 +5228,9 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
-    if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes flee your frogs", apply:()=>{panicAttackActive=true;}});
+    if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
 
-    upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn 1–3 special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],1,3)});
+    upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>1–3</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],1,3)});
 
     if (!nightBloomActive) {
       upgrades.push({
@@ -5107,13 +5293,13 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
-    if (!ouroborosPactUsed) {
+    if (!ouroborosPactUsed && frogDeathRattleChance > 0) {
       upgrades.push({
         id: "ouroborosPact",
-        label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span style="color:${c.survival};">10%</span> chance to drop an orb`,
+        label: `⚱️ Soul Offering<br>Deathrattle revivals leave <span class=menu-number-accent data-card-accent>an orb</span>`,
         apply: () => {
           ouroborosPactUsed = true;
-          frogDeathOrbChance = Math.max(frogDeathOrbChance, 0.10);
+
         }
       });
     }
@@ -5167,13 +5353,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       apply: () => { triggerLuckyRoll(); }
     });
 
-    if (!pairOfScissorsUsed && !epicChainPending && initialUpgradeDone) {
-      upgrades.push({
-        id: "pairOfScissors",
-        label: `✂️ Pair of Scissors<br>Cuts the snake in half and <span style="color:${c.mobility};">slows it</span>`,
-        apply: () => { applyPairOfScissors(); }
-      });
-    }
+
 
 
 
@@ -5189,16 +5369,51 @@ function samplePathAtDistance(path, startIdx, dist) {
     bruisedEggActive = true;
   }
 
+  function applyPeaceOfMind() {
+    if (peaceOfMindActive || luckStat < 20) return;
+    peaceOfMindActive = true;
+    addLuck(-luckStat);
+    panicHopTime = 0;
+    // Replace already spawned negative orbs with valid non-panic pickups.
+    for (let i = orbs.length - 1; i >= 0; i--) {
+      if (orbs[i].type !== "panicHop") continue;
+      const old = orbs.splice(i, 1)[0];
+      old.el.remove();
+      spawnOrb(getRandomTriggeredOrbBuffType(["panicHop"]), old.x, old.y);
+      const replacement = orbs[orbs.length - 1];
+      replacement.ttl = old.ttl;
+      replacement.maxTtl = old.maxTtl;
+      totalOrbsSpawned--; // Conversion is not an additional spawned orb.
+    }
+  }
+
   function getEpicUpgradeChoices() {
     const epicTitleColor = "yellow";
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!pairOfScissorsUsed && snake && snake.segments.length >= 8) {
+      upgrades.push({
+        id: "pairOfScissors",
+        label: `✂️ Ouroboros Curse<br>Snake consumes half its body. <span class=menu-number-accent data-card-accent>Slows it</span>`,
+        apply: () => { applyPairOfScissors(); }
+      });
+    }
+    if (!forbiddenFruitActive) upgrades.push({id:"forbiddenFruit",label:'Forbidden Fruit<br>Orbs briefly debuff snakes that <span class=menu-number-accent data-card-accent>eat</span> them.',apply:()=>{forbiddenFruitActive=true;}});
+    if (!higherCallingActive && upgradeOverlayContext === "shed") upgrades.push({id:"higherCalling",label:'Higher Calling<br>Choose <span style="color:#006b83">2</span> epics at each shed.',apply:()=>{higherCallingActive=true;}});
+    if (!secondHelpingPending && secondHelpingPicksRemaining === 0) upgrades.push({
+      id:"secondHelping", label:'Second Helping<br>Your next common upgrade offers <span class="stat-highlight" style="color:#006b83;">3</span> picks.',
+      apply:()=>{ secondHelpingPending = true; }
+    });
+    if (!peaceOfMindActive && luckStat >= 20) upgrades.push({
+      id:"peaceOfMind", label:"Peace of Mind<br>Spend <span class=menu-number-accent data-card-accent>all luck</span>. No more Panic Hop.",
+      apply:applyPeaceOfMind
+    });
     if (!eyeForEyeUsed && (snake ? 1 : 0) + extraSnakes.filter(Boolean).length >= 2) {
-      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>; excess frogs die.", apply:applyEyeForAnEye});
+      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
     }
 
-    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Spawning special frogs turns crowned frogs into that role", apply:()=>{royalApprenticeshipActive=true;}});
+    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Spawning special frogs turns <span class=menu-number-accent data-card-accent>crowned frogs</span> into that role", apply:()=>{royalApprenticeshipActive=true;}});
 
     upgrades.push({
       id: "roleDraft",
@@ -5231,7 +5446,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       apply: applySnakeEggToLowestShedSnake
     });
     if (!brittleScalesActive) upgrades.push({
-      id:"brittleScales", label:"Brittle Scales<br>Halve snake debuff resistance",
+      id:"brittleScales", label:"Brittle Scales<br><span class=menu-number-accent data-card-accent>Halve</span> snake debuff resistance",
       apply:()=>{brittleScalesActive=true;}
     });
 
@@ -5267,12 +5482,12 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (frogs.length < maxFrogsCap) {
       upgrades.push({
         id: "tidalWave",
-        label: `🌊 Tidal Wave<br>Spawn frogs equal to the number currently alive`,
+        label: `🌊 Tidal Wave<br>Double your frogs. Spawn at least <span style="color:${epicTitleColor};">15</span>`,
         apply: () => { spawnTidalWave(); }
       });
     }
 
-    if (frogDeathRattleChance < MAX_DEATHRATTLE_CHANCE - 1e-4) {
+    if (frogDeathRattleChance < Math.min(0.15, MAX_DEATHRATTLE_CHANCE) - 1e-4) {
       upgrades.push({
         id: "epicDeathRattle",
         label: `💀 Epic Deathrattle<br><span style="color:${epicTitleColor};">+${deathPerPickPct}%</span> revive chance`,
@@ -5304,7 +5519,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
         id: "graveWave",
-        label: `👻 Grave Wave<br>Each shed spawns <span style="color:${epicTitleColor};">10-15</span> frogs`,
+        label: `👻 Grave Wave<br>Each shed spawns <span style="color:${epicTitleColor};">7–15</span> frogs`,
         apply: () => { graveWaveActive = true; graveWaveUsed = true; }
       });
     }
@@ -5312,7 +5527,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!toxicBloodActive) {
       upgrades.push({
         id: "toxicBlood",
-        label: `🩸 Poisonous Skin<br>Snake is slowed briefly every time it eats a frog`,
+        label: `🩸 Poisonous Skin<br>Snake is <span class=menu-number-accent data-card-accent>slowed</span> briefly every time it eats a frog`,
         apply: () => { toxicBloodActive = true; }
       });
     }
@@ -5328,7 +5543,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!frogScatterUsed && frogs.length > 0) {
       upgrades.push({
         id: "frogScatter",
-        label: `🌪️ Frog Scatter<br>Respawn all frogs. Keep roles and crowns; trigger death effects`,
+        label: `🌪️ Frog Scatter<br><span class=menu-number-accent data-card-accent>Respawn all frogs</span>. Keep roles and crowns; trigger death effects`,
         apply: () => { frogScatterUsed = true; scatterFrogSwarm(); }
       });
     }
@@ -5377,12 +5592,12 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     if (personalityRoll < 0.25) {
       idleMin = 0.3; idleMax = 1.0;
-      hopMin = 0.25; hopMax = 0.55;
-      heightMin = 14; heightMax = 32;
+      hopMin = 0.25; hopMax = 0.50;
+      heightMin = 15.4; heightMax = 32;
     } else if (personalityRoll < 0.6) {
       idleMin = 0.8; idleMax = 3.0;
-      hopMin = 0.35; hopMax = 0.7;
-      heightMin = 10; heightMax = 26;
+      hopMin = 0.35; hopMax = 0.63;
+      heightMin = 11; heightMax = 26;
     } else {
       idleMin = 2.0; idleMax = 5.0;
       hopMin = 0.45; hopMax = 0.9;
@@ -5797,19 +6012,20 @@ function closeAnimatedOverlay(overlayEl) {
     if (!panel) return;
 
     panel.innerHTML = `
-      <div class="frog-panel-title">How to play</div>
-      <p class="ui-help-intro">Keep your frogs alive</p>
+      <div class="frog-panel-title">How to Play</div>
+      <p class="ui-help-intro">Keep your frogs alive. Keep moving.</p>
       <div class="ui-help-steps">
-        <section>${menuSprite('frog-crowned.png')}<div><h3>Lead the swarm</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
-        <section>${menuSprite('upgrade-orb-flow.png')}<div><h3>Collect orbs</h3><p>Lead frogs to orbs for helpful effects. Some pickups can cause Panic Hop.</p></div></section>
-        <section>${menuSprite('upgrade-snake-egg.png')}<div><h3>Watch the snake</h3><p>Keep your distance. Shedding makes the snake faster.</p></div></section>
-        <section>${menuSprite('upgrade-loaded-hand.png')}<div><h3>Choose upgrades</h3><p>Pick a boost every minute. Shed milestones offer epic upgrades.</p></div></section>
+        <section><img src="game-assets/sprites/approved/frog-crowned.png" alt=""><div><h3>Lead your frogs</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
+        <section><img src="game-assets/sprites/snake-head.png" alt=""><div><h3>Stay ahead</h3><p>The snake chases your frogs. Lose them all and the run ends.</p></div></section>
+        <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
-      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Got it</button></div>
+      <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
+      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back to menu</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
     if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
+
 
     rememberHowTo();
     openAnimatedOverlay(howToOverlay);
@@ -5861,7 +6077,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Higher Hops", desc: `${fmtPct(jumpPerPickPct)} taller jumps per pick (cap ${fmtPct((MAX_FROG_JUMP_FACTOR - 1) * 100)}).` },
       { title: "Spawn Frogs", desc: `Instantly adds ${statHighlight(NORMAL_SPAWN_AMOUNT)} frogs (only offered if you're below cap).` },
       { title: "Orb Whisperer", desc: `Orbs linger ${fmtPct(20)} longer before fading.` },
-      { title: "Ouroboros Pact", desc: `${fmtPct(10)} of dead frogs drop an orb.` },
+      { title: "Soul Offering", desc: "Deathrattle revivals leave an orb." },
       { title: "Coin Flip", desc: `Sacrifice ${statHighlight("1")} frog to trigger a random buff at ${statHighlight("1.75×")} duration.` },
       { title: "Buffs Last Longer", desc: `${fmtPct(buffPerPickPct)} buff duration each pick.` },
       { title: "More Orbs", desc: `Orb spawns speed up by ~${fmtPct(orbPerPickPct)} per pick.` },
@@ -6019,7 +6235,7 @@ function closeAnimatedOverlay(overlayEl) {
     const upgrades = [
       { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +15% jump height." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they hop 20% faster." },
-      { type: "mobility", label: "✂️ Pair of Scissors", desc: "Cuts the snake in half and slows it by 20%." },
+      { type: "mobility", label: "✂️ Ouroboros Curse", desc: "Makes the snake consume half its body and slows it." },
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
       { type: "buff", label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog rolls, and more." },
       { type: "buff", label: "🎲 Lucky Roll", desc: "Instantly triggers a random orb buff at 1.5× duration." },
@@ -6033,10 +6249,10 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "buff", label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
-      { type: "survival", label: "⚱️ Ouroboros Pact", desc: "Dead frogs have a 20% chance to drop an orb." },
+      { type: "survival", label: "⚱️ Soul Offering", desc: "Deathrattle revivals leave an orb." },
       { type: "survival", label: "💨 Second Wind", desc: "Once per run, when you fall below 10 frogs, instantly spawn 20." },
       { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
-      { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 10–15 frogs." },
+      { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 7–15 frogs. Luck favors more." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
       { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 2–5 special frogs." },
       { type: "role", label: "🥇 Promotion", desc: "Up to 10 random frogs gain one crown level immediately." },
@@ -6415,16 +6631,24 @@ async function showDashboardOverlay(cachedLeaderboard) {
     `
     : "";
 
-  content.innerHTML = menuHeader('My stats','Your progress')+`
-    <div class="mp-profile">${menuSprite('frog-crowned.png')}<div><b id="dashboardCurrentTag">${pauseEscape(currentTag || 'Your frogs')}</b><span>Level ${levelData.level}${leaderboardBest.found && bestRecordRank >= 0 ? ` · Rank #${bestRecordRank + 1}` : ''}</span></div></div>
-    <div class="mp-progress-label"><span>Next level</span><span>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan} orbs</span></div>
-    <div class="mp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}">${Array.from({length:20},(_,i)=>`<i class="${i<Math.floor(levelData.progressPercent/5)?'is-filled':''}" aria-hidden="true"></i>`).join('')}</div>
-    <p class="mp-hint">${levelData.orbsNeededForNextLevel} more orbs to level ${levelData.nextLevel}</p>
-    <div class="mp-records">${menuStat('Personal best',leaderboardBest.found ? leaderboardBest.bestRun.toLocaleString() : '—')}${menuStat('Best-run time',leaderboardBest.found ? formatDashboardDuration(leaderboardBest.bestTime || 0) : '—')}${menuStat('Runs played',localStats.totalRuns || 0)}${menuStat('Orbs collected',localStats.totalOrbsCollected || 0)}</div>
-    <label class="mp-tag-label" for="dashboardTagInput">LEADERBOARD NAME</label>
-    <div class="mp-tag-row"><input id="dashboardTagInput" type="text" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Player tag"><button id="dashboardSaveTagBtn">Save</button></div>
-    <p class="mp-hint" id="dashboardTagMessage" role="status" aria-live="polite"></p>
-`;
+  const storedRuns = [localStats.bestRun, ...(localStats.recentRuns || [])].filter(Boolean);
+  const localBest = storedRuns.slice().sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.time)-Number(a.time))[0];
+  const bestScore = Math.max(leaderboardBest.bestRun || 0, Number(localBest?.score)||0);
+  const useServerBest = leaderboardBest.found && leaderboardBest.bestRun === bestScore;
+  const bestTime = useServerBest ? leaderboardBest.bestTime : localBest?.time;
+  const bestRun = storedRuns.find(r=>Number(r.score)===bestScore && Math.abs(Number(r.time)-Number(bestTime))<0.01);
+  const bestValue = key => bestRun && Number.isFinite(Number(bestRun[key])) ? Number(bestRun[key]).toLocaleString() : '—';
+  content.innerHTML = `
+    <div class="summary-name"><div class="summary-editor"><input id="dashboardTagInput" aria-label="Your name on the board" maxlength="12" value="${pauseEscape(currentTag)}" placeholder="Your name on the board"><button id="dashboardSaveTagBtn">Save</button></div><p id="dashboardTagMessage" role="status" aria-live="polite"></p></div>
+    <p class="identity-best">Level <b>${levelData.level}</b>${bestRecordRank>=0 ? ` · Rank <b>#${bestRecordRank+1}</b>` : ''}</p>
+    <div class="summary-score"><strong>${bestScore.toLocaleString()}</strong><span>Best run</span></div>
+    <div class="summary-details"><span><b>${bestTime == null ? '—' : formatTime(bestTime)}</b> survived</span><span><b>${bestValue('orbs')}</b> orbs</span><span><b>${bestValue('sheds')}</b> sheds</span></div>
+    <div class="career-stats">${[['Runs played',localStats.totalRuns||0],['Total orbs',localStats.totalOrbsCollected||0],['Time played',formatDashboardDuration(localStats.totalPlayTime)],['Frogs spawned',localStats.totalFrogsLost||0]].map(([label,value])=>`<div><b>${typeof value==='number'?value.toLocaleString():value}</b><span>${label}</span></div>`).join('')}</div>
+    <div class="career-progress-label"><span>Level ${levelData.nextLevel}</span><span><b>${levelData.orbsIntoCurrentLevel} / ${levelData.levelSpan}</b> orbs</span></div>
+    <div class="career-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${levelData.progressPercent}"><div style="width:${Math.max(0,Math.min(100,levelData.progressPercent))}%"></div></div>
+    <p class="career-progress-note">${levelData.orbsNeededForNextLevel} orbs to next level</p>
+  `;
+  setupPlayerHeading(content,'dashboardTagInput');
 
   const tagInput = document.getElementById("dashboardTagInput");
   const saveBtn = document.getElementById("dashboardSaveTagBtn");
@@ -6436,6 +6660,7 @@ async function showDashboardOverlay(cachedLeaderboard) {
       const validation = validateDashboardTag(tagInput.value);
 
       if (!validation.ok) {
+        AudioMod.playSaveResult?.(false);
         if (msgEl) { msgEl.textContent = validation.message; msgEl.style.color = "#fca5a5"; }
         return;
       }
@@ -6448,22 +6673,28 @@ async function showDashboardOverlay(cachedLeaderboard) {
         const bestTime  = leaderboardBest && leaderboardBest.found ? leaderboardBest.bestTime : 0;
         const result = await submitScoreToServer(bestScore, bestTime, null, newTag);
 
-        if (result && result._error) {
-          const msg = result.error === "tag_taken"
+        if (!result || result._error) {
+          AudioMod.playSaveResult?.(false);
+          const msg = result?.error === "tag_taken"
             ? "That tag is already taken — try another."
-            : (result.message || "Could not save tag. Try again.");
+            : (result?.message || "Could not save tag. Try again.");
           if (msgEl) { msgEl.textContent = msg; msgEl.style.color = "#fca5a5"; }
           return;
         }
 
         // Server accepted — now save locally
         await saveDashboardTag(newTag);
-        if (currentTagEl) currentTagEl.textContent = newTag;
-        if (msgEl) { msgEl.textContent = "Tag saved."; msgEl.style.color = "#bef264"; }
+        AudioMod.playSaveResult?.(true);
+        tagInput.closest('.summary-name').finishNameEdit(newTag);
+        if (msgEl) msgEl.textContent = '';
+        if (window.FrogGameLeaderboard?._lastMyEntry) window.FrogGameLeaderboard._lastMyEntry.tag = newTag;
 
-        const refreshed = await fetchLeaderboard();
-        updateMiniLeaderboard(refreshed);
+        try {
+          const refreshed = await fetchLeaderboard();
+          updateMiniLeaderboard(refreshed);
+        } catch (_) { /* Name saved; leaderboard refresh is optional. */ }
       } catch (e) {
+        AudioMod.playSaveResult?.(false);
         if (msgEl) { msgEl.textContent = "Connection error. Try again."; msgEl.style.color = "#fca5a5"; }
       }
     });
@@ -6680,8 +6911,8 @@ function hideDashboardOverlay() {
 
     dashboardOverlay = document.getElementById("dashboardOverlay");
     const panel=dashboardOverlay.querySelector('.frog-panel');
-    if(panel){panel.className='mp-panel';panel.querySelector('.frog-panel-sub')?.remove();panel.querySelector('.frog-panel-footer').className='mp-actions';}
-    document.getElementById('dashboardCloseBtn').className='mp-primary';
+    if(panel){panel.className='sm-panel';panel.querySelector('.frog-panel-sub')?.remove();panel.querySelector('.frog-panel-footer').className='sm-actions';}
+    document.getElementById('dashboardCloseBtn').className='sm-primary';
     document.getElementById('dashboardCloseBtn').textContent='Back to menu';
     const closeBtn = document.getElementById("dashboardCloseBtn");
 
@@ -7145,8 +7376,40 @@ function initUpgradeOverlay() {
   }
 }
 
+  // A fresh tap must begin after the mobile choice panel settles.
+  let upgradeTapReadyAt = 0;
+  let upgradeTapTarget = null;
+  function mobileUpgradeInput() {
+    return matchMedia('(pointer:coarse)').matches ||
+      (navigator.maxTouchPoints > 0 && Math.min(screen.width,screen.height) <= 600);
+  }
+  function armUpgradeTapGuard() {
+    upgradeTapReadyAt = mobileUpgradeInput() ? performance.now()+450 : 0;
+    upgradeTapTarget = null;
+  }
+  document.addEventListener('pointerdown', e => {
+    const card=e.target.closest?.('#upgradeOverlay .frog-upgrade-choice');
+    if (!mobileUpgradeInput()) return;
+    upgradeTapTarget=card && performance.now() >= upgradeTapReadyAt ? card : null;
+  }, true);
+  document.addEventListener('pointercancel', () => { upgradeTapTarget=null; }, true);
+  document.addEventListener('click', e => {
+    const card=e.target.closest?.('#upgradeOverlay .frog-upgrade-choice');
+    if (!card || !mobileUpgradeInput()) return;
+    const ready=performance.now() >= upgradeTapReadyAt;
+    const freshTap=upgradeTapTarget === card;
+    upgradeTapTarget=null;
+    if (!ready || (!freshTap && e.detail !== 0)) {
+      e.preventDefault();e.stopImmediatePropagation();
+    }
+  }, true);
+
   function selectUpgrade(choice) {
     if (!choice) return;
+    if (currentUpgradeOverlayMode === "normal" && secondHelpingPicksRemaining > 0 && soundEnabled) {
+      initAudio();
+      if (AudioMod.playSecondHelpingPick) AudioMod.playSecondHelpingPick();
+    }
     if (choice.id === "greedyHand") {
       if (greedyHandUsed) return;
       greedyHandUsed = true;
@@ -7204,7 +7467,7 @@ function initUpgradeOverlay() {
       }
       if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
         pool = pool.filter(c=>c.id!=="eyeForEye");
-        choices.push({id:"greedyHand",label:"Greedy Hand<br>Take every offered upgrade. Another snake joins.",apply:()=>{}});
+        choices.push({id:"greedyHand",label:"Greedy Hand<br>Take <span class=menu-number-accent data-card-accent>every offered upgrade</span>. Another snake joins.",apply:()=>{}});
       }
       while (choices.length < optionCount && pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
@@ -7401,7 +7664,7 @@ function initUpgradeOverlay() {
 
     if (ouroborosPactUsed) {
       items.push(
-        `<strong>Ouroboros Pact:</strong> ${statHighlight("10%")} of dead frogs drop an orb`
+        `<strong>Soul Offering:</strong> Deathrattle revivals leave an orb`
       );
     }
 
@@ -7448,7 +7711,12 @@ function initUpgradeOverlay() {
       }
     }
 
+    if ((mode || "normal") === "normal" && secondHelpingPending && !opts.secondHelpingChain) {
+      secondHelpingPending = false;
+      secondHelpingPicksRemaining = 3;
+    }
     populateUpgradeOverlayChoices(mode);
+    armUpgradeTapGuard();
     updateUpgradeBuffSummary();
 
     gamePaused = true;
@@ -7526,7 +7794,7 @@ function startRunFromMenu() {
   function triggerLegendaryFrenzy() {
     // 13-second Frenzy: snake faster + frogs panic hop randomly
     snakeFrenzyTime = 13;
-    panicHopTime = Math.max(panicHopTime, 13);
+    if (!peaceOfMindActive) panicHopTime = Math.max(panicHopTime, 13);
     resolveZombiePanic();
     setSnakeFrenzyVisual(true);
   }
@@ -7543,6 +7811,19 @@ function startRunFromMenu() {
       greedyHandQueue = null;
       const newcomer = spawnAdditionalSnake(window.innerWidth, window.innerHeight);
       if (newcomer) { newcomer.shedStage = 0; extraSnakes.push(newcomer); }
+    }
+    // Finish all three fresh common picks before resuming or opening a due epic.
+    if (!gameOver && currentUpgradeOverlayMode === "normal" && secondHelpingPicksRemaining > 0) {
+      secondHelpingPicksRemaining--;
+      if (secondHelpingPicksRemaining > 0) {
+        openUpgradeOverlay("normal", {secondHelpingChain:true});
+        return;
+      }
+    }
+    if (!gameOver && currentUpgradeOverlayMode === "epic" && higherCallingPicksRemaining > 0) {
+      higherCallingPicksRemaining--;
+      if(higherCallingPicksRemaining>0){openUpgradeOverlay("epic",{context:"shed"});return;}
+      nextPermanentChoiceTime=elapsedTime+60;
     }
     const shouldOpenEpicNow =
       !gameOver && epicChainPending && currentUpgradeOverlayMode === "normal";
@@ -7561,7 +7842,7 @@ function startRunFromMenu() {
       }
 
       gamePaused = true;
-      openUpgradeOverlay("epic");
+      openUpgradeOverlay("epic", {context:"shed"});
       return;
     }
 
@@ -7755,6 +8036,12 @@ luckStat = 0;
 lingeringHexActive = lastingLegacyActive = brittleScalesActive = false;
 bruisedEggActive = false;
 panicAttackActive = false;
+peaceOfMindActive = false;
+forbiddenFruitActive = false;
+higherCallingActive = false;
+higherCallingPicksRemaining = 0;
+secondHelpingPending = false;
+secondHelpingPicksRemaining = 0;
     // Reset game state
     elapsedTime     = 0;
     lastTime        = 0;
@@ -7816,7 +8103,6 @@ doubleYolkerActive = false;
     orbCollectorActive       = false;
     orbCollectorChance       = 0;
     lastStandActive          = false;
-    frogDeathOrbChance       = 0;
     orbTtlFactor             = 1.0;
     orbLingerBonusUsed       = false;
     ouroborosPactUsed        = false;
@@ -7851,6 +8137,7 @@ doubleYolkerActive = false;
     cannibalFrogCount = 0;
 
     // Reset global permanent buffs
+    mutationPicks = 0;
     frogPermanentSpeedFactor = 1.0;
     frogPermanentJumpFactor  = 1.0;
     buffDurationFactor       = 1.0;
@@ -7884,11 +8171,8 @@ doubleYolkerActive = false;
 
   let lastOrbSpawnFactor = 1;
   function getEffectiveOrbSpawnFactor() {
-    const alchemists = frogs.reduce((n, frog) => n + (frog.isAlchemist ? 1 : 0), 0);
     const upgradeBonus = Math.max(0, 1 - orbSpawnIntervalFactor);
-    const alchemistBonus = Math.min(0.10, alchemists * 0.025);
-    const totalBonus = Math.min(0.17, upgradeBonus + alchemistBonus);
-    return 1 / (1 + totalBonus);
+    return 1 / (1 + upgradeBonus);
   }
   function setNextOrbTime() {
     const factor = getEffectiveOrbSpawnFactor();
@@ -7960,8 +8244,13 @@ doubleYolkerActive = false;
         // Epic chain: normal -> epic back-to-back at epic marks
         if (elapsedTime >= nextEpicChoiceTime &&
                  elapsedTime >= nextPermanentChoiceTime) {
-          epicChainPending = true;
-          openUpgradeOverlay("normal"); // epic half handled in closeUpgradeOverlay
+          if(higherCallingActive){
+            epicChainPending=false;higherCallingPicksRemaining=2;
+            openUpgradeOverlay("epic",{context:"shed"});
+          }else{
+            epicChainPending = true;
+            openUpgradeOverlay("normal",{context:"shed"});
+          } // epic half handled in closeUpgradeOverlay
         }
         // Regular common upgrade
         else if (elapsedTime >= nextPermanentChoiceTime) {
