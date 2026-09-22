@@ -225,7 +225,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 // Approved Peace of Mind artwork supplied by the player.
 window.approvedUpgrades["peace of mind"]="./game-assets/sprites/approved/upgrade-peace-of-mind.png";
 
-window.approvedUpgrades["second helping"]="./game-assets/sprites/approved/upgrade-second-helping.png";
+window.approvedUpgrades["second helping"]="./game-assets/sprites/approved/upgrade-second-helping-framed.svg";
 
 window.approvedUpgrades["ouroboros curse"]="./game-assets/sprites/approved/upgrade-ouroboros-curse.png";
 window.approvedUpgrades["soul offering"]="./game-assets/sprites/approved/upgrade-soul-offering-framed.svg";
@@ -237,3 +237,30 @@ window.approvedUpgrades["higher calling"]="./game-assets/sprites/approved/upgrad
 (()=>{const style=document.createElement("style");style.textContent=".frog-upgrade-choice .frog-upgrade-emoji[data-approved=\"greedy hand\"]{background-size:contain!important;background-position:center!important;}";document.head.appendChild(style);})();
 
 window.approvedUpgrades["afterglow"]="./game-assets/sprites/approved/upgrade-afterglow-framed.svg";
+
+// Build undiscovered silhouettes from the artwork, not its opaque preview backdrop.
+(()=>{
+ const cache=new Map();
+ function silhouette(url){
+  if(cache.has(url))return cache.get(url);
+  const promise=new Promise(resolve=>{
+   const source=new Image();source.onload=()=>{try{
+    const canvas=document.createElement('canvas');const ratio=Math.min(1,512/Math.max(source.naturalWidth,source.naturalHeight));
+    const w=canvas.width=Math.max(1,Math.round(source.naturalWidth*ratio)),h=canvas.height=Math.max(1,Math.round(source.naturalHeight*ratio));
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=false;ctx.drawImage(source,0,0,w,h);
+    const pixels=ctx.getImageData(0,0,w,h),d=pixels.data,seen=new Uint8Array(w*h),queue=[];
+    // Only exterior-connected pale background is removed; enclosed cream details remain.
+    function visit(i){if(seen[i])return;seen[i]=1;const j=i*4;
+     if(d[j+3]<128 || (d[j]>190&&d[j+1]>175&&d[j+2]>135&&Math.max(d[j],d[j+1],d[j+2])-Math.min(d[j],d[j+1],d[j+2])<100)){queue.push(i);d[j+3]=0;}}
+    for(let x=0;x<w;x++){visit(x);visit((h-1)*w+x);}for(let y=0;y<h;y++){visit(y*w);visit(y*w+w-1);}
+    for(let q=0;q<queue.length;q++){const i=queue[q],x=i%w,y=Math.floor(i/w);if(x)visit(i-1);if(x<w-1)visit(i+1);if(y)visit(i-w);if(y<h-1)visit(i+w);}
+    for(let i=0;i<d.length;i+=4){if(d[i+3]<128)d[i+3]=0;else{d[i]=7;d[i+1]=55;d[i+2]=32;d[i+3]=255;}}
+    ctx.putImageData(pixels,0,0);resolve(canvas.toDataURL());
+   }catch{resolve(null);}};source.onerror=()=>resolve(null);source.src=url;
+  });cache.set(url,promise);return promise;
+ }
+ function update(){document.querySelectorAll('.guide-undiscovered img:not([data-silhouette-ready])').forEach(img=>{
+  img.dataset.silhouetteReady='pending';const url=img.getAttribute('src');silhouette(url).then(result=>{if(result&&img.isConnected&&img.closest('.guide-undiscovered'))img.src=result;});
+ });}
+ new MutationObserver(update).observe(document.body,{childList:true,subtree:true});update();
+})();
