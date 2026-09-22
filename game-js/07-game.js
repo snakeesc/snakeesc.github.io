@@ -2687,12 +2687,9 @@ function createFrogAt(x, y, tokenId) {
   function getSnakeSpeedFactor(snakeObj) {
     let factor = snakeObj?.speedFactor || snakePermanentSpeedFactor;
 
-    // --- NEW: SQUAD SIZE SCALING ---
-    // If player has > 50 frogs, snake gains 1% speed for every 2 frogs over 50.
-    if (frogs.length > 75) {
-      const overcrowdingPenalty = (frogs.length - 50) * 0.005; 
-      factor += overcrowdingPenalty;
-    }
+    // Population speed bonus: starts above 75 frogs; capped at +0.15 at 100.
+    const overcrowdingPenalty = Math.min(0.15, Math.max(0, frogs.length - 75) * 0.006);
+    factor += overcrowdingPenalty;
 
     if (snakeSlowTime > 0 || snakeObj?.fruitSlow > 0) factor *= SNAKE_SLOW_FACTOR;
     if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR;
