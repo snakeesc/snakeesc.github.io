@@ -224,3 +224,8 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 
 // Approved Peace of Mind artwork supplied by the player.
 window.approvedUpgrades["peace of mind"]="./game-assets/sprites/approved/upgrade-peace-of-mind.png";
+
+window.approvedUpgrades["second helping"]="./game-assets/sprites/approved/upgrade-second-helping.png";
+
+window.approvedUpgrades["ouroboros curse"]="./game-assets/sprites/approved/upgrade-ouroboros-curse.png";
+window.approvedUpgrades["soul offering"]="./game-assets/sprites/approved/upgrade-soul-offering.png";

@@ -1021,6 +1021,8 @@ let brittleScalesActive = false;
 let bruisedEggActive = false;
 let panicAttackActive = false;
 let peaceOfMindActive = false;
+let secondHelpingPending = false;
+let secondHelpingPicksRemaining = 0;
 const MAX_LUCK = 30;
   let fragileRealityActive = false;
   let frogScatterUsed      = false;
@@ -1216,7 +1218,7 @@ const MAX_LUCK = 30;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
-    ['Common','Mutation','Frogs hop 15% faster and 20% higher, up to their limits. Limited to 2 picks per run.'],
+    ['Common','Mutation','Frogs hop 15% faster and 15% higher, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
@@ -1225,14 +1227,15 @@ const MAX_LUCK = 30;
     ['Common','Spawn frogs',`${NORMAL_SPAWN_AMOUNT} frogs immediately, subject to the population cap.`],
     ['Common','Orb Flow','Adds 10% orb spawn rate.'],
     ['Common','Orb Whisperer','Orbs stay on the field 30% longer.'],
-    ['Common','Ouroboros Pact','Dead frogs have a 10% base chance to drop an orb.'],
+    ['Common','Soul Offering','Dead frogs have a 10% base chance to drop an orb.'],
     ['Common','Luck','Gain 10 luck, up to 30. Improves supported chances, spawn rolls and positive orb durations.'],
     ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
     ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, within the revival cap.`],
     ['Common','Survival Instinct','Below 10 frogs, they hop 20% faster.'],
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
-    ['Common','Pair of Scissors','Cuts the snake in half and slows it.'],
+    ['Common','Ouroboros Curse','Makes the snake consume half its body and slows it.'],
     ['Epic','Royal Apprenticeship','Spawning special frogs converts all ordinary crowned frogs to the spawned role. Consumes crowns and rerolls natural movement stats. Frogs already holding a special role stay unchanged.'],
+    ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
     ['Epic','Peace of Mind','At 30 luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
     ['Epic','Role Draft','Choose between two roles and spawn 2–5 special frogs. Luck favors larger batches.'],
     ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
@@ -2736,12 +2739,10 @@ function createFrogAt(x, y, tokenId) {
     ) * (brittleScalesActive ? 0.5 : 1);
   }
 
-const MAX_MUTATION_PICKS = 2;
 function getRandomMutationUpgrade() {
   const speedCanImprove = frogPermanentSpeedFactor > MIN_FROG_SPEED_FACTOR + 1e-4;
-  const picksSoFar = runUpgradeLog.find(x => x.id === "mutation")?.count || 0;
 
-  if (!speedCanImprove || picksSoFar >= MAX_MUTATION_PICKS) {
+  if (!speedCanImprove) {
     return null;
   }
 
@@ -2750,7 +2751,7 @@ function getRandomMutationUpgrade() {
     label: `
       🧬 Mutation<br>
       <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+15%</span> jump speed
-      & <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+20%</span> jump height
+      & <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+15%</span> jump height
     `,
     apply: () => {
       applyMutationUpgrade();
@@ -2763,7 +2764,7 @@ function applyMutationUpgrade() {
     frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
   }
 
-  frogPermanentJumpFactor *= 1.20; // 20% higher jumps
+  frogPermanentJumpFactor *= 1.15; // 15% higher jumps
   if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
@@ -3550,54 +3551,46 @@ function activateSnakeEgg() {
     }
   }
 function applyPairOfScissors() {
-  if (!snake || !Array.isArray(snake.segments) || snake.segments.length < 8) return;
-
-  const original = snake;
-  const originalSegments = original.segments.slice();
-  const cutIndex = Math.floor(originalSegments.length / 2);
-
-  const frontSegments = originalSegments.slice(0, cutIndex);
-  const detachedSegments = originalSegments.slice(cutIndex);
-
-  if (!frontSegments.length || !detachedSegments.length) return;
-
-  // Keep only the front half alive
-  original.segments = frontSegments;
-  original.speedFactor = Math.max(0.6, (original.speedFactor || 1) * 0.80);
-  original.canGrow = false;
-  original.scissorsOwner = true;
-
-  // Mark the cut point on the living snake
-  const frontLast = frontSegments[frontSegments.length - 1];
-
-  // Detached body stays where it was until next shed
-  if (detachedSegments.length) {
-    scissorsRemnantSegments = detachedSegments
-      .map(seg => ({
-        el: seg.el,
-        x: seg.x,
-        y: seg.y
-      }))
-      .filter(seg => seg.el);
-  }
-
-  // Resize the live snake path to match its shorter body
-  const desiredPathLength =
-    (original.segments.length + 2) * computeSegmentGap() + 2;
-
-  while (original.path.length > desiredPathLength) {
-    original.path.pop();
-  }
-  while (original.path.length < desiredPathLength) {
-    const last = original.path[original.path.length - 1] || {
-      x: original.head.x,
-      y: original.head.y
-    };
-    original.path.push({ x: last.x, y: last.y });
-  }
-
-  scissorsGrowthLocked = true;
+  if (!snake || pairOfScissorsUsed || snake.segments.length < 8) return;
+  snake.speedFactor = (snake.speedFactor || 1) * 0.88;
+  snake.selfConsume = {t:0, total:snake.segments.length,
+    keep:Math.floor(snake.segments.length/2), canGrow:snake.canGrow,
+    origin:snake.segments.map(seg=>({x:seg.x,y:seg.y}))};
+  snake.canGrow = false;
   pairOfScissorsUsed = true;
+}
+function updateSelfConsumption(obj, dt) {
+  const c=obj.selfConsume;
+  if (!c) return false;
+  c.t += dt;
+  const curl=Math.min(1,c.t/0.8);
+  const eaten=Math.floor(Math.min(1,Math.max(0,(c.t-0.8)/2.2))*(c.total-c.keep));
+  while(obj.segments.length>c.total-eaten) obj.segments.pop().el.remove();
+  const radius=Math.max(18,Math.min(65,obj.segments.length*SEGMENT_VISUAL_SPACING/(2*Math.PI)));
+  const scale=snakeShrinkTime>0?0.75:1;
+  obj.segments.forEach((seg,i)=>{
+    const angle=(i+1)/(obj.segments.length+0.25)*Math.PI*2;
+    const x=obj.head.x+Math.sin(angle)*radius;
+    const y=obj.head.y+(1-Math.cos(angle))*radius;
+    seg.x=c.origin[i].x+(x-c.origin[i].x)*curl;
+    seg.y=c.origin[i].y+(y-c.origin[i].y)*curl;
+    const tail=i===obj.segments.length-1;
+    seg.el.className=tail?'snake-tail':'snake-body';
+    seg.el.style.transform=`translate3d(${seg.x}px,${seg.y}px,0) rotate(${angle+(tail?Math.PI:0)}rad) scale(${scale})`;
+  });
+  // Small bite pulses at the point where the tail enters the head.
+  const bite=c.t>0.8?Math.sin(c.t*28)*0.035:0;
+  obj.head.el.style.transform=`translate3d(${obj.head.x}px,${obj.head.y}px,0) scale(${scale*(1+bite)},${scale*(1-bite)})`;
+  updateSnakeDebuffCue(obj,dt,true,SNAKE_SEGMENT_SIZE);
+  if(c.t>=3){
+    const points=[obj.head,...obj.segments];obj.path=[];
+    for(let i=0;i<points.length-1;i++){
+      const a=points[i],b=points[i+1],n=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)));
+      for(let j=0;j<n;j++)obj.path.push({x:a.x+(b.x-a.x)*j/n,y:a.y+(b.y-a.y)*j/n});
+    }
+    obj.canGrow=c.canGrow;delete obj.selfConsume;
+  }
+  return true;
 }
 function clearScissorsAndOldSnakeState() {
   // remove detached scissors tail pieces still sitting in the DOM
@@ -4955,6 +4948,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
   function updateSingleSnake(snakeObj, dt, width, height, opts = {}) {
     if (!snakeObj) return;
+    if (snakeObj.selfConsume && updateSelfConsumption(snakeObj,dt)) return;
 
     const frogList = Array.isArray(opts.frogsList) ? opts.frogsList : frogs;
     const isMainMenu = !!opts.mainMenu;
@@ -5139,7 +5133,6 @@ function samplePathAtDistance(path, startIdx, dist) {
           if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
           scissorsRemnantSegments.splice(i, 1);
           growSnakeForSnake(snakeObj, 1);
-          playSnakeMunch();
         }
       }
       if (scissorsRemnantSegments.length === 0) {
@@ -5272,7 +5265,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!ouroborosPactUsed) {
       upgrades.push({
         id: "ouroborosPact",
-        label: `⚱️ Ouroboros Pact<br>Dead frogs have a <span style="color:${c.survival};">10%</span> chance to drop an orb`,
+        label: `⚱️ Soul Offering<br>Dead frogs have a <span style="color:${c.survival};">10%</span> chance to drop an orb`,
         apply: () => {
           ouroborosPactUsed = true;
           frogDeathOrbChance = Math.max(frogDeathOrbChance, 0.10);
@@ -5332,7 +5325,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!pairOfScissorsUsed && !epicChainPending && initialUpgradeDone) {
       upgrades.push({
         id: "pairOfScissors",
-        label: `✂️ Pair of Scissors<br>Cuts the snake in half and <span style="color:${c.mobility};">slows it</span>`,
+        label: `✂️ Ouroboros Curse<br>Makes the snake consume half its body and <span style="color:${c.mobility};">slows it</span>`,
         apply: () => { applyPairOfScissors(); }
       });
     }
@@ -5374,6 +5367,10 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!secondHelpingPending && secondHelpingPicksRemaining === 0) upgrades.push({
+      id:"secondHelping", label:"Second Helping<br>Your next common upgrade offers <span>3 picks</span>.",
+      apply:()=>{ secondHelpingPending = true; }
+    });
     if (!peaceOfMindActive && luckStat >= MAX_LUCK) upgrades.push({
       id:"peaceOfMind", label:"Peace of Mind<br>Spend all <span>30 luck</span>. No more Panic Hop.",
       apply:applyPeaceOfMind
@@ -6046,7 +6043,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Higher Hops", desc: `${fmtPct(jumpPerPickPct)} taller jumps per pick (cap ${fmtPct((MAX_FROG_JUMP_FACTOR - 1) * 100)}).` },
       { title: "Spawn Frogs", desc: `Instantly adds ${statHighlight(NORMAL_SPAWN_AMOUNT)} frogs (only offered if you're below cap).` },
       { title: "Orb Whisperer", desc: `Orbs linger ${fmtPct(20)} longer before fading.` },
-      { title: "Ouroboros Pact", desc: `${fmtPct(10)} of dead frogs drop an orb.` },
+      { title: "Soul Offering", desc: `${fmtPct(10)} of dead frogs drop an orb.` },
       { title: "Coin Flip", desc: `Sacrifice ${statHighlight("1")} frog to trigger a random buff at ${statHighlight("1.75×")} duration.` },
       { title: "Buffs Last Longer", desc: `${fmtPct(buffPerPickPct)} buff duration each pick.` },
       { title: "More Orbs", desc: `Orb spawns speed up by ~${fmtPct(orbPerPickPct)} per pick.` },
@@ -6202,9 +6199,9 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     const upgrades = [
-      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +20% jump height. Limited to 2 picks per run." },
+      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +15% jump height." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they hop 20% faster." },
-      { type: "mobility", label: "✂️ Pair of Scissors", desc: "Cuts the snake in half and slows it by 20%." },
+      { type: "mobility", label: "✂️ Ouroboros Curse", desc: "Makes the snake consume half its body and slows it." },
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
       { type: "buff", label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog rolls, and more." },
       { type: "buff", label: "🎲 Lucky Roll", desc: "Instantly triggers a random orb buff at 1.5× duration." },
@@ -6218,7 +6215,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "buff", label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
-      { type: "survival", label: "⚱️ Ouroboros Pact", desc: "Dead frogs have a 20% chance to drop an orb." },
+      { type: "survival", label: "⚱️ Soul Offering", desc: "Dead frogs have a 20% chance to drop an orb." },
       { type: "survival", label: "💨 Second Wind", desc: "Once per run, when you fall below 10 frogs, instantly spawn 20." },
       { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 10–15 frogs." },
@@ -7629,7 +7626,7 @@ function initUpgradeOverlay() {
 
     if (ouroborosPactUsed) {
       items.push(
-        `<strong>Ouroboros Pact:</strong> ${statHighlight("10%")} of dead frogs drop an orb`
+        `<strong>Soul Offering:</strong> ${statHighlight("10%")} of dead frogs drop an orb`
       );
     }
 
@@ -7676,6 +7673,10 @@ function initUpgradeOverlay() {
       }
     }
 
+    if ((mode || "normal") === "normal" && secondHelpingPending && !opts.secondHelpingChain) {
+      secondHelpingPending = false;
+      secondHelpingPicksRemaining = 3;
+    }
     populateUpgradeOverlayChoices(mode);
     armUpgradeTapGuard();
     updateUpgradeBuffSummary();
@@ -7772,6 +7773,14 @@ function startRunFromMenu() {
       greedyHandQueue = null;
       const newcomer = spawnAdditionalSnake(window.innerWidth, window.innerHeight);
       if (newcomer) { newcomer.shedStage = 0; extraSnakes.push(newcomer); }
+    }
+    // Finish all three fresh common picks before resuming or opening a due epic.
+    if (!gameOver && currentUpgradeOverlayMode === "normal" && secondHelpingPicksRemaining > 0) {
+      secondHelpingPicksRemaining--;
+      if (secondHelpingPicksRemaining > 0) {
+        openUpgradeOverlay("normal", {secondHelpingChain:true});
+        return;
+      }
     }
     const shouldOpenEpicNow =
       !gameOver && epicChainPending && currentUpgradeOverlayMode === "normal";
@@ -7985,6 +7994,8 @@ lingeringHexActive = lastingLegacyActive = brittleScalesActive = false;
 bruisedEggActive = false;
 panicAttackActive = false;
 peaceOfMindActive = false;
+secondHelpingPending = false;
+secondHelpingPicksRemaining = 0;
     // Reset game state
     elapsedTime     = 0;
     lastTime        = 0;
