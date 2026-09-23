@@ -3662,12 +3662,94 @@ function applyOuroborosFeast(){
 }
 function updateSelfConsumption(obj, dt) {
   const c=obj.selfConsume;
-  if (!c) return false;
   c.delay=Math.max(0,c.delay-dt);
-  if(c.delay<=0)c.orbitElapsed=(c.orbitElapsed||0)+dt;
+  if(c.delay>0)return false;
+
+  // A short coil animation feeds the visible tail into the mouth. The body
+  // follows one continuous spiral, so neither snake has to chase old laps.
+  if(!c.coil){
+    const group=c.group;
+    if(group){
+      if(!group.coil){
+        const cx=group.reduce((sum,s)=>sum+s.head.x,0)/group.length;
+        const cy=group.reduce((sum,s)=>sum+s.head.y,0)/group.length;
+        const radius=82;
+        group.coil={x:Math.max(radius+8,Math.min(window.innerWidth-radius-8,cx)),
+          y:Math.max(radius+24,Math.min(window.innerHeight-radius-24,cy)),
+          theta:Math.atan2(group[0].head.y-cy,group[0].head.x-cx),radius};
+      }
+      c.coil=group.coil;
+    }else{
+      const radius=80, sign=c.turnSign||1;
+      c.coil={x:Math.max(radius+8,Math.min(window.innerWidth-radius-8,obj.head.x-Math.sin(obj.head.angle)*sign*radius)),
+        y:Math.max(radius+24,Math.min(window.innerHeight-radius-24,obj.head.y+Math.cos(obj.head.angle)*sign*radius)),
+        theta:0,radius};
+      c.coil.theta=Math.atan2(obj.head.y-c.coil.y,obj.head.x-c.coil.x);
+    }
+    c.entryHead={x:obj.head.x,y:obj.head.y};
+    c.entrySegments=obj.segments.map(seg=>({x:seg.x,y:seg.y}));
+    c.entryElapsed=0;c.biteCooldown=0;
+  }
+  c.entryElapsed=Math.min(1.1,c.entryElapsed+dt);
   c.biteCooldown=Math.max(0,c.biteCooldown-dt);
-  // The regular movement/path renderer owns every head and body position.
-  return false;
+  const group=c.group,coil=c.coil,sign=group?1:(c.turnSign||1);
+  if(!group || c.orbitIndex===0)coil.theta+=sign*dt*95/coil.radius;
+  const phase=coil.theta+(group?2*Math.PI*c.orbitIndex/group.length:0);
+  const progress=group
+    ? group.reduce((sum,s)=>sum+(1-s.segments.length/(s.selfConsume.keep*2)),0)/group.length
+    : 1-obj.segments.length/(c.keep*2);
+  const radius=Math.max(59,coil.radius-12*Math.max(0,progress));
+  const turns=group?2+1/group.length:2-0.05;
+  const t=Math.min(1,c.entryElapsed/1.1);
+  const eased=t*t*(3-2*t);
+  const hx=coil.x+radius*Math.cos(phase),hy=coil.y+radius*Math.sin(phase);
+  obj.head.x=c.entryHead.x+(hx-c.entryHead.x)*eased;
+  obj.head.y=c.entryHead.y+(hy-c.entryHead.y)*eased;
+  obj.head.angle=phase+sign*Math.PI/2;
+  obj.head.el.style.transform=`translate3d(${obj.head.x}px,${obj.head.y}px,0)`;
+  const n=obj.segments.length;
+  for(let i=0;i<n;i++){
+    const fraction=(i+1)/n;
+    const angle=phase-sign*2*Math.PI*turns*fraction;
+    const r=radius-22*fraction;
+    const x=coil.x+r*Math.cos(angle),y=coil.y+r*Math.sin(angle);
+    const initial=c.entrySegments[i]||{x,y};
+    const seg=obj.segments[i];
+    seg.x=initial.x+(x-initial.x)*eased;
+    seg.y=initial.y+(y-initial.y)*eased;
+    const isTail=i===n-1;
+    seg.el.className=isTail?'snake-tail':'snake-body';
+    seg.el.style.transform=`translate3d(${seg.x}px,${seg.y}px,0) rotate(${angle+sign*Math.PI/2+(isTail?Math.PI:0)}rad)`;
+  }
+  if(t<1 || c.biteCooldown>0)return true;
+  const victim=c.target||obj;
+  const keep=group?victim.selfConsume?.keep:c.keep;
+  const tail=victim.segments.at(-1);
+  if(!tail || victim.segments.length<=keep)return true;
+  // Feast positions the other snake's tail beside this head on the same coil.
+  if(Math.hypot(tail.x-obj.head.x,tail.y-obj.head.y)>SNAKE_SEGMENT_SIZE*1.15)return true;
+  victim.segments.pop().el.remove();
+  victim.tailConsumed=true;c.biteCooldown=0.13;
+  playSnakeMunch();
+  const done=group?group.every(member=>member.segments.length<=member.selfConsume.keep):obj.segments.length<=c.keep;
+  if(done){
+    const members=group||[obj];
+    for(const member of members){
+      member.speedFactor=(member.speedFactor||1)*(group?member.selfConsume.slowOnFinish:0.88);
+      member.canGrow=false;member.tailConsumed=true;
+      // Seed a real path from the displayed coil for the regular renderer.
+      const points=[{x:member.head.x,y:member.head.y},...member.segments.map(seg=>({x:seg.x,y:seg.y}))];
+      member.path=[];
+      for(let i=0;i<points.length-1;i++){
+        const a=points[i],b=points[i+1];
+        const steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/3));
+        for(let k=0;k<steps;k++)member.path.push({x:a.x+(b.x-a.x)*k/steps,y:a.y+(b.y-a.y)*k/steps});
+      }
+      member.path.push(points.at(-1));
+      delete member.selfConsume;
+    }
+  }
+  return true;
 }
 function consumeReachedTail(obj, previousHead, dt) {
   const c=obj.selfConsume;
