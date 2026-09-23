@@ -4212,7 +4212,7 @@ function computeDeathRattleChanceForFrog(frog) {
     const marginX = 8;
 
     const baseMaxStep = 40;
-    const speedBuffed = (speedBuffTime > 0 || panicHopTime > 0) ? 1.7 : 1.0;
+    const speedBuffed = panicHopTime > 0 ? 1.7 : speedBuffTime > 0 ? 1.45 : 1.0;
     const championBoost = 1; // Champion removed.
     const jumpFactor = getJumpFactor(frog);  // <-- add this line
     const maxStep = baseMaxStep * speedBuffed * championBoost * jumpFactor * (frog.doubleHopSecond ? 0.65 : 1);
@@ -4709,7 +4709,7 @@ function computeDeathRattleChanceForFrog(frog) {
   // SNAKE
   // --------------------------------------------------
   function initSnake(width, height) {
-    const startingSegments = SNAKE_INITIAL_SEGMENTS + 12; // Temporary Ouroboros test length.
+    const startingSegments = 50; // Temporary Ouroboros test length.
     if (snake) {
       if (snake.head && snake.head.el && snake.head.el.parentNode === container) {
         container.removeChild(snake.head.el);
@@ -8478,7 +8478,7 @@ doubleYolkerActive = false;
       // when Curse has finished and both snakes can take part.
       if (elapsedTime >= 30 && !ouroborosTestSnakeSpawned) {
         ouroborosTestSnakeSpawned = true;
-        const newcomer = spawnAdditionalSnake(width, height);
+        const newcomer = spawnAdditionalSnake(width, height, {segmentCount:50});
         if (newcomer) { newcomer.shedStage = 0; extraSnakes.push(newcomer); }
       }
 
