@@ -356,7 +356,7 @@
     playFrogCrowned: () => playFromPool("frogCrowned"),
     playRunComplete: isBest => playFromPool(isBest ? "personalBest" : "runComplete"),
     playSnakeEntry: () => playFromPool("snakeEntry"),
-    playSnakeShedCue: () => playFromPool("snakeShedCue"),
+    playSnakeShedCue: () => {}, // Temporarily mute the shed cue; keep its asset and call site for easy restoration.
     playGraveWave: () => playFromPool("graveWave"),
     playDeathrattleRevival: () => playFromPool("deathrattleRevival"),
     playEyeForEye: () => playFromPool("eyeForEye"),

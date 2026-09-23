@@ -499,6 +499,17 @@ function getDashboardPfp() {
     }
   }
 
+  const CONFIRMED_LEADERBOARD_SCORE_KEY = "frogSnake_confirmedLeaderboardScore";
+  function getConfirmedLeaderboardScore() {
+    try { return Math.max(0, Number(localStorage.getItem(CONFIRMED_LEADERBOARD_SCORE_KEY)) || 0); }
+    catch (_) { return 0; }
+  }
+  function confirmLeaderboardScore(score) {
+    try { localStorage.setItem(CONFIRMED_LEADERBOARD_SCORE_KEY,
+      String(Math.max(getConfirmedLeaderboardScore(), Math.floor(Number(score) || 0)))); }
+    catch (_) { /* Local storage is optional. */ }
+  }
+
   function formatDashboardDuration(seconds) {
     const total = Math.max(0, Math.floor(Number(seconds) || 0));
     const h = Math.floor(total / 3600);
@@ -1266,7 +1277,7 @@ const MAX_LUCK = 30;
     ['Epic','Eye for Eye','Kill the slowest snake; survivors immediately devour its body. Frog cap becomes 55. Once per run.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
     ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
-    ['Epic','Second Wind','Once per run: below 10 frogs, spawn 20.'],
+    ['Epic','Second Wind','Once per run: spawn 20 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
     ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
     ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
     ['Epic','Promotion','Adds a crown level to up to 10 random frogs, within crown limits.'],
@@ -1795,8 +1806,8 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
   const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
   const tagMsg = document.getElementById("endSummaryTagMsg");
 
-  if (submitError && tagMsg && !currentTag) {
-    tagMsg.textContent = "Couldn't reach the leaderboard, so no tag was assigned. Check your connection and try again next run, or set one yourself above.";
+  if (submitError && tagMsg) {
+    tagMsg.textContent = "Score saved on this device, but not confirmed on the leaderboard. Open the scoreboard to retry.";
     tagMsg.style.color = "#fca5a5";
   }
 
@@ -2586,6 +2597,12 @@ function createFrogAt(x, y, tokenId) {
     if (swarmDivideActive) {
       assignSwarmDivideLanes();
     }
+  }
+
+  function triggerSecondWindIfNeeded() {
+    if (!secondWindActive || secondWindUsed || frogs.length < 1 || frogs.length >= 10) return;
+    secondWindUsed = true;
+    spawnExtraFrogs(20);
   }
 
   function triggerGraveWave() {
@@ -3630,7 +3647,7 @@ function applyPairOfScissors() {
   const owner=getLargestCurseSnake();
   if (!owner || pairOfScissorsUsed || owner.segments.length < 8) return;
   owner.speedFactor = (owner.speedFactor || 1) * 0.88;
-  owner.selfConsume = {delay:2.5, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
+  owner.selfConsume = {delay:0.6, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
   owner.canGrow = false;
   pairOfScissorsUsed = true;
 }
@@ -3642,7 +3659,7 @@ function applyOuroborosFeast(){
  group.forEach((owner,i)=>{
   owner.speedFactor=(owner.speedFactor||1)*slow;
   owner.canGrow=false;
-  owner.selfConsume={delay:2.5,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,target:group[(i+1)%group.length]};
+  owner.selfConsume={delay:0.6,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,target:group[(i+1)%group.length]};
  });
 }
 function updateSelfConsumption(obj, dt) {
@@ -3666,7 +3683,15 @@ function consumeReachedTail(obj, previousHead, dt) {
   const t=length2?Math.max(0,Math.min(1,((tail.x-previousHead.x)*dx+(tail.y-previousHead.y)*dy)/length2)):0;
   const shrink=(snakeShrinkTime>0 || obj.fruitShrink>0)?0.75:1;
   if(Math.hypot(tail.x-previousHead.x-t*dx,tail.y-previousHead.y-t*dy)>SNAKE_SEGMENT_SIZE*0.9*shrink)return;
-  victim.segments.pop().el.remove();victim.tailConsumed=true;c.biteCooldown=0.18;
+  // Adjacent segments sit close together along the path. A close bite may
+  // swallow two at once, but never remove a segment outside the mouth.
+  for (let i=0;i<2 && victim.segments.length>keep;i++) {
+    const next=victim.segments.at(-1);
+    const nx=next.x-previousHead.x-t*dx, ny=next.y-previousHead.y-t*dy;
+    if (Math.hypot(nx,ny)>SNAKE_SEGMENT_SIZE*0.9*shrink) break;
+    victim.segments.pop().el.remove();
+  }
+  victim.tailConsumed=true;c.biteCooldown=0.14;
   playSnakeMunch();
   if(c.group){
     if(c.group.every(s=>s.segments.length<=s.selfConsume.keep)){
@@ -4326,10 +4351,7 @@ function computeDeathRattleChanceForFrog(frog) {
     }
     const marginY = 24;
     const marginX = 8;
-    if (secondWindActive && !secondWindUsed && frogs.length > 0 && frogs.length <= 10) {
-      secondWindUsed = true;
-      spawnExtraFrogs(20);
-    }
+    triggerSecondWindIfNeeded();
     for (const frog of frogs) {
       if (frog.state === "idle") {
         frog.idleTime -= dt;
@@ -5147,8 +5169,13 @@ function samplePathAtDistance(path, startIdx, dist) {
     // 2. MOVEMENT
     let desiredAngle = head.angle;
     if (snakeObj.selfConsume && snakeObj.selfConsume.delay <= 0 && snakeObj.segments.length) {
-      const tail=(snakeObj.selfConsume.target || snakeObj).segments.at(-1);
-      desiredAngle=Math.atan2(tail.y-head.y,tail.x-head.x);
+      const victim=snakeObj.selfConsume.target || snakeObj;
+      const tail=victim.segments.at(-1);
+      const ahead=victim.segments.at(-Math.min(3,victim.segments.length));
+      // Aim slightly ahead of the moving tail to cut a smooth inward arc.
+      const aimX=tail.x+(ahead.x-tail.x)*0.35;
+      const aimY=tail.y+(ahead.y-tail.y)*0.35;
+      desiredAngle=Math.atan2(aimY-head.y,aimX-head.x);
     } else if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
     } else if (snakeConfuseTime > 0 || snakeObj.fruitConfuse > 0) {
@@ -5170,7 +5197,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     let angleDiff = ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
     // Tighten only the Ouroboros chase radius. Keep forward speed and the
     // normal steering of snakes outside the eating event unchanged.
-    const ouroborosTurnBoost = snakeObj.selfConsume?.delay <= 0 ? 1.8 : 1;
+    const ouroborosTurnBoost = snakeObj.selfConsume?.delay <= 0 ? 2.4 : 1;
     const maxTurn = snakeTurnRate * ouroborosTurnBoost * dt;
     head.angle += Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
 
@@ -5363,6 +5390,9 @@ function samplePathAtDistance(path, startIdx, dist) {
   let upgradeOverlayContext = "mid";
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
+  // Temporary Ouroboros preview build. Remove these hooks after testing.
+  let ouroborosTestSnakeSpawned = false;
+  let ouroborosTestFeastOffered = false;
 
   let mainMenuOverlay = null;
 
@@ -5682,8 +5712,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!secondWindUsed && !secondWindActive) {
       upgrades.push({
         id: "secondWind",
-        label: `💨 Second Wind<br>Below 10 frogs: instantly spawn <span style="color:${epicTitleColor};">20</span> (once)`,
-        apply: () => { secondWindActive = true; }
+        label: `💨 Second Wind<br>Below 10 frogs? Spawn <span style="color:${epicTitleColor};">20</span> now or later`,
+        apply: () => { secondWindActive = true; triggerSecondWindIfNeeded(); }
       });
     }
 
@@ -6422,7 +6452,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
       { type: "survival", label: "⚱️ Soul Offering", desc: "Deathrattle revivals leave an orb." },
-      { type: "survival", label: "💨 Second Wind", desc: "Once per run, when you fall below 10 frogs, instantly spawn 20." },
+      { type: "survival", label: "💨 Second Wind", desc: "Below 10 frogs, spawn 20 immediately on selection or when you later fall below 10 (once per run)." },
       { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 7–15 frogs. Luck favors more." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
@@ -6527,11 +6557,31 @@ function closeAnimatedOverlay(overlayEl) {
     content.innerHTML = '<div class="leaderboard-loading">Loading leaderboard…</div>';
 
     try {
-      const entries = await fetchLeaderboard();
+      let entries = await fetchLeaderboard();
+      const localBest = loadDashboardStats().bestRun;
+      const localScore = Math.floor(Number(localBest?.score) || 0);
+      const serverScore = getLeaderboardEntryScore(window.FrogGameLeaderboard?._lastMyEntry);
+      let syncWarning = "";
+      if (localScore > 0 && serverScore >= localScore) {
+        confirmLeaderboardScore(localScore);
+      } else if (localScore > getConfirmedLeaderboardScore()) {
+        // Retry a locally saved best on Android without replaying the run.
+        const retried = await submitScoreToServer(localScore, Number(localBest?.time) || 0,
+          null, getSavedPlayerTag ? getSavedPlayerTag() : null);
+        if (Array.isArray(retried) &&
+            getLeaderboardEntryScore(window.FrogGameLeaderboard?._lastMyEntry) >= localScore) {
+          confirmLeaderboardScore(localScore);
+          entries = retried;
+        } else {
+          syncWarning = `Your local best (${localScore.toLocaleString()}) has not reached the leaderboard. Check your connection and reopen this board to retry.`;
+        }
+      }
+      const warningHtml = syncWarning
+        ? `<p role="status" style="color:#9c351f;font-size:13px;margin:0 0 12px">${syncWarning}</p>` : "";
       const list = Array.isArray(entries) ? entries.slice(0, 50) : [];
 
       if (list.length === 0) {
-        content.innerHTML = `
+        content.innerHTML = `${warningHtml}
           <div class="frog-panel-section-label">Global Leaderboard</div>
           <ul class="frog-panel-list"><li>No runs yet.</li></ul>
         `;
@@ -6620,7 +6670,7 @@ function closeAnimatedOverlay(overlayEl) {
 
         const totalPages = Math.ceil(list.length / pageSize);
 
-        content.innerHTML = `<ol class="pp-entries">${itemsHtml || '<li class="pp-empty">No runs yet. Set the first score!</li>'}</ol><nav class="pp-pager"><button id="leaderboardPrevBtn" ${currentPage === 0 ? 'disabled' : ''} aria-label="Previous page">Prev</button><span>${currentPage+1} / ${Math.max(1,totalPages)}</span><button id="leaderboardNextBtn" ${end >= list.length ? 'disabled' : ''} aria-label="Next page">Next</button></nav>`;
+        content.innerHTML = `${warningHtml}<ol class="pp-entries">${itemsHtml || '<li class="pp-empty">No runs yet. Set the first score!</li>'}</ol><nav class="pp-pager"><button id="leaderboardPrevBtn" ${currentPage === 0 ? 'disabled' : ''} aria-label="Previous page">Prev</button><span>${currentPage+1} / ${Math.max(1,totalPages)}</span><button id="leaderboardNextBtn" ${end >= list.length ? 'disabled' : ''} aria-label="Next page">Next</button></nav>`;
 
       const prevBtn = document.getElementById("leaderboardPrevBtn");
         const nextBtn = document.getElementById("leaderboardNextBtn");
@@ -7635,6 +7685,13 @@ function initUpgradeOverlay() {
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
       if (upgradeOverlayContext === "start") {
+        const curse = getUpgradeChoices().find(choice => choice.id === "pairOfScissors");
+        if (curse) choices.push(curse);
+      } else if (upgradeOverlayContext === "ouroborosTest") {
+        const feastIndex = pool.findIndex(choice => choice.id === "ouroborosFeast");
+        if (feastIndex >= 0) choices.push(pool.splice(feastIndex, 1)[0]);
+      }
+      if (upgradeOverlayContext === "start") {
         pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors");
       }
       if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
@@ -8114,6 +8171,11 @@ function startRunFromMenu() {
 
       if (Array.isArray(submitted)) {
         leaderboardEntries = submitted;
+        if (getLeaderboardEntryScore(window.FrogGameLeaderboard?._lastMyEntry) >= lastRunScore) {
+          confirmLeaderboardScore(lastRunScore);
+        } else if (lastRunScore > 0) {
+          submitFailed = true;
+        }
       } else {
         submitFailed = true;
         const fetched = await fetchLeaderboard();
@@ -8283,6 +8345,8 @@ doubleYolkerActive = false;
 
     ouroborosFeastUsed = false;
     pairOfScissorsUsed = false;
+    ouroborosTestSnakeSpawned = false;
+    ouroborosTestFeastOffered = false;
     orbCollectorActive       = false;
     orbCollectorChance       = 0;
     lastStandActive          = false;
@@ -8396,6 +8460,14 @@ doubleYolkerActive = false;
       elapsedTime += dt;
       updateBuffTimers(dt);
 
+      // Temporary preview: a second snake enters at 30 seconds. Offer Feast
+      // when Curse has finished and both snakes can take part.
+      if (elapsedTime >= 30 && !ouroborosTestSnakeSpawned) {
+        ouroborosTestSnakeSpawned = true;
+        const newcomer = spawnAdditionalSnake(width, height);
+        if (newcomer) { newcomer.shedStage = 0; extraSnakes.push(newcomer); }
+      }
+
       // ----- ORB TIMER (back to countdown style) -----
       // nextOrbTime is a countdown in seconds, not an absolute timestamp
       nextOrbTime -= dt;
@@ -8434,8 +8506,14 @@ doubleYolkerActive = false;
         upgradeOverlay && upgradeOverlay.style.display !== "none";
 
       if (!gameOver && !overlayOpen) {
+        if (ouroborosTestSnakeSpawned && !ouroborosTestFeastOffered &&
+            pairOfScissorsUsed && !ouroborosFeastUsed &&
+            getCurseSnakes().length >= 2 && !getCurseSnakes().some(s => s.selfConsume)) {
+          ouroborosTestFeastOffered = true;
+          openUpgradeOverlay("epic", {context:"ouroborosTest"});
+        }
         // Epic chain: normal -> epic back-to-back at epic marks
-        if (elapsedTime >= nextEpicChoiceTime &&
+        else if (elapsedTime >= nextEpicChoiceTime &&
                  elapsedTime >= nextPermanentChoiceTime) {
           if(higherCallingActive){
             epicChainPending=false;higherCallingPicksRemaining=2;
