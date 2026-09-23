@@ -3682,15 +3682,14 @@ function consumeReachedTail(obj, previousHead, dt) {
   const t=length2?Math.max(0,Math.min(1,((tail.x-previousHead.x)*dx+(tail.y-previousHead.y)*dy)/length2)):0;
   const shrink=(snakeShrinkTime>0 || obj.fruitShrink>0)?0.75:1;
   if(Math.hypot(tail.x-previousHead.x-t*dx,tail.y-previousHead.y-t*dy)>SNAKE_SEGMENT_SIZE*1.10*shrink)return;
-  // Adjacent segments sit close together along the path. A close bite may
-  // swallow two at once, but never remove a segment outside the mouth.
+  // Take only tail pieces that physically meet the mouth.
   for (let i=0;i<3 && victim.segments.length>keep;i++) {
     const next=victim.segments.at(-1);
     const nx=next.x-previousHead.x-t*dx, ny=next.y-previousHead.y-t*dy;
     if (Math.hypot(nx,ny)>SNAKE_SEGMENT_SIZE*1.10*shrink) break;
     victim.segments.pop().el.remove();
   }
-  victim.tailConsumed=true;c.biteCooldown=0.09;
+  victim.tailConsumed=true;c.biteCooldown=0.09;c.lastBiteAt=c.orbitElapsed||0;
   playSnakeMunch();
   if(c.group){
     if(c.group.every(s=>s.segments.length<=s.selfConsume.keep)){
@@ -5188,16 +5187,30 @@ function samplePathAtDistance(path, startIdx, dist) {
         consume.turnSign=difference>=0?1:-1;
       }
       if (!consume.orbitCenter) {
-        const radius=42;
-        consume.orbitCenter={
-          x:Math.max(marginX+radius,Math.min(width-marginX-radius,head.x-Math.sin(head.angle)*consume.turnSign*radius)),
-          y:Math.max(marginY+radius,Math.min(height-marginY-radius,head.y+Math.cos(head.angle)*consume.turnSign*radius)),
-          radius
-        };
+        if (consume.group) {
+          if (!consume.group.orbitCenter) {
+            const heads=consume.group.map(member=>member.head);
+            const radius=Math.min(48,Math.max(34,Math.hypot(heads[0].x-heads[1].x,heads[0].y-heads[1].y)/2));
+            consume.group.orbitCenter={
+              x:Math.max(marginX+radius,Math.min(width-marginX-radius,heads.reduce((sum,h)=>sum+h.x,0)/heads.length)),
+              y:Math.max(marginY+radius,Math.min(height-marginY-radius,heads.reduce((sum,h)=>sum+h.y,0)/heads.length)),
+              radius
+            };
+          }
+          consume.orbitCenter=consume.group.orbitCenter;
+          consume.turnSign=1; // Both snakes wind around the same center.
+        } else {
+          const radius=42;
+          consume.orbitCenter={
+            x:Math.max(marginX+radius,Math.min(width-marginX-radius,head.x-Math.sin(head.angle)*consume.turnSign*radius)),
+            y:Math.max(marginY+radius,Math.min(height-marginY-radius,head.y+Math.cos(head.angle)*consume.turnSign*radius)),
+            radius
+          };
+        }
       }
       // Follow an actual small circle for about one lap. A nearby tail gets
       // a direct bite; after the lap, lead its movement to finish eating.
-      if (consume.orbitElapsed<3.6 && Math.hypot(dx,dy)>SNAKE_SEGMENT_SIZE*1.6) {
+      if (consume.orbitElapsed<(consume.group?2:3.6) && Math.hypot(dx,dy)>SNAKE_SEGMENT_SIZE*1.6) {
         const orbit=consume.orbitCenter;
         const radial=Math.atan2(head.y-orbit.y,head.x-orbit.x);
         const distance=Math.hypot(head.x-orbit.x,head.y-orbit.y);
@@ -5233,7 +5246,11 @@ function samplePathAtDistance(path, startIdx, dist) {
     head.angle += Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
 
     const speedFactor = getSnakeSpeedFactor(snakeObj);
-    const speed = SNAKE_BASE_SPEED * speedFactor * (snakeObj.selfConsume?.delay <= 0 ? 1.35 : 1);
+    const consume=snakeObj.selfConsume?.delay<=0?snakeObj.selfConsume:null;
+    const feastCatchup=consume?.group
+      ? 1.7+Math.min(0.8,Math.max(0,consume.orbitElapsed-(consume.lastBiteAt||0)-2)*0.15)
+      : 1;
+    const speed = SNAKE_BASE_SPEED * speedFactor * (consume ? consume.group ? feastCatchup : 1.35 : 1);
     const previousHead={x:head.x,y:head.y};
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
