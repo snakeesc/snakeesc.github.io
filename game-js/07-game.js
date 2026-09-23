@@ -3647,7 +3647,7 @@ function applyPairOfScissors() {
   const owner=getLargestCurseSnake();
   if (!owner || pairOfScissorsUsed || owner.segments.length < 8) return;
   owner.speedFactor = (owner.speedFactor || 1) * 0.88;
-  owner.selfConsume = {delay:0.6, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
+  owner.selfConsume = {delay:10, keep:Math.floor(owner.segments.length/2), biteCooldown:0}; // Temporary test delay.
   owner.canGrow = false;
   pairOfScissorsUsed = true;
 }
@@ -3659,7 +3659,7 @@ function applyOuroborosFeast(){
  group.forEach((owner,i)=>{
   owner.speedFactor=(owner.speedFactor||1)*slow;
   owner.canGrow=false;
-  owner.selfConsume={delay:0.6,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,target:group[(i+1)%group.length]};
+  owner.selfConsume={delay:10,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,target:group[(i+1)%group.length]}; // Temporary test delay.
  });
 }
 function updateSelfConsumption(obj, dt) {
@@ -4705,6 +4705,7 @@ function computeDeathRattleChanceForFrog(frog) {
   // SNAKE
   // --------------------------------------------------
   function initSnake(width, height) {
+    const startingSegments = SNAKE_INITIAL_SEGMENTS + 12; // Temporary Ouroboros test length.
     if (snake) {
       if (snake.head && snake.head.el && snake.head.el.parentNode === container) {
         container.removeChild(snake.head.el);
@@ -4736,9 +4737,9 @@ function computeDeathRattleChanceForFrog(frog) {
     container.appendChild(headEl);
 
     const segments = [];
-    for (let i = 0; i < SNAKE_INITIAL_SEGMENTS; i++) {
+    for (let i = 0; i < startingSegments; i++) {
       const segEl = document.createElement("div");
-      const isTail = i === SNAKE_INITIAL_SEGMENTS - 1;
+      const isTail = i === startingSegments - 1;
       segEl.className = isTail ? "snake-tail" : "snake-body";
       segEl.style.position = "absolute";
       segEl.style.width = SNAKE_SEGMENT_SIZE + "px";
@@ -4758,7 +4759,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
+    const maxPath = (startingSegments + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
