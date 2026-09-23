@@ -3646,7 +3646,7 @@ function getLargestCurseSnake(){return getCurseSnakes().reduce((best,s)=>!best||
 function applyPairOfScissors() {
   const owner=getLargestCurseSnake();
   if (!owner || pairOfScissorsUsed || owner.segments.length < 8) return;
-  owner.selfConsume = {delay:0.6, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
+  owner.selfConsume = {delay:10, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
   owner.canGrow = false;
   pairOfScissorsUsed = true;
 }
@@ -3657,21 +3657,99 @@ function applyOuroborosFeast(){
  const slow=group.length===2?0.90:0.95;
  group.forEach((owner,i)=>{
   owner.canGrow=false;
-  owner.selfConsume={delay:0.6,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,orbitIndex:i,slowOnFinish:slow,target:group[(i+1)%group.length]};
+  owner.selfConsume={delay:10,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,orbitIndex:i,slowOnFinish:slow,target:group[(i+1)%group.length]};
  });
 }
 function updateSelfConsumption(obj, dt) {
   const c=obj.selfConsume;
   c.delay=Math.max(0,c.delay-dt);
-  c.biteCooldown=Math.max(0,c.biteCooldown-dt);
-  if(c.delay<=0){
-    c.orbitElapsed=(c.orbitElapsed||0)+dt;
-    // Feed the real body along its existing path. Spacing contracts gradually,
-    // so the tail reaches the loop without any segment jumping to a new shape.
-    const target=c.group?0.94:0.62;
-    c.compression=1-(1-target)*Math.min(1,c.orbitElapsed/3);
+  if(c.delay>0)return false;
+
+  // A short coil animation feeds the visible tail into the mouth. The body
+  // follows one continuous spiral, so neither snake has to chase old laps.
+  if(!c.coil){
+    const group=c.group;
+    if(group){
+      if(!group.coil){
+        const cx=group.reduce((sum,s)=>sum+s.head.x,0)/group.length;
+        const cy=group.reduce((sum,s)=>sum+s.head.y,0)/group.length;
+        const radius=82;
+        group.coil={x:Math.max(radius+8,Math.min(window.innerWidth-radius-8,cx)),
+          y:Math.max(radius+24,Math.min(window.innerHeight-radius-24,cy)),
+          theta:Math.atan2(group[0].head.y-cy,group[0].head.x-cx),radius};
+      }
+      c.coil=group.coil;
+    }else{
+      const radius=80, sign=c.turnSign||1;
+      c.coil={x:Math.max(radius+8,Math.min(window.innerWidth-radius-8,obj.head.x-Math.sin(obj.head.angle)*sign*radius)),
+        y:Math.max(radius+24,Math.min(window.innerHeight-radius-24,obj.head.y+Math.cos(obj.head.angle)*sign*radius)),
+        theta:0,radius};
+      c.coil.theta=Math.atan2(obj.head.y-c.coil.y,obj.head.x-c.coil.x);
+    }
+    c.entryHead={x:obj.head.x,y:obj.head.y};
+    c.entrySegments=obj.segments.map(seg=>({x:seg.x,y:seg.y}));
+    c.entryElapsed=0;c.biteCooldown=0;
   }
-  return false;
+  c.entryElapsed=Math.min(1.1,c.entryElapsed+dt);
+  c.biteCooldown=Math.max(0,c.biteCooldown-dt);
+  const group=c.group,coil=c.coil,sign=group?1:(c.turnSign||1);
+  if(!group || c.orbitIndex===0)coil.theta+=sign*dt*95/coil.radius;
+  const phase=coil.theta+(group?2*Math.PI*c.orbitIndex/group.length:0);
+  const progress=group
+    ? group.reduce((sum,s)=>sum+(1-s.segments.length/(s.selfConsume.keep*2)),0)/group.length
+    : 1-obj.segments.length/(c.keep*2);
+  const radius=Math.max(59,coil.radius-12*Math.max(0,progress));
+  const turns=group?2+1/group.length:2-0.05;
+  const t=Math.min(1,c.entryElapsed/1.1);
+  const eased=t*t*(3-2*t);
+  const hx=coil.x+radius*Math.cos(phase),hy=coil.y+radius*Math.sin(phase);
+  obj.head.x=c.entryHead.x+(hx-c.entryHead.x)*eased;
+  obj.head.y=c.entryHead.y+(hy-c.entryHead.y)*eased;
+  obj.head.angle=phase+sign*Math.PI/2;
+  obj.head.el.style.transform=`translate3d(${obj.head.x}px,${obj.head.y}px,0)`;
+  const n=obj.segments.length;
+  for(let i=0;i<n;i++){
+    const fraction=(i+1)/n;
+    const angle=phase-sign*2*Math.PI*turns*fraction;
+    const r=radius-22*fraction;
+    const x=coil.x+r*Math.cos(angle),y=coil.y+r*Math.sin(angle);
+    const initial=c.entrySegments[i]||{x,y};
+    const seg=obj.segments[i];
+    seg.x=initial.x+(x-initial.x)*eased;
+    seg.y=initial.y+(y-initial.y)*eased;
+    const isTail=i===n-1;
+    seg.el.className=isTail?'snake-tail':'snake-body';
+    seg.el.style.transform=`translate3d(${seg.x}px,${seg.y}px,0) rotate(${angle+sign*Math.PI/2+(isTail?Math.PI:0)}rad)`;
+  }
+  if(t<1 || c.biteCooldown>0)return true;
+  const victim=c.target||obj;
+  const keep=group?victim.selfConsume?.keep:c.keep;
+  const tail=victim.segments.at(-1);
+  if(!tail || victim.segments.length<=keep)return true;
+  // Feast positions the other snake's tail beside this head on the same coil.
+  if(Math.hypot(tail.x-obj.head.x,tail.y-obj.head.y)>SNAKE_SEGMENT_SIZE*1.15)return true;
+  victim.segments.pop().el.remove();
+  victim.tailConsumed=true;c.biteCooldown=0.13;
+  playSnakeMunch();
+  const done=group?group.every(member=>member.segments.length<=member.selfConsume.keep):obj.segments.length<=c.keep;
+  if(done){
+    const members=group||[obj];
+    for(const member of members){
+      member.speedFactor=(member.speedFactor||1)*(group?member.selfConsume.slowOnFinish:0.88);
+      member.canGrow=false;member.tailConsumed=true;
+      // Seed a real path from the displayed coil for the regular renderer.
+      const points=[{x:member.head.x,y:member.head.y},...member.segments.map(seg=>({x:seg.x,y:seg.y}))];
+      member.path=[];
+      for(let i=0;i<points.length-1;i++){
+        const a=points[i],b=points[i+1];
+        const steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/3));
+        for(let k=0;k<steps;k++)member.path.push({x:a.x+(b.x-a.x)*k/steps,y:a.y+(b.y-a.y)*k/steps});
+      }
+      member.path.push(points.at(-1));
+      delete member.selfConsume;
+    }
+  }
+  return true;
 }
 function consumeReachedTail(obj, previousHead, dt) {
   const c=obj.selfConsume;
@@ -4713,6 +4791,7 @@ function computeDeathRattleChanceForFrog(frog) {
   // SNAKE
   // --------------------------------------------------
   function initSnake(width, height) {
+    const startingSegments = 50; // Temporary Ouroboros test length.
     if (snake) {
       if (snake.head && snake.head.el && snake.head.el.parentNode === container) {
         container.removeChild(snake.head.el);
@@ -4744,9 +4823,9 @@ function computeDeathRattleChanceForFrog(frog) {
     container.appendChild(headEl);
 
     const segments = [];
-    for (let i = 0; i < SNAKE_INITIAL_SEGMENTS; i++) {
+    for (let i = 0; i < startingSegments; i++) {
       const segEl = document.createElement("div");
-      const isTail = i === SNAKE_INITIAL_SEGMENTS - 1;
+      const isTail = i === startingSegments - 1;
       segEl.className = isTail ? "snake-tail" : "snake-body";
       segEl.style.position = "absolute";
       segEl.style.width = SNAKE_SEGMENT_SIZE + "px";
@@ -4766,7 +4845,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
+    const maxPath = (startingSegments + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -5193,7 +5272,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         if (consume.group) {
           if (!consume.group.orbitCenter) {
             const heads=consume.group.map(member=>member.head);
-            const radius=82;
+            const radius=SEGMENT_VISUAL_SPACING*consume.group.reduce((sum,member)=>sum+member.segments.length,0)/consume.group.length/(2*Math.PI);
             consume.group.orbitCenter={
               x:Math.max(marginX+radius,Math.min(width-marginX-radius,heads.reduce((sum,h)=>sum+h.x,0)/heads.length)),
               y:Math.max(marginY+radius,Math.min(height-marginY-radius,heads.reduce((sum,h)=>sum+h.y,0)/heads.length)),
@@ -5203,7 +5282,7 @@ function samplePathAtDistance(path, startIdx, dist) {
           consume.orbitCenter=consume.group.orbitCenter;
           consume.turnSign=1; // Both snakes wind around the same center.
         } else {
-          const radius=80;
+          const radius=SEGMENT_VISUAL_SPACING*snakeObj.segments.length/(2*Math.PI);
           consume.orbitCenter={
             x:Math.max(marginX+radius,Math.min(width-marginX-radius,head.x-Math.sin(head.angle)*consume.turnSign*radius)),
             y:Math.max(marginY+radius,Math.min(height-marginY-radius,head.y+Math.cos(head.angle)*consume.turnSign*radius)),
@@ -5219,7 +5298,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         ? consume.group.reduce((sum,member)=>sum+member.segments.length,0)/consume.group.length
         : snakeObj.segments.length;
       const screenLimit=Math.max(35,Math.min(width/2-marginX-SNAKE_SEGMENT_SIZE/2,height/2-marginY-SNAKE_SEGMENT_SIZE/2));
-      orbit.radius=Math.max(38,Math.min(screenLimit,consume.group?SEGMENT_VISUAL_SPACING*bodySegments/(3*Math.PI):SEGMENT_VISUAL_SPACING*bodySegments*(consume.compression||1)/(2*Math.PI),consume.group?82:80));
+      orbit.radius=Math.max(35,Math.min(screenLimit,SEGMENT_VISUAL_SPACING*bodySegments/(2*Math.PI)));
       // Stay on the orbit. A tiny correction toward an already adjacent tail
       // allows a visible mouth bite without another full tail chase.
       if (Math.hypot(dx,dy)>SNAKE_SEGMENT_SIZE*0.85) {
@@ -5316,7 +5395,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const ANGLE_LOOKAHEAD = 6;
 
     for (let i = 0; i < snakeObj.segments.length; i++) {
-      const targetDist = visualSpacing * (i + 1) * (snakeObj.selfConsume?.delay<=0 ? snakeObj.selfConsume.compression || 1 : 1);
+      const targetDist = visualSpacing * (i + 1);
       const result = samplePathAtDistance(snakeObj.path, 0, targetDist);
 
       const seg = snakeObj.segments[i];
@@ -5450,6 +5529,9 @@ function samplePathAtDistance(path, startIdx, dist) {
   let upgradeOverlayContext = "mid";
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
+  // Temporary Ouroboros preview build. Remove these hooks after testing.
+  let ouroborosTestSnakeSpawned = false;
+  let ouroborosTestFeastOffered = false;
 
   let mainMenuOverlay = null;
 
@@ -7742,6 +7824,13 @@ function initUpgradeOverlay() {
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
       if (upgradeOverlayContext === "start") {
+        const curse = getUpgradeChoices().find(choice => choice.id === "pairOfScissors");
+        if (curse) choices.push(curse);
+      } else if (upgradeOverlayContext === "ouroborosTest") {
+        const feastIndex = pool.findIndex(choice => choice.id === "ouroborosFeast");
+        if (feastIndex >= 0) choices.push(pool.splice(feastIndex, 1)[0]);
+      }
+      if (upgradeOverlayContext === "start") {
         pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors");
       }
       if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
@@ -8395,6 +8484,8 @@ doubleYolkerActive = false;
 
     ouroborosFeastUsed = false;
     pairOfScissorsUsed = false;
+    ouroborosTestSnakeSpawned = false;
+    ouroborosTestFeastOffered = false;
     orbCollectorActive       = false;
     orbCollectorChance       = 0;
     lastStandActive          = false;
@@ -8508,6 +8599,14 @@ doubleYolkerActive = false;
       elapsedTime += dt;
       updateBuffTimers(dt);
 
+      // Temporary preview: a second snake enters at 30 seconds. Offer Feast
+      // when Curse has finished and both snakes can take part.
+      if (elapsedTime >= 30 && !ouroborosTestSnakeSpawned) {
+        ouroborosTestSnakeSpawned = true;
+        const newcomer = spawnAdditionalSnake(width, height, {segmentCount:50});
+        if (newcomer) { newcomer.shedStage = 0; extraSnakes.push(newcomer); }
+      }
+
       // ----- ORB TIMER (back to countdown style) -----
       // nextOrbTime is a countdown in seconds, not an absolute timestamp
       nextOrbTime -= dt;
@@ -8546,8 +8645,14 @@ doubleYolkerActive = false;
         upgradeOverlay && upgradeOverlay.style.display !== "none";
 
       if (!gameOver && !overlayOpen) {
+        if (ouroborosTestSnakeSpawned && !ouroborosTestFeastOffered &&
+            pairOfScissorsUsed && !ouroborosFeastUsed &&
+            getCurseSnakes().length >= 2 && !getCurseSnakes().some(s => s.selfConsume)) {
+          ouroborosTestFeastOffered = true;
+          openUpgradeOverlay("epic", {context:"ouroborosTest"});
+        }
         // Epic chain: normal -> epic back-to-back at epic marks
-        if (elapsedTime >= nextEpicChoiceTime &&
+        else if (elapsedTime >= nextEpicChoiceTime &&
                  elapsedTime >= nextPermanentChoiceTime) {
           if(higherCallingActive){
             epicChainPending=false;higherCallingPicksRemaining=2;
