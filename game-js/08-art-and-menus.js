@@ -266,5 +266,4 @@ window.approvedUpgrades["afterglow"]="./game-assets/sprites/approved/upgrade-aft
 })();
 
 window.approvedUpgrades["ouroboros feast"]="./game-assets/sprites/approved/upgrade-ouroboros-feast-new.png";
-
 window.approvedUpgrades["double jump"]="./game-assets/sprites/approved/upgrade-double-jump.png";

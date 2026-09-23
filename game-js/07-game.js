@@ -1245,7 +1245,7 @@ const MAX_LUCK = 30;
     ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
     ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, as an exception to the ordinary revival cap.`],
     ['Common','Survival Instinct','Below 10 frogs, they jump 20% farther and higher, within movement limits.'],
-    ['Common','Double Jump','Frogs have a small chance to double hop.'],
+    ['Common','Double Jump','After two Mutations and Survival Instinct, adds 5 percentage points to double-hop chance (5% to 10%).'],
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
     ['Common','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
     ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
@@ -4383,7 +4383,7 @@ function computeDeathRattleChanceForFrog(frog) {
           frog.idleTime = baseIdle * getSpeedFactor(frog);
           if (frog.doubleHopSecond) {
             frog.doubleHopSecond = false;
-          } else if (doubleJumpActive && Math.random() < 0.10) {
+          } else if (Math.random() < (doubleJumpActive ? 0.10 : 0.05)) {
             frog.doubleHopPending = true;
             frog.idleTime = 0.08;
           }
@@ -5515,11 +5515,13 @@ function samplePathAtDistance(path, startIdx, dist) {
         apply: () => { survivalInstinctActive = true; }
       });
     }
-    if (!doubleJumpActive) upgrades.push({
-      id: "doubleJump",
-      label: "Double Jump<br>Frogs have a <span class=menu-number-accent data-card-accent>small chance</span> to double hop",
-      apply: () => { doubleJumpActive = true; }
-    });
+    if (mutationPicks >= 2 && survivalInstinctActive && !doubleJumpActive) {
+      upgrades.push({
+        id: "doubleJump",
+        label: "Double Jump<br>Double-hop chance is <span class=menu-number-accent data-card-accent>doubled</span>",
+        apply: () => { doubleJumpActive = true; }
+      });
+    }
 
     upgrades.push({
       id: "luckyRoll",
@@ -6404,7 +6406,7 @@ function closeAnimatedOverlay(overlayEl) {
     const upgrades = [
       { type: "mobility", label: "🧬 Mutation", desc: "+15% hop speed and +20% jump height and distance per pick." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they jump 20% higher and farther." },
-      { type: "mobility", label: "Double Jump", desc: "Frogs have a small chance to double hop." },
+      { type: "mobility", label: "Double Jump", desc: "After two Mutations and Survival Instinct, double-hop chance rises from 5% to 10%." },
       { type: "mobility", label: "✂️ Ouroboros Curse", desc: "Makes the snake consume half its body and slows it." },
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
       { type: "buff", label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog rolls, and more." },
