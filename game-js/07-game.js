@@ -3646,7 +3646,7 @@ function getLargestCurseSnake(){return getCurseSnakes().reduce((best,s)=>!best||
 function applyPairOfScissors() {
   const owner=getLargestCurseSnake();
   if (!owner || pairOfScissorsUsed || owner.segments.length < 8) return;
-  owner.selfConsume = {delay:0.6, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
+  owner.selfConsume = {delay:10, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
   owner.canGrow = false;
   pairOfScissorsUsed = true;
 }
@@ -3657,7 +3657,7 @@ function applyOuroborosFeast(){
  const slow=group.length===2?0.90:0.95;
  group.forEach((owner,i)=>{
   owner.canGrow=false;
-  owner.selfConsume={delay:0.6,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,slowOnFinish:slow,target:group[(i+1)%group.length]};
+  owner.selfConsume={delay:10,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,slowOnFinish:slow,target:group[(i+1)%group.length]};
  });
 }
 function updateSelfConsumption(obj, dt) {
