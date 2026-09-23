@@ -3646,7 +3646,7 @@ function getLargestCurseSnake(){return getCurseSnakes().reduce((best,s)=>!best||
 function applyPairOfScissors() {
   const owner=getLargestCurseSnake();
   if (!owner || pairOfScissorsUsed || owner.segments.length < 8) return;
-  owner.selfConsume = {delay:10, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
+  owner.selfConsume = {delay:0.6, keep:Math.floor(owner.segments.length/2), biteCooldown:0};
   owner.canGrow = false;
   pairOfScissorsUsed = true;
 }
@@ -3657,7 +3657,7 @@ function applyOuroborosFeast(){
  const slow=group.length===2?0.90:0.95;
  group.forEach((owner,i)=>{
   owner.canGrow=false;
-  owner.selfConsume={delay:10,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,orbitIndex:i,slowOnFinish:slow,target:group[(i+1)%group.length]};
+  owner.selfConsume={delay:0.6,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,orbitIndex:i,slowOnFinish:slow,target:group[(i+1)%group.length]};
  });
 }
 function updateSelfConsumption(obj, dt) {
@@ -4715,7 +4715,6 @@ function computeDeathRattleChanceForFrog(frog) {
   // SNAKE
   // --------------------------------------------------
   function initSnake(width, height) {
-    const startingSegments = 50; // Temporary Ouroboros test length.
     if (snake) {
       if (snake.head && snake.head.el && snake.head.el.parentNode === container) {
         container.removeChild(snake.head.el);
@@ -4747,9 +4746,9 @@ function computeDeathRattleChanceForFrog(frog) {
     container.appendChild(headEl);
 
     const segments = [];
-    for (let i = 0; i < startingSegments; i++) {
+    for (let i = 0; i < SNAKE_INITIAL_SEGMENTS; i++) {
       const segEl = document.createElement("div");
-      const isTail = i === startingSegments - 1;
+      const isTail = i === SNAKE_INITIAL_SEGMENTS - 1;
       segEl.className = isTail ? "snake-tail" : "snake-body";
       segEl.style.position = "absolute";
       segEl.style.width = SNAKE_SEGMENT_SIZE + "px";
@@ -4769,7 +4768,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
     const path = [];
     const segmentGap = computeSegmentGap();
-    const maxPath = (startingSegments + 2) * segmentGap + 2;
+    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
     for (let i = 0; i < maxPath; i++) {
       path.push({ x: startX, y: startY });
     }
@@ -5426,9 +5425,6 @@ function samplePathAtDistance(path, startIdx, dist) {
   let upgradeOverlayContext = "mid";
   let initialUpgradeDone = false;          // starting upgrade before timer
   let firstTimedNormalChoiceDone = false;  // first 1-minute panel
-  // Temporary Ouroboros preview build. Remove these hooks after testing.
-  let ouroborosTestSnakeSpawned = false;
-  let ouroborosTestFeastOffered = false;
 
   let mainMenuOverlay = null;
 
@@ -7721,13 +7717,6 @@ function initUpgradeOverlay() {
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
       if (upgradeOverlayContext === "start") {
-        const curse = getUpgradeChoices().find(choice => choice.id === "pairOfScissors");
-        if (curse) choices.push(curse);
-      } else if (upgradeOverlayContext === "ouroborosTest") {
-        const feastIndex = pool.findIndex(choice => choice.id === "ouroborosFeast");
-        if (feastIndex >= 0) choices.push(pool.splice(feastIndex, 1)[0]);
-      }
-      if (upgradeOverlayContext === "start") {
         pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors");
       }
       if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
@@ -8381,8 +8370,6 @@ doubleYolkerActive = false;
 
     ouroborosFeastUsed = false;
     pairOfScissorsUsed = false;
-    ouroborosTestSnakeSpawned = false;
-    ouroborosTestFeastOffered = false;
     orbCollectorActive       = false;
     orbCollectorChance       = 0;
     lastStandActive          = false;
@@ -8496,14 +8483,6 @@ doubleYolkerActive = false;
       elapsedTime += dt;
       updateBuffTimers(dt);
 
-      // Temporary preview: a second snake enters at 30 seconds. Offer Feast
-      // when Curse has finished and both snakes can take part.
-      if (elapsedTime >= 30 && !ouroborosTestSnakeSpawned) {
-        ouroborosTestSnakeSpawned = true;
-        const newcomer = spawnAdditionalSnake(width, height, {segmentCount:50});
-        if (newcomer) { newcomer.shedStage = 0; extraSnakes.push(newcomer); }
-      }
-
       // ----- ORB TIMER (back to countdown style) -----
       // nextOrbTime is a countdown in seconds, not an absolute timestamp
       nextOrbTime -= dt;
@@ -8542,14 +8521,8 @@ doubleYolkerActive = false;
         upgradeOverlay && upgradeOverlay.style.display !== "none";
 
       if (!gameOver && !overlayOpen) {
-        if (ouroborosTestSnakeSpawned && !ouroborosTestFeastOffered &&
-            pairOfScissorsUsed && !ouroborosFeastUsed &&
-            getCurseSnakes().length >= 2 && !getCurseSnakes().some(s => s.selfConsume)) {
-          ouroborosTestFeastOffered = true;
-          openUpgradeOverlay("epic", {context:"ouroborosTest"});
-        }
         // Epic chain: normal -> epic back-to-back at epic marks
-        else if (elapsedTime >= nextEpicChoiceTime &&
+        if (elapsedTime >= nextEpicChoiceTime &&
                  elapsedTime >= nextPermanentChoiceTime) {
           if(higherCallingActive){
             epicChainPending=false;higherCallingPicksRemaining=2;
