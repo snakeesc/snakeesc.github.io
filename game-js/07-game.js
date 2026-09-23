@@ -3646,7 +3646,6 @@ function getLargestCurseSnake(){return getCurseSnakes().reduce((best,s)=>!best||
 function applyPairOfScissors() {
   const owner=getLargestCurseSnake();
   if (!owner || pairOfScissorsUsed || owner.segments.length < 8) return;
-  owner.speedFactor = (owner.speedFactor || 1) * 0.88;
   owner.selfConsume = {delay:10, keep:Math.floor(owner.segments.length/2), biteCooldown:0}; // Temporary test delay.
   owner.canGrow = false;
   pairOfScissorsUsed = true;
@@ -3657,9 +3656,8 @@ function applyOuroborosFeast(){
  ouroborosFeastUsed=true;
  const slow=group.length===2?0.90:0.95;
  group.forEach((owner,i)=>{
-  owner.speedFactor=(owner.speedFactor||1)*slow;
   owner.canGrow=false;
-  owner.selfConsume={delay:10,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,target:group[(i+1)%group.length]}; // Temporary test delay.
+  owner.selfConsume={delay:10,keep:Math.max(1,Math.floor(owner.segments.length/2)),biteCooldown:0,group,slowOnFinish:slow,target:group[(i+1)%group.length]}; // Temporary test delay.
  });
 }
 function updateSelfConsumption(obj, dt) {
@@ -3695,9 +3693,15 @@ function consumeReachedTail(obj, previousHead, dt) {
   playSnakeMunch();
   if(c.group){
     if(c.group.every(s=>s.segments.length<=s.selfConsume.keep)){
-      for(const member of c.group){member.canGrow=false;member.tailConsumed=true;delete member.selfConsume;}
+      for(const member of c.group){
+        member.speedFactor=(member.speedFactor||1)*member.selfConsume.slowOnFinish;
+        member.canGrow=false;member.tailConsumed=true;delete member.selfConsume;
+      }
     }
-  }else if(obj.segments.length<=c.keep){obj.canGrow=false;delete obj.selfConsume;}
+  }else if(obj.segments.length<=c.keep){
+    obj.speedFactor=(obj.speedFactor||1)*0.88;
+    obj.canGrow=false;delete obj.selfConsume;
+  }
 }
 function clearScissorsAndOldSnakeState() {
   for (const part of eyeForEyeRemains) part.el.remove();
@@ -5173,10 +5177,19 @@ function samplePathAtDistance(path, startIdx, dist) {
       const victim=snakeObj.selfConsume.target || snakeObj;
       const tail=victim.segments.at(-1);
       const ahead=victim.segments.at(-Math.min(3,victim.segments.length));
-      // Aim slightly ahead of the moving tail to cut a smooth inward arc.
-      const aimX=tail.x+(ahead.x-tail.x)*0.35;
-      const aimY=tail.y+(ahead.y-tail.y)*0.35;
-      desiredAngle=Math.atan2(aimY-head.y,aimX-head.x);
+      // Follow the moving tail with a steady curved approach. Keep the same
+      // winding direction until the mouth is close enough to take the bite.
+      const aimX=tail.x+(ahead.x-tail.x)*0.25;
+      const aimY=tail.y+(ahead.y-tail.y)*0.25;
+      const dx=aimX-head.x, dy=aimY-head.y;
+      const directAngle=Math.atan2(dy,dx);
+      const consume=snakeObj.selfConsume;
+      if (!consume.turnSign) {
+        const difference=((directAngle-head.angle+Math.PI*3)%(Math.PI*2))-Math.PI;
+        consume.turnSign=difference>=0?1:-1;
+      }
+      const arc=Math.min(0.38,Math.max(0,(Math.hypot(dx,dy)-55)/130)*0.38);
+      desiredAngle=directAngle+consume.turnSign*arc;
     } else if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
     } else if (snakeConfuseTime > 0 || snakeObj.fruitConfuse > 0) {
