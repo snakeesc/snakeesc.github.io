@@ -14,6 +14,13 @@
   let audioInitialized = false;
   let buttonClicksMuted = false;
   let globalMuted = false; // NEW: global mute flag
+  let quietRoutineSoundsUntil = 0;
+  let lastOrbSpawnCue = -Infinity;
+  const QUIET_DURING_MAJOR_CUE = new Set([
+    "ribbit1", "ribbit2", "ribbit3", "ribbitBase",
+    "orbSpawn1", "orbSpawn2", "snakeMunch", "eyeBodyMunch", "deathrattleRevival"
+  ]);
+  const MAJOR_CUE = new Set(["snakeShedCue", "snakeEntry", "graveWave", "eyeForEye", "runComplete", "personalBest"]);
 
   /**
    * Create a small pool of Audio elements for a given key.
@@ -62,12 +69,15 @@
       ? performance.now()
       : Date.now();
 
+    if (QUIET_DURING_MAJOR_CUE.has(key) && now < quietRoutineSoundsUntil) return;
+
     if (pool.minIntervalMs > 0 && now - pool.lastPlay < pool.minIntervalMs) {
       // Throttled: too soon since last play
       return;
     }
 
     pool.lastPlay = now;
+    if (MAJOR_CUE.has(key)) quietRoutineSoundsUntil = now + 850;
 
     const { players } = pool;
     const len = players.length;
@@ -121,6 +131,7 @@
       createPool("zombieSacrifice", "frogDeath2.mp3", { poolSize: 2, volume: 0.9, minIntervalMs: 0 });
       createPool("secondHelpingPick", "munch3.mp3", { src:"./game-assets/audio/munch3.mp3", poolSize:3, volume:0.9, minIntervalMs:0 });
       createPool("snakeMunch", "munch.mp3",    { poolSize: 4, volume: 0.9, minIntervalMs: 50 });
+      createPool("eyeBodyMunch", "munch.mp3", { poolSize: 1, volume: 0.45, minIntervalMs: 280 });
 
       createPool("buttonClick", "button-click.mp3",    { poolSize: 2, volume: 0.9, minIntervalMs: 120 });
 
@@ -165,11 +176,11 @@
       createPool("frogCrowned", "frog-crowned.mp3", {src:"./game-assets/audio/frog-crowned.mp3", poolSize:2, volume:0.85, minIntervalMs:220});
       createPool("runComplete", "run-complete.mp3", {src:"./game-assets/audio/run-complete.mp3", poolSize:1, volume:0.9, minIntervalMs:500});
       createPool("personalBest", "personal-best.mp3", {src:"./game-assets/audio/personal-best.mp3", poolSize:1, volume:0.9, minIntervalMs:500});
-      createPool("snakeShedCue", "snake-shed.mp3", {src:"./game-assets/audio/snake-shed.mp3", poolSize:1, volume:0.9, minIntervalMs:450});
-      createPool("snakeEntry", "new-snake.mp3", {src:"./game-assets/audio/new-snake.mp3", poolSize:1, volume:0.9, minIntervalMs:450});
-      createPool("graveWave", "grave-wave.mp3", {src:"./game-assets/audio/grave-wave.mp3", poolSize:1, volume:0.75, minIntervalMs:600});
-      createPool("deathrattleRevival", "deathrattle-revival.mp3", {src:"./game-assets/audio/deathrattle-revival.mp3", poolSize:2, volume:0.55, minIntervalMs:180});
-      createPool("eyeForEye", "eye-for-eye.mp3", {src:"./game-assets/audio/eye-for-eye.mp3", poolSize:1, volume:0.9, minIntervalMs:400});
+      createPool("snakeShedCue", "snake-shed.mp3", {src:"./game-assets/audio/snake-shed.mp3", poolSize:1, volume:0.65, minIntervalMs:450});
+      createPool("snakeEntry", "new-snake.mp3", {src:"./game-assets/audio/new-snake.mp3", poolSize:1, volume:0.75, minIntervalMs:450});
+      createPool("graveWave", "grave-wave.mp3", {src:"./game-assets/audio/grave-wave.mp3", poolSize:1, volume:0.6, minIntervalMs:600});
+      createPool("deathrattleRevival", "deathrattle-revival.mp3", {src:"./game-assets/audio/deathrattle-revival.mp3", poolSize:1, volume:0.4, minIntervalMs:1200});
+      createPool("eyeForEye", "eye-for-eye.mp3", {src:"./game-assets/audio/eye-for-eye.mp3", poolSize:1, volume:0.8, minIntervalMs:400});
       audioInitialized = true;
     } catch (e) {
       // If audio init fails for some reason, fail silently.
@@ -202,6 +213,11 @@
   }
 
   function playRandomOrbSpawnSound() {
+    const now = (typeof performance !== "undefined" && performance.now)
+      ? performance.now() : Date.now();
+    // Molt Fortune spawns a batch in one frame; one cue is enough for the batch.
+    if (now - lastOrbSpawnCue < 180) return;
+    lastOrbSpawnCue = now;
     const keys = ["orbSpawn1", "orbSpawn2"];
     const key = keys[Math.floor(Math.random() * keys.length)];
     playFromPool(key);
@@ -331,6 +347,7 @@
     playFrogDeath,
     playZombieSacrifice,
     playSnakeMunch,
+    playEyeBodyMunch: () => playFromPool("eyeBodyMunch"),
     playSecondHelpingPick: () => playFromPool("secondHelpingPick"),
     playRandomOrbSpawnSound,
     playBuffSound,

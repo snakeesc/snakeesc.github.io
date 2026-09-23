@@ -987,6 +987,7 @@ let greedyHandQueue = null;
   let moltFortuneActive = false;
   let toxicBloodActive = false;
   let survivalInstinctActive = false;
+  let doubleJumpActive = false;
   let speedBuffTime   = 0;
   let jumpBuffTime    = 0;
   let snakeSlowTime   = 0;
@@ -1015,6 +1016,10 @@ let afterglowActive = false;
 let nightBloomActive = false;
 let royalApprenticeshipActive = false;
 let royalBatchActive = false;
+let royalConversionMuted = false;
+function playRoleGrantSound(role) {
+  if (!royalConversionMuted) playPerFrogUpgradeSound(role);
+}
 let luckStat = 0;
 let lingeringHexActive = false;
 let lastingLegacyActive = false;
@@ -1225,8 +1230,8 @@ const MAX_LUCK = 30;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
-    ['Common','Afterglow','Requires Night Bloom. Its spawned frogs trigger the expired orb at half duration.'],
-    ['Common','Mutation','Frogs hop 15% faster and 20% higher, up to their limits.'],
+    ['Common','Afterglow','Frogs spawned from expired orbs trigger those orbs at half duration.'],
+    ['Common','Mutation','Frogs hop 15% faster and jump 20% higher and farther, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
@@ -1239,16 +1244,17 @@ const MAX_LUCK = 30;
     ['Common','Luck','Gain 10 luck, up to 30. Improves supported chances, spawn rolls and positive orb durations.'],
     ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
     ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, as an exception to the ordinary revival cap.`],
-    ['Common','Survival Instinct','Below 10 frogs, they hop 20% faster.'],
+    ['Common','Survival Instinct','Below 10 frogs, they jump 20% farther and higher, within movement limits.'],
+    ['Common','Double Jump','Frogs have a small chance to double hop.'],
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
     ['Common','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
     ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
-    ['Epic','Royal Apprenticeship','Spawning special frogs converts all ordinary crowned frogs to the spawned role. Consumes crowns and rerolls natural movement stats. Frogs already holding a special role stay unchanged.'],
+    ['Epic','Royal Apprenticeship','On selection, ordinary crowned frogs gain one shared random special role. Later special frog spawns convert eligible crowned frogs to that role. Crowns are consumed; existing roles stay unchanged.'],
     ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Lingering Hex extends these debuffs; luck does not. Each snake can eat one orb every 3 seconds.'],
     ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
     ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
-    ['Epic','Peace of Mind','At 20+ luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
-    ['Epic','Role Draft','Choose between two roles and spawn 2–5 special frogs. Luck favors larger batches.'],
+    ['Epic','Peace of Mind','At 21+ luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
+    ['Epic','Role Draft','Choose between two roles and spawn 2–6 special frogs. Luck favors larger batches.'],
     ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
     ['Epic','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
     ['Epic','Snake Egg','Targets the lowest-shed snake when selected. It gains 25% less added speed from its remaining sheds. Other and future snakes are unaffected.'],
@@ -1273,7 +1279,7 @@ const MAX_LUCK = 30;
     ['Frogs','Lucky','Improves orb pickups and contributes a score bonus. Its pickups cannot trigger Panic Hop.'],
     ['Frogs','Zombie','Sacrifices itself to end Panic Hop for the swarm. Spawns one ordinary frog on any death.'],
     ['Frogs','Cannibal','Eats up to 5 ordinary frogs, gaining 5% shorter hop timing and 5% higher jumps per meal. On death, spawns 2–5 frogs, never more than it ate. Each living Cannibal adds 1 percentage point of Deathrattle; total chance cannot exceed 25%.'],
-    ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs.'],
+    ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs. Each living Necromancer adds 2 percentage points to revival chance, within the ordinary cap.'],
     ['Frogs','Alchemist','Spawns a frog every 15–25 seconds. Luck favors shorter waits.'],
     ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
     ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.'],
@@ -2663,8 +2669,6 @@ function createFrogAt(x, y, tokenId) {
 
     factor *= tempSpeedFactor;
 
-    // Survival Instinct affects hop duration, not jump height/reach.
-    if (survivalInstinctActive && frogs.length < 10) factor *= 0.80;
 
     // Final hard cap so orbs can't push total speed too far.
     // Remember: smaller factor = faster hops.
@@ -2693,6 +2697,7 @@ function createFrogAt(x, y, tokenId) {
     if (jumpBuffTime > 0) {
       factor *= JUMP_BUFF_FACTOR;
     }
+    if (survivalInstinctActive && frogs.length < 10) factor *= 1.20;
 
     // Final hard cap: permanent + orb jump can't exceed this.
     if (factor > MAX_TOTAL_FROG_JUMP_FACTOR) {
@@ -2796,7 +2801,7 @@ function grantAuraFrog(frog) {
   frog.isAura = true;
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
-  playPerFrogUpgradeSound("aura");
+  playRoleGrantSound("aura");
 }
 
 function grantShieldFrog(frog) {
@@ -2805,7 +2810,7 @@ function grantShieldFrog(frog) {
   frog.shieldGrantedAt = elapsedTime;  // start 40s timer from now
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
-  playPerFrogUpgradeSound("shield");
+  playRoleGrantSound("shield");
 }
 
 function grantMagnetFrog(frog) {
@@ -2813,7 +2818,7 @@ function grantMagnetFrog(frog) {
   frog.isMagnet = true;
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
-  playPerFrogUpgradeSound("magnet");
+  playRoleGrantSound("magnet");
 }
 
 function grantLuckyFrog(frog) {
@@ -2821,7 +2826,7 @@ function grantLuckyFrog(frog) {
   frog.isLucky = true;
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
-  playPerFrogUpgradeSound("lucky");
+  playRoleGrantSound("lucky");
 }
 
 function grantZombieFrog(frog) {
@@ -2829,7 +2834,7 @@ function grantZombieFrog(frog) {
   frog.isZombie = true;
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
-  playPerFrogUpgradeSound("zombie");
+  playRoleGrantSound("zombie");
 }
 
 function updateFrogRoleEmoji(frog) {
@@ -2999,7 +3004,7 @@ function grantRandomPermaFrogUpgrade(frog) {
 function grantNecromancerFrog(frog) {
   if (frog.isNecromancer) return;
   frog.isNecromancer = true;
-  playPerFrogUpgradeSound("necromancer");
+  playRoleGrantSound("necromancer");
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -3007,7 +3012,7 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
-  playPerFrogUpgradeSound("alchemist");
+  playRoleGrantSound("alchemist");
   frog.alchemistTimer = 40 - getLuckBiasedInt(15, 25); // Luck favors shorter independent waits.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
@@ -3017,7 +3022,7 @@ function grantAlchemistFrog(frog) {
 function grantNecromancerFrog(frog) {
   if (frog.isNecromancer) return;
   frog.isNecromancer = true;
-  playPerFrogUpgradeSound("necromancer");
+  playRoleGrantSound("necromancer");
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
 }
@@ -3025,7 +3030,7 @@ function grantNecromancerFrog(frog) {
 function grantAlchemistFrog(frog) {
   if (frog.isAlchemist) return;
   frog.isAlchemist = true;
-  playPerFrogUpgradeSound("alchemist");
+  playRoleGrantSound("alchemist");
   frog.alchemistTimer = 40 - getLuckBiasedInt(15, 25); // Luck favors shorter independent waits.
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
@@ -3194,7 +3199,7 @@ function spawnTidalWave() {
 function grantPoisonToad(frog) {
   if (frog.isPoisonToad) return;
   frog.isPoisonToad = true;
-  playPerFrogUpgradeSound("poison");
+  playRoleGrantSound("poison");
   updateFrogRoleEmoji(frog);
 }
 
@@ -3202,7 +3207,7 @@ function grantBullFrog(frog) {
   const newlyGranted = !frog.isBull;
   frog.isBull = true;
   frog.bullArmor = true;
-  if (newlyGranted) playPerFrogUpgradeSound("bull");
+  if (newlyGranted) playRoleGrantSound("bull");
   updateFrogRoleEmoji(frog);
 }
 
@@ -3244,12 +3249,25 @@ function tryRoyalApprenticeship(role) {
   const eligible = frogs.filter(f => f.starLevel > 0 && !f.isPoisonToad && !f.isBull &&
     !f.isChampion && !f.isAura && !f.isMagnet && !f.isLucky && !f.isZombie &&
     !f.isCannibal && !f.isNecromancer && !f.isAlchemist && !f.hasPermaShield);
-  for (const frog of eligible) {
-    rerollPromotedFrogStats(frog);
-    grants[role](frog);
-    refreshFrogPermaGlow(frog);
-    updateFrogRoleEmoji(frog);
-  }
+  // One conversion cue for the entire group, including the selection bonus.
+  if (!eligible.length) return;
+  const previousMutedState = royalConversionMuted;
+  royalConversionMuted = true;
+  try {
+    for (const frog of eligible) {
+      rerollPromotedFrogStats(frog);
+      grants[role](frog);
+      refreshFrogPermaGlow(frog);
+      updateFrogRoleEmoji(frog);
+    }
+  } finally { royalConversionMuted = previousMutedState; }
+  if (!previousMutedState) playRoleGrantSound(role);
+}
+
+function activateRoyalApprenticeship() {
+  royalApprenticeshipActive = true;
+  const roles = getRoleDraftPool();
+  tryRoyalApprenticeship(roles[Math.floor(Math.random() * roles.length)].id);
 }
 
 function spawnRoleFrog(role) {
@@ -3348,7 +3366,7 @@ function getTwoRandomRoleDraftChoices() {
 }
 
 function applyRoleDraft(roleId) {
-  spawnRoleBatch(roleId, 2, 5);
+  spawnRoleBatch(roleId, 2, 6);
 }
 
 function showRoleDraftOverlayChoices() {
@@ -3392,7 +3410,7 @@ function showRoleDraftOverlayChoices() {
             : role.id === "alchemist"
             ? "Spawns a frog every 15–25s. Luck helps."
             : role.id === "necromancer"
-            ? "Deathrattle revivals become Zombies."
+            ? "Deathrattle revivals become Zombies. Each Necromancer adds 2% revival chance."
             : "Special frog role."
         }
       </div>
@@ -3698,7 +3716,7 @@ function clearScissorsAndOldSnakeState() {
 function markCannibalFrog(frog) {
   if (!frog || frog.isCannibal) return;
   frog.isCannibal = true;
-  playPerFrogUpgradeSound("cannibal");
+  playRoleGrantSound("cannibal");
   frog.cannibalMeals = 0;
   frog.cannibalNextMeal = elapsedTime + 15;
   cannibalFrogCount++;
@@ -3747,7 +3765,10 @@ function computeDeathRattleChanceForFrog(frog) {
   if (chance > MAX_DEATHRATTLE_CHANCE) chance = MAX_DEATHRATTLE_CHANCE;
   if (chance < 0)                       chance = 0;
 
-  return Math.min(0.25, chance + frogs.filter(f => f.isCannibal).length * 0.01);
+  const necromancers = frogs.filter(f => f.isNecromancer).length;
+  const cannibals = frogs.filter(f => f.isCannibal).length;
+  const ordinaryChance = Math.min(MAX_DEATHRATTLE_CHANCE, chance + necromancers * 0.02);
+  return Math.min(0.25, ordinaryChance + cannibals * 0.01);
 }
 
 
@@ -3886,8 +3907,6 @@ function computeDeathRattleChanceForFrog(frog) {
           grantZombieFrog(newFrog); // Necromancer overrides standard respawns into Zombies!
         } else {
           // Normal respawn behavior
-          if (frog.isZombie) grantZombieFrog(newFrog);
-          if (frog.isCannibal) markCannibalFrog(newFrog);
           if (source === "cannibal") grantRandomPermaFrogUpgrade(newFrog);
         }
       }
@@ -4167,7 +4186,7 @@ function computeDeathRattleChanceForFrog(frog) {
     const speedBuffed = (speedBuffTime > 0 || panicHopTime > 0) ? 1.7 : 1.0;
     const championBoost = 1; // Champion removed.
     const jumpFactor = getJumpFactor(frog);  // <-- add this line
-    const maxStep = baseMaxStep * speedBuffed * championBoost * jumpFactor;
+    const maxStep = baseMaxStep * speedBuffed * championBoost * jumpFactor * (frog.doubleHopSecond ? 0.65 : 1);
 
     let goalX = null;
     let goalY = null;
@@ -4317,11 +4336,14 @@ function computeDeathRattleChanceForFrog(frog) {
         frog.y = frog.baseY;
 
         if (frog.idleTime <= 0) {
+          const secondHop = !!frog.doubleHopPending;
+          frog.doubleHopPending = false;
+          frog.doubleHopSecond = secondHop;
           frog.state = "hopping";
           frog.hopTime = 0;
 
           const baseDur = randRange(frog.hopDurMin, frog.hopDurMax);
-          frog.hopDuration = baseDur * getSpeedFactor(frog);
+          frog.hopDuration = baseDur * getSpeedFactor(frog) * (secondHop ? 0.75 : 1);
 
           const spice = Math.random();
           let hopHeight;
@@ -4335,10 +4357,10 @@ function computeDeathRattleChanceForFrog(frog) {
           } else {
             hopHeight = randRange(frog.hopHeightMin, frog.hopHeightMax);
           }
-          frog.hopHeight = hopHeight * getJumpFactor(frog);
+          frog.hopHeight = hopHeight * getJumpFactor(frog) * (secondHop ? 0.75 : 1);
 
           chooseHopDestination(frog, width, height);
-          playRandomRibbit();
+          if (!secondHop) playRandomRibbit();
         }
       } else if (frog.state === "hopping") {
         frog.hopTime += dt;
@@ -4359,6 +4381,12 @@ function computeDeathRattleChanceForFrog(frog) {
 
           const baseIdle = randRange(frog.idleMin, frog.idleMax);
           frog.idleTime = baseIdle * getSpeedFactor(frog);
+          if (frog.doubleHopSecond) {
+            frog.doubleHopSecond = false;
+          } else if (doubleJumpActive && Math.random() < 0.10) {
+            frog.doubleHopPending = true;
+            frog.idleTime = 0.08;
+          }
 
           frog.x = frog.hopEndX;
           frog.baseY = frog.hopEndBaseY;
@@ -5140,7 +5168,10 @@ function samplePathAtDistance(path, startIdx, dist) {
     }
 
     let angleDiff = ((desiredAngle - head.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
-    const maxTurn = snakeTurnRate * dt;
+    // Tighten only the Ouroboros chase radius. Keep forward speed and the
+    // normal steering of snakes outside the eating event unchanged.
+    const ouroborosTurnBoost = snakeObj.selfConsume?.delay <= 0 ? 1.8 : 1;
+    const maxTurn = snakeTurnRate * ouroborosTurnBoost * dt;
     head.angle += Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
 
     const speedFactor = getSnakeSpeedFactor(snakeObj);
@@ -5250,7 +5281,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     // 4. COLLISIONS
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
-    const eatR2 = Math.pow((snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius()), 2);
+    // Pull frog bites in slightly without changing orb contact or body eating.
+    const eatR2 = Math.pow((snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius()) - 2, 2);
 
     for (let i = frogList.length - 1; i >= 0; i--) {
       const f = frogList[i];
@@ -5278,7 +5310,7 @@ function samplePathAtDistance(path, startIdx, dist) {
           part.el.remove();
           eyeForEyeRemains.splice(i, 1);
           growSnakeForSnake(snakeObj, 1);
-          playSnakeMunch();
+          AudioMod.playEyeBodyMunch?.();
         }
       }
       if (!eyeForEyeRemains.length) eyeForEyeRemainsReady = false;
@@ -5364,7 +5396,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         apply: () => { applyPairOfScissors(); }
       });
     }
-    if (nightBloomActive && !afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Night Bloom frogs trigger orbs at <span class=menu-number-accent data-card-accent>half duration</span>", apply:()=>{afterglowActive=true;}});
+    if (nightBloomActive && !afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Frogs spawned from expired orbs <span class=menu-number-accent data-card-accent>trigger them</span>", apply:()=>{afterglowActive=true;}});
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
 
     upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>1–3</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],1,3)});
@@ -5479,10 +5511,15 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!survivalInstinctActive) {
       upgrades.push({
         id: "survivalInstinct",
-        label: `⚡ Survival Instinct<br>When below 10 frogs, they hop <span style="color:${c.mobility};">20%</span> faster`,
+        label: `⚡ Survival Instinct<br>Below 10 frogs, jump <span style="color:${c.mobility};">20%</span> higher and farther`,
         apply: () => { survivalInstinctActive = true; }
       });
     }
+    if (!doubleJumpActive) upgrades.push({
+      id: "doubleJump",
+      label: "Double Jump<br>Frogs have a <span class=menu-number-accent data-card-accent>small chance</span> to double hop",
+      apply: () => { doubleJumpActive = true; }
+    });
 
     upgrades.push({
       id: "luckyRoll",
@@ -5507,7 +5544,7 @@ function samplePathAtDistance(path, startIdx, dist) {
   }
 
   function applyPeaceOfMind() {
-    if (peaceOfMindActive || luckStat < 20) return;
+    if (peaceOfMindActive || luckStat < 21) return;
     peaceOfMindActive = true;
     addLuck(-luckStat);
     panicHopTime = 0;
@@ -5537,7 +5574,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       id:"secondHelping", label:'Second Helping<br>Your next common upgrade offers <span class="stat-highlight" style="color:#006b83;">3</span> picks.',
       apply:()=>{ secondHelpingPending = true; }
     });
-    if (!peaceOfMindActive && luckStat >= 20) upgrades.push({
+    if (!peaceOfMindActive && luckStat >= 21) upgrades.push({
       id:"peaceOfMind", label:"Peace of Mind<br>Spend <span class=menu-number-accent data-card-accent>all luck</span>. No more Panic Hop.",
       apply:applyPeaceOfMind
     });
@@ -5545,11 +5582,11 @@ function samplePathAtDistance(path, startIdx, dist) {
       upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
     }
 
-    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Spawning special frogs turns <span class=menu-number-accent data-card-accent>crowned frogs</span> into that role", apply:()=>{royalApprenticeshipActive=true;}});
+    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Give crowned frogs one shared role; future special frogs <span class=menu-number-accent data-card-accent>convert more</span>", apply:activateRoyalApprenticeship});
 
     upgrades.push({
       id: "roleDraft",
-      label: `🎭 Role Draft<br>Choose a role. Spawn <span style="color:${epicTitleColor};">2–5</span> special frogs`,
+      label: `🎭 Role Draft<br>Choose a role. Spawn <span style="color:${epicTitleColor};">2–6</span> special frogs`,
       opensRoleDraft: true,
       apply: () => {
         roleDraftUsed = true;
@@ -6186,7 +6223,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Mega Spawn", desc: `Drops ${fmtRange(10, 20)} frogs at once; Lucky collectors can add up to ${statHighlight("+8")} more.` },
       { title: "Snake Slow", desc: `The snake moves ${fmtPct((1 - SNAKE_SLOW_FACTOR) * 100)} slower for ${fmtSec(SNAKE_SLOW_DURATION)}.` },
       { title: "Snake Confuse", desc: `The snake zig-zags erratically for ${fmtSec(SNAKE_CONFUSE_DURATION)}.` },
-      { title: "Snake Shrink", desc: `Bite radius shrinks to about ${statHighlight(`${Math.round(SNAKE_EAT_RADIUS_BASE / 2)}px`)} for ${fmtSec(SNAKE_SHRINK_DURATION)}.` },
+      { title: "Snake Shrink", desc: `Frog bite radius shrinks to about ${statHighlight('22px')} for ${fmtSec(SNAKE_SHRINK_DURATION)}.` },
       { title: "Frog Shield", desc: `Team ignores hits for ${fmtSec(FROG_SHIELD_DURATION)}.` },
       { title: "Orb Magnet", desc: `Pulls orbs within ${statHighlight(`${ORB_MAGNET_PULL_RANGE}px`)} toward frogs for ${fmtSec(ORB_MAGNET_DURATION)}.` },
       { title: "Time Slow", desc: `Everything runs ${fmtPct((1 - TIME_SLOW_FACTOR) * 100)} slower for ${fmtSec(TIME_SLOW_DURATION)}.` },
@@ -6197,7 +6234,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Perma Frog", desc: `Grants the collector a random permanent role (Cannibal, Aura, Magnet, Lucky, or Zombie).` }
     ];
 
-    const speedPerPickPct = Math.round((1 - FROG_SPEED_UPGRADE_FACTOR) * 100);
+    const speedPerPickPct = 15; // Mutation uses 0.85, not the retired generic speed upgrade.
     const jumpPerPickPct  = Math.round((FROG_JUMP_UPGRADE_FACTOR - 1) * 100);
     const buffPerPickPct  = Math.round((BUFF_DURATION_UPGRADE_FACTOR - 1) * 100);
     const orbPerPickPct   = Math.round((1 - ORB_INTERVAL_UPGRADE_FACTOR) * 100);
@@ -6205,8 +6242,8 @@ function closeAnimatedOverlay(overlayEl) {
     const orbCollectPct   = Math.round(ORB_COLLECTOR_CHANCE * 100);
 
     const commonUpgrades = [
-      { title: "Quicker Hops", desc: `${fmtPct(speedPerPickPct)} faster hops each pick (up to ${fmtPct((1 - MIN_FROG_SPEED_FACTOR) * 100)} total).` },
-      { title: "Higher Hops", desc: `${fmtPct(jumpPerPickPct)} taller jumps per pick (cap ${fmtPct((MAX_FROG_JUMP_FACTOR - 1) * 100)}).` },
+      { title: "Mutation", desc: `${fmtPct(speedPerPickPct)} faster hops and ${fmtPct(jumpPerPickPct)} higher and farther jumps per pick (up to two picks).` },
+      { title: "Survival Instinct", desc: `Below 10 frogs, jumps are ${fmtPct(20)} higher and farther.` },
       { title: "Spawn Frogs", desc: `Instantly adds ${statHighlight(NORMAL_SPAWN_AMOUNT)} frogs (only offered if you're below cap).` },
       { title: "Orb Whisperer", desc: `Orbs linger ${fmtPct(20)} longer before fading.` },
       { title: "Soul Offering", desc: "Deathrattle revivals leave an orb." },
@@ -6365,8 +6402,9 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     const upgrades = [
-      { type: "mobility", label: "🧬 Mutation", desc: "+15% jump speed and +20% jump height." },
-      { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they hop 20% faster." },
+      { type: "mobility", label: "🧬 Mutation", desc: "+15% hop speed and +20% jump height and distance per pick." },
+      { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they jump 20% higher and farther." },
+      { type: "mobility", label: "Double Jump", desc: "Frogs have a small chance to double hop." },
       { type: "mobility", label: "✂️ Ouroboros Curse", desc: "Makes the snake consume half its body and slows it." },
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
       { type: "buff", label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog rolls, and more." },
@@ -6386,7 +6424,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 7–15 frogs. Luck favors more." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
-      { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 2–5 special frogs." },
+      { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 2–6 special frogs." },
       { type: "role", label: "🥇 Promotion", desc: "Up to 10 random frogs gain one crown level immediately." },
       { type: "role", label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
       { type: "role", label: "🃏 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
@@ -7734,7 +7772,7 @@ function initUpgradeOverlay() {
     if (panicAttackActive) items.push("<strong>Panic Attack:</strong> Confused snakes flee frogs");
     if (roleCounts.poison) items.push(`<strong>Poison Toads:</strong> ${roleCounts.poison}`);
     if (lingeringHexActive) items.push("<strong>Lingering Hex:</strong> +15% snake debuff duration, excluding Lucky Roll");
-    if (lastingLegacyActive) items.push("<strong>Lasting Legacy:</strong> 20% role inheritance chance, including Frog Scatter");
+    if (lastingLegacyActive) items.push("<strong>Lasting Legacy:</strong> 20% base role inheritance chance on death (excludes Frog Scatter)");
     if (brittleScalesActive) items.push("<strong>Brittle Scales:</strong> Snake resistance halved");
 
 
@@ -8239,6 +8277,7 @@ doubleYolkerActive = false;
     moltFortuneActive = false;
     toxicBloodActive = false;
     survivalInstinctActive = false;
+    doubleJumpActive = false;
 
     ouroborosFeastUsed = false;
     pairOfScissorsUsed = false;

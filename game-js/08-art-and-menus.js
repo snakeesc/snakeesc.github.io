@@ -227,7 +227,7 @@ window.approvedUpgrades["peace of mind"]="./game-assets/sprites/approved/upgrade
 
 window.approvedUpgrades["second helping"]="./game-assets/sprites/approved/upgrade-second-helping-framed.svg";
 
-window.approvedUpgrades["ouroboros curse"]="./game-assets/sprites/approved/upgrade-ouroboros-curse.png";
+window.approvedUpgrades["ouroboros curse"]="./game-assets/sprites/approved/upgrade-ouroboros-curse-new.png";
 window.approvedUpgrades["soul offering"]="./game-assets/sprites/approved/upgrade-soul-offering-framed.svg";
 
 window.approvedUpgrades["forbidden fruit"]="./game-assets/sprites/approved/upgrade-forbidden-fruit.svg";
@@ -265,4 +265,6 @@ window.approvedUpgrades["afterglow"]="./game-assets/sprites/approved/upgrade-aft
  new MutationObserver(update).observe(document.body,{childList:true,subtree:true});update();
 })();
 
-window.approvedUpgrades["ouroboros feast"]="./game-assets/sprites/approved/upgrade-ouroboros-feast-framed.svg";
+window.approvedUpgrades["ouroboros feast"]="./game-assets/sprites/approved/upgrade-ouroboros-feast-new.png";
+
+window.approvedUpgrades["double jump"]="./game-assets/sprites/approved/upgrade-double-jump.png";
