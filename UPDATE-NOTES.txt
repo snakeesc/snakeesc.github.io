@@ -1,0 +1,16 @@
+
+MAGNETIZED (COMMON)
+- Available once per run when at least three living Magnet frogs are on the field.
+- Guaranteed one slot in the next Common menu while eligible. When Higher Calling replaces a shed's Common + Epic with two Epics, it can occupy one of those Epic slots instead. Never appears in consecutive upgrade menus.
+- Selecting it sacrifices all Magnet frogs without triggering death/revival effects.
+- All remaining and future frogs permanently pull orbs within 45 game units; existing Magnet frogs keep their 220-unit role range.
+- New shaded blocky magnet sprite: game-assets/sprites/approved/upgrade-magnetized.png.
+
+PROMOTION (COMMON)
+- Moved from Epic to Common. Promotes a random 5–10 eligible frogs one crown level; fewer only if fewer eligible frogs exist. Skips frogs already at the crown cap.
+
+LUCKY ROLL
+- Duration bonus rises with each use in a run: +50%, +75%, then +100% for the third and later uses. Card uses the same short sentence and updates only the percentage for the next use. Resets on a new run.
+
+MAGNETIZED ICON
+- Replaced with the approved last preview, based on the existing Magnet frog artwork.

@@ -128,6 +128,7 @@
 
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
+  const MAGNETIZED_PULL_RANGE = 45;
   const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
   const DASHBOARD_COSMETICS_STORAGE_KEY = "frogSnake_dashboardCosmetics_v1";
   const DASHBOARD_PFP_STORAGE_KEY = "frogSnake_dashboardPfp_v1";
@@ -1023,7 +1024,10 @@ let greedyHandQueue = null;
   let orbLingerBonusUsed   = false;
   let ouroborosPactUsed    = false;
 let chainReactionActive = false;
-let afterglowActive = false;
+  let afterglowActive = false;
+  let magnetizedActive = false;
+  let magnetizedOfferedLastMenu = false;
+  let luckyRollUses = 0;
 let nightBloomActive = false;
 let royalApprenticeshipActive = false;
 let royalBatchActive = false;
@@ -1245,6 +1249,7 @@ const MAX_LUCK = 30;
     ['Common','Mutation','Frogs hop 15% faster and jump 20% higher and farther, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
+    ['Common','Magnetized','Sacrifice all Magnet frogs. All frogs become slightly magnetized.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
     ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
@@ -1257,7 +1262,7 @@ const MAX_LUCK = 30;
     ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, as an exception to the ordinary revival cap.`],
     ['Common','Survival Instinct','Below 10 frogs, they jump 20% farther and higher, within movement limits.'],
     ['Common','Double Jump','After two Mutations and Survival Instinct, adds 5 percentage points to double-hop chance (5% to 10%).'],
-    ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50% extra duration.'],
+    ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50%, then 75%, then 100% extra duration.'],
     ['Common','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
     ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
     ['Epic','Royal Apprenticeship','On selection, ordinary crowned frogs gain one shared random special role. Later special frog spawns convert eligible crowned frogs to that role. Crowns are consumed; existing roles stay unchanged.'],
@@ -1280,7 +1285,7 @@ const MAX_LUCK = 30;
     ['Epic','Second Wind','Once per run: spawn 20 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
     ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
     ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
-    ['Epic','Promotion','Adds a crown level to up to 10 random frogs, within crown limits.'],
+    ['Common','Promotion','Promotes 5–10 random frogs by one crown level, if enough are eligible.'],
     ['Epic','Frog Scatter','Respawns the swarm with roles, crowns and stats intact, triggering death effects. Bonus frogs respect the population cap. Once per run.'],
     ['Epic','Molt Fortune','Drops 5–10 orbs when the snake sheds.'],
     ['Frogs','Crowned','Permanently improved movement. Can gain up to three crown levels.'],
@@ -3185,14 +3190,16 @@ function getRandomTriggeredOrbBuffType(excluded = []) {
 function triggerLuckyRoll() {
   const buffType = getRandomTriggeredOrbBuffType(["spawn", "megaSpawn", "panicHop"]);
   showLuckyShuffle(buffType);
-  applyBuff(buffType, null, 1.5, true); // applyBuff applies Luck once.
+  const durationBonus = Math.min(1, 0.5 + luckyRollUses * 0.25);
+  applyBuff(buffType, null, 1 + durationBonus, true); // applyBuff applies Luck once.
+  luckyRollUses++;
 }
 
 function promoteAllFrogs() {
   if (!Array.isArray(frogs) || frogs.length === 0) return;
 
-  const pool = frogs.slice();
-  const count = Math.min(10, pool.length);
+  const pool = frogs.filter(frog => (frog.starLevel || 0) < 3);
+  const count = Math.min(5 + Math.floor(Math.random() * 6), pool.length);
 
   for (let i = 0; i < count; i++) {
     const idx = Math.floor(Math.random() * pool.length);
@@ -4566,6 +4573,8 @@ function computeDeathRattleChanceForFrog(frog) {
   }
   function updateOrbs(dt) {
     const MAGNET_RANGE2 = ORB_MAGNET_PULL_RANGE * ORB_MAGNET_PULL_RANGE;
+    const MAGNETIZED_RANGE2 = MAGNETIZED_PULL_RANGE * MAGNETIZED_PULL_RANGE;
+    const magnetFrogs = frogs.filter(f => f.isMagnet);
 
     for (let i = orbs.length - 1; i >= 0; i--) {
       const orb = orbs[i];
@@ -4599,8 +4608,7 @@ function computeDeathRattleChanceForFrog(frog) {
         if (t >= 1) delete orb.moltFlight;
       }
 
-      const magnetFrogs = frogs.filter(f => f.isMagnet);
-      if (!orb.moltFlight && (orbMagnetTime > 0 || magnetFrogs.length > 0) && frogs.length > 0) {
+      if (!orb.moltFlight && (orbMagnetTime > 0 || magnetizedActive || magnetFrogs.length > 0) && frogs.length > 0) {
         let target = null;
         let bestD2 = Infinity;
 
@@ -4616,14 +4624,14 @@ function computeDeathRattleChanceForFrog(frog) {
           }
         }
 
-        if (!target && orbMagnetTime > 0) {
+        if (!target && (orbMagnetTime > 0 || magnetizedActive)) {
           for (const frog of frogs) {
             const fx = frog.x + FROG_SIZE / 2;
             const fy = frog.baseY + FROG_SIZE / 2;
             const dx = fx - orb.x;
             const dy = fy - orb.y;
             const d2 = dx * dx + dy * dy;
-            if (d2 < bestD2) {
+            if (d2 < bestD2 && (orbMagnetTime > 0 || d2 < MAGNETIZED_RANGE2)) {
               bestD2 = d2;
               target = { fx, fy };
             }
@@ -5454,6 +5462,22 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
+    if (frogs.some(frog => (frog.starLevel || 0) < 3)) {
+      upgrades.push({id:"promotionEpic",label:"Promotion<br>Promote <span>5–10</span> random frogs by one crown level",apply:promoteAllFrogs});
+    }
+    if (!magnetizedActive && frogs.filter(f => f.isMagnet).length >= 3) {
+      upgrades.push({id:"magnetized",label:"Magnetized<br>Sacrifice all Magnet frogs. All frogs become slightly magnetized",apply:()=>{
+        const sacrificed = frogs.filter(f => f.isMagnet);
+        if (sacrificed.length < 3) return;
+        for (const frog of sacrificed) {
+          if (frog.isCannibal) unmarkCannibalFrog(frog);
+          frog.cloneEl?.remove();
+          frog.el?.remove();
+          frogs.splice(frogs.indexOf(frog), 1);
+        }
+        magnetizedActive = true;
+      }});
+    }
     if (!pairOfScissorsUsed && getLargestCurseSnake()?.segments.length >= 8) {
       upgrades.push({
         id: "pairOfScissors",
@@ -5590,7 +5614,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     upgrades.push({
       id: "luckyRoll",
-      label: `🎲 Lucky Roll<br>Trigger a random orb buff with <span style="color:${c.buff};">+50%</span> duration`,
+      label: `🎲 Lucky Roll<br>Trigger a random orb buff with <span style="color:${c.buff};">+${Math.min(100, 50 + luckyRollUses * 25)}%</span> duration`,
       apply: () => { triggerLuckyRoll(); }
     });
 
@@ -5765,14 +5789,6 @@ function samplePathAtDistance(path, startIdx, dist) {
         id: "toxicBlood",
         label: `🩸 Poisonous Skin<br>Snake is <span class=menu-number-accent data-card-accent>slowed</span> briefly every time it eats a frog`,
         apply: () => { toxicBloodActive = true; }
-      });
-    }
-
-    if (frogs.length > 0) {
-      upgrades.push({
-        id: "promotionEpic",
-        label: `🥇 Promotion<br>Up to <span style="color:${epicTitleColor};">10</span> random frogs gain <span style="color:${epicTitleColor};">+1 star</span>`,
-        apply: () => { promoteAllFrogs(); }
       });
     }
 
@@ -6309,6 +6325,8 @@ function closeAnimatedOverlay(overlayEl) {
     const orbCollectPct   = Math.round(ORB_COLLECTOR_CHANCE * 100);
 
     const commonUpgrades = [
+      { title: "Promotion", desc: "Promotes 5–10 random frogs by one crown level. Frogs already at the crown cap are skipped." },
+      { title: "Magnetized", desc: `With at least 3 Magnet frogs alive, sacrifice all Magnet frogs to let every remaining and future frog pull orbs within ${statHighlight(`${MAGNETIZED_PULL_RANGE}px`)}. Once per run.` },
       { title: "Mutation", desc: `${fmtPct(speedPerPickPct)} faster hops and ${fmtPct(jumpPerPickPct)} higher and farther jumps per pick (up to two picks).` },
       { title: "Survival Instinct", desc: `Below 10 frogs, jumps are ${fmtPct(20)} higher and farther.` },
       { title: "Spawn Frogs", desc: `Instantly adds ${statHighlight(NORMAL_SPAWN_AMOUNT)} frogs (only offered if you're below cap).` },
@@ -6475,7 +6493,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "mobility", label: "✂️ Ouroboros Curse", desc: "Makes the snake consume half its body and slows it." },
       { type: "mobility", label: "🌪️ Frog Scatter", desc: "Kill and respawn all current frogs." },
       { type: "buff", label: "🍀 Luck", desc: "Increases buff duration bonus, improves frog rolls, and more." },
-      { type: "buff", label: "🎲 Lucky Roll", desc: "Instantly triggers a random orb buff at 1.5× duration." },
+      { type: "buff", label: "🎲 Lucky Roll", desc: "Triggers a random orb buff: +50% duration first use, +75% second, +100% thereafter." },
       { type: "buff", label: "🌀 Orb Whisperer", desc: "Orbs linger 30% longer." },
       { type: "buff", label: "🎯 Orb Flow", desc: "Increases orb spawn frequency." },
       { type: "buff", label: "🌩️ Orb Storm", desc: "Drops a burst of random orbs immediately." },
@@ -6492,7 +6510,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 7–15 frogs. Luck favors more." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
       { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 2–6 special frogs." },
-      { type: "role", label: "🥇 Promotion", desc: "Up to 10 random frogs gain one crown level immediately." },
+      { type: "role", label: "🥇 Promotion", desc: "Promote 5–10 random eligible frogs by one crown level." },
       { type: "role", label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
       { type: "role", label: "🃏 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
     ];
@@ -7719,6 +7737,12 @@ function initUpgradeOverlay() {
 
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
+      // Higher Calling replaces the shed's Common + Epic with two Epics.
+      // Carry Magnetized into those menus, but never show it twice in a row.
+      if (higherCallingActive && upgradeOverlayContext === "shed" && !magnetizedOfferedLastMenu) {
+        const magnetized = getUpgradeChoices().find(c => c.id === "magnetized");
+        if (magnetized) choices.push(magnetized);
+      }
       if (upgradeOverlayContext === "start") {
         pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors");
       }
@@ -7734,6 +7758,14 @@ function initUpgradeOverlay() {
       choices = getLegendaryUpgradeChoices().slice();
     } else {
       let pool = getUpgradeChoices().slice();
+
+      // This sacrifice is explicitly unlocked by the current field, so it
+      // occupies one Common slot as soon as three Magnet frogs are present.
+      const magnetizedIndex = pool.findIndex(c => c.id === "magnetized");
+      if (magnetizedIndex !== -1) {
+        const magnetized = pool.splice(magnetizedIndex, 1)[0];
+        if (!magnetizedOfferedLastMenu) choices.push(magnetized);
+      }
 
       if (!initialUpgradeDone) {
         pool = pool.filter(c => c.id !== "permaLifeSteal");
@@ -7784,6 +7816,7 @@ function initUpgradeOverlay() {
     }
 
     currentUpgradeChoices = choices.slice();
+    magnetizedOfferedLastMenu = choices.some(choice => choice.id === "magnetized");
 
     if (!choices.length) {
       const span = document.createElement("div");
@@ -8353,6 +8386,9 @@ snakeOldBodySpeedBonusPending = false;
 doubleYolkerActive = false;
     chainReactionActive = false;
     afterglowActive = false;
+    magnetizedActive = false;
+    magnetizedOfferedLastMenu = false;
+    luckyRollUses = 0;
     nightBloomActive = false;
     royalApprenticeshipActive = false;
     royalBatchActive = false;

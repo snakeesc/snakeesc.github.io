@@ -62,6 +62,8 @@ window.approvedFrogs["cannibal-5"]="./game-assets/sprites/approved/frog-cannibal
 window.approvedFrogs.cannibal=window.approvedFrogs["cannibal-0"];
 
 window.approvedUpgrades["eye for eye"]="./game-assets/sprites/approved/upgrade-eye-for-eye.png";
+window.approvedUpgrades["magnetized"]="./game-assets/sprites/approved/upgrade-magnetized.png";
+(()=>{const style=document.createElement('style');style.textContent='.frog-upgrade-choice .frog-upgrade-emoji[data-approved="magnetized"]{background-size:190% 190%!important;background-position:center!important;}';document.head.appendChild(style);})();
 
 window.approvedUpgrades["wild company"]="./game-assets/sprites/approved/upgrade-wild-company.png";
 window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-greedy-hand-framed.svg";
