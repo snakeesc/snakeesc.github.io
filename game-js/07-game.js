@@ -1027,6 +1027,7 @@ let chainReactionActive = false;
   let afterglowActive = false;
   let magnetizedActive = false;
   let magnetizedOfferedLastMenu = false;
+  const TEST_MAGNETIZED_START = true; // Temporary: show Magnetized at the starting Epic choice.
   let luckyRollUses = 0;
 let nightBloomActive = false;
 let royalApprenticeshipActive = false;
@@ -7737,6 +7738,20 @@ function initUpgradeOverlay() {
 
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
+      if (TEST_MAGNETIZED_START && upgradeOverlayContext === "start" && !magnetizedActive) {
+        // The starting screen precedes Magnet frog spawns; bypass the three
+        // frog requirement only here so the permanent effect can be tested.
+        choices.push({id:"magnetized",label:"Magnetized<br>Sacrifice all Magnet frogs. All frogs become slightly magnetized",apply:()=>{
+          const sacrificed = frogs.filter(f => f.isMagnet);
+          for (const frog of sacrificed) {
+            if (frog.isCannibal) unmarkCannibalFrog(frog);
+            frog.cloneEl?.remove();
+            frog.el?.remove();
+            frogs.splice(frogs.indexOf(frog), 1);
+          }
+          magnetizedActive = true;
+        }});
+      }
       // Higher Calling replaces the shed's Common + Epic with two Epics.
       // Carry Magnetized into those menus, but never show it twice in a row.
       if (higherCallingActive && upgradeOverlayContext === "shed" && !magnetizedOfferedLastMenu) {
