@@ -92,7 +92,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  'Role Draft':'Choose a role; spawn 2–5 special frogs. Luck favors more.'
  };
  const style=document.createElement('style');
- style.textContent='#runPauseOverlay[data-view="guide"] .pause-row img{scale:.88;transform-origin:center;}';
+ style.textContent='#runPauseOverlay[data-view="guide"] .pause-row img{scale:.88;transform-origin:center;}#runPauseOverlay[data-view="guide"] .pause-row img[src*="upgrade-magnetized.png"]{object-fit:cover!important;scale:1.35!important;}';
  document.head.appendChild(style);
  function polish(){
   document.querySelectorAll('#runPauseOverlay[data-view="guide"] .pause-guide-entries .pause-row').forEach(row=>{

@@ -128,7 +128,7 @@
 
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
-  const MAGNETIZED_PULL_RANGE = 80;
+  const MAGNETIZED_PULL_RANGE = 75;
   const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
   const DASHBOARD_COSMETICS_STORAGE_KEY = "frogSnake_dashboardCosmetics_v1";
   const DASHBOARD_PFP_STORAGE_KEY = "frogSnake_dashboardPfp_v1";
