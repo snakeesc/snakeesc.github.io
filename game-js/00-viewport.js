@@ -55,7 +55,7 @@
   if (isPhoneScreen && isApp) {
     designWidth = 980; // phone-sized screen, inside the native app wrapper
   } else if (!isPhoneScreen) {
-    designWidth = 2160; // One desktop/laptop design width; ~11% smaller than 1920.
+    designWidth = 980; // Desktop uses the same logical pixel size as the phone game.
   } else {
     return; // normal-sized desktop monitor — nothing to fix
   }
@@ -81,11 +81,11 @@
     var trueSize = getTrueViewportSize();
     var deviceWidth = trueSize.width;
     var deviceHeight = trueSize.height;
-    // Desktop: fit both axes, so short laptop windows do not magnify the UI
-    // relative to available height. Extra aspect-ratio space stays playable.
-    // Phone browser and native-phone scaling are deliberately unchanged.
+    // Match a 390px phone rendering the 980px game world. Keep that physical
+    // scale on wider monitors: extra screen space expands the playable area
+    // instead of magnifying every sprite, HUD element and upgrade card.
     if (!isPhoneScreen) {
-      var desktopScale = Math.min(deviceWidth / 2160, deviceHeight / 1215);
+      var desktopScale = Math.min(390 / 980, deviceWidth / 980, deviceHeight / 980);
       if (!(desktopScale > 0)) return;
       designWidth = deviceWidth / desktopScale;
     }

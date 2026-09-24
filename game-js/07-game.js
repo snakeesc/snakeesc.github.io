@@ -5229,7 +5229,10 @@ function samplePathAtDistance(path, startIdx, dist) {
         : consume.target.segments.length<=consume.target.selfConsume.keep ? 1.25
         : 1.7+consume.orbitIndex*0.18+Math.min(0.8,Math.max(0,consume.orbitElapsed-(consume.lastBiteAt||0)-2)*0.15)
       : 1;
-    const speed = SNAKE_BASE_SPEED * speedFactor * (consume ? consume.group ? feastCatchup : 1.9 : 1);
+    // Shed speed still matters after the event; cap only its active eating motion.
+    const speed = consume
+      ? Math.min(SNAKE_BASE_SPEED * speedFactor * (consume.group ? feastCatchup : 1.9), SNAKE_BASE_SPEED * 2.1)
+      : SNAKE_BASE_SPEED * speedFactor;
     const previousHead={x:head.x,y:head.y};
     head.x += Math.cos(head.angle) * speed * dt;
     head.y += Math.sin(head.angle) * speed * dt;
