@@ -179,13 +179,15 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 .frog-upgrade-choice .frog-upgrade-emoji[data-approved="poisonous skin"]{background-size:129.6521739130435% 124.78260869565219%!important;background-position:59.579667644183765% 54.093567251461984%!important;}
 `;document.head.appendChild(style);})();
 
-// Keep desktop menu scale consistent with the game world and phone menus.
+// Size desktop secondary menus for reading while following the world scale.
 (()=>{
   const desktop=matchMedia('(min-width:601px) and (hover:hover) and (pointer:fine)');
   function resizeMenus(){
     const active=desktop.matches && !window.Capacitor;
     const scale=Number(window.__escapeSnakeRenderScale)||1;
-    const zoom=1;
+    // Menus need some compensation at desktop viewing distance; keeping the
+    // effective scale near .7 avoids the previous oversized .95 treatment.
+    const zoom=active ? Math.max(1,.7/scale) : 1;
     const effective=scale*zoom;
     document.documentElement.classList.toggle('desktop-readable-menus',active);
     document.documentElement.style.setProperty('--desktop-menu-zoom',String(zoom));

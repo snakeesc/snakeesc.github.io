@@ -55,7 +55,7 @@
   if (isPhoneScreen && isApp) {
     designWidth = 980; // phone-sized screen, inside the native app wrapper
   } else if (!isPhoneScreen) {
-    designWidth = 980; // Desktop uses the same logical pixel size as the phone game.
+    designWidth = 980; // Recalculated from the desktop height in apply().
   } else {
     return; // normal-sized desktop monitor — nothing to fix
   }
@@ -81,11 +81,11 @@
     var trueSize = getTrueViewportSize();
     var deviceWidth = trueSize.width;
     var deviceHeight = trueSize.height;
-    // Match a 390px phone rendering the 980px game world. Keep that physical
-    // scale on wider monitors: extra screen space expands the playable area
-    // instead of magnifying every sprite, HUD element and upgrade card.
+    // A typical 390 x 840 phone renders the 980px game at ~0.4 scale,
+    // giving about 2100 logical pixels vertically. Match that vertical
+    // proportion on desktop while its additional width expands the arena.
     if (!isPhoneScreen) {
-      var desktopScale = Math.min(390 / 980, deviceWidth / 980, deviceHeight / 980);
+      var desktopScale = Math.min(deviceHeight / 2100, deviceWidth / 980);
       if (!(desktopScale > 0)) return;
       designWidth = deviceWidth / desktopScale;
     }
