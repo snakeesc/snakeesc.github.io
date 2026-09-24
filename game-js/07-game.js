@@ -128,7 +128,7 @@
 
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
-  const MAGNETIZED_PULL_RANGE = 45;
+  const MAGNETIZED_PULL_RANGE = 80;
   const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
   const DASHBOARD_COSMETICS_STORAGE_KEY = "frogSnake_dashboardCosmetics_v1";
   const DASHBOARD_PFP_STORAGE_KEY = "frogSnake_dashboardPfp_v1";
@@ -4621,7 +4621,7 @@ function computeDeathRattleChanceForFrog(frog) {
           const d2 = dx * dx + dy * dy;
           if (d2 < MAGNET_RANGE2 && d2 < bestD2) {
             bestD2 = d2;
-            target = { fx, fy };
+            target = { fx, fy, isMagnet: true };
           }
         }
 
@@ -4643,7 +4643,7 @@ function computeDeathRattleChanceForFrog(frog) {
           const dx = target.fx - orb.x;
           const dy = target.fy - orb.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const pull = 80 * dt;
+          const pull = (!target.isMagnet && magnetizedActive && orbMagnetTime <= 0 ? 105 : 80) * dt;
           orb.x += (dx / dist) * pull;
           orb.y += (dy / dist) * pull;
         }
