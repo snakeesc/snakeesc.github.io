@@ -128,7 +128,7 @@
 
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
-  const MAGNETIZED_PULL_RANGE = 75;
+  const MAGNETIZED_PULL_RANGE = 70;
   const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
   const DASHBOARD_COSMETICS_STORAGE_KEY = "frogSnake_dashboardCosmetics_v1";
   const DASHBOARD_PFP_STORAGE_KEY = "frogSnake_dashboardPfp_v1";
@@ -1249,6 +1249,8 @@ const MAX_LUCK = 30;
     ['Common','Mutation','Frogs hop 15% faster and jump 20% higher and farther, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
+    ['Common','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
+    ['Common','Second Wind','Once per run: spawn 20 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
     ['Common','Magnetized','Sacrifice all Magnet frogs. All frogs become slightly magnetized.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
@@ -1263,7 +1265,7 @@ const MAX_LUCK = 30;
     ['Common','Survival Instinct','Below 10 frogs, they jump 20% farther and higher, within movement limits.'],
     ['Common','Double Jump','After two Mutations and Survival Instinct, adds 5 percentage points to double-hop chance (5% to 10%).'],
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50%, then 75%, then 100% extra duration.'],
-    ['Common','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
+    ['Epic','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
     ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
     ['Epic','Royal Apprenticeship','On selection, ordinary crowned frogs gain one shared random special role. Later special frog spawns convert eligible crowned frogs to that role. Crowns are consumed; existing roles stay unchanged.'],
     ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Lingering Hex extends these debuffs; luck does not. Each snake can eat one orb every 3 seconds.'],
@@ -1272,7 +1274,6 @@ const MAX_LUCK = 30;
     ['Epic','Peace of Mind','At 21+ luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
     ['Epic','Role Draft','Choose between two roles and spawn 2–6 special frogs. Luck favors larger batches.'],
     ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
-    ['Epic','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
     ['Epic','Snake Egg','Targets the lowest-shed snake when selected. It gains 25% less added speed from its remaining sheds. Other and future snakes are unaffected.'],
     ['Epic','Brittle Scales','Halves snake debuff resistance.'],
     ['Epic','Chain Reaction','An orb pickup has a 15% chance to trigger an additional orb effect.'],
@@ -1282,7 +1283,6 @@ const MAX_LUCK = 30;
     ['Epic','Eye for Eye','Kill the slowest snake; survivors immediately devour its body. Frog cap becomes 55. Once per run.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
     ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
-    ['Epic','Second Wind','Once per run: spawn 20 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
     ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
     ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
     ['Common','Promotion','Promotes 5–10 random frogs by one crown level, if enough are eligible.'],
@@ -1340,7 +1340,7 @@ const MAX_LUCK = 30;
   function pauseIcon(name) {
     const key=name.toLowerCase();
     const url=window.approvedUpgrades?.[key] || window.approvedFrogs?.[key];
-    return url ? `<img src="${pauseEscape(url)}" alt="" loading="lazy">` : '';
+    return url ? `<img src="${pauseEscape(url)}" alt="" loading="lazy"${key==='magnetized'?' data-guide-icon="magnetized"':''}>` : '';
   }
   function rememberRunUpgrade(choice) {
     const el=document.createElement('div'); el.innerHTML=choice.label;
@@ -5478,17 +5478,18 @@ function samplePathAtDistance(path, startIdx, dist) {
         magnetizedActive = true;
       }});
     }
-    if (!pairOfScissorsUsed && getLargestCurseSnake()?.segments.length >= 8) {
-      upgrades.push({
-        id: "pairOfScissors",
-        label: `✂️ Ouroboros Curse<br>Largest snake consumes half its body. <span class=menu-number-accent data-card-accent>Slows it</span>`,
-        apply: () => { applyPairOfScissors(); }
-      });
-    }
     if (nightBloomActive && !afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Frogs spawned from expired orbs <span class=menu-number-accent data-card-accent>trigger them</span>", apply:()=>{afterglowActive=true;}});
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
 
     upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>1–3</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],1,3)});
+    if (!lastingLegacyActive) upgrades.push({
+      id:"lastingLegacy", label:"Lasting Legacy<br><span>20%</span> chance to pass a special frog’s role on death",
+      apply:()=>{lastingLegacyActive=true;}
+    });
+    if (!secondWindUsed && !secondWindActive) upgrades.push({
+      id:"secondWind", label:"Second Wind<br>Below 10 frogs? Spawn <span>20</span> now or later",
+      apply:()=>{ secondWindActive=true; triggerSecondWindIfNeeded(); }
+    });
 
     if (!nightBloomActive) {
       upgrades.push({
@@ -5657,6 +5658,13 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!pairOfScissorsUsed && getLargestCurseSnake()?.segments.length >= 8) {
+      upgrades.push({
+        id:"pairOfScissors",
+        label:"Ouroboros Curse<br>Largest snake consumes half its body. <span class=menu-number-accent data-card-accent>Slows it</span>",
+        apply:applyPairOfScissors
+      });
+    }
     if(pairOfScissorsUsed && !ouroborosFeastUsed && getCurseSnakes().length>=2 && !getCurseSnakes().some(s=>s.selfConsume))upgrades.push({id:"ouroborosFeast",label:"Ouroboros Feast<br>Snakes devour half of each other’s bodies and <span class=menu-number-accent data-card-accent>slow down</span>",apply:applyOuroborosFeast});
 
     if (!forbiddenFruitActive) upgrades.push({id:"forbiddenFruit",label:'Forbidden Fruit<br>Orbs briefly debuff snakes that <span class=menu-number-accent data-card-accent>eat</span> them.',apply:()=>{forbiddenFruitActive=true;}});
@@ -5673,7 +5681,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
     }
 
-    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Give crowned frogs one shared role; future special frogs <span class=menu-number-accent data-card-accent>convert more</span>", apply:activateRoyalApprenticeship});
+    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Crowned frogs gain a special role now and whenever a special frog spawns", apply:activateRoyalApprenticeship});
 
     upgrades.push({
       id: "roleDraft",
@@ -5695,10 +5703,6 @@ function samplePathAtDistance(path, startIdx, dist) {
           spawnOrbRandom(w, h);
         }
       }
-    });
-    if (!lastingLegacyActive) upgrades.push({
-      id:"lastingLegacy", label:"Lasting Legacy<br><span>20%</span> chance to pass a special frog’s role on death",
-      apply:()=>{lastingLegacyActive=true;}
     });
     if (!bruisedEggActive && snake) upgrades.push({
       id: "bruisedEgg",
@@ -5768,13 +5772,6 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
-    if (!secondWindUsed && !secondWindActive) {
-      upgrades.push({
-        id: "secondWind",
-        label: `💨 Second Wind<br>Below 10 frogs? Spawn <span style="color:${epicTitleColor};">20</span> now or later`,
-        apply: () => { secondWindActive = true; triggerSecondWindIfNeeded(); }
-      });
-    }
 
     if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
@@ -6325,6 +6322,8 @@ function closeAnimatedOverlay(overlayEl) {
     const orbCollectPct   = Math.round(ORB_COLLECTOR_CHANCE * 100);
 
     const commonUpgrades = [
+      { title: "Lasting Legacy", desc: "Dying special frogs have a 20% base chance to pass their role to an ordinary frog." },
+      { title: "Second Wind", desc: "When your swarm drops below 10, spawn 20 frogs once, now or later." },
       { title: "Promotion", desc: "Promotes 5–10 random frogs by one crown level. Frogs already at the crown cap are skipped." },
       { title: "Magnetized", desc: `With at least 3 Magnet frogs alive, sacrifice all Magnet frogs to let every remaining and future frog pull orbs within ${statHighlight(`${MAGNETIZED_PULL_RANGE}px`)}. Once per run.` },
       { title: "Mutation", desc: `${fmtPct(speedPerPickPct)} faster hops and ${fmtPct(jumpPerPickPct)} higher and farther jumps per pick (up to two picks).` },
@@ -6344,6 +6343,7 @@ function closeAnimatedOverlay(overlayEl) {
     const epicDeathPct       = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const epicUpgrades = [
+      { title: "Ouroboros Curse", desc: "The largest snake consumes half its body and permanently slows. Once per run." },
       { title: "Epic Frog Wave", desc: `Spawn ${statHighlight(EPIC_SPAWN_AMOUNT)} frogs instantly.` },
       { title: "Epic Deathrattle", desc: `${fmtPct(epicDeathPct)} revive chance in one pick.` },
       { title: "Epic Buff Duration", desc: `${fmtPct(epicBuffPerPickPct)} longer buffs with one choice.` },
