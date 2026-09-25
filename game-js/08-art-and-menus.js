@@ -77,7 +77,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
 // Field guide only: concise copy and a modest reduction in visible icon size.
 (()=>{
  const descriptions={
- 'Royal Apprenticeship':'Spawned roles replace crowns on ordinary crowned frogs. Movement stats reroll; special frogs keep their role.',
+ 'Royal Apprenticeship':'After selecting this upgrade, frogs gain a random special role when they earn their first crown. Frogs already crowned are unaffected. Existing roles remain. Not offered at the start of a run.',
  'Greedy Hand':'Take every offer; another snake joins. Requires Loaded Hand. 20% offer chance; once per run. Never paired with Eye for Eye.',
  'Eye for Eye':'With 2+ snakes, kill the slowest. Survivors immediately devour its body. Frog cap drops to 55. Once per run.',
  'Snake Egg':'One snake gains 25% less speed per shed. Targets the fewest sheds; future snakes are unaffected.',
