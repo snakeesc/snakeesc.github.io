@@ -1051,6 +1051,7 @@ const MAX_LUCK = 30;
   let eyeForEyeUsed        = false;
   let eyeForEyeRemains = [];
   let eyeForEyeRemainsReady = false;
+  let eyeForEyeTestTriggerAt = null; // TEST ONLY.
 
   // Legendary Frenzy timer (snake + frogs go wild)
   let snakeFrenzyTime = 0;
@@ -1278,7 +1279,7 @@ const MAX_LUCK = 30;
     ['Epic','Greedy Hand','Requires Loaded Hand; 20% chance to appear per epic offer. Take all other offered upgrades, then another snake enters. Once per run. Never offered alongside Eye for Eye.'],
     ['Epic','Loaded Hand','Future upgrade menus offer four choices instead of three.'],
     ['Epic','Tidal Wave','Spawns as many frogs as are alive, with a minimum of 15 added frogs. Population cap still applies.'],
-    ['Epic','Eye for Eye','Kill the slowest snake; survivors immediately devour its body. Frog cap becomes 55. Once per run.'],
+    ['Epic','Eye for Eye','The slowest snake sheds, dies, and disappears. Frog cap becomes 55. Once per run.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
     ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
     ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
@@ -2096,7 +2097,7 @@ function updateShedSequence(dt) {
   seq.time += dt;
   // Hold discrete poses at 12 fps, like the game's low-resolution sprites.
   const frameTime = Math.floor(seq.time * 12) / 12;
-  const t = Math.min(1, frameTime / 5);
+  const t = Math.min(1, frameTime / (seq.deathOnly ? 2.5 : 5));
   const emerge = Math.max(0, Math.min(1, (t - 0.2) / 0.55));
   seq.parts.forEach((part, i) => {
     const position = i / Math.max(1, seq.parts.length - 1);
@@ -2113,7 +2114,7 @@ function updateShedSequence(dt) {
     part.finalPoint=point;
     part.finalTransform=`translate(${Math.round(point.x-seq.points[i].x)}px, ${Math.round(point.y-seq.points[i].y)}px) ${part.transform}`;
     part.el.style.transform = `translate(${x}px, ${y}px) ${part.transform}`;
-    if (emerge >= position) { setShedPalette(part.el, seq.cycle); part.el.style.filter = ""; }
+    if (emerge >= position && !seq.deathOnly) { setShedPalette(part.el, seq.cycle); part.el.style.filter = ""; }
     // Solid discarded skin, then irregular stair-step tears. No translucent dissolve.
     const crumble = Math.max(0, Math.min(1, (t - .74 - (i % 3)*.025) / .18));
     part.skin.style.opacity = t < .12 || crumble >= 1 ? "0" : "1";
@@ -2132,6 +2133,22 @@ function updateShedSequence(dt) {
       return seq.sample(pathDistance-seq.travel);
     });
     clearShedSequence();
+    if (seq.deathOnly) {
+      // Leave the abandoned body at its final shed position, without snapping back.
+      seq.parts.forEach(part => { part.el.style.transform = part.finalTransform; });
+      const doomed = seq.owner;
+      // Keep its existing sprites in place as the discarded skin crumbles,
+      // then remove each segment from tail to head. No survivor eats it.
+      dyingSnakes.push({headEl: doomed.head.el,
+        segmentEls: doomed.segments.map(segment => segment.el), nextDespawnTime: 0.08});
+      if (doomed === snake) snake = extraSnakes.shift() || null;
+      else {
+        const index = extraSnakes.indexOf(doomed);
+        if (index !== -1) extraSnakes.splice(index, 1);
+      }
+      if (!snake) initSnake(window.innerWidth, window.innerHeight);
+      return;
+    }
     if(seq.restoreOnly){
       // A restorative red molt preserves length, color and every speed modifier.
       delete seq.owner.selfConsume;
@@ -4898,27 +4915,13 @@ function computeDeathRattleChanceForFrog(frog) {
       }
     }
 
-    // Keep the defeated snake's normal sprites in place. Survivors start
-    // chasing its body immediately, with the same bite/growth path as remnants.
-    eyeForEyeRemains = [slowest.head, ...slowest.segments].filter(part => part?.el).map(part => {
-      const el = part.el;
-      el.style.zIndex = '19';
-      return {el, x:part.x, y:part.y};
-    });
-    eyeForEyeRemainsReady = true;
+    // The doomed snake sheds in place, then its skin disappears in pieces.
+    // Its survivor retains normal speed and never chases or eats this body.
     for (const survivor of snakes) {
       if (survivor !== slowest && survivor.selfConsume?.target === slowest) delete survivor.selfConsume;
     }
-    if (slowest === snake) snake = null;
-    else extraSnakes.splice(extraSnakes.indexOf(slowest), 1);
-
-    if (!snake && Array.isArray(extraSnakes) && extraSnakes.length > 0) {
-      snake = extraSnakes.shift();
-    }
-
-    if (!snake) {
-      initSnake(window.innerWidth, window.innerHeight);
-    }
+    beginShedSequence(1, slowest, true);
+    if (shedSequence?.owner === slowest) shedSequence.deathOnly = true;
 
     maxFrogsCap = Math.min(maxFrogsCap, 55);
     if (frogs.length > maxFrogsCap) {
@@ -5643,7 +5646,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       apply:applyPeaceOfMind
     });
     if (!eyeForEyeUsed && (snake ? 1 : 0) + extraSnakes.filter(Boolean).length >= 2) {
-      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
+      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:()=>{ eyeForEyeTestTriggerAt = elapsedTime + 10; }});
     }
 
     if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>When a frog is crowned, it gains a <span class=menu-number-accent data-card-accent>random role</span>", apply:activateRoyalApprenticeship});
@@ -7710,6 +7713,9 @@ function initUpgradeOverlay() {
       }
       if (upgradeOverlayContext === "start") {
         pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors" && choice.id !== "royalApprenticeship");
+        // TEST ONLY: include Eye for an Eye in the opening Epic choice.
+        const eyeIndex = pool.findIndex(choice => choice.id === "eyeForEye");
+        if (eyeIndex !== -1) choices.push(pool.splice(eyeIndex, 1)[0]);
       }
       if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
         pool = pool.filter(c=>c.id!=="eyeForEye");
@@ -8382,6 +8388,7 @@ doubleYolkerActive = false;
     fragileRealityActive     = false;
     frogScatterUsed          = false;
     eyeForEyeUsed            = false;
+    eyeForEyeTestTriggerAt = null;
 
     snakeTurnRate            = SNAKE_TURN_RATE_BASE;
     graveWaveActive   = false;
@@ -8434,6 +8441,11 @@ doubleYolkerActive = false;
     });
 
     initSnake(width, height);
+    // TEST ONLY: second snake present when the initial choice opens.
+    const eyeTestSnake = spawnAdditionalSnake(width, height, {
+      startX: width * 0.78, startY: height * 0.58, angle: Math.PI
+    });
+    if (eyeTestSnake) extraSnakes.push(eyeTestSnake);
 
     setNextOrbTime();
     updateStatsPanel();
@@ -8484,6 +8496,10 @@ doubleYolkerActive = false;
       updateDyingSnakes(dt);
       // ----- core timers -----
       elapsedTime += dt;
+      if (eyeForEyeTestTriggerAt !== null && elapsedTime >= eyeForEyeTestTriggerAt) {
+        eyeForEyeTestTriggerAt = null;
+        applyEyeForAnEye();
+      }
       updateBuffTimers(dt);
 
       // ----- ORB TIMER (back to countdown style) -----
