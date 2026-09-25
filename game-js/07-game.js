@@ -1030,10 +1030,8 @@ let chainReactionActive = false;
   let luckyRollUses = 0;
 let nightBloomActive = false;
 let royalApprenticeshipActive = false;
-let royalBatchActive = false;
-let royalConversionMuted = false;
 function playRoleGrantSound(role) {
-  if (!royalConversionMuted) playPerFrogUpgradeSound(role);
+  playPerFrogUpgradeSound(role);
 }
 let luckStat = 0;
 let lingeringHexActive = false;
@@ -1267,7 +1265,7 @@ const MAX_LUCK = 30;
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50%, then 75%, then 100% extra duration.'],
     ['Epic','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
     ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
-    ['Epic','Royal Apprenticeship','Eligible crowned frogs gain a special role now and whenever a special frog spawns. Each conversion gives them the same role; existing special frogs keep theirs. Not offered at the start of a run.'],
+    ['Epic','Royal Apprenticeship','After selecting this upgrade, frogs gain a random special role when they earn their first crown. Frogs already crowned are unaffected. Existing roles remain. Not offered at the start of a run.'],
     ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Lingering Hex extends these debuffs; luck does not. Each snake can eat one orb every 3 seconds.'],
     ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
     ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
@@ -3132,6 +3130,7 @@ function grantStarUpgrade(frog) {
 
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
+  if (oldLevel === 0 && royalApprenticeshipActive) grantRoyalApprenticeshipRole(frog);
   showCrownUpgrade(frog);
   AudioMod.playFrogCrowned?.();
 }
@@ -3236,62 +3235,25 @@ function grantBullFrog(frog) {
 }
 
 function spawnRoleBatch(role, min, max) {
-  royalBatchActive = true;
-  let spawned = 0;
-  try {
-    const count = getLuckBiasedInt(min, max);
-    for (let i = 0; i < count; i++) if (spawnRoleFrog(role)) spawned++;
-  } finally { royalBatchActive = false; }
-  if (spawned > 0) tryRoyalApprenticeship(role);
+  const count = getLuckBiasedInt(min, max);
+  for (let i = 0; i < count; i++) spawnRoleFrog(role);
 }
 
-// Reuse the normal frog personality ranges; only their selection odds change.
-function rerollPromotedFrogStats(frog) {
-  const luck = Math.max(0, Math.min(1, luckStat / MAX_LUCK));
-  const energeticChance = 0.35 + 0.15 * luck;
-  const roll = Math.random();
-  const profile = roll < energeticChance
-    ? [0.3, 1.0, 0.25, 0.50, 15.4, 32]
-    : roll < energeticChance + 0.35
-      ? [0.8, 3.0, 0.35, 0.63, 11, 26]
-      : [1.4, 3.2, 0.35, 0.63, 11, 24];
-  [frog.idleMin, frog.idleMax, frog.hopDurMin, frog.hopDurMax,
-    frog.hopHeightMin, frog.hopHeightMax] = profile;
-  frog.starLevel = 0;
-  frog.speedMult = 1;
-  frog.jumpMult = 1;
-  // Let an in-progress hop finish normally; the next hop uses the new stats.
-  if (frog.state === "idle") frog.idleTime = randRange(frog.idleMin, frog.idleMax);
-}
-
-function tryRoyalApprenticeship(role) {
-  if (!royalApprenticeshipActive) return;
+function grantRoyalApprenticeshipRole(frog) {
+  if (!frog || frog.starLevel <= 0 || frogHasSpecialRole(frog)) return;
+  const roles = getRoleDraftPool();
+  const role = roles[Math.floor(Math.random() * roles.length)].id;
+  // Grant directly: the Role Draft helper clears crowns, while this upgrade
+  // must preserve the crown and its movement bonuses.
   const grants = {poison:grantPoisonToad, bull:grantBullFrog, aura:grantAuraFrog,
     magnet:grantMagnetFrog, lucky:grantLuckyFrog, zombie:grantZombieFrog,
     necromancer:grantNecromancerFrog, alchemist:grantAlchemistFrog, cannibal:markCannibalFrog};
-  if (!grants[role]) return;
-  const eligible = frogs.filter(f => f.starLevel > 0 && !f.isPoisonToad && !f.isBull &&
-    !f.isChampion && !f.isAura && !f.isMagnet && !f.isLucky && !f.isZombie &&
-    !f.isCannibal && !f.isNecromancer && !f.isAlchemist && !f.hasPermaShield);
-  // One conversion cue for the entire group, including the selection bonus.
-  if (!eligible.length) return;
-  const previousMutedState = royalConversionMuted;
-  royalConversionMuted = true;
-  try {
-    for (const frog of eligible) {
-      rerollPromotedFrogStats(frog);
-      grants[role](frog);
-      refreshFrogPermaGlow(frog);
-      updateFrogRoleEmoji(frog);
-    }
-  } finally { royalConversionMuted = previousMutedState; }
-  if (!previousMutedState) playRoleGrantSound(role);
+  grants[role](frog);
+  refreshFrogPermaGlow(frog);
 }
 
 function activateRoyalApprenticeship() {
   royalApprenticeshipActive = true;
-  const roles = getRoleDraftPool();
-  tryRoyalApprenticeship(roles[Math.floor(Math.random() * roles.length)].id);
 }
 
 function spawnRoleFrog(role) {
@@ -3328,7 +3290,6 @@ function spawnRoleFrog(role) {
       break;
   }
 
-  if (!royalBatchActive) tryRoyalApprenticeship(role);
   return frog;
 }
 function getRoleDraftPool() {
@@ -5685,7 +5646,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
     }
 
-    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>Crowned frogs gain a special role now and whenever a special frog spawns", apply:activateRoyalApprenticeship});
+    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>When a frog is crowned, it gains a <span class=menu-number-accent data-card-accent>random role</span>", apply:activateRoyalApprenticeship});
 
     upgrades.push({
       id: "roleDraft",
@@ -8395,7 +8356,6 @@ doubleYolkerActive = false;
     luckyRollUses = 0;
     nightBloomActive = false;
     royalApprenticeshipActive = false;
-    royalBatchActive = false;
     swarmDivideActive = false;
     swarmDivideUsed = false;
     graveWaveActive = false;
