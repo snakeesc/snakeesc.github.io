@@ -1051,6 +1051,7 @@ const MAX_LUCK = 30;
   let eyeForEyeUsed        = false;
   let eyeForEyeRemains = [];
   let eyeForEyeRemainsReady = false;
+  let eyeForEyeTestTriggerAt = null; // TEST ONLY: wait 10 active game seconds after selection.
 
   // Legendary Frenzy timer (snake + frogs go wild)
   let snakeFrenzyTime = 0;
@@ -5643,7 +5644,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       apply:applyPeaceOfMind
     });
     if (!eyeForEyeUsed && (snake ? 1 : 0) + extraSnakes.filter(Boolean).length >= 2) {
-      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
+      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:()=>{ eyeForEyeTestTriggerAt = elapsedTime + 10; }});
     }
 
     if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>When a frog is crowned, it gains a <span class=menu-number-accent data-card-accent>random role</span>", apply:activateRoyalApprenticeship});
@@ -8385,6 +8386,7 @@ doubleYolkerActive = false;
     fragileRealityActive     = false;
     frogScatterUsed          = false;
     eyeForEyeUsed            = false;
+    eyeForEyeTestTriggerAt = null;
 
     snakeTurnRate            = SNAKE_TURN_RATE_BASE;
     graveWaveActive   = false;
@@ -8492,6 +8494,10 @@ doubleYolkerActive = false;
       updateDyingSnakes(dt);
       // ----- core timers -----
       elapsedTime += dt;
+      if (eyeForEyeTestTriggerAt !== null && elapsedTime >= eyeForEyeTestTriggerAt) {
+        eyeForEyeTestTriggerAt = null;
+        applyEyeForAnEye();
+      }
       updateBuffTimers(dt);
 
       // ----- ORB TIMER (back to countdown style) -----
