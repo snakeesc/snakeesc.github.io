@@ -7710,6 +7710,9 @@ function initUpgradeOverlay() {
       }
       if (upgradeOverlayContext === "start") {
         pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors" && choice.id !== "royalApprenticeship");
+        // TEST ONLY: guarantee Eye for an Eye appears in the opening Epic menu.
+        const eyeIndex = pool.findIndex(choice => choice.id === "eyeForEye");
+        if (eyeIndex !== -1) choices.push(pool.splice(eyeIndex, 1)[0]);
       }
       if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
         pool = pool.filter(c=>c.id!=="eyeForEye");
@@ -8434,6 +8437,11 @@ doubleYolkerActive = false;
     });
 
     initSnake(width, height);
+    // TEST ONLY: a second active snake is present before the first Epic choice.
+    const eyeTestSnake = spawnAdditionalSnake(width, height, {
+      startX: width * 0.78, startY: height * 0.58, angle: Math.PI
+    });
+    if (eyeTestSnake) extraSnakes.push(eyeTestSnake);
 
     setNextOrbTime();
     updateStatsPanel();
