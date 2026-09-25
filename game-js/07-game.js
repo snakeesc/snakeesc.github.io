@@ -3773,7 +3773,7 @@ function computeDeathRattleChanceForFrog(frog) {
   const necromancers = frogs.filter(f => f.isNecromancer).length;
   const cannibals = frogs.filter(f => f.isCannibal).length;
   const ordinaryChance = Math.min(MAX_DEATHRATTLE_CHANCE, chance + necromancers * 0.02);
-  return Math.min(0.25, ordinaryChance + cannibals * 0.01);
+  return Math.min(MAX_DEATHRATTLE_CHANCE, ordinaryChance + cannibals * 0.01);
 }
 
 
