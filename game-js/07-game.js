@@ -1278,7 +1278,7 @@ const MAX_LUCK = 30;
     ['Epic','Greedy Hand','Requires Loaded Hand; 20% chance to appear per epic offer. Take all other offered upgrades, then another snake enters. Once per run. Never offered alongside Eye for Eye.'],
     ['Epic','Loaded Hand','Future upgrade menus offer four choices instead of three.'],
     ['Epic','Tidal Wave','Spawns as many frogs as are alive, with a minimum of 15 added frogs. Population cap still applies.'],
-    ['Epic','Eye for Eye','Kill the slowest snake; survivors immediately devour its body. Frog cap becomes 55. Once per run.'],
+    ['Epic','Eye for Eye','The slowest snake sheds, dies, and disappears. Frog cap becomes 55. Once per run.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
     ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
     ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
@@ -2044,8 +2044,24 @@ function seedMatchGrass() {
 }
 // A short visual interlude: world timers and collisions wait until it finishes.
 let shedSequence = null;
+let shedBatch = [];
+let shedBatchUpdating = false;
+let shedBatchComplete = null;
 function clearShedSequence() {
   AudioMod.setShedAudioActive?.(false);
+  if (!shedBatchUpdating && shedBatch.length) {
+    for (const seq of shedBatch) {
+      for (const part of seq.parts) {
+        part.el.style.transform = part.transform;
+        part.el.style.filter = part.filter;
+        part.skin.remove();
+      }
+    }
+    shedBatch = [];
+    shedBatchComplete = null;
+    shedSequence = null;
+    return;
+  }
   if (!shedSequence) return;
   for (const part of shedSequence.parts) {
     part.el.style.transform = part.transform;
@@ -2091,12 +2107,30 @@ function beginShedSequence(cycle, owner = snake, restoreOnly = false, onComplete
   shedSequence = {owner, restoreOnly, onComplete, parts, nodes, points, distances, sample, travel, dx, dy, cycle, time:0, reduced:window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches};
 }
 function updateShedSequence(dt) {
+  if (shedBatch.length && !shedBatchUpdating) {
+    shedBatchUpdating = true;
+    const active = [];
+    for (const seq of shedBatch) {
+      shedSequence = seq;
+      updateShedSequence(dt);
+      if (shedSequence) active.push(shedSequence);
+    }
+    shedBatch = active;
+    shedBatchUpdating = false;
+    shedSequence = shedBatch[0] || null;
+    if (!shedSequence && shedBatchComplete) {
+      const finish = shedBatchComplete;
+      shedBatchComplete = null;
+      finish();
+    }
+    return;
+  }
   const seq = shedSequence;
   if (!seq) return;
   seq.time += dt;
   // Hold discrete poses at 12 fps, like the game's low-resolution sprites.
   const frameTime = Math.floor(seq.time * 12) / 12;
-  const t = Math.min(1, frameTime / 5);
+  const t = Math.min(1, frameTime / (seq.deathOnly ? 2.5 : 5));
   const emerge = Math.max(0, Math.min(1, (t - 0.2) / 0.55));
   seq.parts.forEach((part, i) => {
     const position = i / Math.max(1, seq.parts.length - 1);
@@ -2113,7 +2147,7 @@ function updateShedSequence(dt) {
     part.finalPoint=point;
     part.finalTransform=`translate(${Math.round(point.x-seq.points[i].x)}px, ${Math.round(point.y-seq.points[i].y)}px) ${part.transform}`;
     part.el.style.transform = `translate(${x}px, ${y}px) ${part.transform}`;
-    if (emerge >= position) { setShedPalette(part.el, seq.cycle); part.el.style.filter = ""; }
+    if (emerge >= position && !seq.deathOnly) { setShedPalette(part.el, seq.cycle); part.el.style.filter = ""; }
     // Solid discarded skin, then irregular stair-step tears. No translucent dissolve.
     const crumble = Math.max(0, Math.min(1, (t - .74 - (i % 3)*.025) / .18));
     part.skin.style.opacity = t < .12 || crumble >= 1 ? "0" : "1";
@@ -2132,6 +2166,22 @@ function updateShedSequence(dt) {
       return seq.sample(pathDistance-seq.travel);
     });
     clearShedSequence();
+    if (seq.deathOnly) {
+      // Leave the abandoned body at its final shed position, without snapping back.
+      seq.parts.forEach(part => { part.el.style.transform = part.finalTransform; });
+      const doomed = seq.owner;
+      // Keep its existing sprites in place as the discarded skin crumbles,
+      // then remove each segment from tail to head. No survivor eats it.
+      dyingSnakes.push({headEl: doomed.head.el,
+        segmentEls: doomed.segments.map(segment => segment.el), nextDespawnTime: 0.08});
+      if (doomed === snake) snake = extraSnakes.shift() || null;
+      else {
+        const index = extraSnakes.indexOf(doomed);
+        if (index !== -1) extraSnakes.splice(index, 1);
+      }
+      if (!snake) initSnake(window.innerWidth, window.innerHeight);
+      return;
+    }
     if(seq.restoreOnly){
       // A restorative red molt preserves length, color and every speed modifier.
       delete seq.owner.selfConsume;
@@ -2139,15 +2189,14 @@ function updateShedSequence(dt) {
       seq.owner.canGrow=true;
       const tail=seq.owner.segments.at(-1);
       if(tail)tail.el.className="snake-tail";
-    }else snakeShed(cycle);
+    }else snakeShed(cycle, seq.owner);
     if(seq.onComplete)seq.onComplete();
 
   }
 }
-function snakeShed(stage) {
-    if (!snake) return;
-
-    const oldSnake = snake;
+function snakeShed(stage, oldSnake = snake) {
+    if (!oldSnake) return;
+    const isPrimary = oldSnake === snake;
     const oldHeadEl = oldSnake.head && oldSnake.head.el ? oldSnake.head.el : null;
     const oldSegmentEls = Array.isArray(oldSnake.segments)
       ? oldSnake.segments.map(seg => seg.el).filter(Boolean)
@@ -2166,10 +2215,11 @@ function snakeShed(stage) {
 
     const baseSpeedFactor = oldSnake.speedFactor || 1.0;
     const newSpeedFactor = baseSpeedFactor * speedMult;
-    snakePermanentSpeedFactor = newSpeedFactor;
-
-    snakeTurnRate = Math.min(SNAKE_TURN_RATE_CAP, snakeTurnRate * 1.35); // Increased from 1.2
-    snakeShedStage = stage;
+    if (isPrimary) {
+      snakePermanentSpeedFactor = newSpeedFactor;
+      snakeTurnRate = Math.min(SNAKE_TURN_RATE_CAP, snakeTurnRate * 1.35);
+      snakeShedStage = stage;
+    }
 
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -2227,7 +2277,7 @@ function snakeShed(stage) {
       path.push(path.length ? {...path[path.length - 1]} : { x: startX, y: startY });
     }
 
-    snake = {
+    const replacement = {
       head: { el: headEl, x: startX, y: startY, angle: oldSnake.head ? oldSnake.head.angle : 0 },
       segments,
       path,
@@ -2238,10 +2288,17 @@ function snakeShed(stage) {
       canGrow: true
     };
 
-    applySnakeAppearance();
+    if (isPrimary) {
+      snake = replacement;
+      applySnakeAppearance();
+    } else {
+      const index = extraSnakes.indexOf(oldSnake);
+      if (index !== -1) extraSnakes[index] = replacement;
+      for (const part of [replacement.head, ...replacement.segments]) setShedPalette(part.el, stage);
+    }
 
     // The cut snake reclaims its own body at the next milestone.
-    startScissorsRemnantChase(snake);
+    startScissorsRemnantChase(replacement);
 
     triggerGraveWave();
 
@@ -2287,6 +2344,29 @@ function snakeShed(stage) {
 
     // Apply appearance for stage 0 (original art, no tint)
     applySnakeAppearance();
+  }
+
+  function shedAllEligibleSnakes() {
+    const currentPrimary = snake;
+    const primaryIsRed = currentPrimary &&
+      (currentPrimary.shedStage ?? snakeShedStage) >= 2;
+    const participants = [currentPrimary, ...extraSnakes].filter(Boolean);
+    const sequences = [];
+    for (const owner of participants) {
+      const stage = owner.shedStage ?? (owner === currentPrimary ? snakeShedStage : 0);
+      const restoring = stage >= 2 && (owner.tailConsumed || owner.selfConsume);
+      if (stage >= 2 && !restoring) continue;
+      // Build each sequence from the same frozen frame; they then play together.
+      shedSequence = null;
+      beginShedSequence(restoring ? 2 : stage + 1, owner, !!restoring);
+      if (shedSequence) sequences.push(shedSequence);
+    }
+    shedBatch = sequences;
+    shedSequence = sequences[0] || null;
+    if (primaryIsRed) {
+      if (sequences.length) shedBatchComplete = () => handleFourthShed();
+      else handleFourthShed();
+    }
   }
 
   function updateDyingSnakes(dt) {
@@ -4898,27 +4978,13 @@ function computeDeathRattleChanceForFrog(frog) {
       }
     }
 
-    // Keep the defeated snake's normal sprites in place. Survivors start
-    // chasing its body immediately, with the same bite/growth path as remnants.
-    eyeForEyeRemains = [slowest.head, ...slowest.segments].filter(part => part?.el).map(part => {
-      const el = part.el;
-      el.style.zIndex = '19';
-      return {el, x:part.x, y:part.y};
-    });
-    eyeForEyeRemainsReady = true;
+    // The doomed snake sheds in place, then its skin disappears in pieces.
+    // Its survivor retains normal speed and never chases or eats this body.
     for (const survivor of snakes) {
       if (survivor !== slowest && survivor.selfConsume?.target === slowest) delete survivor.selfConsume;
     }
-    if (slowest === snake) snake = null;
-    else extraSnakes.splice(extraSnakes.indexOf(slowest), 1);
-
-    if (!snake && Array.isArray(extraSnakes) && extraSnakes.length > 0) {
-      snake = extraSnakes.shift();
-    }
-
-    if (!snake) {
-      initSnake(window.innerWidth, window.innerHeight);
-    }
+    beginShedSequence(1, slowest, true);
+    if (shedSequence?.owner === slowest) shedSequence.deathOnly = true;
 
     maxFrogsCap = Math.min(maxFrogsCap, 55);
     if (frogs.length > maxFrogsCap) {
@@ -8499,21 +8565,7 @@ doubleYolkerActive = false;
         snakeShedCount++;
         AudioMod.playSnakeShedCue?.();
 
-        // 1,2 = shed / speed up current primary snake
-        // 3 = retain the red snake and bring in a fresh green snake.
-        const cycleIndex = ((snakeShedCount - 1) % 3) + 1;
-
-        // Red cursed snakes restore at this milestone, even when already an extra snake.
-        const restorations=[snake,...extraSnakes].filter(owner=>owner &&
-          (owner.shedStage ?? (owner===snake?snakeShedStage:2))>=2 &&
-          (owner.tailConsumed || owner.selfConsume));
-        const finishCycle=()=>{if(cycleIndex===3)handleFourthShed();else beginShedSequence(cycleIndex);};
-        const restoreNext=()=>{
-          const owner=restorations.shift();
-          if(owner)beginShedSequence(2,owner,true,restoreNext);
-          else finishCycle();
-        };
-        restoreNext();
+        shedAllEligibleSnakes();
 
         nextShedTime += SHED_INTERVAL;
       }
