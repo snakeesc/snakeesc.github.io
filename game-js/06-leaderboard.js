@@ -4,12 +4,21 @@
 (function () {
   "use strict";
 
+  // Both the Android app and Android browsers share the Android board.
+  function detectLeaderboardPlatform() {
+    try { if (window.Capacitor?.getPlatform?.() === "android") return "android"; } catch (_) {}
+    return /Android/i.test(navigator.userAgent || "") || navigator.userAgentData?.platform === "Android"
+      ? "android" : "web";
+  }
+  const platform = detectLeaderboardPlatform();
+  const boardLabel = platform === "android" ? "Android leaderboard" : "Web leaderboard";
+
   // Cloudflare Worker URL
   const LEADERBOARD_URL =
-    "https://lucky-king-0d37.danielssouthworth.workers.dev/leaderboard";
+    "https://lucky-king-0d37.danielssouthworth.workers.dev/leaderboard?platform=" + platform;
 
   const RECENT_RUNS_URL =
-    "https://lucky-king-0d37.danielssouthworth.workers.dev/recent-runs";
+    "https://lucky-king-0d37.danielssouthworth.workers.dev/recent-runs?platform=" + platform;
 
   let containerEl = null;
   let scoreboardOverlay = null;
@@ -338,7 +347,7 @@
   async function fetchLeaderboard() {
     try {
       const clientId = encodeURIComponent(getOrCreatePlayerId());
-      const res = await fetch(`${LEADERBOARD_URL}?clientId=${clientId}`, {
+      const res = await fetch(`${LEADERBOARD_URL}&clientId=${clientId}`, {
         method: "GET",
         headers: { Accept: "application/json" },
       });
@@ -585,7 +594,7 @@
     header.className = "scoreboard-header";
     header.innerHTML = `
       <div class="scoreboard-title">Run summary</div>
-      <div class="scoreboard-subtitle">Leaderboard updated</div>
+      <div class="scoreboard-subtitle">${boardLabel} updated</div>
     `;
     scoreboardOverlayInner.appendChild(header);
 
@@ -1084,6 +1093,8 @@
   // EXPORT
   // --------------------------------------------------
   window.FrogGameLeaderboard = {
+    platform,
+    boardLabel,
     initLeaderboard,
     fetchLeaderboard,
     submitScoreToServer,

@@ -76,6 +76,19 @@ function makeRandomTag() {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const platform = url.searchParams.get("platform") || "web";
+    if (!["web", "android"].includes(platform)) {
+      return cors(json({ error: "invalid_platform" }, 400));
+    }
+    // Keep legacy web keys intact. Scope every board, summary and recent-run
+    // read/write to the same platform, including tag ownership and personal bests.
+    if (platform === "android") {
+      const scores = env.FROG_SCORES;
+      env = { ...env, FROG_SCORES: {
+        get: (key) => scores.get(`android:${key}`),
+        put: (key, value) => scores.put(`android:${key}`, value),
+      } };
+    }
 
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS });

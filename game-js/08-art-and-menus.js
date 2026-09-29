@@ -79,13 +79,13 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  const descriptions={
  'Royal Apprenticeship':'After selecting this upgrade, frogs gain a random special role when they earn their first crown. Frogs already crowned are unaffected. Existing roles remain. Not offered at the start of a run.',
  'Greedy Hand':'Take every offer; another snake joins. Requires Loaded Hand. 20% offer chance; once per run. Never paired with Eye for Eye.',
- 'Eye for Eye':'With 2+ snakes, kill the slowest. Survivors immediately devour its body. Frog cap drops to 55. Once per run.',
+ 'Eye for Eye':'With 2+ snakes, kill the slowest. Survivors immediately devour its body. Current frog cap is halved. Once per run.',
  'Snake Egg':'One snake gains 25% less speed per shed. Targets the fewest sheds; future snakes are unaffected.',
- 'Wild Company':'Spawn 1–3 Bull, Magnet or Poison frogs—all one random role. Luck favors more.',
+ 'Wild Company':'Spawn 2–4 Bull, Magnet or Poison frogs—all one random role. Luck favors more.',
  'Frog Scatter':'Respawn the swarm, keeping roles, crowns and stats. Triggers death effects; bonus frogs respect the cap. Once per run.',
  'Lasting Legacy':'20% chance a dying special frog passes its role to an ordinary frog.',
  'Cannibal':'Eats up to 5 ordinary frogs. Each meal: 5% shorter hop timing and higher jumps. Death returns 2–5 frogs, never more than eaten.',
- 'Poison Toad':'Confuses snakes when eaten: 10s base, affected by bonuses and resistance.',
+ 'Poison Toad':'Confuses only the snake that eats it: 10s base, affected by bonuses and resistance.',
  'Aura':'Nearby frogs hop 12% sooner and higher. Auras stack within movement caps.',
  'Lucky':'Better orb pickups and a score bonus. Cannot trigger Panic Hop from pickups.',
  'Luck':'Gain 10 luck (max 30). Improves supported chances, spawn rolls and positive buff durations.',
@@ -270,3 +270,19 @@ window.approvedUpgrades["afterglow"]="./game-assets/sprites/approved/upgrade-aft
 
 window.approvedUpgrades["ouroboros feast"]="./game-assets/sprites/approved/upgrade-ouroboros-feast-new.png";
 window.approvedUpgrades["double jump"]="./game-assets/sprites/approved/upgrade-double-jump.png";
+
+// Upgrade additions and approved crowned role artwork.
+window.approvedUpgrades["hard bargain"]="./game-assets/sprites/approved/upgrade-hard-bargain.png";
+window.approvedUpgrades["withering"]="./game-assets/sprites/approved/upgrade-withering.png";
+window.approvedUpgrades["shared misfortune"]="./game-assets/sprites/approved/upgrade-shared-misfortune.png";
+window.approvedFrogs["necromancer-crowned"]="./game-assets/sprites/approved/frog-necromancer-crowned.png";
+window.approvedFrogs["magnet-crowned"]="./game-assets/sprites/approved/frog-magnet-crowned.png";
+window.approvedFrogs["poison-crowned"]="./game-assets/sprites/approved/frog-poison-toad-crowned.png";
+window.approvedFrogs["zombie-crowned"]="./game-assets/sprites/approved/frog-zombie-crowned.png";
+window.approvedFrogs["alchemist-crowned"]="./game-assets/sprites/approved/frog-alchemist-crowned.png";
+window.approvedFrogs["cannibal-crowned"]="./game-assets/sprites/approved/frog-cannibal-crowned.png";
+window.approvedFrogs["shield-crowned"]="./game-assets/sprites/approved/frog-shield-crowned.png";
+window.approvedFrogs["aura-crowned"]="./game-assets/sprites/approved/frog-aura-crowned.png";
+window.approvedFrogs["bull-crowned"]="./game-assets/sprites/approved/frog-bull-crowned.png";
+window.approvedFrogs["lucky-crowned"]="./game-assets/sprites/approved/frog-lucky-crowned.png";
+window.approvedFrogs["champion-crowned"]="./game-assets/sprites/approved/frog-champion-crowned.png";

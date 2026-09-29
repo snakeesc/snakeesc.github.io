@@ -979,6 +979,11 @@ let greedyHandQueue = null;
   let ouroborosFeastUsed = false;
   let pairOfScissorsUsed = false;
   let epicChainPending = false;
+  let hardBargainActive = false;
+  let hardBargainBonusPending = false;
+  let witheringActive = false;
+  let sharedMisfortuneActive = false;
+  const ORB_DEBUFF_CLUSTER_RADIUS = SNAKE_SEGMENT_SIZE * 1.5;
   let secondWindActive = false;
   let secondWindUsed = false;
 
@@ -1243,12 +1248,15 @@ const MAX_LUCK = 30;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
+    ['Epic','Hard Bargain','Requires Loaded Hand and the first shed. Lose 20 frog capacity; gain one extra Common pick each shed, even with Higher Calling. Once per run.'],
+    ['Epic','Withering','Requires Brittle Scales, Lingering Hex and Snake Egg used this run. All current and future snakes permanently use Snake Shrink size and bite radius. Shrink orb outcomes become Slow. Once per run.'],
+    ['Epic','Shared Misfortune','Available with two or more snakes. Player-collected orb debuffs and their Chain Reaction effects affect all snakes. Poison Toad and Forbidden Fruit remain local.'],
     ['Common','Afterglow','Frogs spawned from expired orbs trigger those orbs at half duration.'],
     ['Common','Mutation','Frogs hop 15% faster and jump 20% higher and farther, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
-    ['Common','Wild Company','Spawn 1–3 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
+    ['Common','Wild Company','Spawn 2–4 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
-    ['Common','Second Wind','Once per run: spawn 20 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
+    ['Common','Second Wind','Once per run: spawn 25 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
     ['Common','Magnetized','Sacrifice all Magnet frogs. All frogs become slightly magnetized.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
@@ -1270,7 +1278,7 @@ const MAX_LUCK = 30;
     ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
     ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
     ['Epic','Peace of Mind','At 21+ luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
-    ['Epic','Role Draft','Choose between two roles and spawn 2–6 special frogs. Luck favors larger batches.'],
+    ['Epic','Role Draft','Choose between two roles and spawn 3–6 special frogs. Luck favors larger batches.'],
     ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
     ['Epic','Snake Egg','Targets the lowest-shed snake when selected. It gains 25% less added speed from its remaining sheds. Other and future snakes are unaffected.'],
     ['Epic','Brittle Scales','Halves snake debuff resistance.'],
@@ -1278,7 +1286,7 @@ const MAX_LUCK = 30;
     ['Epic','Greedy Hand','Requires Loaded Hand; 20% chance to appear per epic offer. Take all other offered upgrades, then another snake enters. Once per run. Never offered alongside Eye for Eye.'],
     ['Epic','Loaded Hand','Future upgrade menus offer four choices instead of three.'],
     ['Epic','Tidal Wave','Spawns as many frogs as are alive, with a minimum of 15 added frogs. Population cap still applies.'],
-    ['Epic','Eye for Eye','The slowest snake sheds, dies, and disappears. Frog cap becomes 55. Once per run.'],
+    ['Epic','Eye for Eye','The slowest snake sheds, dies, and disappears. Your current frog cap is halved (rounded down). Once per run.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
     ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
     ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
@@ -1296,7 +1304,7 @@ const MAX_LUCK = 30;
     ['Frogs','Necromancer','Turns Deathrattle revivals into Zombie Frogs. Each living Necromancer adds 2 percentage points to revival chance, within the ordinary cap.'],
     ['Frogs','Alchemist','Spawns a frog every 15–25 seconds. Luck favors shorter waits.'],
     ['Frogs','Bull Frog','Survives one bite, leaps away, and briefly avoids another bite.'],
-    ['Frogs','Poison Toad','Confuses snakes when eaten. Base duration: 10 seconds, modified by duration bonuses and resistance.'],
+    ['Frogs','Poison Toad','Confuses only the snake that eats it. Base duration: 10 seconds, modified by duration bonuses and resistance.'],
   ];
   // Discoveries survive run resets; no unlocks from merely viewing an offer.
   function guideDiscoveryKey(category, name) {
@@ -2228,7 +2236,7 @@ function snakeShed(stage, oldSnake = snake) {
 
     // Segment Count Logic
     let newSegCount = Math.round((oldSegmentEls.length || SNAKE_INITIAL_SEGMENTS) / 2);
-    if (newSegCount < SNAKE_INITIAL_SEGMENTS) newSegCount = SNAKE_INITIAL_SEGMENTS;
+    if (newSegCount < 25) newSegCount = 25;
     if (newSegCount > 50) newSegCount = 50;
 
     // Create New Head
@@ -2281,6 +2289,13 @@ function snakeShed(stage, oldSnake = snake) {
       head: { el: headEl, x: startX, y: startY, angle: oldSnake.head ? oldSnake.head.angle : 0 },
       segments,
       path,
+      orbSlow: oldSnake.orbSlow || 0,
+      orbConfuse: oldSnake.orbConfuse || 0,
+      orbShrink: oldSnake.orbShrink || 0,
+      fruitSlow: oldSnake.fruitSlow || 0,
+      fruitConfuse: oldSnake.fruitConfuse || 0,
+      fruitShrink: oldSnake.fruitShrink || 0,
+      biteSlow: oldSnake.biteSlow || 0,
       snakeEggProtected: !!oldSnake.snakeEggProtected,
       scissorsOwner: !!oldSnake.scissorsOwner,
       shedStage: stage,
@@ -2685,7 +2700,7 @@ function createFrogAt(x, y, tokenId) {
   function triggerSecondWindIfNeeded() {
     if (!secondWindActive || secondWindUsed || frogs.length < 1 || frogs.length >= 10) return;
     secondWindUsed = true;
-    spawnExtraFrogs(20);
+    spawnExtraFrogs(25);
   }
 
   function triggerGraveWave() {
@@ -2814,7 +2829,7 @@ function createFrogAt(x, y, tokenId) {
     const overcrowdingPenalty = Math.min(0.15, Math.max(0, frogs.length - 75) * 0.006);
     factor += overcrowdingPenalty;
 
-    if (snakeSlowTime > 0 || snakeObj?.fruitSlow > 0) factor *= SNAKE_SLOW_FACTOR;
+    if (snakeObj?.orbSlow > 0 || snakeObj?.biteSlow > 0 || snakeObj?.fruitSlow > 0) factor *= SNAKE_SLOW_FACTOR;
     if (snakeFrenzyTime > 0) factor *= FRENZY_SPEED_FACTOR;
 
     return factor;
@@ -2832,8 +2847,8 @@ function createFrogAt(x, y, tokenId) {
     return 4;
   }
 
-  function getSnakeEatRadius() {
-    return snakeShrinkTime > 0 ? 24 : SNAKE_EAT_RADIUS_BASE;
+  function getSnakeEatRadius(snakeObj = snake) {
+    return isSnakeShrunk(snakeObj) ? 24 : SNAKE_EAT_RADIUS_BASE;
   }
 
   function getSnakeResistance() {
@@ -3176,7 +3191,8 @@ function updateFrogRoleEmoji(frog) {
  if (!frog || !frog.el) return;
  frog.el.querySelectorAll('.frog-role-emoji,.pp-frog-badge').forEach(e=>e.remove());frog.cannibalIcon=null;
  const roles=[['isPoisonToad','poison'],['isBull','bull'],['isNecromancer','necromancer'],['isAlchemist','alchemist'],['isZombie','zombie'],['isCannibal','cannibal'],['isAura','aura'],['hasPermaShield','shield'],['isMagnet','magnet'],['isLucky','lucky']];
- const role=roles.find(([flag])=>frog[flag]);const key=role?(role[1]==='cannibal'?'cannibal-'+Math.min(5,Math.max(0,frog.cannibalMeals||0)):role[1]):(frog.starLevel>0?'crowned':'');
+ const role=roles.find(([flag])=>frog[flag]);let key=role?(role[1]==='cannibal'?'cannibal-'+Math.min(5,Math.max(0,frog.cannibalMeals||0)):role[1]):(frog.starLevel>0?'crowned':'');
+ if (role && frog.starLevel > 0 && window.approvedFrogs?.[role[1]+'-crowned']) key=role[1]+'-crowned';
  if (role) {
    const names={poison:'Poison Toad',bull:'Bull Frog',necromancer:'Necromancer',alchemist:'Alchemist',zombie:'Zombie',cannibal:'Cannibal',aura:'Aura',shield:'Shield',magnet:'Magnet',lucky:'Lucky'};
    discoverGuideEntry('Frogs',names[role[1]]);
@@ -3210,9 +3226,10 @@ function grantStarUpgrade(frog) {
 
   refreshFrogPermaGlow(frog);
   updateFrogRoleEmoji(frog);
-  if (oldLevel === 0 && royalApprenticeshipActive) grantRoyalApprenticeshipRole(frog);
+  const gainsRole = oldLevel === 0 && royalApprenticeshipActive && !frogHasSpecialRole(frog);
+  if (gainsRole) grantRoyalApprenticeshipRole(frog);
   showCrownUpgrade(frog);
-  AudioMod.playFrogCrowned?.();
+  if (!gainsRole) AudioMod.playFrogCrowned?.();
 }
 
 function frogHasSpecialRole(frog) {
@@ -3263,7 +3280,8 @@ function getRandomTriggeredOrbBuffType(excluded = []) {
   ];
 
   const eligible = pool.filter(type => !excluded.includes(type) && !(peaceOfMindActive && type === "panicHop"));
-  return chooseOrbTypeWithLuck(eligible);
+  const chosen = chooseOrbTypeWithLuck(eligible);
+  return witheringActive && chosen === "snakeShrink" ? "snakeSlow" : chosen;
 }
 
 function triggerLuckyRoll() {
@@ -3289,7 +3307,7 @@ function promoteAllFrogs() {
 
 function triggerChainReactionBonus(frog) {
   const buffType = getRandomTriggeredOrbBuffType();
-  applyBuff(buffType, frog); // applyBuff applies Luck once.
+  applyBuff(buffType, frog, 1, false, "collectedOrb"); // Triggered by this player pickup.
 }
 
 function spawnTidalWave() {
@@ -3389,8 +3407,11 @@ function getRoleDraftPool() {
 function applySpecificRoleToFrog(frog, roleId) {
   if (!frog) return;
 
+  const crowns = Math.max(0, Math.min(3, frog.starLevel || 0));
   clearAllFrogRoles(frog);
-  frog.starLevel = 0;
+  frog.starLevel = crowns;
+  frog.speedMult = 1 - crowns * .12;
+  frog.jumpMult = 1 + crowns * .12;
 
   switch (roleId) {
     case "poison": grantPoisonToad(frog); break;
@@ -3431,7 +3452,7 @@ function getTwoRandomRoleDraftChoices() {
 }
 
 function applyRoleDraft(roleId) {
-  spawnRoleBatch(roleId, 2, 6);
+  spawnRoleBatch(roleId, 3, 6);
 }
 
 function showRoleDraftOverlayChoices() {
@@ -3732,7 +3753,7 @@ function consumeReachedTail(obj, previousHead, dt) {
   const dx=obj.head.x-previousHead.x,dy=obj.head.y-previousHead.y;
   const length2=dx*dx+dy*dy;
   const t=length2?Math.max(0,Math.min(1,((tail.x-previousHead.x)*dx+(tail.y-previousHead.y)*dy)/length2)):0;
-  const shrink=(snakeShrinkTime>0 || obj.fruitShrink>0)?0.75:1;
+  const shrink=isSnakeShrunk(obj)?0.75:1;
   if(Math.hypot(tail.x-previousHead.x-t*dx,tail.y-previousHead.y-t*dy)>SNAKE_SEGMENT_SIZE*1.10*shrink)return;
   // Take only tail pieces that physically meet the mouth.
   for (let i=0;i<3 && victim.segments.length>keep;i++) {
@@ -3894,6 +3915,7 @@ function computeDeathRattleChanceForFrog(frog) {
     // Snake-specific protections
     // -----------------------------
     if (source === "snake") {
+      if (frogShieldTime > 0) return false;
       if ((frog.bullEscapeUntil || 0) > elapsedTime) return false;
       if (frog.isBull && frog.bullArmor) {
         frog.bullArmor = false;
@@ -3923,7 +3945,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
       // 🩸 Toxic Blood (Epic Upgrade)
       if (toxicBloodActive) {
-        snakeSlowTime += 0.5; // Stumbles the snake slightly on every bite
+        if (bitingSnake) bitingSnake.biteSlow = (bitingSnake.biteSlow || 0) + 0.5;
       }
     }
 
@@ -3936,7 +3958,7 @@ function computeDeathRattleChanceForFrog(frog) {
     }
 
     if (source === "snake" && frog.isPoisonToad) {
-      applyBuff("snakeConfuse", null);
+      applyBuff("snakeConfuse", null, 1, false, "poisonToad", bitingSnake);
     }
     if (source !== "eyeForEye") tryLastingLegacy(frog, source);
 
@@ -4079,7 +4101,58 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
 
-  function applyBuff(type, frog, durationMultiplier = 1, fixedDuration = false) {
+  function livingSnakes() {
+    return [snake, ...extraSnakes].filter(s => s && s.head);
+  }
+
+  function isSnakeShrunk(s, mainMenu = false) {
+    return (!mainMenu && witheringActive) || (s?.orbShrink || 0) > 0 || (s?.fruitShrink || 0) > 0;
+  }
+
+  function applySnakeDebuff(type, duration, frog, source, targetSnake, origin) {
+    const field = {snakeSlow:'orbSlow', snakeConfuse:'orbConfuse', snakeShrink:'orbShrink'}[type];
+    if (!field) return;
+    const all = livingSnakes();
+    let targets;
+    if (targetSnake) targets = [targetSnake];
+    else if (source === 'collectedOrb' && sharedMisfortuneActive) targets = all;
+    else {
+      const point = origin || (frog ? {x:frog.x+FROG_SIZE/2,y:frog.baseY+FROG_SIZE/2}
+        : mouse.active ? {x:mouse.x,y:mouse.y}
+        : frogs.length ? {x:frogs[0].x+FROG_SIZE/2,y:frogs[0].baseY+FROG_SIZE/2}
+        : {x:window.innerWidth/2,y:window.innerHeight/2});
+      const nearest = all.reduce((best, s) => !best ||
+        Math.hypot(s.head.x+SNAKE_SEGMENT_SIZE/2-point.x,s.head.y+SNAKE_SEGMENT_SIZE/2-point.y) <
+        Math.hypot(best.head.x+SNAKE_SEGMENT_SIZE/2-point.x,best.head.y+SNAKE_SEGMENT_SIZE/2-point.y) ? s : best, null);
+      targets = nearest ? all.filter(s => s === nearest ||
+        Math.hypot(s.head.x-nearest.head.x,s.head.y-nearest.head.y) <= ORB_DEBUFF_CLUSTER_RADIUS) : [];
+    }
+    for (const s of targets) s[field] = Math.max(s[field] || 0, duration);
+  }
+
+  function canOfferWithering() {
+    return !witheringActive && brittleScalesActive && lingeringHexActive && bruisedEggActive;
+  }
+
+  function activateWithering() {
+    witheringActive = true;
+    // Replace existing pickups as well as all future Shrink outcomes.
+    for (const orb of orbs) if (orb.type === 'snakeShrink') {
+      orb.type = 'snakeSlow';
+      orb.el.style.boxShadow = '0 0 14px #ff6b6b';
+    }
+  }
+
+  function applyHardBargain() {
+    if (hardBargainActive || maxFrogsCap <= 20) return;
+    hardBargainActive = true;
+    maxFrogsCap -= 20;
+    if (frogs.length > maxFrogsCap) killRandomFrogs(frogs.length-maxFrogsCap, 'eyeForEye');
+    if (upgradeOverlayContext === 'shed') hardBargainBonusPending = true;
+  }
+
+  function applyBuff(type, frog, durationMultiplier = 1, fixedDuration = false, source = 'triggered', targetSnake = null, origin = null) {
+    if (witheringActive && type === 'snakeShrink') type = 'snakeSlow';
     const isLuckyCollector = frog && frog.isLucky;
     // Lucky collectors reroll negative orb results, including chain reactions.
     if ((isLuckyCollector || peaceOfMindActive) && type === "panicHop") {
@@ -4113,17 +4186,12 @@ function computeDeathRattleChanceForFrog(frog) {
       }
 
       case "snakeSlow":
-        snakeSlowTime = Math.max(snakeSlowTime, SNAKE_SLOW_DURATION * durationScale);
-        snakeSlowCueTime = Math.max(snakeSlowCueTime, SNAKE_SLOW_DURATION * durationScale);
-        break;
-
       case "snakeConfuse":
-        snakeConfuseTime = Math.max(snakeConfuseTime, SNAKE_CONFUSE_DURATION * durationScale);
+      case "snakeShrink": {
+        const base = {snakeSlow:SNAKE_SLOW_DURATION, snakeConfuse:SNAKE_CONFUSE_DURATION, snakeShrink:SNAKE_SHRINK_DURATION}[type];
+        applySnakeDebuff(type, base * durationScale, frog, source, targetSnake, origin);
         break;
-
-      case "snakeShrink":
-        snakeShrinkTime = Math.max(snakeShrinkTime, SNAKE_SHRINK_DURATION * durationScale);
-        break;
+      }
 
       case "frogShield":
         frogShieldTime = Math.max(frogShieldTime, FROG_SHIELD_DURATION * durationScale);
@@ -4531,6 +4599,7 @@ function computeDeathRattleChanceForFrog(frog) {
       type = chooseOrbTypeWithLuck(availableTypes);
     }
 
+    if (witheringActive && type === "snakeShrink") type = "snakeSlow";
     if (typeof x !== "number" || typeof y !== "number") {
       const marginX = 24;
       const marginY = 48;
@@ -4723,7 +4792,7 @@ function computeDeathRattleChanceForFrog(frog) {
         if (orb.type === "permaFrog") {
           grantOrbCrowning(collectedBy);
         } else {
-          applyBuff(orb.type, collectedBy);
+          applyBuff(orb.type, collectedBy, 1, false, "collectedOrb", null, {x:orb.x,y:orb.y});
 
           if (chainReactionActive && Math.random() < getLuckBoostedChance(0.15, 0.15)) {
             triggerChainReactionBonus(collectedBy);
@@ -4986,7 +5055,7 @@ function computeDeathRattleChanceForFrog(frog) {
     beginShedSequence(1, slowest, true);
     if (shedSequence?.owner === slowest) shedSequence.deathOnly = true;
 
-    maxFrogsCap = Math.min(maxFrogsCap, 55);
+    maxFrogsCap = Math.max(1, Math.floor(maxFrogsCap / 2));
     if (frogs.length > maxFrogsCap) {
       killRandomFrogs(frogs.length - maxFrogsCap, "eyeForEye");
     }
@@ -5101,9 +5170,9 @@ function samplePathAtDistance(path, startIdx, dist) {
   }
   function updateSnakeDebuffCue(obj, dt, active, size) {
     const head = obj.head;
-    const confused = active && (snakeConfuseTime > 0 || obj.fruitConfuse > 0);
-    const slowed = active && ((snakeSlowTime > 0 && snakeSlowCueTime > 0) || obj.fruitSlow > 0);
-    const shrunk = active && (snakeShrinkTime > 0 || obj.fruitShrink > 0);
+    const confused = active && (obj.orbConfuse > 0 || obj.fruitConfuse > 0);
+    const slowed = active && (obj.orbSlow > 0 || obj.biteSlow > 0 || obj.fruitSlow > 0);
+    const shrunk = active && isSnakeShrunk(obj);
     let c = debuffCues.get(head.el);
     if (!c && !confused && !slowed && !shrunk) return;
     if (!c) {
@@ -5160,7 +5229,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!snakeObj) return;
     snakeObj.fruitCooldown=Math.max(0,(snakeObj.fruitCooldown||0)-dt);
     const fruitTick=dt*(1+getSnakeResistance());
-    for(const key of ['fruitSlow','fruitConfuse','fruitShrink']) snakeObj[key]=Math.max(0,(snakeObj[key]||0)-fruitTick);
+    for(const key of ['fruitSlow','fruitConfuse','fruitShrink','orbSlow','orbConfuse','orbShrink','biteSlow']) snakeObj[key]=Math.max(0,(snakeObj[key]||0)-fruitTick);
     if (snakeObj.selfConsume && updateSelfConsumption(snakeObj,dt)) return;
 
     const frogList = Array.isArray(opts.frogsList) ? opts.frogsList : frogs;
@@ -5171,7 +5240,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const head = snakeObj.head;
     if (!head) return;
 
-    const shrinkScale = (snakeShrinkTime > 0 || snakeObj.fruitShrink > 0) ? 0.75 : 1.0;
+    const shrinkScale = isSnakeShrunk(snakeObj, isMainMenu) ? 0.75 : 1.0;
 
     // 1. TARGETING
     let targetFrog = null;
@@ -5236,7 +5305,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       desiredAngle=directAngle+consume.turnSign*arc;
     } else if (snakeObj.entering) {
       desiredAngle = snakeObj.entryAngle;
-    } else if (snakeConfuseTime > 0 || snakeObj.fruitConfuse > 0) {
+    } else if (snakeObj.orbConfuse > 0 || snakeObj.fruitConfuse > 0) {
       desiredAngle = panicAttackActive && !isMainMenu && targetFrog
         ? Math.atan2(head.y - (targetFrog.baseY + FROG_SIZE / 2), head.x - (targetFrog.x + FROG_SIZE / 2))
         : head.angle + (Math.random() - 0.5) * Math.PI;
@@ -5373,12 +5442,13 @@ function samplePathAtDistance(path, startIdx, dist) {
     consumeReachedTail(snakeObj,previousHead,dt);
 
     if (!isMainMenu && forbiddenFruitActive && !snakeObj.entering && !snakeObj.fruitCooldown) {
-      const radius=(snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius())+ORB_RADIUS;
+      const radius=getSnakeEatRadius(snakeObj)+ORB_RADIUS;
       const idx=orbs.findIndex(o=>Math.hypot(o.x+ORB_RADIUS-head.x-SNAKE_SEGMENT_SIZE/2,o.y+ORB_RADIUS-head.y-SNAKE_SEGMENT_SIZE/2)<radius);
       if(idx>=0){
         const orb=orbs.splice(idx,1)[0];orb.el.remove();snakeObj.fruitCooldown=3;
         const effects=[['fruitSlow',SNAKE_SLOW_DURATION],['fruitConfuse',SNAKE_CONFUSE_DURATION],['fruitShrink',SNAKE_SHRINK_DURATION]];
-        const [key,duration]=effects[Math.floor(Math.random()*effects.length)];
+        let [key,duration]=effects[Math.floor(Math.random()*effects.length)];
+        if (witheringActive && key === 'fruitShrink') { key='fruitSlow'; duration=SNAKE_SLOW_DURATION; }
         snakeObj[key]=Math.max(snakeObj[key]||0,duration*.5*(lingeringHexActive ? 1.15 : 1));playSnakeMunch();
       }
     }
@@ -5386,7 +5456,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const headCx = head.x + SNAKE_SEGMENT_SIZE / 2;
     const headCy = head.y + SNAKE_SEGMENT_SIZE / 2;
     // Pull frog bites in slightly without changing orb contact or body eating.
-    const eatR2 = Math.pow((snakeObj.fruitShrink > 0 ? 24 : getSnakeEatRadius()) - 2, 2);
+    const eatR2 = Math.pow(getSnakeEatRadius(snakeObj) - 2, 2);
 
     for (let i = frogList.length - 1; i >= 0; i--) {
       const f = frogList[i];
@@ -5512,13 +5582,13 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (nightBloomActive && !afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Frogs spawned from expired orbs <span class=menu-number-accent data-card-accent>trigger them</span>", apply:()=>{afterglowActive=true;}});
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
 
-    upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>1–3</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],1,3)});
+    upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>2–4</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],2,4)});
     if (!lastingLegacyActive) upgrades.push({
       id:"lastingLegacy", label:"Lasting Legacy<br><span>20%</span> chance to pass a special frog’s role on death",
       apply:()=>{lastingLegacyActive=true;}
     });
     if (!secondWindUsed && !secondWindActive) upgrades.push({
-      id:"secondWind", label:"Second Wind<br>Below 10 frogs? Spawn <span>20</span> now or later",
+      id:"secondWind", label:"Second Wind<br>Below 10 frogs? Spawn <span>25</span> now or later",
       apply:()=>{ secondWindActive=true; triggerSecondWindIfNeeded(); }
     });
 
@@ -5689,6 +5759,15 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!hardBargainActive && extraUpgradeOptionActive && snakeShedCount >= 1 && maxFrogsCap > 20) upgrades.push({
+      id:"hardBargain", label:"Hard Bargain<br>−20 frog cap. +1 Common pick per shed.", apply:applyHardBargain
+    });
+    if (canOfferWithering()) upgrades.push({
+      id:"withering", label:"Withering<br>Permanently shrink all snakes.", apply:activateWithering
+    });
+    if (!sharedMisfortuneActive && livingSnakes().length >= 2) upgrades.push({
+      id:"sharedMisfortune", label:"Shared Misfortune<br>Collected orb debuffs affect all snakes.", apply:()=>{sharedMisfortuneActive=true;}
+    });
     if (!pairOfScissorsUsed && getLargestCurseSnake()?.segments.length >= 8) {
       upgrades.push({
         id:"pairOfScissors",
@@ -5709,14 +5788,14 @@ function samplePathAtDistance(path, startIdx, dist) {
       apply:applyPeaceOfMind
     });
     if (!eyeForEyeUsed && (snake ? 1 : 0) + extraSnakes.filter(Boolean).length >= 2) {
-      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. Frog cap becomes <span>55</span>.", apply:applyEyeForAnEye});
+      upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. <span>Halve</span> your frog cap.", apply:applyEyeForAnEye});
     }
 
     if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>When a frog is crowned, it gains a <span class=menu-number-accent data-card-accent>random role</span>", apply:activateRoyalApprenticeship});
 
     upgrades.push({
       id: "roleDraft",
-      label: `🎭 Role Draft<br>Choose a role. Spawn <span style="color:${epicTitleColor};">2–6</span> special frogs`,
+      label: `🎭 Role Draft<br>Choose a role. Spawn <span style="color:${epicTitleColor};">3–6</span> special frogs`,
       opensRoleDraft: true,
       apply: () => {
         roleDraftUsed = true;
@@ -6291,27 +6370,46 @@ function closeAnimatedOverlay(overlayEl) {
     const panel = howToOverlay.querySelector(".frog-panel");
     if (!panel) return;
 
-    panel.innerHTML = `
-      <div class="frog-panel-title">How to Play</div>
-      <p class="ui-help-intro">Keep your frogs alive. Keep moving.</p>
-      <div class="ui-help-steps">
-        <section><img src="game-assets/sprites/approved/frog-crowned.png" alt=""><div><h3>Lead your frogs</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
-        <section><img src="game-assets/sprites/snake-head.png" alt=""><div><h3>Stay ahead</h3><p>The snake chases your frogs. Lose them all and the run ends.</p></div></section>
-        <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
-      </div>
-      <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
-      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back to menu</button></div>
-    `;
+    let step = 0;
+    const steps = [
+      ["Lead your frogs", "Move your mouse, or touch and drag. Your frogs hop toward that point.", "frog-crowned.png"],
+      ["Keep them alive", "Keep your frogs away from snake heads. If you lose every frog, the run ends.", null],
+      ["Collect orbs", "Guide frogs onto glowing orbs for points and temporary powers. Keep moving as you collect them.", "upgrade-orb-whisperer.png"],
+      ["Choose your upgrades", "Your first upgrade comes before the action starts. More choices arrive as you collect orbs and survive snake sheds. Pick a card to build your run.", "upgrade-loaded-hand.png"],
+    ];
+    function renderStep() {
+      const [title, copy, icon] = steps[step];
+      panel.innerHTML = `
+        <div class="frog-panel-title" id="tutorialTitle">${title}</div>
+        <p class="ui-help-intro" aria-live="polite">Quick guide · ${step + 1} of ${steps.length}</p>
+        <div class="ui-help-steps"><section>
+          <img src="${icon ? 'game-assets/sprites/approved/' + icon : 'game-assets/sprites/snake-head.png'}" alt="">
+          <div><p>${copy}</p></div>
+        </section></div>
+        <p class="ui-help-note">You can open How to Play again from the menu.</p>
+        <div class="frog-panel-footer">
+          ${step ? '<button id="tutorialBack" class="frog-btn frog-btn-secondary">Back</button>' : ''}
+          <button id="tutorialNext" class="frog-btn">${step === steps.length - 1 ? (startAfterHowTo ? 'Choose my upgrade' : 'Done') : 'Next'}</button>
+          <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">${startAfterHowTo ? 'Skip guide' : 'Back to menu'}</button>
+        </div>`;
+      panel.querySelector('#tutorialBack')?.addEventListener('click', () => { step--; renderStep(); });
+      panel.querySelector('#tutorialNext').addEventListener('click', () => {
+        if (step < steps.length - 1) { step++; renderStep(); }
+        else hideHowToOverlay();
+      });
+      panel.querySelector('#howToCloseBtn').addEventListener('click', hideHowToOverlay);
+      panel.querySelector('#tutorialNext').focus();
+    }
+    howToOverlay.setAttribute('role', 'dialog');
+    howToOverlay.setAttribute('aria-modal', 'true');
+    howToOverlay.setAttribute('aria-labelledby', 'tutorialTitle');
+    renderStep();
 
-    const closeBtn = document.getElementById("howToCloseBtn");
-    if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
-
-
-    rememberHowTo();
     openAnimatedOverlay(howToOverlay);
   }
 
   function hideHowToOverlay() {
+    rememberHowTo();
     if (howToOverlay) {
       closeAnimatedOverlay(howToOverlay);
     }
@@ -6354,7 +6452,7 @@ function closeAnimatedOverlay(overlayEl) {
 
     const commonUpgrades = [
       { title: "Lasting Legacy", desc: "Dying special frogs have a 20% base chance to pass their role to an ordinary frog." },
-      { title: "Second Wind", desc: "When your swarm drops below 10, spawn 20 frogs once, now or later." },
+      { title: "Second Wind", desc: "When your swarm drops below 10, spawn 25 frogs once, now or later." },
       { title: "Promotion", desc: "Promotes 5–10 random frogs by one crown level. Frogs already at the crown cap are skipped." },
       { title: "Magnetized", desc: `With at least 3 Magnet frogs alive, sacrifice all Magnet frogs to let every remaining and future frog pull orbs within ${statHighlight(`${MAGNETIZED_PULL_RANGE}px`)}. Once per run.` },
       { title: "Mutation", desc: `${fmtPct(speedPerPickPct)} faster hops and ${fmtPct(jumpPerPickPct)} higher and farther jumps per pick (up to two picks).` },
@@ -6385,7 +6483,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Orb Specialist", desc: `Every orb guarantees ${statHighlight("1")} frog; Orb Collector rolls can add more.` },
       { title: "Fragile Reality", desc: `Doubles buff duration caps but halves orb spawn speed going forward.` },
       { title: "Frog Scatter", desc: `Respawn every frog with roles and crowns intact; trigger death effects.` },
-      { title: "Eye for an Eye", desc: `Kill the slowest snake and half your frogs; frog cap drops to ${statHighlight(50)}.` }
+      { title: "Eye for an Eye", desc: `Kill the slowest snake and half your frogs; your current frog cap is halved.` }
     ];
 
     const legendaryUpgrades = [
@@ -6536,11 +6634,11 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
       { type: "survival", label: "⚱️ Soul Offering", desc: "Deathrattle revivals leave an orb." },
-      { type: "survival", label: "💨 Second Wind", desc: "Below 10 frogs, spawn 20 immediately on selection or when you later fall below 10 (once per run)." },
+      { type: "survival", label: "💨 Second Wind", desc: "Below 10 frogs, spawn 25 immediately on selection or when you later fall below 10 (once per run)." },
       { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
       { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 7–15 frogs. Luck favors more." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
-      { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 2–6 special frogs." },
+      { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 3–6 special frogs." },
       { type: "role", label: "🥇 Promotion", desc: "Promote 5–10 random eligible frogs by one crown level." },
       { type: "role", label: "🌊 Tidal Wave", desc: "Instantly spawn frogs equal to the number currently alive." },
       { type: "role", label: "🃏 Loaded Hand", desc: "Future upgrade screens show 4 choices instead of 3." }
@@ -6635,6 +6733,8 @@ function closeAnimatedOverlay(overlayEl) {
     if (!leaderboardOverlay) initLeaderboardOverlay();
     if (!leaderboardOverlay) return;
 
+    const boardTitle = leaderboardOverlay.querySelector(".pp-heading, .frog-panel-title");
+    if (boardTitle) boardTitle.textContent = LMod.boardLabel || "Leaderboard";
     const content = document.getElementById("leaderboardContent");
     if (!content) return;
 
@@ -8104,7 +8204,7 @@ function startRunFromMenu() {
     if (howToOverlay && howToOverlay.style.display === "flex") {
       hideMainMenu();
       const button = document.getElementById("howToCloseBtn");
-      if (button) { button.textContent = "Got it — let's play"; button.focus(); }
+      document.getElementById("tutorialNext")?.focus();
       return;
     }
     startAfterHowTo = false;
@@ -8164,6 +8264,13 @@ function startRunFromMenu() {
 
       gamePaused = true;
       openUpgradeOverlay("epic", {context:"shed"});
+      return;
+    }
+
+    if (!gameOver && hardBargainBonusPending && !epicChainPending && higherCallingPicksRemaining === 0) {
+      hardBargainBonusPending = false;
+      if (currentUpgradeOverlayMode === "epic") nextEpicChoiceTime = elapsedTime + 180;
+      openUpgradeOverlay("normal", {context:"hardBargain"});
       return;
     }
 
@@ -8412,6 +8519,10 @@ snakeEatingOldBody = false;
 snakeOldBodySpeedBonusPending = false;
     snakeEggPending          = false;
     snakeEggUsed = false;
+    hardBargainActive = false;
+    hardBargainBonusPending = false;
+    witheringActive = false;
+    sharedMisfortuneActive = false;
     secondWindActive = false;
     secondWindUsed = false;
 doubleYolkerActive = false;
@@ -8579,6 +8690,7 @@ doubleYolkerActive = false;
         // Epic chain: normal -> epic back-to-back at epic marks
         if (elapsedTime >= nextEpicChoiceTime &&
                  elapsedTime >= nextPermanentChoiceTime) {
+          hardBargainBonusPending = hardBargainActive;
           if(higherCallingActive){
             epicChainPending=false;higherCallingPicksRemaining=2;
             openUpgradeOverlay("epic",{context:"shed"});
