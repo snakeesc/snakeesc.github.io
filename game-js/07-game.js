@@ -6338,18 +6338,7 @@ function closeAnimatedOverlay(overlayEl) {
     }
   }
 
-  const FIRST_PLAY_HELP_KEY = "escapeSnake.howToSeen.v1";
-  let howToSeenThisSession = false;
   let startAfterHowTo = false;
-  function hasSeenHowTo() {
-    if (howToSeenThisSession) return true;
-    try { return localStorage.getItem(FIRST_PLAY_HELP_KEY) === "1"; }
-    catch (_) { return false; }
-  }
-  function rememberHowTo() {
-    howToSeenThisSession = true;
-    try { localStorage.setItem(FIRST_PLAY_HELP_KEY, "1"); } catch (_) {}
-  }
   function initHowToOverlay() {
     if (howToOverlay) return;
     howToOverlay = document.getElementById("howToOverlay");
@@ -6370,46 +6359,32 @@ function closeAnimatedOverlay(overlayEl) {
     const panel = howToOverlay.querySelector(".frog-panel");
     if (!panel) return;
 
-    let step = 0;
-    const steps = [
-      ["Lead your frogs", "Move your mouse, or touch and drag. Your frogs hop toward that point.", "frog-crowned.png"],
-      ["Keep them alive", "Keep your frogs away from snake heads. If you lose every frog, the run ends.", null],
-      ["Collect orbs", "Guide frogs onto glowing orbs for points and temporary powers. Keep moving as you collect them.", "upgrade-orb-whisperer.png"],
-      ["Choose your upgrades", "Your first upgrade comes before the action starts. More choices arrive as you collect orbs and survive snake sheds. Pick a card to build your run.", "upgrade-loaded-hand.png"],
-    ];
-    function renderStep() {
-      const [title, copy, icon] = steps[step];
-      panel.innerHTML = `
-        <div class="frog-panel-title" id="tutorialTitle">${title}</div>
-        <p class="ui-help-intro" aria-live="polite">Quick guide · ${step + 1} of ${steps.length}</p>
-        <div class="ui-help-steps"><section>
-          <img src="${icon ? 'game-assets/sprites/approved/' + icon : 'game-assets/sprites/snake-head.png'}" alt="">
-          <div><p>${copy}</p></div>
-        </section></div>
-        <p class="ui-help-note">You can open How to Play again from the menu.</p>
-        <div class="frog-panel-footer">
-          ${step ? '<button id="tutorialBack" class="frog-btn frog-btn-secondary">Back</button>' : ''}
-          <button id="tutorialNext" class="frog-btn">${step === steps.length - 1 ? (startAfterHowTo ? 'Choose my upgrade' : 'Done') : 'Next'}</button>
-          <button id="howToCloseBtn" class="frog-btn frog-btn-secondary">${startAfterHowTo ? 'Skip guide' : 'Back to menu'}</button>
-        </div>`;
-      panel.querySelector('#tutorialBack')?.addEventListener('click', () => { step--; renderStep(); });
-      panel.querySelector('#tutorialNext').addEventListener('click', () => {
-        if (step < steps.length - 1) { step++; renderStep(); }
-        else hideHowToOverlay();
-      });
-      panel.querySelector('#howToCloseBtn').addEventListener('click', hideHowToOverlay);
-      panel.querySelector('#tutorialNext').focus();
-    }
-    howToOverlay.setAttribute('role', 'dialog');
-    howToOverlay.setAttribute('aria-modal', 'true');
-    howToOverlay.setAttribute('aria-labelledby', 'tutorialTitle');
-    renderStep();
+    panel.innerHTML = `
+      <div class="frog-panel-title">How to Play</div>
+      <p class="ui-help-intro">Keep your frogs alive. Keep moving.</p>
+      <div class="ui-help-steps">
+        <section><img src="game-assets/sprites/approved/frog-crowned.png" alt=""><div><h3>Lead your frogs</h3><p>Move your mouse, or touch and drag. Your frogs follow you.</p></div></section>
+        <section><img src="game-assets/sprites/snake-head.png" alt=""><div><h3>Stay ahead</h3><p>The snake chases your frogs. Lose them all and the run ends.</p></div></section>
+        <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
+      </div>
+      <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
+      <div class="frog-panel-footer"><button id="replayTutorialBtn" class="frog-btn frog-btn-secondary">Replay tutorial</button><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back to menu</button></div>
+    `;
 
+    const closeBtn = document.getElementById("howToCloseBtn");
+    if (closeBtn) closeBtn.addEventListener("click", hideHowToOverlay);
+
+
+    panel.querySelector('#replayTutorialBtn')?.addEventListener('click', () => {
+      window.FrogGameTutorial?.requestReplay();
+      startAfterHowTo = false;
+      hideHowToOverlay();
+      startNewRun();
+    });
     openAnimatedOverlay(howToOverlay);
   }
 
   function hideHowToOverlay() {
-    rememberHowTo();
     if (howToOverlay) {
       closeAnimatedOverlay(howToOverlay);
     }
@@ -6734,7 +6709,7 @@ function closeAnimatedOverlay(overlayEl) {
     if (!leaderboardOverlay) return;
 
     const boardTitle = leaderboardOverlay.querySelector(".pp-heading, .frog-panel-title");
-    if (boardTitle) boardTitle.textContent = LMod.boardLabel || "Leaderboard";
+    if (boardTitle) boardTitle.textContent = "LEADERBOARD";
     const content = document.getElementById("leaderboardContent");
     if (!content) return;
 
@@ -8153,6 +8128,7 @@ function initUpgradeOverlay() {
   }
 
 function startNewRun() {
+  window.FrogGameTutorial?.cancel();
   clearScissorsAndOldSnakeState();
   hideMainMenu();
 
@@ -8193,22 +8169,18 @@ function startNewRun() {
 
   syncAudioMuteState();
   openFirstUpgradeSelection();
+  window.FrogGameTutorial?.begin({
+    isPaused: () => gamePaused,
+    setPaused: value => { gamePaused = value; },
+    isOver: () => gameOver || mainMenuActive,
+    upgrade: () => upgradeOverlay?.querySelector('.frog-upgrade-choice'),
+    frog: () => frogs.find(f => f.el?.isConnected)?.el,
+    snake: () => snake?.head?.el,
+    orb: () => orbs.find(o => o.el?.isConnected)?.el,
+  });
 }
 
 function startRunFromMenu() {
-  if (startAfterHowTo) return;
-  const firstRun = (loadDashboardStats().totalRuns || 0) === 0;
-  if (firstRun && !hasSeenHowTo()) {
-    startAfterHowTo = true;
-    showHowToOverlay();
-    if (howToOverlay && howToOverlay.style.display === "flex") {
-      hideMainMenu();
-      const button = document.getElementById("howToCloseBtn");
-      document.getElementById("tutorialNext")?.focus();
-      return;
-    }
-    startAfterHowTo = false;
-  }
   startNewRun();
 }
 
@@ -8291,6 +8263,7 @@ function startRunFromMenu() {
         nextEpicChoiceTime = elapsedTime + 180;
       }
     }
+    window.FrogGameTutorial?.afterUpgrade();
   }
 
   // --------------------------------------------------
@@ -8305,6 +8278,7 @@ function startRunFromMenu() {
   }
 
   async function endGame() {
+    window.FrogGameTutorial?.cancel();
     if (pauseMenu) pauseMenu.style.display = "none";
     clearEventVisuals();
     clearShedSequence();
@@ -8722,6 +8696,7 @@ doubleYolkerActive = false;
     }
 
     if(!gameOver && !gamePaused)updateEventVisuals(dt);
+    window.FrogGameTutorial?.tick();
     updateHUD();
     updateBuffsBar();
     updateStatsPanel();

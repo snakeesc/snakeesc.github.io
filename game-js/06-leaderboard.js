@@ -11,7 +11,7 @@
       ? "android" : "web";
   }
   const platform = detectLeaderboardPlatform();
-  const boardLabel = platform === "android" ? "Android leaderboard" : "Web leaderboard";
+  const boardLabel = "Leaderboard";
 
   // Cloudflare Worker URL
   const LEADERBOARD_URL =

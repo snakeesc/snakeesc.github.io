@@ -137,3 +137,16 @@
 @media(prefers-reduced-motion:reduce){
  #frog-game .frog-orb::after{animation:none!important;opacity:.8}
 }
+
+/* In-run tutorial bubbles; coordinates follow the game's viewport scaling. */
+#runTutorial{position:fixed;inset:0;z-index:2147483000;isolation:isolate;touch-action:none;font-family:ReferencePixel,monospace;}
+#runTutorial .tutorial-pointer{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+#runTutorial line{stroke:#fff3c4;stroke-width:4;stroke-linecap:round;}
+#runTutorial .tutorial-ring{position:absolute;border:3px solid #fff3c4;border-radius:8px;box-shadow:0 0 0 3px #214a35;pointer-events:none;box-sizing:border-box;}
+#runTutorial .tutorial-bubble{position:absolute;box-sizing:border-box;width:390px;max-width:calc(100% - 32px);max-height:calc(100% - 32px);overflow:auto;background:#fff3d0;color:#153f2c;border:3px solid #284f35;border-radius:9px;padding:18px 20px;box-shadow:0 5px 0 #163926;font-size:27px;line-height:1.2;}
+#runTutorial p{margin:0 0 16px;}
+#runTutorial footer{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+#runTutorial button{font:inherit;cursor:pointer;border:0;border-radius:7px;padding:10px 14px;background:#28563c;color:#fff3d0;min-height:44px;}
+#runTutorial [data-skip]{background:transparent;color:#35563f;font-size:.8em;}
+#runTutorial button:focus-visible{outline:3px solid #007d91;outline-offset:3px;}
+@media(pointer:coarse){#runTutorial .tutorial-bubble{width:660px;font-size:40px;padding:24px;}#runTutorial button{min-height:80px;padding:14px 20px;}}
