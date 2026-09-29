@@ -1,11 +1,11 @@
-// Contextual hints. Testing mode repeats the tutorial every run.
+// First-run walkthrough, followed by the starting upgrade choice.
 (function () {
   'use strict';
-  const ALWAYS_SHOW_FOR_TESTING = true;
+  const ALWAYS_SHOW_FOR_TESTING = false;
   const touchControls = (typeof navigator !== 'undefined' && (navigator.maxTouchPoints > 0 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || ''))) || window.matchMedia?.('(pointer: coarse)').matches;
   const steeringHint = touchControls ? "Tap the screen to guide your frogs. They’ll hop toward where you tap." : 'Move your mouse to guide your frogs. They’ll hop toward your cursor.';
-  const KEY = 'escapeSnake.bubbleTutorialSeen.v2';
-  let completed = false, replay = false, phase = 'idle', hooks = null;
+  const KEY = 'escapeSnake.bubbleTutorialSeen.v3';
+  let completed = false, replay = false, phase = 'idle', hooks = null, upgradeOpened = false;
   let overlay = null, target = null, previousPause = false;
   function seen() {
     if (completed) return true;
@@ -19,6 +19,7 @@
   function finish() {
     clearBubble(); phase = 'idle'; completed = true;
     try { localStorage.setItem(KEY, '1'); } catch (_) {}
+    if (!upgradeOpened) { upgradeOpened = true; hooks.openUpgrades(); }
   }
   function position() {
     if (!overlay || !target) return;
@@ -76,13 +77,11 @@
   window.FrogGameTutorial = {
     requestReplay() { replay = true; },
     begin(options) {
-      clearBubble(); hooks = options;
+      clearBubble(); hooks = options; upgradeOpened = false;
       const shouldShow = ALWAYS_SHOW_FOR_TESTING || replay || !seen(); replay = false;
-      phase = shouldShow ? 'upgrade' : 'idle';
-      if (shouldShow) bubble(hooks.upgrade(), 'Pick one card to start your run. Each upgrade gives a different benefit. You’ll get more choices as you survive.', 'Got it', () => { phase = 'awaitUpgrade'; });
-    },
-    afterUpgrade() {
-      if (!['upgrade','awaitUpgrade'].includes(phase)) return;
+      if (!shouldShow) {
+        phase = 'idle'; upgradeOpened = true; hooks.openUpgrades(); return;
+      }
       phase = 'frogs';
       bubble(hooks.frog(), steeringHint, 'Next', () => {
         phase = 'snake';
@@ -90,7 +89,10 @@
           phase = 'shed';
           bubble(hooks.snake(), 'Every 3 minutes, the snake sheds its skin and gets faster. After three sheds, another snake joins the hunt.', 'Next', () => {
             phase = 'orb';
-            bubble(hooks.orb(), 'Guide a frog onto a glowing orb to collect it. Orbs can give your frogs temporary powers, weaken snakes, or bring in more frogs.', 'Let’s play', finish);
+            bubble(hooks.orb(), 'Guide a frog onto a glowing orb to collect it. Orbs can give your frogs temporary powers, weaken snakes, or bring in more frogs.', 'Next', () => {
+              phase = 'upgrade'; upgradeOpened = true; hooks.openUpgrades();
+              bubble(hooks.upgrade(), 'Pick one card to start your run. Each upgrade gives a different benefit. You’ll get more choices as you survive.', 'Choose my upgrade', finish);
+            });
           });
         });
       });

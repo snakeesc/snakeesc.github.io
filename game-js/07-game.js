@@ -3061,7 +3061,17 @@ function showOrbFeedback(type, origin) {
     background:'transparent',border:'0',boxShadow:'none',padding:'0',color:'#fff8db',
     textAlign:'center',transform:'translate(-50%,-100%)',
     textShadow:'-2px -2px 0 #073720, 2px -2px 0 #073720, -2px 2px 0 #073720, 2px 2px 0 #073720'});
-  el.textContent = labels[type];
+  const types = ['speed','jump','spawn','snakeSlow','snakeConfuse','snakeShrink','frogShield','timeSlow','orbMagnet','megaSpawn','scoreMulti','panicHop','cloneSwarm','lifeSteal','permaFrog'];
+  const cell = types.indexOf(type);
+  const icon = document.createElement('span');
+  icon.setAttribute('aria-hidden', 'true');
+  Object.assign(icon.style, {width:'1.65em',height:'1.65em',flexShrink:'0',imageRendering:'pixelated',
+    backgroundImage:'url("game-assets/sprites/approved/orb-effect-icons.png")',
+    backgroundSize:'400% 400%',backgroundRepeat:'no-repeat',
+    backgroundPosition:`${(cell % 4) * 100 / 3}% ${Math.floor(cell / 4) * 100 / 3}%`});
+  const label = document.createElement('span'); label.textContent = labels[type];
+  Object.assign(el.style, {display:'flex',alignItems:'center',gap:'6px'});
+  el.appendChild(icon); el.appendChild(label);
   container.appendChild(el);
   eventVisuals.push({el,time:0,duration:1.4,x:origin.x,y:origin.y,offset:nearby*30,kind:'orb'});
 }
@@ -8215,8 +8225,9 @@ function startNewRun() {
   updateHUD();
 
   syncAudioMuteState();
-  openFirstUpgradeSelection();
-  window.FrogGameTutorial?.begin({
+  if (!window.FrogGameTutorial) { openFirstUpgradeSelection(); return; }
+  window.FrogGameTutorial.begin({
+    openUpgrades: openFirstUpgradeSelection,
     isPaused: () => gamePaused,
     setPaused: value => { gamePaused = value; },
     isOver: () => gameOver || mainMenuActive,
@@ -8315,7 +8326,6 @@ function startRunFromMenu() {
         nextEpicChoiceTime = elapsedTime + 180;
       }
     }
-    window.FrogGameTutorial?.afterUpgrade();
   }
 
   // --------------------------------------------------
