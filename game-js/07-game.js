@@ -1232,6 +1232,14 @@ const MAX_LUCK = 30;
 
   function toggleSound() {
     soundEnabled = !soundEnabled;
+    if (soundEnabled) {
+      for (let i = eventVisuals.length - 1; i >= 0; i--) {
+        if (eventVisuals[i].kind === 'orb') {
+          eventVisuals[i].el.remove();
+          eventVisuals.splice(i, 1);
+        }
+      }
+    }
     syncAudioMuteState();
     if (btnSound) btnSound.textContent = soundEnabled ? "sound" : "muted";
   }
@@ -3039,7 +3047,9 @@ function renderUpgradeFeedback(choice, sourceButton) {
   const y=frogs.length?frogs.reduce((n,f)=>n+f.y,0)/frogs.length:window.innerHeight/2;
   eventVisuals.push({el,time:0,duration:1.5,x,y,kind:"upgrade"});
 }
+// Orb pickup announcements provide visual feedback while game sound is muted.
 function showOrbFeedback(type, origin) {
+  if (soundEnabled) return;
   const labels = {
     speed: 'Speed Boost', jump: 'Jump Boost', spawn: 'More Frogs',
     snakeSlow: 'Snake Slowed', snakeConfuse: 'Snake Confused', snakeShrink: 'Snake Shrunk',
