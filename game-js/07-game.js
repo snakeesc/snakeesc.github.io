@@ -4642,6 +4642,7 @@ function computeDeathRattleChanceForFrog(frog) {
     container.appendChild(el);
 
     const ttl = ORB_TTL * orbTtlFactor;
+    el.style.transform = `translate3d(${x - ORB_RADIUS}px, ${y - ORB_RADIUS}px, 0)`;
     const orb = { type, x, y, ttl, maxTtl: ttl, el };
     orbs.push(orb);
 
@@ -4848,8 +4849,8 @@ function computeDeathRattleChanceForFrog(frog) {
       }
     }
 
-    const startX = width * 0.15;
-    const startY = height * 0.5;
+    const startX = (width - SNAKE_SEGMENT_SIZE) * 0.5;
+    const startY = (height - SNAKE_SEGMENT_SIZE) * 0.5;
     const snakeSprites = getPlayerSnakeSpriteSet();
 
     const headEl = document.createElement("div");
@@ -4886,12 +4887,24 @@ function computeDeathRattleChanceForFrog(frog) {
       segments.push({ el: segEl, x: startX, y: startY });
     }
 
+    // Seed an actual curved body, then draw it before any paused tutorial.
+    // A repeated head point leaves the whole snake stacked until it moves.
     const path = [];
-    const segmentGap = computeSegmentGap();
-    const maxPath = (SNAKE_INITIAL_SEGMENTS + 2) * segmentGap + 2;
-    for (let i = 0; i < maxPath; i++) {
-      path.push({ x: startX, y: startY });
+    const bodyLength = SNAKE_INITIAL_SEGMENTS * SEGMENT_VISUAL_SPACING;
+    const radius = Math.max(bodyLength / Math.PI, SNAKE_SEGMENT_SIZE);
+    const maxPath = Math.ceil(bodyLength + SEGMENT_VISUAL_SPACING * 2);
+    for (let d = 0; d <= maxPath; d++) {
+      const theta = d / radius;
+      path.push({ x: startX - radius * Math.sin(theta), y: startY + radius * (1 - Math.cos(theta)) });
     }
+    headEl.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
+    segments.forEach((seg, i) => {
+      const d = SEGMENT_VISUAL_SPACING * (i + 1);
+      const point = path[Math.round(d)];
+      seg.x = point.x; seg.y = point.y;
+      const angle = -d / radius + (i === segments.length - 1 ? Math.PI : 0);
+      seg.el.style.transform = `translate3d(${seg.x}px, ${seg.y}px, 0) rotate(${angle}rad)`;
+    });
 
     snake = {
       head: { el: headEl, x: startX, y: startY, angle: 0 },
@@ -8176,7 +8189,12 @@ function startNewRun() {
     upgrade: () => upgradeOverlay?.querySelector('.frog-upgrade-choice'),
     frog: () => frogs.find(f => f.el?.isConnected)?.el,
     snake: () => snake?.head?.el,
-    orb: () => orbs.find(o => o.el?.isConnected)?.el,
+    orb: () => {
+      const existing = orbs.find(o => o.el?.isConnected);
+      if (existing) return existing.el;
+      // A real collectible orb, shown before movement or collisions can consume it.
+      return spawnOrb("speed", window.innerWidth * 0.7, window.innerHeight * 0.3).el;
+    },
   });
 }
 

@@ -1,6 +1,9 @@
-// Contextual first-play hints. Independent of run history and the old help flag.
+// Contextual hints. Testing build repeats every run; switch the flag off for release.
 (function () {
   'use strict';
+  const ALWAYS_SHOW_FOR_TESTING = true;
+  const touchControls = (typeof navigator !== 'undefined' && (navigator.maxTouchPoints > 0 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || ''))) || window.matchMedia?.('(pointer: coarse)').matches;
+  const steeringHint = touchControls ? 'Touch and drag to lead your frogs.' : 'Move your mouse to lead your frogs.';
   const KEY = 'escapeSnake.bubbleTutorialSeen.v1';
   let completed = false, replay = false, phase = 'idle', hooks = null;
   let overlay = null, target = null, previousPause = false;
@@ -64,23 +67,24 @@
     requestReplay() { replay = true; },
     begin(options) {
       clearBubble(); hooks = options;
-      const shouldShow = replay || !seen(); replay = false;
+      const shouldShow = ALWAYS_SHOW_FOR_TESTING || replay || !seen(); replay = false;
       phase = shouldShow ? 'upgrade' : 'idle';
       if (shouldShow) bubble(hooks.upgrade(), 'Pick an upgrade. Its bonus lasts for this run.', 'Choose upgrade', () => { phase = 'awaitUpgrade'; });
     },
     afterUpgrade() {
       if (!['upgrade','awaitUpgrade'].includes(phase)) return;
       phase = 'frogs';
-      bubble(hooks.frog(), 'These are your frogs. Move your mouse, or touch and drag, to lead them.', 'Next', () => {
+      bubble(hooks.frog(), 'These are your frogs. ' + steeringHint, 'Next', () => {
         phase = 'snake';
-        bubble(hooks.snake(), 'Stay away from the snake’s head. Lose every frog and the run ends.', 'Let’s move', () => { phase = 'awaitOrb'; });
+        bubble(hooks.snake(), 'Stay away from the snake’s head. Lose every frog and the run ends.', 'Next', () => {
+          phase = 'orb';
+          bubble(hooks.orb(), 'These glowing orbs give temporary powers. Lead a frog onto this one to collect it.', 'Let’s play', finish);
+        });
       });
     },
     tick() {
       if (overlay) { position(); return; }
-      if (phase !== 'awaitOrb' || hooks.isPaused() || hooks.isOver()) return;
-      const orb = hooks.orb();
-      if (orb) { phase = 'orb'; bubble(orb, 'Lead a frog onto this orb to collect its power. More upgrades arrive as you survive.', 'Got it', finish); }
+
     },
     cancel() { clearBubble(); phase = 'idle'; },
   };
