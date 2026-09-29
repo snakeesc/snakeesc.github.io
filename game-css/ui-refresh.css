@@ -150,9 +150,3 @@
 #runTutorial [data-skip]{background:transparent;color:#35563f;font-size:.8em;}
 #runTutorial button:focus-visible{outline:3px solid #007d91;outline-offset:3px;}
 @media(pointer:coarse){#runTutorial .tutorial-bubble{width:660px;font-size:40px;padding:24px;}#runTutorial button{min-height:80px;padding:14px 20px;}}
-
-/* First tutorial hint belongs to the upgrade menu; cards stay fully usable. */
-#upgradeOverlay #upgradeOverlaySub[data-tutorial-intro]{display:block!important;text-align:center;margin:4px 0 14px!important;padding:0 12px!important;line-height:1.25!important;}
-#upgradeOverlaySub[data-tutorial-intro] p{margin:0 auto 6px;max-width:30em;}
-#upgradeOverlaySub .tutorial-intro-skip{font:inherit;font-size:.8em;color:inherit;background:transparent;border:0;border-radius:7px;text-decoration:underline;text-underline-offset:3px;padding:8px 16px;min-height:44px;cursor:pointer;}
-@media(pointer:coarse){#upgradeOverlaySub .tutorial-intro-skip{min-height:76px;}}
