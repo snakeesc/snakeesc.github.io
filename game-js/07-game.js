@@ -1256,7 +1256,7 @@ const MAX_LUCK = 30;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
-    ['Epic','Hard Bargain','No prerequisites. Lose 20 frog capacity (minimum cap 1); gain one extra Common pick each shed, even with Higher Calling. Once per run.'],
+    ['Epic','Hard Bargain','Requires Loaded Hand. Trade it away for one extra Common pick each shed, even with Higher Calling. Future menus return to 3 choices. No frog-cap penalty. Loaded Hand cannot be picked again this run. Once per run.'],
     ['Epic','Withering','Requires Brittle Scales and Lingering Hex. All current and future snakes permanently use Snake Shrink size and bite radius. Shrink orb outcomes become Slow. Once per run.'],
     ['Epic','Shared Misfortune','Available with two or more snakes. Player-collected orb debuffs and their Chain Reaction effects affect all snakes. Poison Toad and Forbidden Fruit remain local.'],
     ['Common','Afterglow','Frogs spawned from expired orbs trigger those orbs at half duration.'],
@@ -4196,10 +4196,9 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
   function applyHardBargain() {
-    if (hardBargainActive) return;
+    if (hardBargainActive || !extraUpgradeOptionActive) return;
     hardBargainActive = true;
-    maxFrogsCap = Math.max(1, maxFrogsCap - 20);
-    if (frogs.length > maxFrogsCap) killRandomFrogs(frogs.length-maxFrogsCap, 'eyeForEye');
+    extraUpgradeOptionActive = false;
     if (upgradeOverlayContext === 'shed') hardBargainBonusPending = true;
   }
 
@@ -5826,8 +5825,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
-    if (!hardBargainActive) upgrades.push({
-      id:"hardBargain", label:"Hard Bargain<br>−20 frog cap. +1 Common pick per shed.", apply:applyHardBargain
+    if (!hardBargainActive && extraUpgradeOptionActive) upgrades.push({
+      id:"hardBargain", label:"Hard Bargain<br>Trade Loaded Hand for +1 Common pick per shed.", apply:applyHardBargain
     });
     if (canOfferWithering()) upgrades.push({
       id:"withering", label:"Withering<br>Permanently shrink all snakes.", apply:activateWithering
@@ -5910,7 +5909,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     }
     */
 
-    if (!extraUpgradeOptionActive) {
+    if (!extraUpgradeOptionActive && !hardBargainActive) {
       upgrades.push({
         id: "extraUpgradeOption",
         label: `🃏 Loaded Hand<br>Future upgrade screens show <span style="color:${epicTitleColor};">4</span> choices instead of 3`,
