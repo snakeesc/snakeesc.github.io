@@ -272,9 +272,9 @@ window.approvedUpgrades["ouroboros feast"]="./game-assets/sprites/approved/upgra
 window.approvedUpgrades["double jump"]="./game-assets/sprites/approved/upgrade-double-jump.png";
 
 // Upgrade additions and approved crowned role artwork.
-window.approvedUpgrades["hard bargain"]="./game-assets/sprites/approved/upgrade-hard-bargain.png";
-window.approvedUpgrades["withering"]="./game-assets/sprites/approved/upgrade-withering.png";
-window.approvedUpgrades["shared misfortune"]="./game-assets/sprites/approved/upgrade-shared-misfortune.png";
+window.approvedUpgrades["hard bargain"]="./game-assets/sprites/approved/upgrade-hard-bargain.png?v=66";
+window.approvedUpgrades["withering"]="./game-assets/sprites/approved/upgrade-withering.png?v=66";
+window.approvedUpgrades["shared misfortune"]="./game-assets/sprites/approved/upgrade-shared-misfortune.png?v=66";
 window.approvedFrogs["necromancer-crowned"]="./game-assets/sprites/approved/frog-necromancer-crowned.png";
 window.approvedFrogs["magnet-crowned"]="./game-assets/sprites/approved/frog-magnet-crowned.png";
 window.approvedFrogs["poison-crowned"]="./game-assets/sprites/approved/frog-poison-toad-crowned.png";

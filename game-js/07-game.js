@@ -1256,8 +1256,8 @@ const MAX_LUCK = 30;
   let pauseWasAlreadyPaused = false;
   let runUpgradeLog = [];
   const pauseGuide = [
-    ['Epic','Hard Bargain','Requires Loaded Hand and the first shed. Lose 20 frog capacity; gain one extra Common pick each shed, even with Higher Calling. Once per run.'],
-    ['Epic','Withering','Requires Brittle Scales, Lingering Hex and Snake Egg used this run. All current and future snakes permanently use Snake Shrink size and bite radius. Shrink orb outcomes become Slow. Once per run.'],
+    ['Epic','Hard Bargain','No prerequisites. Lose 20 frog capacity (minimum cap 1); gain one extra Common pick each shed, even with Higher Calling. Once per run.'],
+    ['Epic','Withering','Requires Brittle Scales and Lingering Hex. All current and future snakes permanently use Snake Shrink size and bite radius. Shrink orb outcomes become Slow. Once per run.'],
     ['Epic','Shared Misfortune','Available with two or more snakes. Player-collected orb debuffs and their Chain Reaction effects affect all snakes. Poison Toad and Forbidden Fruit remain local.'],
     ['Common','Afterglow','Frogs spawned from expired orbs trigger those orbs at half duration.'],
     ['Common','Mutation','Frogs hop 15% faster and jump 20% higher and farther, up to their limits.'],
@@ -4183,7 +4183,7 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
   function canOfferWithering() {
-    return !witheringActive && brittleScalesActive && lingeringHexActive && bruisedEggActive;
+    return !witheringActive && brittleScalesActive && lingeringHexActive;
   }
 
   function activateWithering() {
@@ -4196,9 +4196,9 @@ function computeDeathRattleChanceForFrog(frog) {
   }
 
   function applyHardBargain() {
-    if (hardBargainActive || maxFrogsCap <= 20) return;
+    if (hardBargainActive) return;
     hardBargainActive = true;
-    maxFrogsCap -= 20;
+    maxFrogsCap = Math.max(1, maxFrogsCap - 20);
     if (frogs.length > maxFrogsCap) killRandomFrogs(frogs.length-maxFrogsCap, 'eyeForEye');
     if (upgradeOverlayContext === 'shed') hardBargainBonusPending = true;
   }
@@ -5826,7 +5826,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
-    if (!hardBargainActive && extraUpgradeOptionActive && snakeShedCount >= 1 && maxFrogsCap > 20) upgrades.push({
+    if (!hardBargainActive) upgrades.push({
       id:"hardBargain", label:"Hard Bargain<br>−20 frog cap. +1 Common pick per shed.", apply:applyHardBargain
     });
     if (canOfferWithering()) upgrades.push({
