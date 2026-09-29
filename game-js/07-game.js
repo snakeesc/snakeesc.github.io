@@ -1089,6 +1089,8 @@ const MAX_LUCK = 30;
   // --------------------------------------------------
   // MOUSE
   // --------------------------------------------------
+  let autoFrogsMode = false;
+  let autoGuideUntil = 0;
   const mouse = {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2,
@@ -1099,6 +1101,8 @@ const MAX_LUCK = 30;
   function updatePointerTarget(e) {
     if (e.isPrimary === false || mainMenuActive || gameOver || gamePaused || summaryPending) return;
     if (e.target && e.target.closest && e.target.closest('button,input,select,textarea,.frog-overlay,#frog-scoreboard-overlay')) return;
+    if (autoFrogsMode && e.type === "pointermove" && !e.buttons) return;
+    if (autoFrogsMode) autoGuideUntil = elapsedTime + 6;
     const __s = window.__escapeSnakeRenderScale || 1;
     mouse.x = e.clientX / __s;
     mouse.y = e.clientY / __s;
@@ -4451,6 +4455,14 @@ function computeDeathRattleChanceForFrog(frog) {
         goalX = frog.x + frog.mutationZombieDirX * wanderDist;
         goalY = frog.baseY + frog.mutationZombieDirY * wanderDist;
       }
+    } else if (autoFrogsMode && !frog.isGhost) {
+      const goal = window.FrogAutonomy.choose(frog, {
+        width, height, size: FROG_SIZE, snakeSize: SNAKE_SEGMENT_SIZE,
+        orbRadius: ORB_RADIUS, maxStep, snakes: [snake, ...extraSnakes].filter(Boolean), orbs,
+        guide: mouse.active && elapsedTime < autoGuideUntil ? mouse : null,
+        lane: swarmDivideActive ? (frog.swarmDivideLane || 1) : 0
+      });
+      goalX = goal.x; goalY = goal.y;
     } else if (mouse.follow && mouse.active && !frog.isGhost) {
       goalX = mouse.x - FROG_SIZE / 2;
       goalY = mouse.y - FROG_SIZE / 2;
@@ -6322,8 +6334,14 @@ function closeAnimatedOverlay(overlayEl) {
 
     if (btnStartRun) {
       btnStartRun.addEventListener("click", () => {
+        autoFrogsMode = false;
         startRunFromMenu();
       });
+      const autoButton = btnStartRun.cloneNode(false);
+      autoButton.id = 'btnAutoFrogs';
+      autoButton.textContent = 'Try Auto Frogs';
+      btnStartRun.after(autoButton);
+      autoButton.addEventListener('click', () => { autoFrogsMode = true; startNewRun(); });
     }
 
     if (btnHowTo) {
@@ -6351,7 +6369,7 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     document.addEventListener("keydown", (e) => {
-      if (mainMenuOverlay && mainMenuOverlay.style.display === "flex" && e.key === "Enter") {
+      if (mainMenuOverlay && mainMenuOverlay.style.display === "flex" && e.key === "Enter" && !e.target?.closest?.("button,input")) {
         startRunFromMenu();
       }
     });
@@ -8194,6 +8212,7 @@ function initUpgradeOverlay() {
   }
 
 function startNewRun() {
+  autoGuideUntil = 0;
   window.FrogGameTutorial?.cancel();
   clearScissorsAndOldSnakeState();
   hideMainMenu();
@@ -8234,6 +8253,17 @@ function startNewRun() {
   updateHUD();
 
   syncAudioMuteState();
+  if (autoFrogsMode) {
+    gamePaused = true;
+    const intro = document.createElement('div');
+    intro.className = 'frog-overlay';
+    intro.style.cssText = 'display:flex;position:absolute;inset:0;z-index:10000;align-items:center;justify-content:center;background:#10251bc9';
+    intro.innerHTML = '<section class="frog-panel" style="max-width:85%;text-align:center;padding:24px"><h2>Auto Frogs</h2><p>Frogs explore, seek nearby orbs, and hop away from snake heads.</p><p>Tap anywhere to guide them for a few seconds. They still try to avoid danger.</p><p>Experimental mode · Scores are not saved.</p><button class="frog-btn">Choose your first upgrade</button></section>';
+    intro.addEventListener('pointerdown', e => e.stopPropagation());
+    intro.querySelector('button').addEventListener('click', e => { e.stopPropagation(); intro.remove(); openFirstUpgradeSelection(); });
+    container.appendChild(intro);
+    return;
+  }
   if (!window.FrogGameTutorial) { openFirstUpgradeSelection(); return; }
   window.FrogGameTutorial.begin({
     openUpgrades: openFirstUpgradeSelection,
@@ -8253,6 +8283,7 @@ function startNewRun() {
 }
 
 function startRunFromMenu() {
+  autoFrogsMode = false;
   startNewRun();
 }
 
@@ -8361,6 +8392,19 @@ function startRunFromMenu() {
 
     lastRunScore = Math.floor(Number(score) || 0);
     lastRunTime = Number(elapsedTime) || 0;
+
+    if (autoFrogsMode) {
+      AudioMod.playRunComplete?.(false);
+      hideGameOver();
+      setInGameUIVisible(false);
+      if (upgradeOverlay) upgradeOverlay.style.display = 'none';
+      if (!endGameSummaryOverlay) initEndGameSummaryOverlay();
+      document.getElementById('endGameSummaryContent').innerHTML =
+        '<h2>Auto Frogs</h2><p>Score: ' + lastRunScore + '</p><p>Survived: ' + Math.floor(lastRunTime / 60) + ':' + String(Math.floor(lastRunTime % 60)).padStart(2, '0') + '</p><p>Test run · Score not saved</p>';
+      endGameSummaryOverlay.style.display = 'flex';
+      summaryPending = false;
+      return;
+    }
 
     // Compare before recording this run; recordRunToDashboard updates bestRun.
     const priorStats = loadDashboardStats();
