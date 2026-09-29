@@ -42,10 +42,14 @@
     overlay.style.width = w + 'px'; overlay.style.height = h + 'px';
     const r = target.getBoundingClientRect();
     const x = Math.max(12, Math.min(w - 12, (r.left + r.width / 2) / scale));
-    const y = Math.max(12, Math.min(h - 12, (r.top + r.height / 2) / scale));
+    // The head artwork extends upward from its logical element center.
+    const headOffset = target.classList?.contains('snake-head') ? (r.height / scale) * (12.3481 / 48) : 0;
+    const y = Math.max(12, Math.min(h - 12, (r.top + r.height / 2) / scale - headOffset));
     const ring = overlay.querySelector('.tutorial-ring');
     const rw = Math.min(w - 24, r.width / scale + 20), rh = Math.min(h - 24, r.height / scale + 20);
-    Object.assign(ring.style, {left: Math.max(8, Math.min(w-rw-8, x-rw/2))+'px', top:Math.max(8, Math.min(h-rh-8,y-rh/2))+'px',width:rw+'px',height:rh+'px'});
+    const rx = Math.max(8, Math.min(w-rw-8, x-rw/2));
+    const ry = Math.max(8, Math.min(h-rh-8, y-rh/2));
+    Object.assign(ring.style, {left:rx+'px',top:ry+'px',width:rw+'px',height:rh+'px'});
     const bubble = overlay.querySelector('.tutorial-bubble');
     const bw = bubble.offsetWidth, bh = bubble.offsetHeight;
     const bx = Math.max(16, Math.min(w-bw-16, x-bw/2));
@@ -53,9 +57,15 @@
     const by = Math.max(16, Math.min(h-bh-16, below+bh+16 <= h ? below : y-rh/2-bh-42));
     bubble.style.left = bx+'px'; bubble.style.top = by+'px';
     const line = overlay.querySelector('line');
-    line.setAttribute('x1', Math.max(bx+20,Math.min(bx+bw-20,x)));
-    line.setAttribute('y1', by > y ? by : by+bh);
-    line.setAttribute('x2', x); line.setAttribute('y2', y);
+    const ax = Math.max(bx+20,Math.min(bx+bw-20,x));
+    const ay = by > y ? by : by+bh;
+    const cx = rx+rw/2, cy = ry+rh/2;
+    const dx = ax-cx, dy = ay-cy;
+    // Intersect the connector with the outside of the ring, never its sprite.
+    const edge = Math.min((rw/2+4)/Math.max(Math.abs(dx),.001), (rh/2+4)/Math.max(Math.abs(dy),.001));
+    line.style.display = edge >= 1 ? 'none' : '';
+    line.setAttribute('x1', ax); line.setAttribute('y1', ay);
+    line.setAttribute('x2', cx+dx*edge); line.setAttribute('y2', cy+dy*edge);
   }
   function bubble(el, text, button, next) {
     clearBubble();
