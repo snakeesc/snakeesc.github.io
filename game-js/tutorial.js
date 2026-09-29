@@ -1,12 +1,27 @@
-// Contextual hints. Testing build repeats every run; switch the flag off for release.
+// Contextual hints. Testing mode repeats the tutorial every run.
 (function () {
   'use strict';
   const ALWAYS_SHOW_FOR_TESTING = true;
   const touchControls = (typeof navigator !== 'undefined' && (navigator.maxTouchPoints > 0 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || ''))) || window.matchMedia?.('(pointer: coarse)').matches;
-  const steeringHint = touchControls ? 'Touch and drag to lead your frogs.' : 'Move your mouse to lead your frogs.';
-  const KEY = 'escapeSnake.bubbleTutorialSeen.v1';
+  const steeringHint = touchControls ? "Tap the screen to guide your frogs. They’ll hop toward where you tap." : 'Move your mouse to guide your frogs. They’ll hop toward your cursor.';
+  const KEY = 'escapeSnake.bubbleTutorialSeen.v2';
   let completed = false, replay = false, phase = 'idle', hooks = null;
   let overlay = null, target = null, previousPause = false;
+  let intro = null, introHTML = '';
+  function clearIntro() {
+    if (!intro) return;
+    intro.innerHTML = introHTML;
+    intro.removeAttribute('data-tutorial-intro');
+    intro = null;
+  }
+  function showIntro() {
+    intro = document.getElementById('upgradeOverlaySub');
+    if (!intro) return;
+    introHTML = intro.innerHTML;
+    intro.setAttribute('data-tutorial-intro', 'true');
+    intro.innerHTML = `<p>Pick one upgrade to start your run. You’ll get more choices as you survive.</p><button type="button" class="tutorial-intro-skip">Skip tutorial</button>`;
+    intro.querySelector('button').addEventListener('click', e => { e.stopPropagation(); finish(); });
+  }
   function seen() {
     if (completed) return true;
     try { return localStorage.getItem(KEY) === '1'; } catch (_) { return false; }
@@ -17,7 +32,7 @@
     hooks.setPaused(previousPause);
   }
   function finish() {
-    clearBubble(); phase = 'idle'; completed = true;
+    clearIntro(); clearBubble(); phase = 'idle'; completed = true;
     try { localStorage.setItem(KEY, '1'); } catch (_) {}
   }
   function position() {
@@ -66,19 +81,23 @@
   window.FrogGameTutorial = {
     requestReplay() { replay = true; },
     begin(options) {
-      clearBubble(); hooks = options;
+      clearIntro(); clearBubble(); hooks = options;
       const shouldShow = ALWAYS_SHOW_FOR_TESTING || replay || !seen(); replay = false;
       phase = shouldShow ? 'upgrade' : 'idle';
-      if (shouldShow) bubble(hooks.upgrade(), 'Pick an upgrade. Its bonus lasts for this run.', 'Choose upgrade', () => { phase = 'awaitUpgrade'; });
+      if (shouldShow) showIntro();
     },
     afterUpgrade() {
       if (!['upgrade','awaitUpgrade'].includes(phase)) return;
+      clearIntro();
       phase = 'frogs';
-      bubble(hooks.frog(), 'These are your frogs. ' + steeringHint, 'Next', () => {
+      bubble(hooks.frog(), steeringHint, 'Next', () => {
         phase = 'snake';
-        bubble(hooks.snake(), 'Stay away from the snake’s head. Lose every frog and the run ends.', 'Next', () => {
-          phase = 'orb';
-          bubble(hooks.orb(), 'These glowing orbs give temporary powers. Lead a frog onto this one to collect it.', 'Let’s play', finish);
+        bubble(hooks.snake(), 'The snake chases and eats your frogs. Guide them away from its head. Your run ends when you lose your last frog.', 'Next', () => {
+          phase = 'shed';
+          bubble(hooks.snake(), 'Every 3 minutes, the snake sheds its skin and gets faster. After three sheds, another snake joins the hunt.', 'Next', () => {
+            phase = 'orb';
+            bubble(hooks.orb(), 'Guide a frog onto a glowing orb to collect it. Orbs can give your frogs temporary powers, weaken snakes, or bring in more frogs.', 'Let’s play', finish);
+          });
         });
       });
     },
@@ -86,6 +105,6 @@
       if (overlay) { position(); return; }
 
     },
-    cancel() { clearBubble(); phase = 'idle'; },
+    cancel() { clearIntro(); clearBubble(); phase = 'idle'; },
   };
 })();

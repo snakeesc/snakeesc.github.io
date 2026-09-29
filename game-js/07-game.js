@@ -3039,6 +3039,32 @@ function renderUpgradeFeedback(choice, sourceButton) {
   const y=frogs.length?frogs.reduce((n,f)=>n+f.y,0)/frogs.length:window.innerHeight/2;
   eventVisuals.push({el,time:0,duration:1.5,x,y,kind:"upgrade"});
 }
+function showOrbFeedback(type, origin) {
+  const labels = {
+    speed: 'Speed Boost', jump: 'Jump Boost', spawn: 'More Frogs',
+    snakeSlow: 'Snake Slowed', snakeConfuse: 'Snake Confused', snakeShrink: 'Snake Shrunk',
+    frogShield: 'Frog Shield', timeSlow: 'Time Slow', orbMagnet: 'Orb Magnet',
+    megaSpawn: 'Frog Swarm', scoreMulti: 'Score Multiplier', panicHop: 'Panic Hop',
+    cloneSwarm: 'Clone Swarm', lifeSteal: 'Life Steal', permaFrog: 'Frog Promotion',
+  };
+  if (!origin || !labels[type]) return;
+  const visible = eventVisuals.filter(e => e.kind === 'orb');
+  // Bound visual clutter during a burst of pickups without delaying feedback.
+  if (visible.length >= 4) {
+    const oldest = visible.shift(); oldest.el.remove();
+    eventVisuals.splice(eventVisuals.indexOf(oldest), 1);
+  }
+  const nearby = visible.filter(e => Math.hypot(e.x-origin.x,e.y-origin.y)<160).length;
+  const el = document.createElement('div');
+  styleEventPanel(el);
+  Object.assign(el.style, {position:'absolute',pointerEvents:'none',zIndex:'47',
+    background:'transparent',border:'0',boxShadow:'none',padding:'0',color:'#fff8db',
+    textAlign:'center',transform:'translate(-50%,-100%)',
+    textShadow:'-2px -2px 0 #073720, 2px -2px 0 #073720, -2px 2px 0 #073720, 2px 2px 0 #073720'});
+  el.textContent = labels[type];
+  container.appendChild(el);
+  eventVisuals.push({el,time:0,duration:1.4,x:origin.x,y:origin.y,offset:nearby*30,kind:'orb'});
+}
 function showRoleSpotlight(frog){
   if(eventVisuals.some(e=>e.frog===frog))return;
   const el=document.createElement("div");
@@ -3085,6 +3111,12 @@ function updateEventVisuals(dt){
  for(let i=eventVisuals.length-1;i>=0;i--){const e=eventVisuals[i];e.time+=dt;if(e.time>=e.duration || (e.frog&&!e.frog.el.isConnected)){e.el.remove();eventVisuals.splice(i,1);continue;}
  const fade=Math.min(1,(e.duration-e.time)/.3);e.el.style.opacity=String(fade);
  if(e.kind==="roll" || e.kind==="zombieSacrifice"){e.render(e.time);continue;}
+ if(e.kind==='orb') {
+   const half=e.el.offsetWidth/2+8;
+   e.el.style.left=Math.max(half,Math.min(window.innerWidth-half,e.x))+'px';
+   e.el.style.top=Math.max(e.el.offsetHeight+12,e.y-18-e.offset-e.time*24)+'px';
+   continue;
+ }
  if(e.frog){e.el.style.left=(e.frog.x+FROG_SIZE/2-19)+"px";e.el.style.top=(e.frog.baseY+FROG_SIZE-9)+"px";e.el.style.transform=`scale(${Math.min(1,e.time/.15)})`;}
  else {e.el.style.left=Math.max(150,Math.min(window.innerWidth-150,e.x))+"px";e.el.style.top=Math.max(80,e.y-30-Math.min(e.time/.3,1)*10)+"px";}
  }
@@ -4233,6 +4265,7 @@ function computeDeathRattleChanceForFrog(frog) {
         break;
     }
 
+    if (source === 'collectedOrb') showOrbFeedback(type, origin);
     if (type !== "permaFrog") {
       playBuffSound(type);
     }
@@ -4792,6 +4825,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
         if (orb.type === "permaFrog") {
           grantOrbCrowning(collectedBy);
+          showOrbFeedback("permaFrog", {x:orb.x,y:orb.y});
         } else {
           applyBuff(orb.type, collectedBy, 1, false, "collectedOrb", null, {x:orb.x,y:orb.y});
 
