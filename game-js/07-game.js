@@ -3065,8 +3065,8 @@ function showOrbFeedback(type, origin) {
   const cell = types.indexOf(type);
   const icon = document.createElement('span');
   icon.setAttribute('aria-hidden', 'true');
-  Object.assign(icon.style, {width:'1.65em',height:'1.65em',flexShrink:'0',imageRendering:'pixelated',
-    backgroundImage:'url("game-assets/sprites/approved/orb-effect-icons.png")',
+  Object.assign(icon.style, {width:'1.4em',height:'1.4em',flexShrink:'0',imageRendering:'pixelated',
+    backgroundImage:'url("game-assets/sprites/approved/orb-effect-icons.png?v=2")',
     backgroundSize:'400% 400%',backgroundRepeat:'no-repeat',
     backgroundPosition:`${(cell % 4) * 100 / 3}% ${Math.floor(cell / 4) * 100 / 3}%`});
   const label = document.createElement('span'); label.textContent = labels[type];
@@ -6425,7 +6425,7 @@ function closeAnimatedOverlay(overlayEl) {
         <section><img src="game-assets/sprites/approved/upgrade-orb-whisperer.png" alt=""><div><h3>Collect & grow</h3><p>Pick up orbs for temporary powers and upgrade choices.</p></div></section>
       </div>
       <p class="ui-help-note">Every 3 minutes, the snake sheds and speeds up. After 3 sheds, another snake joins.</p>
-      <div class="frog-panel-footer"><button id="replayTutorialBtn" class="frog-btn frog-btn-secondary">Replay tutorial</button><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back to menu</button></div>
+      <div class="frog-panel-footer"><button id="howToCloseBtn" class="frog-btn frog-btn-secondary">Back to menu</button><button id="replayTutorialBtn" class="frog-btn frog-btn-secondary">Replay tutorial</button></div>
     `;
 
     const closeBtn = document.getElementById("howToCloseBtn");
