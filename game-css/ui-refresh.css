@@ -150,3 +150,14 @@
 #runTutorial [data-skip]{background:transparent;color:#35563f;font-size:.8em;}
 #runTutorial button:focus-visible{outline:3px solid #007d91;outline-offset:3px;}
 @media(pointer:coarse){#runTutorial .tutorial-bubble{width:660px;font-size:40px;padding:24px;}#runTutorial button{min-height:80px;padding:14px 20px;}}
+
+/* Approved A + shine: larger chunky sprite, with its own animated rim. */
+#frog-game .frog-orb::before{
+  width:72%;height:72%;
+  background:url("../game-assets/sprites/orb-a-shine.svg") center/contain no-repeat!important;
+  border-radius:0!important;filter:none!important;image-rendering:pixelated;
+}
+#frog-game .frog-orb::after{display:none!important;}
+@media(prefers-reduced-motion:reduce){
+  #frog-game .frog-orb::before{background-image:url("../game-assets/sprites/orb-a-static.svg")!important;}
+}
