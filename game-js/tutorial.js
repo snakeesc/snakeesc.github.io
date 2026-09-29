@@ -7,20 +7,42 @@
   const KEY = 'escapeSnake.bubbleTutorialSeen.v2';
   let completed = false, replay = false, phase = 'idle', hooks = null;
   let overlay = null, target = null, previousPause = false;
-  let intro = null, introHTML = '';
+  let intro = null, introMenu = null, introStyles = [];
   function clearIntro() {
     if (!intro) return;
-    intro.innerHTML = introHTML;
-    intro.removeAttribute('data-tutorial-intro');
-    intro = null;
+    intro.remove(); intro = null;
+    for (const [key, value, priority] of introStyles) {
+      if (value) introMenu.style.setProperty(key, value, priority);
+      else introMenu.style.removeProperty(key);
+    }
+    introStyles = []; introMenu = null;
   }
   function showIntro() {
-    intro = document.getElementById('upgradeOverlaySub');
-    if (!intro) return;
-    introHTML = intro.innerHTML;
-    intro.setAttribute('data-tutorial-intro', 'true');
-    intro.innerHTML = `<p>Pick one upgrade to start your run. You’ll get more choices as you survive.</p><button type="button" class="tutorial-intro-skip">Skip tutorial</button>`;
-    intro.querySelector('button').addEventListener('click', e => { e.stopPropagation(); finish(); });
+    const menu = document.getElementById('upgradeOverlay');
+    const panel = menu?.querySelector('.frog-panel');
+    if (!panel) return;
+    introMenu = menu;
+    const layout = {'flex-direction':'column',gap:'16px','overflow-y':'auto','justify-content':'safe center'};
+    introStyles = Object.keys(layout).map(key => [key, menu.style.getPropertyValue(key), menu.style.getPropertyPriority(key)]);
+    for (const [key,value] of Object.entries(layout)) menu.style.setProperty(key,value,'important');
+    intro = document.createElement('section');
+    intro.id = 'upgradeTutorialCard';
+    intro.setAttribute('aria-label', 'Your first upgrade');
+    const scale = window.__escapeSnakeRenderScale || 1;
+    const width = panel.getBoundingClientRect().width / scale;
+    Object.assign(intro.style, {display:'block',flexShrink:'0',boxSizing:'border-box',
+      width:(width || 660)+'px',maxWidth:'94%',padding:touchControls?'22px 26px':'16px 20px',
+      background:'#fff3d0',color:'#153f2c',border:'3px solid #284f35',borderRadius:'9px',
+      boxShadow:'0 4px 0 #163926',fontFamily:'ReferencePixel,monospace',fontSize:touchControls?'36px':'25px',lineHeight:'1.2'});
+    intro.innerHTML = `<strong style="display:block;margin-bottom:8px;font-weight:400">Your first upgrade</strong><p style="margin:0 0 12px">Pick one card to start your run. Each upgrade gives a different benefit. You’ll get more choices as you survive.</p><div style="display:flex;gap:14px;align-items:center"><button data-intro-next>Got it</button><button data-intro-skip>Skip tutorial</button></div>`;
+    for (const button of intro.querySelectorAll('button')) {
+      Object.assign(button.style,{font:'inherit',border:'0',borderRadius:'7px',padding:'10px 16px',minHeight:touchControls?'76px':'44px',cursor:'pointer',color:'#fff3d0',background:'#28563c'});
+    }
+    Object.assign(intro.querySelector('[data-intro-skip]').style,{background:'transparent',color:'#35563f',fontSize:'.8em'});
+    intro.querySelector('[data-intro-next]').onclick = e => { e.stopPropagation(); clearIntro(); phase = 'awaitUpgrade'; };
+    intro.querySelector('[data-intro-skip]').onclick = e => { e.stopPropagation(); finish(); };
+    menu.insertBefore(intro, panel);
+    intro.querySelector('[data-intro-next]').focus();
   }
   function seen() {
     if (completed) return true;
