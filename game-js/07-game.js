@@ -1005,6 +1005,10 @@ let greedyHandQueue = null;
   let permanentScoreMultiplier = 1.0;
   let quantumOrbsActive = false;
   let moltFortuneActive = false;
+  let orbStormUsed = false;
+  let orbStormElapsed = 0;
+  let orbStormTotal = 0;
+  let orbStormSpawned = 0;
   let toxicBloodActive = false;
   let survivalInstinctActive = false;
   let doubleJumpActive = false;
@@ -1269,7 +1273,7 @@ const MAX_LUCK = 30;
     ['Common','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
     ['Common','Second Wind','Once per run: spawn 25 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
     ['Common','Long Tongue','Frogs collect orbs from 25% farther away using their tongues. Once per run. Works with Magnet Frogs.'],
-    ['Common','Deep Pond','Increase your current frog cap by 25, up to a hard limit of 100. Runs begin with a cap of 75. Does not spawn frogs. Once per run.'],
+    ['Common','Deep Pond','Increase your current frog cap by 25 (maximum 100), then spawn 10 frogs within the new cap. Once per run. Never offered alongside Spawn Frogs, Wild Company, or Second Wind.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
     ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
@@ -1291,7 +1295,7 @@ const MAX_LUCK = 30;
     ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
     ['Epic','Peace of Mind','At 21+ luck: spend all your luck to remove Panic Hop for this run. Once per run.'],
     ['Epic','Role Draft','Choose between two roles and spawn 3–6 special frogs. Luck favors larger batches.'],
-    ['Epic','Orb Storm','Drops 8–15 random orbs. Luck favors higher counts.'],
+    ['Epic','Orb Storm','Spawns 20–25 extra orbs evenly over 22 seconds of gameplay. Luck favors higher counts. Once per run.'],
     ['Epic','Snake Egg','Targets the lowest-shed snake when selected. It gains 25% less added speed from its remaining sheds. Other and future snakes are unaffected.'],
     ['Epic','Brittle Scales','Halves snake debuff resistance.'],
     ['Epic','Chain Reaction','An orb pickup has a 15% chance to trigger an additional orb effect.'],
@@ -1301,11 +1305,11 @@ const MAX_LUCK = 30;
     ['Epic','Eye for Eye','The slowest snake sheds, dies, and disappears. Your current frog cap is halved (rounded down). Once per run.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
     ['Epic','Orb Specialist','Every collected orb spawns 1 extra frog, up to your frog cap. Requires Orb Whisperer.'],
-    ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
+    ['Epic','Grave Wave','Spawns 7–15 frogs immediately and at each shed. Luck favors more. Frog cap applies.'],
     ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
     ['Common','Promotion','Promotes 5–10 random frogs by one crown level, if enough are eligible.'],
     ['Epic','Frog Scatter','Respawns the swarm with roles, crowns and stats intact, triggering death effects. Bonus frogs respect the population cap. Once per run.'],
-    ['Epic','Molt Fortune','Drops 5–10 orbs when the snake sheds.'],
+    ['Epic','Molt Fortune','Drops 5–10 orbs immediately and whenever a snake sheds.'],
     ['Frogs','Crowned','Permanently improved movement. Can gain up to three crown levels.'],
     ['Frogs','Aura','Nearby frogs gain 12% shorter hop timing and 12% higher jumps. Overlapping auras stack, within movement caps.'],
     ['Frogs','Shield','Temporary protection from snake bites.'],
@@ -4731,6 +4735,24 @@ function computeDeathRattleChanceForFrog(frog) {
     }
   }
 
+  function startOrbStorm() {
+    if (orbStormUsed) return;
+    orbStormUsed = true;
+    orbStormElapsed = 0;
+    orbStormTotal = getLuckBiasedInt(20,25);
+    orbStormSpawned = 0;
+  }
+
+  function updateOrbStorm(dt) {
+    if (gamePaused || gameOver || !orbStormUsed || orbStormSpawned >= orbStormTotal) return;
+    orbStormElapsed = Math.min(22, orbStormElapsed + dt);
+    const due = Math.min(orbStormTotal, Math.floor((orbStormElapsed + 1e-8) * orbStormTotal / 22));
+    while (orbStormSpawned < due) {
+      spawnOrbRandom(window.innerWidth, window.innerHeight);
+      orbStormSpawned++;
+    }
+  }
+
   function spawnOrbRandom(width, height) {
     if (frogs.length === 0) return;
 
@@ -5688,6 +5710,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (deepPondUsed || maxFrogsCap >= ABSOLUTE_FROG_CAP) return;
     deepPondUsed = true;
     maxFrogsCap = Math.min(ABSOLUTE_FROG_CAP, maxFrogsCap + 25);
+    spawnExtraFrogs(10);
     updateHUD();
   }
 
@@ -5709,7 +5732,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       apply:()=>{longTongueActive=true;}
     });
     if (!deepPondUsed && maxFrogsCap < ABSOLUTE_FROG_CAP) upgrades.push({
-      id:'deepPond', label:'Deep Pond<br>Increase your frog cap by <span>25</span>. Maximum <span>100</span>.',
+      id:'deepPond', label:'Deep Pond<br><span>+25</span> frog cap (max <span>100</span>). Spawn <span>10</span> frogs.',
       apply:applyDeepPond
     });
     if (frogs.some(frog => (frog.starLevel || 0) < 3)) {
@@ -5938,17 +5961,10 @@ function samplePathAtDistance(path, startIdx, dist) {
         showRoleDraftOverlayChoices();
       }
     });
-    upgrades.push({
+    if (!orbStormUsed) upgrades.push({
       id: "epicOrbStorm",
-      label: `🌪️ Orb Storm<br>Drop <span style="color:${epicTitleColor};">8–15</span> random orbs across the arena`,
-      apply: () => {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        const count = getLuckBiasedInt(8, 15);
-        for (let i = 0; i < count; i++) {
-          spawnOrbRandom(w, h);
-        }
-      }
+      label: `🌪️ Orb Storm<br>Spawn <span>20–25</span> orbs over <span>22</span> seconds. Once per run.`,
+      apply: startOrbStorm
     });
     if (!bruisedEggActive && snake) upgrades.push({
       id: "bruisedEgg",
@@ -6022,8 +6038,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!graveWaveActive && !graveWaveUsed) {
       upgrades.push({
         id: "graveWave",
-        label: `👻 Grave Wave<br>Each shed spawns <span style="color:${epicTitleColor};">7–15</span> frogs`,
-        apply: () => { graveWaveActive = true; graveWaveUsed = true; }
+        label: `👻 Grave Wave<br>Spawn <span style="color:${epicTitleColor};">7–15</span> frogs now and at each shed`,
+        apply: () => { if (graveWaveUsed) return; graveWaveActive = true; graveWaveUsed = true; triggerGraveWave(); updateHUD(); }
       });
     }
 
@@ -6046,8 +6062,8 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (!moltFortuneActive) {
       upgrades.push({
         id: "moltFortune",
-        label: `🔮 Molt Fortune<br>Snake drops <span style="color:${epicTitleColor};">5-10</span> orbs when shedding`,
-        apply: () => { moltFortuneActive = true; }
+        label: `🔮 Molt Fortune<br>Drop <span style="color:${epicTitleColor};">5–10</span> orbs now and at each shed`,
+        apply: () => { if (moltFortuneActive) return; moltFortuneActive = true; const count=getLuckBiasedInt(5,10); for(let i=0;i<count;i++) spawnOrbRandom(window.innerWidth,window.innerHeight); }
       });
     }
 
@@ -6587,10 +6603,10 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Epic Frog Wave", desc: `Spawn ${statHighlight(EPIC_SPAWN_AMOUNT)} frogs instantly.` },
       { title: "Epic Deathrattle", desc: `${fmtPct(epicDeathPct)} revive chance in one pick.` },
       { title: "Epic Buff Duration", desc: `${fmtPct(epicBuffPerPickPct)} longer buffs with one choice.` },
-      { title: "Orb Storm", desc: `Drop ${statHighlight(ORB_STORM_COUNT)} random orbs across the arena right now.` },
+      { title: "Orb Storm", desc: `Spawn ${statHighlight("20–25")} orbs over ${statHighlight("22")} seconds. Once per run.` },
       { title: "Snake Egg", desc: "The lowest-shed snake gains 25% less speed per shed." },
       { title: "Frog Promotion", desc: `${statHighlight(10)} new frogs, each with a random permanent role.` },
-      { title: "Grave Wave", desc: `Every shed spawns ${fmtRange(GRAVE_WAVE_MIN_GHOSTS, GRAVE_WAVE_MAX_GHOSTS)} uncontrollable ghost frogs.` },
+      { title: "Grave Wave", desc: `Spawn ${statHighlight("7–15")} frogs now and at each shed.` },
       { title: "Orb Specialist", desc: `Every collected orb spawns ${statHighlight("1")} extra frog. Requires Orb Whisperer.` },
       { title: "Fragile Reality", desc: `Doubles buff duration caps but halves orb spawn speed going forward.` },
       { title: "Frog Scatter", desc: `Respawn every frog with roles and crowns intact; trigger death effects.` },
@@ -6736,18 +6752,18 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "buff", label: "🎲 Lucky Roll", desc: "Triggers a random orb buff: +50% duration first use, +75% second, +100% thereafter." },
       { type: "buff", label: "🌀 Orb Whisperer", desc: "Orbs linger 30% longer." },
       { type: "buff", label: "🎯 Orb Flow", desc: "Increases orb spawn frequency." },
-      { type: "buff", label: "🌩️ Orb Storm", desc: "Drops a burst of random orbs immediately." },
+      { type: "buff", label: "🌩️ Orb Storm", desc: "Spawns 20–25 orbs over 22 seconds. Once per run." },
       { type: "buff", label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
       { type: "buff", label: "⚡ Chain Reaction", desc: "When collecting an orb, there is a 25% chance of a second buff." },
       { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 20% chance to spawn a frog." },
       { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb spawns 1 extra frog. Requires Orb Whisperer." },
-      { type: "buff", label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
+      { type: "buff", label: "🔮 Molt Fortune", desc: "Drop 5–10 orbs now and whenever a snake sheds." },
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
       { type: "survival", label: "⚱️ Soul Offering", desc: "Deathrattle revivals leave an orb." },
       { type: "survival", label: "💨 Second Wind", desc: "Below 10 frogs, spawn 25 immediately on selection or when you later fall below 10 (once per run)." },
       { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
-      { type: "survival", label: "👻 Grave Wave", desc: "Each shed spawns 7–15 frogs. Luck favors more." },
+      { type: "survival", label: "👻 Grave Wave", desc: "Spawns 7–15 frogs immediately and at each shed. Luck favors more. Frog cap applies." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
       { type: "role", label: "🎭 Role Draft", desc: "Choose a role and spawn 3–6 special frogs." },
       { type: "role", label: "🥇 Promotion", desc: "Promote 5–10 random eligible frogs by one crown level." },
@@ -7964,6 +7980,12 @@ function initUpgradeOverlay() {
     upgradeOverlay.querySelector('.upgrade-rarity-label')?.remove();
   }
 
+  function canShareUpgradeMenu(candidate, choices) {
+    const spawnChoices = new Set(["spawn20", "wildCompany", "secondWind"]);
+    if (candidate.id === "deepPond") return !choices.some(c => spawnChoices.has(c.id));
+    return !spawnChoices.has(candidate.id) || !choices.some(c => c.id === "deepPond");
+  }
+
   function populateUpgradeOverlayChoices(mode) {
     initUpgradeOverlay();
 
@@ -8034,18 +8056,24 @@ function initUpgradeOverlay() {
           choices.push(spawnChoice);
 
           while (choices.length < optionCount && pool.length) {
+            pool = pool.filter(candidate => canShareUpgradeMenu(candidate, choices));
+            if (!pool.length) break;
             const idx = Math.floor(Math.random() * pool.length);
             choices.push(pool.splice(idx, 1)[0]);
           }
         } else {
           while (choices.length < optionCount && pool.length) {
+            pool = pool.filter(candidate => canShareUpgradeMenu(candidate, choices));
+            if (!pool.length) break;
             const idx = Math.floor(Math.random() * pool.length);
             choices.push(pool.splice(idx, 1)[0]);
           }
         }
       } else {
         while (choices.length < optionCount && pool.length) {
-          const idx = Math.floor(Math.random() * pool.length);
+          pool = pool.filter(candidate => canShareUpgradeMenu(candidate, choices));
+            if (!pool.length) break;
+            const idx = Math.floor(Math.random() * pool.length);
           choices.push(pool.splice(idx, 1)[0]);
         }
       }
@@ -8649,6 +8677,10 @@ doubleYolkerActive = false;
     permanentScoreMultiplier = 1.0;
     quantumOrbsActive = false;
     moltFortuneActive = false;
+    orbStormUsed = false;
+    orbStormElapsed = 0;
+    orbStormTotal = 0;
+    orbStormSpawned = 0;
     toxicBloodActive = false;
     survivalInstinctActive = false;
     doubleJumpActive = false;
@@ -8766,6 +8798,7 @@ doubleYolkerActive = false;
       updateDyingSnakes(dt);
       // ----- core timers -----
       elapsedTime += dt;
+      updateOrbStorm(dt);
       updateBuffTimers(dt);
 
       // ----- ORB TIMER (back to countdown style) -----
