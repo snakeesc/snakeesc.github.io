@@ -1281,7 +1281,7 @@ const MAX_LUCK = 30;
     ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
     ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, as an exception to the ordinary revival cap.`],
     ['Common','Survival Instinct','Below 10 frogs, they jump 20% farther and higher, within movement limits.'],
-    ['Common','Double Jump','After two Mutations and Survival Instinct, adds 5 percentage points to double-hop chance (5% to 10%).'],
+    ['Common','Double Jump','Requires Survival Instinct. Adds 5 percentage points to double-hop chance (5% to 10%).'],
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50%, then 75%, then 100% extra duration.'],
     ['Epic','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
     ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
@@ -5831,7 +5831,7 @@ function samplePathAtDistance(path, startIdx, dist) {
         apply: () => { survivalInstinctActive = true; }
       });
     }
-    if (mutationPicks >= 2 && survivalInstinctActive && !doubleJumpActive) {
+    if (survivalInstinctActive && !doubleJumpActive) {
       upgrades.push({
         id: "doubleJump",
         label: "Double Jump<br>Double-hop chance is <span class=menu-number-accent data-card-accent>doubled</span>",

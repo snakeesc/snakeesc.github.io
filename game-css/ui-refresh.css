@@ -187,7 +187,7 @@
 #upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice:is(:hover,:focus,:active){background:linear-gradient(110deg,#fff5e2,#f7e5c5)!important;box-shadow:none!important}
 
 /* Continuous copper rim follows the existing clipped pixel corners. */
-#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice::before{content:"";position:absolute;inset:0;pointer-events:none;background:#98501f;clip-path:polygon(evenodd,8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px,8px 0,9px 3px,3px 9px,3px calc(100% - 9px),9px calc(100% - 3px),calc(100% - 9px) calc(100% - 3px),calc(100% - 3px) calc(100% - 9px),calc(100% - 3px) 9px,calc(100% - 9px) 3px,9px 3px);}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice::before{content:"";position:absolute;inset:0;pointer-events:none;background:#b88249;clip-path:polygon(evenodd,8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px,8px 0,9px 3px,3px 9px,3px calc(100% - 9px),9px calc(100% - 3px),calc(100% - 9px) calc(100% - 3px),calc(100% - 3px) calc(100% - 9px),calc(100% - 3px) 9px,calc(100% - 9px) 3px,9px 3px);}
 
 /* Match visible artwork size while preserving the approved image files. */
 #upgradeOverlay .frog-upgrade-emoji[data-approved="long tongue"]{background-size:157.08% auto!important;background-position:57.77% 64.25%!important}
@@ -195,5 +195,5 @@
 img[src*="upgrade-long-tongue.png"],img.upgrade-icon-long-tongue{transform:translate(-4.45%,-6.1%) scale(1.5708)!important;transform-origin:center!important}
 img[src*="upgrade-deep-pond.png"],img.upgrade-icon-deep-pond{transform:translate(-0.06%,-6.38%) scale(1.7499)!important;transform-origin:center!important}
 
-/* Epic value accents match the darker copper border. */
-#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-desc :is(.menu-number-accent,[data-card-accent],.stat-highlight,span){color:#98501f!important}
+/* Epic value accents match the copper border. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-desc :is(.menu-number-accent,[data-card-accent],.stat-highlight,span){color:#b88249!important}
