@@ -184,4 +184,7 @@
 /* Original menu geometry; restrained Epic-only color treatment. */
 #upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay .upgrade-rarity-label{display:none!important}
 #upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice,
-#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice:is(:hover,:focus,:active){background:linear-gradient(110deg,#fff5e2,#f7e5c5)!important;box-shadow:inset 4px 0 0 #bc7938!important}
+#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice:is(:hover,:focus,:active){background:linear-gradient(110deg,#fff5e2,#f7e5c5)!important;box-shadow:none!important}
+
+/* Continuous copper rim follows the existing clipped pixel corners. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice::before{content:"";position:absolute;inset:0;pointer-events:none;background:#b88249;clip-path:polygon(evenodd,8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px,8px 0,9px 3px,3px 9px,3px calc(100% - 9px),9px calc(100% - 3px),calc(100% - 9px) calc(100% - 3px),calc(100% - 3px) calc(100% - 9px),calc(100% - 3px) 9px,calc(100% - 9px) 3px,9px 3px);}
