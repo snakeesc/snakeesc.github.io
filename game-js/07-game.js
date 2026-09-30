@@ -128,7 +128,10 @@
 
   const statHighlight = (text) => `<span class="stat-highlight">${text}</span>`;
   const ORB_MAGNET_PULL_RANGE = 220;
-  const MAGNETIZED_PULL_RANGE = 70;
+  const ABSOLUTE_FROG_CAP = Math.min(100, MAX_FROGS);
+  const STARTING_FROG_CAP = Math.min(ABSOLUTE_FROG_CAP, Config.STARTING_FROG_CAP ?? 75);
+  const LONG_TONGUE_REACH_FACTOR = 1.25;
+  const frogTongues = [];
   const DASHBOARD_STORAGE_KEY = "frogSnake_dashboardStats_v1";
   const DASHBOARD_COSMETICS_STORAGE_KEY = "frogSnake_dashboardCosmetics_v1";
   const DASHBOARD_PFP_STORAGE_KEY = "frogSnake_dashboardPfp_v1";
@@ -1030,8 +1033,8 @@ let greedyHandQueue = null;
   let ouroborosPactUsed    = false;
 let chainReactionActive = false;
   let afterglowActive = false;
-  let magnetizedActive = false;
-  let magnetizedOfferedLastMenu = false;
+  let longTongueActive = false;
+  let deepPondUsed = false;
   let luckyRollUses = 0;
 let nightBloomActive = false;
 let royalApprenticeshipActive = false;
@@ -1069,7 +1072,7 @@ const MAX_LUCK = 30;
   let buffDurationCap          = MAX_BUFF_DURATION_FACTOR;
   let orbSpawnIntervalFactor   = 1.0; // <1 = more orbs
   let minOrbSpawnIntervalFactor= MIN_ORB_SPAWN_INTERVAL_FACTOR;
-  let maxFrogsCap              = MAX_FROGS;
+  let maxFrogsCap              = STARTING_FROG_CAP;
 
   // ---- RUN STATS (for leaderboard / post-run summary) ----
   let totalFrogsSpawned = 0;
@@ -1215,7 +1218,7 @@ const MAX_LUCK = 30;
   function updateHUD() {
     if (!inGameUIVisible) return;
     timerLabel.textContent = formatTime(elapsedTime);
-    frogsLabel.textContent = `Frogs ${frogs.length}`;
+    frogsLabel.textContent = `Frogs ${frogs.length}/${maxFrogsCap}`;
     scoreLabel.textContent = `Score: ${Math.floor(score).toLocaleString()}`;
   }
 
@@ -1265,14 +1268,15 @@ const MAX_LUCK = 30;
     ['Common','Wild Company','Spawn 2–4 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
     ['Common','Second Wind','Once per run: spawn 25 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
-    ['Common','Magnetized','Sacrifice all Magnet frogs. All frogs become slightly magnetized.'],
+    ['Common','Long Tongue','Frogs collect orbs from 25% farther away using their tongues. Once per run. Works with Magnet Frogs.'],
+    ['Common','Deep Pond','Increase your current frog cap by 25, up to a hard limit of 100. Runs begin with a cap of 75. Does not spawn frogs. Once per run.'],
     ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
     ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
     ['Common','Spawn frogs',`${NORMAL_SPAWN_AMOUNT} frogs immediately, subject to the population cap.`],
     ['Common','Orb Flow','Adds 10% orb spawn rate.'],
     ['Common','Orb Whisperer','Orbs stay on the field 30% longer.'],
-    ['Common','Soul Offering','Successful Deathrattle revivals leave an orb. Requires permanent Deathrattle chance.'],
+    ['Epic','Soul Offering','Successful Deathrattle revivals leave an orb. Requires permanent Deathrattle chance.'],
     ['Common','Luck','Gain 10 luck, up to 30. Improves supported chances, spawn rolls and positive orb durations.'],
     ['Common','Deathrattle',`Adds ${Math.round(COMMON_DEATHRATTLE_CHANCE*100)} percentage points to revival chance. Shared cap: ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}%.`],
     ['Common','Last Stand',`Gives the last frog at least ${Math.round(LAST_STAND_MIN_CHANCE*100)}% revival odds, as an exception to the ordinary revival cap.`],
@@ -1281,7 +1285,7 @@ const MAX_LUCK = 30;
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50%, then 75%, then 100% extra duration.'],
     ['Epic','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
     ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
-    ['Epic','Royal Apprenticeship','After selecting this upgrade, frogs gain a random special role when they earn their first crown. Frogs already crowned are unaffected. Existing roles remain. Not offered at the start of a run.'],
+    ['Common','Royal Apprenticeship','After selecting this upgrade, frogs gain a random special role when they earn their first crown. Frogs already crowned are unaffected. Existing roles remain. Not offered at the start of a run.'],
     ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Lingering Hex extends these debuffs; luck does not. Each snake can eat one orb every 3 seconds.'],
     ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
     ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
@@ -1354,7 +1358,7 @@ const MAX_LUCK = 30;
   function pauseIcon(name) {
     const key=name.toLowerCase();
     const url=window.approvedUpgrades?.[key] || window.approvedFrogs?.[key];
-    return url ? `<img src="${pauseEscape(url)}" alt="" loading="lazy"${key==='magnetized'?' data-guide-icon="magnetized"':''}>` : '';
+    return url ? `<img src="${pauseEscape(url)}" alt="" loading="lazy">` : '';
   }
   function rememberRunUpgrade(choice) {
     const el=document.createElement('div'); el.innerHTML=choice.label;
@@ -2529,7 +2533,8 @@ function assignSwarmDivideLanes() {
     frog.swarmDivideLane = (i % 2 === 0) ? -1 : 1;
   }
 }
-function createFrogAt(x, y, tokenId) {
+function createFrogAt(x, y, tokenId, menuPreview = false) {
+  if (!menuPreview && frogs.length >= Math.min(maxFrogsCap, ABSOLUTE_FROG_CAP)) return null;
   const el = document.createElement("div");
   el.className = "frog-sprite"; el.dataset.pocketColor=Math.floor(Math.random()*8);
   el.style.position = "absolute";
@@ -4737,9 +4742,65 @@ function computeDeathRattleChanceForFrog(frog) {
 
     spawnOrb(null, x, y);
   }
+  function getOrbCollectionRadius() {
+    return (FROG_SIZE / 2 + ORB_RADIUS) * (longTongueActive ? LONG_TONGUE_REACH_FACTOR : 1);
+  }
+
+  function clearFrogTongues() {
+    for (const effect of frogTongues) effect.el.remove();
+    frogTongues.length = 0;
+  }
+
+  function showFrogTongue(frog, orb) {
+    if (!longTongueActive || !frog?.el || !orb?.el) return;
+    const el = document.createElement('div');
+    el.className = 'frog-tongue-effect';
+    el.setAttribute('aria-hidden', 'true');
+    const shaft = document.createElement('span');
+    shaft.className = 'frog-tongue-shaft';
+    const tip = document.createElement('span');
+    tip.className = 'frog-tongue-tip';
+    const pickup = orb.el.cloneNode(true);
+    pickup.removeAttribute('id');
+    pickup.classList.add('frog-tongue-orb');
+    el.append(shaft, tip, pickup);
+    container.appendChild(el);
+    const effect = {el, shaft, tip, pickup, frog, x:orb.x, y:orb.y, age:0};
+    frogTongues.push(effect);
+    renderFrogTongue(effect);
+  }
+
+  function renderFrogTongue(effect) {
+    const {frog, el, shaft, tip, pickup, age} = effect;
+    const x = frog.x + FROG_SIZE / 2;
+    const y = (frog.y ?? frog.baseY) + FROG_SIZE * 0.56;
+    const dx = effect.x - x, dy = effect.y - y;
+    const distance = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx);
+    // Reach the orb in 80ms, then bring it back in 140ms; gameplay collection is immediate.
+    const progress = age < 0.08 ? age / 0.08 : Math.max(0, 1 - (age - 0.08) / 0.14);
+    const length = Math.round(distance * progress);
+    shaft.style.width = `${length}px`;
+    shaft.style.transform = `translate(${x}px,${y}px) rotate(${angle}rad)`;
+    tip.style.transform = `translate(${x + Math.cos(angle)*length}px,${y + Math.sin(angle)*length}px) rotate(${angle}rad)`;
+    const orbLength = age < 0.08 ? distance : length;
+    pickup.style.transform = `translate(${x + Math.cos(angle)*orbLength}px,${y + Math.sin(angle)*orbLength}px) translate(-50%,-50%)`;
+    pickup.style.opacity = String(age > 0.18 ? Math.max(0, (0.22-age)/0.04) : 1);
+  }
+
+  function updateFrogTongues(dt) {
+    for (let i=frogTongues.length-1; i>=0; i--) {
+      const effect = frogTongues[i];
+      effect.age += dt;
+      if (effect.age >= 0.22 || !effect.frog.el?.isConnected) {
+        effect.el.remove();
+        frogTongues.splice(i,1);
+      } else renderFrogTongue(effect);
+    }
+  }
+
   function updateOrbs(dt) {
     const MAGNET_RANGE2 = ORB_MAGNET_PULL_RANGE * ORB_MAGNET_PULL_RANGE;
-    const MAGNETIZED_RANGE2 = MAGNETIZED_PULL_RANGE * MAGNETIZED_PULL_RANGE;
     const magnetFrogs = frogs.filter(f => f.isMagnet);
 
     for (let i = orbs.length - 1; i >= 0; i--) {
@@ -4774,7 +4835,7 @@ function computeDeathRattleChanceForFrog(frog) {
         if (t >= 1) delete orb.moltFlight;
       }
 
-      if (!orb.moltFlight && (orbMagnetTime > 0 || magnetizedActive || magnetFrogs.length > 0) && frogs.length > 0) {
+      if (!orb.moltFlight && (orbMagnetTime > 0 || magnetFrogs.length > 0) && frogs.length > 0) {
         let target = null;
         let bestD2 = Infinity;
 
@@ -4790,14 +4851,14 @@ function computeDeathRattleChanceForFrog(frog) {
           }
         }
 
-        if (!target && (orbMagnetTime > 0 || magnetizedActive)) {
+        if (!target && (orbMagnetTime > 0)) {
           for (const frog of frogs) {
             const fx = frog.x + FROG_SIZE / 2;
             const fy = frog.baseY + FROG_SIZE / 2;
             const dx = fx - orb.x;
             const dy = fy - orb.y;
             const d2 = dx * dx + dy * dy;
-            if (d2 < bestD2 && (orbMagnetTime > 0 || d2 < MAGNETIZED_RANGE2)) {
+            if (d2 < bestD2) {
               bestD2 = d2;
               target = { fx, fy };
             }
@@ -4808,7 +4869,7 @@ function computeDeathRattleChanceForFrog(frog) {
           const dx = target.fx - orb.x;
           const dy = target.fy - orb.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const pull = (!target.isMagnet && magnetizedActive && orbMagnetTime <= 0 ? 105 : 80) * dt;
+          const pull = 80 * dt;
           orb.x += (dx / dist) * pull;
           orb.y += (dy / dist) * pull;
         }
@@ -4828,19 +4889,24 @@ function computeDeathRattleChanceForFrog(frog) {
       const ocy = orb.y;
 
       let collectedBy = null;
+      let closestPickupDistance2 = Infinity;
       for (const frog of frogs) {
         const fx = frog.x + FROG_SIZE / 2;
         const fy = frog.baseY + FROG_SIZE / 2;
         const dx = fx - ocx;
         const dy = fy - ocy;
-        const rad = FROG_SIZE / 2 + ORB_RADIUS;
-        if (dx * dx + dy * dy <= rad * rad) {
+        const rad = getOrbCollectionRadius();
+        const distance2 = dx * dx + dy * dy;
+        if (distance2 <= rad * rad && distance2 < closestPickupDistance2) {
           collectedBy = frog;
-          break;
+          closestPickupDistance2 = distance2;
+          if (!royalApprenticeshipActive && upgradeOverlayContext !== "start") upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>When a frog is crowned, it gains a <span class=menu-number-accent data-card-accent>random role</span>", apply:activateRoyalApprenticeship});
+    if (!longTongueActive) break;
         }
       }
 
       if (collectedBy) {
+        showFrogTongue(collectedBy, orb);
         totalOrbsCollected++;
 
         if (orb.type === "permaFrog") {
@@ -5618,6 +5684,13 @@ function samplePathAtDistance(path, startIdx, dist) {
   let dashboardOverlay = null;
   let endGameSummaryOverlay = null;
 
+  function applyDeepPond() {
+    if (deepPondUsed || maxFrogsCap >= ABSOLUTE_FROG_CAP) return;
+    deepPondUsed = true;
+    maxFrogsCap = Math.min(ABSOLUTE_FROG_CAP, maxFrogsCap + 25);
+    updateHUD();
+  }
+
   function getUpgradeChoices() {
     const statColors = {
       mobility: "yellow",
@@ -5630,21 +5703,16 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
+    if (!longTongueActive) upgrades.push({
+      id:'longTongue', label:'Long Tongue<br>Collect orbs from <span>25%</span> farther away',
+      apply:()=>{longTongueActive=true;}
+    });
+    if (!deepPondUsed && maxFrogsCap < ABSOLUTE_FROG_CAP) upgrades.push({
+      id:'deepPond', label:'Deep Pond<br>Increase your frog cap by <span>25</span>. Maximum <span>100</span>.',
+      apply:applyDeepPond
+    });
     if (frogs.some(frog => (frog.starLevel || 0) < 3)) {
       upgrades.push({id:"promotionEpic",label:"Promotion<br>Promote <span>5–10</span> random frogs by one crown level",apply:promoteAllFrogs});
-    }
-    if (!magnetizedActive && frogs.filter(f => f.isMagnet).length >= 3) {
-      upgrades.push({id:"magnetized",label:"Magnetized<br>Sacrifice all Magnet frogs. All frogs become slightly magnetized",apply:()=>{
-        const sacrificed = frogs.filter(f => f.isMagnet);
-        if (sacrificed.length < 3) return;
-        for (const frog of sacrificed) {
-          if (frog.isCannibal) unmarkCannibalFrog(frog);
-          frog.cloneEl?.remove();
-          frog.el?.remove();
-          frogs.splice(frogs.indexOf(frog), 1);
-        }
-        magnetizedActive = true;
-      }});
     }
     if (nightBloomActive && !afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Frogs spawned from expired orbs <span class=menu-number-accent data-card-accent>trigger them</span>", apply:()=>{afterglowActive=true;}});
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
@@ -5716,17 +5784,6 @@ function samplePathAtDistance(path, startIdx, dist) {
             orb.maxTtl = base * 1.3;
             orb.ttl *= 1.3;
           }
-        }
-      });
-    }
-
-    if (!ouroborosPactUsed && frogDeathRattleChance > 0) {
-      upgrades.push({
-        id: "ouroborosPact",
-        label: `⚱️ Soul Offering<br>Deathrattle revivals leave <span class=menu-number-accent data-card-accent>an orb</span>`,
-        apply: () => {
-          ouroborosPactUsed = true;
-
         }
       });
     }
@@ -5826,6 +5883,18 @@ function samplePathAtDistance(path, startIdx, dist) {
     const deathPerPickPct = Math.round(EPIC_DEATHRATTLE_CHANCE * 100);
 
     const upgrades = [];
+    if (!ouroborosPactUsed && frogDeathRattleChance > 0) {
+      upgrades.push({
+        id: "ouroborosPact",
+        label: `⚱️ Soul Offering<br>Deathrattle revivals leave <span class=menu-number-accent data-card-accent>an orb</span>`,
+        apply: () => {
+          ouroborosPactUsed = true;
+
+        }
+      });
+    }
+
+
     if (!hardBargainActive && extraUpgradeOptionActive) upgrades.push({
       id:"hardBargain", label:"Hard Bargain<br>Trade Loaded Hand for +1 Common pick per shed.", apply:applyHardBargain
     });
@@ -5858,7 +5927,6 @@ function samplePathAtDistance(path, startIdx, dist) {
       upgrades.push({id:"eyeForEye", label:"Eye for Eye<br>Kill the slowest snake. <span>Halve</span> your frog cap.", apply:applyEyeForAnEye});
     }
 
-    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>When a frog is crowned, it gains a <span class=menu-number-accent data-card-accent>random role</span>", apply:activateRoyalApprenticeship});
 
     upgrades.push({
       id: "roleDraft",
@@ -6245,7 +6313,7 @@ function startMainMenuBackground() {
   const positions = computeInitialPositions(width, height, count);
 
   for (const pos of positions) {
-    const frog = createFrogAt(pos.x, pos.y, null);
+    const frog = createFrogAt(pos.x, pos.y, null, true);
 
     // remove from live run list; keep as menu background frogs
     frogs.pop();
@@ -6369,6 +6437,7 @@ function closeAnimatedOverlay(overlayEl) {
   }
 
   function showMainMenu() {
+    clearFrogTongues();
     if (!mainMenuOverlay) initMainMenuOverlay();
     if (!mainMenuOverlay) return;
 
@@ -6496,7 +6565,6 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Lasting Legacy", desc: "Dying special frogs have a 20% base chance to pass their role to an ordinary frog." },
       { title: "Second Wind", desc: "When your swarm drops below 10, spawn 25 frogs once, now or later." },
       { title: "Promotion", desc: "Promotes 5–10 random frogs by one crown level. Frogs already at the crown cap are skipped." },
-      { title: "Magnetized", desc: `With at least 3 Magnet frogs alive, sacrifice all Magnet frogs to let every remaining and future frog pull orbs within ${statHighlight(`${MAGNETIZED_PULL_RANGE}px`)}. Once per run.` },
       { title: "Mutation", desc: `${fmtPct(speedPerPickPct)} faster hops and ${fmtPct(jumpPerPickPct)} higher and farther jumps per pick (up to two picks).` },
       { title: "Survival Instinct", desc: `Below 10 frogs, jumps are ${fmtPct(20)} higher and farther.` },
       { title: "Spawn Frogs", desc: `Instantly adds ${statHighlight(NORMAL_SPAWN_AMOUNT)} frogs (only offered if you're below cap).` },
@@ -7892,13 +7960,7 @@ function initUpgradeOverlay() {
     if (!upgradeOverlay || !upgradeOverlayTitleEl) return;
     const rarity = mode === 'epic' ? 'epic' : mode === 'legendary' ? 'legendary' : mode === 'role' ? 'role' : 'common';
     upgradeOverlay.dataset.rarity = rarity;
-    let label = upgradeOverlay.querySelector('.upgrade-rarity-label');
-    if (!label) {
-      label = document.createElement('div');
-      label.className = 'upgrade-rarity-label';
-      upgradeOverlayTitleEl.insertAdjacentElement('afterend', label);
-    }
-    label.textContent = rarity === 'role' ? 'ROLE DRAFT' : rarity.toUpperCase();
+    upgradeOverlay.querySelector('.upgrade-rarity-label')?.remove();
   }
 
   function populateUpgradeOverlayChoices(mode) {
@@ -7924,12 +7986,6 @@ function initUpgradeOverlay() {
 
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
-      // Higher Calling replaces the shed's Common + Epic with two Epics.
-      // Carry Magnetized into those menus, but never show it twice in a row.
-      if (higherCallingActive && upgradeOverlayContext === "shed" && !magnetizedOfferedLastMenu) {
-        const magnetized = getUpgradeChoices().find(c => c.id === "magnetized");
-        if (magnetized) choices.push(magnetized);
-      }
       if (upgradeOverlayContext === "start") {
         pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors" && choice.id !== "royalApprenticeship");
       }
@@ -7945,14 +8001,6 @@ function initUpgradeOverlay() {
       choices = getLegendaryUpgradeChoices().slice();
     } else {
       let pool = getUpgradeChoices().slice();
-
-      // This sacrifice is explicitly unlocked by the current field, so it
-      // occupies one Common slot as soon as three Magnet frogs are present.
-      const magnetizedIndex = pool.findIndex(c => c.id === "magnetized");
-      if (magnetizedIndex !== -1) {
-        const magnetized = pool.splice(magnetizedIndex, 1)[0];
-        if (!magnetizedOfferedLastMenu) choices.push(magnetized);
-      }
 
       if (!initialUpgradeDone) {
         pool = pool.filter(c => c.id !== "permaLifeSteal");
@@ -8003,7 +8051,6 @@ function initUpgradeOverlay() {
     }
 
     currentUpgradeChoices = choices.slice();
-    magnetizedOfferedLastMenu = choices.some(choice => choice.id === "magnetized");
 
     if (!choices.length) {
       const span = document.createElement("div");
@@ -8204,8 +8251,8 @@ function initUpgradeOverlay() {
   }
 
   function openFirstUpgradeSelection() {
-    epicChainPending = false;
-    openUpgradeOverlay("epic", { context: "start" });
+    epicChainPending = true;
+    openUpgradeOverlay("normal", { context: "start" });
   }
 
 function startNewRun() {
@@ -8314,15 +8361,10 @@ function startRunFromMenu() {
     if (shouldOpenEpicNow) {
       epicChainPending = false;
 
-      if (!initialUpgradeDone && currentUpgradeOverlayMode === "normal") {
-        initialUpgradeDone = true;
-        nextPermanentChoiceTime = elapsedTime + 60;
-      } else {
-        nextPermanentChoiceTime = elapsedTime + 60;
-      }
-
+      const nextContext = upgradeOverlayContext === "start" ? "start" : "shed";
+      nextPermanentChoiceTime = elapsedTime + 60;
       gamePaused = true;
-      openUpgradeOverlay("epic", {context:"shed"});
+      openUpgradeOverlay("epic", {context:nextContext});
       return;
     }
 
@@ -8364,6 +8406,7 @@ function startRunFromMenu() {
   }
 
   async function endGame() {
+    clearFrogTongues();
     window.FrogGameTutorial?.cancel();
     if (pauseMenu) pauseMenu.style.display = "none";
     clearEventVisuals();
@@ -8456,6 +8499,7 @@ function startRunFromMenu() {
   }
 
   function restartGame() {
+    clearFrogTongues();
     runUpgradeLog = [];
     if (pauseMenu) pauseMenu.style.display = "none";
     // Stop old loop
@@ -8588,8 +8632,8 @@ snakeOldBodySpeedBonusPending = false;
 doubleYolkerActive = false;
     chainReactionActive = false;
     afterglowActive = false;
-    magnetizedActive = false;
-    magnetizedOfferedLastMenu = false;
+    longTongueActive = false;
+    deepPondUsed = false;
     luckyRollUses = 0;
     nightBloomActive = false;
     royalApprenticeshipActive = false;
@@ -8654,7 +8698,7 @@ doubleYolkerActive = false;
     buffDurationCap          = MAX_BUFF_DURATION_FACTOR;
     orbSpawnIntervalFactor   = 1.0;
     minOrbSpawnIntervalFactor= MIN_ORB_SPAWN_INTERVAL_FACTOR;
-    maxFrogsCap              = MAX_FROGS;
+    maxFrogsCap              = STARTING_FROG_CAP;
     snakePermanentSpeedFactor= 1.0;
 
     // Hide overlays
@@ -8769,6 +8813,7 @@ doubleYolkerActive = false;
       updateFrogs(dt, width, height);
       updateSnake(dt, width, height);
       updateOrbs(dt);
+      updateFrogTongues(dt);
 
       // ----- SCORING -----
       // Score is now handled per frog eaten inside updateSingleSnake().

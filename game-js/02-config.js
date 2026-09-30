@@ -166,6 +166,7 @@
       "frog_16.png"
     ],
     STARTING_FROGS: 50,
+    STARTING_FROG_CAP: 75,
     MAX_FROGS: 100,
     ORB_RADIUS: 12,
     ORB_TTL: 22,

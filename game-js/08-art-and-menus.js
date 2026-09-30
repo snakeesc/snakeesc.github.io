@@ -62,8 +62,6 @@ window.approvedFrogs["cannibal-5"]="./game-assets/sprites/approved/frog-cannibal
 window.approvedFrogs.cannibal=window.approvedFrogs["cannibal-0"];
 
 window.approvedUpgrades["eye for eye"]="./game-assets/sprites/approved/upgrade-eye-for-eye.png";
-window.approvedUpgrades["magnetized"]="./game-assets/sprites/approved/upgrade-magnetized.png";
-(()=>{const style=document.createElement('style');style.textContent='.frog-upgrade-choice .frog-upgrade-emoji[data-approved="magnetized"]{background-size:190% 190%!important;background-position:center!important;}';document.head.appendChild(style);})();
 
 window.approvedUpgrades["wild company"]="./game-assets/sprites/approved/upgrade-wild-company.png";
 window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-greedy-hand-framed.svg";
@@ -92,7 +90,6 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  'Role Draft':'Choose a role; spawn 2–5 special frogs. Luck favors more.'
  };
  const style=document.createElement('style');
- style.textContent='#runPauseOverlay[data-view="guide"] .pause-row img{scale:.88;transform-origin:center;}#runPauseOverlay[data-view="guide"] .pause-row img[data-guide-icon="magnetized"]{object-fit:cover!important;scale:1.35!important;}';
  document.head.appendChild(style);
  function polish(){
   document.querySelectorAll('#runPauseOverlay[data-view="guide"] .pause-guide-entries .pause-row').forEach(row=>{
@@ -286,3 +283,7 @@ window.approvedFrogs["aura-crowned"]="./game-assets/sprites/approved/frog-aura-c
 window.approvedFrogs["bull-crowned"]="./game-assets/sprites/approved/frog-bull-crowned.png";
 window.approvedFrogs["lucky-crowned"]="./game-assets/sprites/approved/frog-lucky-crowned.png";
 window.approvedFrogs["champion-crowned"]="./game-assets/sprites/approved/frog-champion-crowned.png";
+
+// Common upgrades: collection reach and population capacity.
+window.approvedUpgrades["long tongue"]="./game-assets/sprites/approved/upgrade-long-tongue.png";
+window.approvedUpgrades["deep pond"]="./game-assets/sprites/approved/upgrade-deep-pond.png";
