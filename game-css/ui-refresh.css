@@ -197,3 +197,11 @@ img[src*="upgrade-deep-pond.png"],img.upgrade-icon-deep-pond{transform:translate
 
 /* Epic value accents match the copper border. */
 #upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-desc :is(.menu-number-accent,[data-card-accent],.stat-highlight,span){color:#b88249!important}
+
+/* Second Bloom: center its visible pixels within the standard icon slot. */
+#upgradeOverlay .frog-upgrade-emoji[data-approved="second bloom"]{background-size:162.13% auto!important;background-position:45.65% 59.9%!important}
+img[src*="upgrade-second-bloom.png"],img.upgrade-icon-second-bloom{transform:translate(2.7%,-5.98%) scale(1.6213)!important;transform-origin:center!important}
+
+/* Uniform upgrade sprite slots, using Common Deathrattle proportions. */
+#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji[data-approved]{width:42px!important;height:42px!important;left:14px!important;top:50%!important;scale:1!important;transform:translateY(-50%)!important;background-color:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+@media(pointer:coarse),(max-width:600px){#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji[data-approved]{width:56px!important;height:56px!important;left:36px!important}}

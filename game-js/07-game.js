@@ -1271,10 +1271,10 @@ const MAX_LUCK = 30;
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
     ['Common','Wild Company','Spawn 2–4 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
     ['Common','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
-    ['Common','Second Wind','Once per run: spawn 25 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
+    ['Common','Second Wind','Once per run: spawn 20 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
     ['Common','Long Tongue','Frogs collect orbs from 25% farther away using their tongues. Once per run. Works with Magnet Frogs.'],
     ['Common','Deep Pond','Increase your current frog cap by 25 (maximum 100), then spawn 10 frogs within the new cap. Once per run. Never offered alongside Spawn Frogs, Wild Company, or Second Wind.'],
-    ['Common','Night Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
+    ['Common','Second Bloom','Expired orbs have a 20% base chance to spawn a frog.'],
     ['Common','Lingering Hex','Snake debuffs last 15% longer. Does not modify Lucky Roll.'],
     ['Common','Double Yolker','Collected orbs have a 15% base chance to spawn two frogs.'],
     ['Common','Spawn frogs',`${NORMAL_SPAWN_AMOUNT} frogs immediately, subject to the population cap.`],
@@ -2717,7 +2717,7 @@ function createFrogAt(x, y, tokenId, menuPreview = false) {
   function triggerSecondWindIfNeeded() {
     if (!secondWindActive || secondWindUsed || frogs.length < 1 || frogs.length >= 10) return;
     secondWindUsed = true;
-    spawnExtraFrogs(25);
+    spawnExtraFrogs(20);
   }
 
   function triggerGraveWave() {
@@ -5747,14 +5747,14 @@ function samplePathAtDistance(path, startIdx, dist) {
       apply:()=>{lastingLegacyActive=true;}
     });
     if (!secondWindUsed && !secondWindActive) upgrades.push({
-      id:"secondWind", label:"Second Wind<br>Below 10 frogs? Spawn <span>25</span> now or later",
+      id:"secondWind", label:"Second Wind<br>Below 10 frogs? Spawn <span>20</span> now or later",
       apply:()=>{ secondWindActive=true; triggerSecondWindIfNeeded(); }
     });
 
     if (!nightBloomActive) {
       upgrades.push({
         id: "nightBloom",
-        label: `🌙 Night Bloom<br>Expired orbs have a <span style="color:${c.buff};">20%</span> chance to spawn a frog`,
+        label: `🌙 Second Bloom<br>Expired orbs have a <span style="color:${c.buff};">20%</span> chance to spawn a frog`,
         apply: () => { nightBloomActive = true; }
       });
     }
@@ -5963,7 +5963,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     });
     if (!orbStormUsed) upgrades.push({
       id: "epicOrbStorm",
-      label: `🌪️ Orb Storm<br>Spawn <span>20–25</span> orbs over <span>22</span> seconds. Once per run.`,
+      label: `🌪️ Orb Storm<br>Spawn <span>20–25</span> orbs over <span>22</span> seconds.`,
       apply: startOrbStorm
     });
     if (!bruisedEggActive && snake) upgrades.push({
@@ -6580,7 +6580,7 @@ function closeAnimatedOverlay(overlayEl) {
 
     const commonUpgrades = [
       { title: "Lasting Legacy", desc: "Dying special frogs have a 20% base chance to pass their role to an ordinary frog." },
-      { title: "Second Wind", desc: "When your swarm drops below 10, spawn 25 frogs once, now or later." },
+      { title: "Second Wind", desc: "When your swarm drops below 10, spawn 20 frogs once, now or later." },
       { title: "Promotion", desc: "Promotes 5–10 random frogs by one crown level. Frogs already at the crown cap are skipped." },
       { title: "Mutation", desc: `${fmtPct(speedPerPickPct)} faster hops and ${fmtPct(jumpPerPickPct)} higher and farther jumps per pick (up to two picks).` },
       { title: "Survival Instinct", desc: `Below 10 frogs, jumps are ${fmtPct(20)} higher and farther.` },
@@ -6755,13 +6755,13 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "buff", label: "🌩️ Orb Storm", desc: "Spawns 20–25 orbs over 22 seconds. Once per run." },
       { type: "buff", label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
       { type: "buff", label: "⚡ Chain Reaction", desc: "When collecting an orb, there is a 25% chance of a second buff." },
-      { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 20% chance to spawn a frog." },
+      { type: "buff", label: "🌙 Second Bloom", desc: "Naturally expiring orbs have a 20% chance to spawn a frog." },
       { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb spawns 1 extra frog. Requires Orb Whisperer." },
       { type: "buff", label: "🔮 Molt Fortune", desc: "Drop 5–10 orbs now and whenever a snake sheds." },
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
       { type: "survival", label: "⚱️ Soul Offering", desc: "Deathrattle revivals leave an orb." },
-      { type: "survival", label: "💨 Second Wind", desc: "Below 10 frogs, spawn 25 immediately on selection or when you later fall below 10 (once per run)." },
+      { type: "survival", label: "💨 Second Wind", desc: "Below 10 frogs, spawn 20 immediately on selection or when you later fall below 10 (once per run)." },
       { type: "survival", label: "🩸 Poisonous Skin", desc: "The snake is slowed briefly every time it eats a frog." },
       { type: "survival", label: "👻 Grave Wave", desc: "Spawns 7–15 frogs immediately and at each shed. Luck favors more. Frog cap applies." },
       { type: "role", label: "🐸 Spawn Frogs", desc: "Spawn fresh frogs instantly." },
