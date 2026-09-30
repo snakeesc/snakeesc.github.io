@@ -1285,7 +1285,7 @@ const MAX_LUCK = 30;
     ['Common','Lucky Roll','Triggers a random beneficial orb effect with 50%, then 75%, then 100% extra duration.'],
     ['Epic','Ouroboros Curse','The largest snake consumes half its body and permanently slows by 12%. Once per run.'],
     ['Epic','Ouroboros Feast','After Ouroboros Curse, with 2+ snakes: each loses half its body. Permanently slows each by 10% with two snakes, or 5% with three or more. Once per run.'],
-    ['Common','Royal Apprenticeship','After selecting this upgrade, frogs gain a random special role when they earn their first crown. Frogs already crowned are unaffected. Existing roles remain. Not offered at the start of a run.'],
+    ['Common','Royal Apprenticeship','After selecting this upgrade, frogs gain a random special role when they earn their first crown. Frogs already crowned are unaffected. Existing roles remain.'],
     ['Epic','Forbidden Fruit','Snakes eat orbs on mouth contact, suffering a half-duration slow, confusion or shrink. Lingering Hex extends these debuffs; luck does not. Each snake can eat one orb every 3 seconds.'],
     ['Epic','Higher Calling','At each shed, replace the common and epic picks with two fresh epic picks.'],
     ['Epic','Second Helping','Your next common upgrade offers 3 picks.'],
@@ -4900,7 +4900,7 @@ function computeDeathRattleChanceForFrog(frog) {
         if (distance2 <= rad * rad && distance2 < closestPickupDistance2) {
           collectedBy = frog;
           closestPickupDistance2 = distance2;
-          if (!royalApprenticeshipActive && upgradeOverlayContext !== "start") upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>When a frog is crowned, it gains a <span class=menu-number-accent data-card-accent>random role</span>", apply:activateRoyalApprenticeship});
+
     if (!longTongueActive) break;
         }
       }
@@ -5703,6 +5703,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     const c = statColors;
     const deathPerPickPct = Math.round(COMMON_DEATHRATTLE_CHANCE * 100);
     const upgrades = [];
+    if (!royalApprenticeshipActive) upgrades.push({id:"royalApprenticeship", label:"Royal Apprenticeship<br>When a frog is crowned, it gains a <span class=menu-number-accent data-card-accent>random role</span>", apply:activateRoyalApprenticeship});
     if (!longTongueActive) upgrades.push({
       id:'longTongue', label:'Long Tongue<br>Collect orbs from <span>25%</span> farther away',
       apply:()=>{longTongueActive=true;}
@@ -5914,7 +5915,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if(pairOfScissorsUsed && !ouroborosFeastUsed && getCurseSnakes().length>=2 && !getCurseSnakes().some(s=>s.selfConsume))upgrades.push({id:"ouroborosFeast",label:"Ouroboros Feast<br>Snakes devour half of each other’s bodies and <span class=menu-number-accent data-card-accent>slow down</span>",apply:applyOuroborosFeast});
 
     if (!forbiddenFruitActive) upgrades.push({id:"forbiddenFruit",label:'Forbidden Fruit<br>Orbs briefly debuff snakes that <span class=menu-number-accent data-card-accent>eat</span> them.',apply:()=>{forbiddenFruitActive=true;}});
-    if (!higherCallingActive && upgradeOverlayContext === "shed") upgrades.push({id:"higherCalling",label:'Higher Calling<br>Choose <span style="color:#006b83">2</span> epics at each shed.',apply:()=>{higherCallingActive=true;}});
+    if (!higherCallingActive) upgrades.push({id:"higherCalling",label:'Higher Calling<br>Choose <span style="color:#006b83">2</span> epics at each shed.',apply:()=>{higherCallingActive=true;}});
     if (!secondHelpingPending && secondHelpingPicksRemaining === 0) upgrades.push({
       id:"secondHelping", label:'Second Helping<br>Your next common upgrade offers <span class="stat-highlight" style="color:#006b83;">3</span> picks.',
       apply:()=>{ secondHelpingPending = true; }
@@ -7987,7 +7988,7 @@ function initUpgradeOverlay() {
     if (isEpic) {
       let pool = getEpicUpgradeChoices().slice();
       if (upgradeOverlayContext === "start") {
-        pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors" && choice.id !== "royalApprenticeship");
+        pool = pool.filter(choice => choice.id !== "frogScatter" && choice.id !== "pairOfScissors");
       }
       if (extraUpgradeOptionActive && !greedyHandUsed && Math.random() < 0.20) {
         pool = pool.filter(c=>c.id!=="eyeForEye");
