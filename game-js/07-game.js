@@ -1300,7 +1300,7 @@ const MAX_LUCK = 30;
     ['Epic','Tidal Wave','Spawns as many frogs as are alive, with a minimum of 15 added frogs. Population cap still applies.'],
     ['Epic','Eye for Eye','The slowest snake sheds, dies, and disappears. Your current frog cap is halved (rounded down). Once per run.'],
     ['Epic','Epic Deathrattle',`Adds ${Math.round(EPIC_DEATHRATTLE_CHANCE*100)} percentage points to revival chance, up to the shared ${Math.round(MAX_DEATHRATTLE_CHANCE*100)}% cap.`],
-    ['Epic','Orb Specialist','Collected orbs have a 50% base chance to spawn an extra frog.'],
+    ['Epic','Orb Specialist','Every collected orb spawns 1 extra frog, up to your frog cap. Requires Orb Whisperer.'],
     ['Epic','Grave Wave','Each shed spawns 7–15 frogs. Luck favors more.'],
     ['Epic','Poisonous Skin','Each eaten frog briefly slows the snake.'],
     ['Common','Promotion','Promotes 5–10 random frogs by one crown level, if enough are eligible.'],
@@ -4922,7 +4922,7 @@ function computeDeathRattleChanceForFrog(frog) {
 
         let frogsToSpawnFromOrb = 0;
 
-        if (orbSpecialistActive && Math.random() < 0.50) {
+        if (orbSpecialistActive) {
           frogsToSpawnFromOrb += 1;
         }
 
@@ -6009,10 +6009,10 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
-    if (!orbSpecialistActive) {
+    if (!orbSpecialistActive && orbLingerBonusUsed) {
       upgrades.push({
         id: "epicOrbSpecialist",
-        label: `🧪 Orb Specialist<br>Collected orbs have a <span style="color:${epicTitleColor};">50%</span> chance to spawn <span style="color:${epicTitleColor};">1</span> extra frog`,
+        label: `🧪 Orb Specialist<br>Every collected orb spawns <span style="color:${epicTitleColor};">1</span> extra frog`,
         apply: () => { orbSpecialistActive = true; }
       });
     }
@@ -6590,7 +6590,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Snake Egg", desc: "The lowest-shed snake gains 25% less speed per shed." },
       { title: "Frog Promotion", desc: `${statHighlight(10)} new frogs, each with a random permanent role.` },
       { title: "Grave Wave", desc: `Every shed spawns ${fmtRange(GRAVE_WAVE_MIN_GHOSTS, GRAVE_WAVE_MAX_GHOSTS)} uncontrollable ghost frogs.` },
-      { title: "Orb Specialist", desc: `Every orb guarantees ${statHighlight("1")} frog; Orb Collector rolls can add more.` },
+      { title: "Orb Specialist", desc: `Every collected orb spawns ${statHighlight("1")} extra frog. Requires Orb Whisperer.` },
       { title: "Fragile Reality", desc: `Doubles buff duration caps but halves orb spawn speed going forward.` },
       { title: "Frog Scatter", desc: `Respawn every frog with roles and crowns intact; trigger death effects.` },
       { title: "Eye for an Eye", desc: `Kill the slowest snake and half your frogs; your current frog cap is halved.` }
@@ -6739,7 +6739,7 @@ function closeAnimatedOverlay(overlayEl) {
       { type: "buff", label: "🥚 Double Yolker", desc: "15% chance for collected orbs to spawn 2 extra frogs." },
       { type: "buff", label: "⚡ Chain Reaction", desc: "When collecting an orb, there is a 25% chance of a second buff." },
       { type: "buff", label: "🌙 Night Bloom", desc: "Naturally expiring orbs have a 20% chance to spawn a frog." },
-      { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb has a 50% chance ot spawn a a frog." },
+      { type: "buff", label: "🧪 Orb Specialist", desc: "Every collected orb spawns 1 extra frog. Requires Orb Whisperer." },
       { type: "buff", label: "🔮 Molt Fortune", desc: "Snake drops 5–10 orbs whenever it sheds." },
       { type: "survival", label: "💀 Deathrattle", desc: "Dead frogs have a chance to respawn." },
       { type: "survival", label: "🏹 Last Stand", desc: "Your last frog has strong revive odds." },
