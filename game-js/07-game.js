@@ -3509,6 +3509,7 @@ function applyRoleDraft(roleId) {
 
 function showRoleDraftOverlayChoices() {
   initUpgradeOverlay();
+  updateUpgradeRarityPresentation('role');
   armUpgradeTapGuard();
   if (!upgradeOverlayButtonsContainer) return;
 
@@ -7887,6 +7888,19 @@ function initUpgradeOverlay() {
     closeUpgradeOverlay();
   }
 
+  function updateUpgradeRarityPresentation(mode) {
+    if (!upgradeOverlay || !upgradeOverlayTitleEl) return;
+    const rarity = mode === 'epic' ? 'epic' : mode === 'legendary' ? 'legendary' : mode === 'role' ? 'role' : 'common';
+    upgradeOverlay.dataset.rarity = rarity;
+    let label = upgradeOverlay.querySelector('.upgrade-rarity-label');
+    if (!label) {
+      label = document.createElement('div');
+      label.className = 'upgrade-rarity-label';
+      upgradeOverlayTitleEl.insertAdjacentElement('afterend', label);
+    }
+    label.textContent = rarity === 'role' ? 'ROLE DRAFT' : rarity.toUpperCase();
+  }
+
   function populateUpgradeOverlayChoices(mode) {
     initUpgradeOverlay();
 
@@ -7894,6 +7908,7 @@ function initUpgradeOverlay() {
     if (!containerEl) return;
 
     currentUpgradeOverlayMode = mode || "normal";
+    updateUpgradeRarityPresentation(currentUpgradeOverlayMode);
     const isEpic      = currentUpgradeOverlayMode === "epic";
     const isLegendary = currentUpgradeOverlayMode === "legendary";
     const optionCount = extraUpgradeOptionActive ? 4 : 3;
