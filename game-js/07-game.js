@@ -1267,9 +1267,9 @@ const MAX_LUCK = 30;
     ['Epic','Withering','Requires Brittle Scales and Lingering Hex. All current and future snakes permanently use Snake Shrink size and bite radius. Shrink orb outcomes become Slow. Once per run.'],
     ['Epic','Shared Misfortune','Available with two or more snakes. Player-collected orb debuffs and their Chain Reaction effects affect all snakes. Poison Toad and Forbidden Fruit remain local.'],
     ['Common','Afterglow','Frogs spawned from expired orbs trigger those orbs at half duration.'],
-    ['Common','Mutation','Frogs hop 15% faster and jump 20% higher and farther, up to their limits.'],
+    ['Common','Mutation','Frogs hop 15% faster and jump 15% higher and farther, up to their limits.'],
     ['Common','Panic Attack','Confused snakes flee your frogs.'],
-    ['Common','Wild Company','Spawn 2–4 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Luck favors larger batches.'],
+    ['Common','Wild Company','Spawn 2–4 frogs of one random common role: Bull Frog, Magnet or Poison Toad. Requires at least 4 open frog slots. Luck favors larger batches.'],
     ['Common','Lasting Legacy','A dying special frog has a 20% base chance to pass a role to an ordinary frog. Luck improves the chance.'],
     ['Common','Second Wind','Once per run: spawn 20 frogs immediately if below 10 when selected, or when the swarm later drops below 10. Frog cap applies.'],
     ['Common','Long Tongue','Frogs collect orbs from 25% farther away using their tongues. Once per run. Works with Magnet Frogs.'],
@@ -2537,6 +2537,19 @@ function assignSwarmDivideLanes() {
     frog.swarmDivideLane = (i % 2 === 0) ? -1 : 1;
   }
 }
+// Shared continuous movement profile for starting and newly spawned frogs.
+function rollFrogMovementProfile() {
+  const tendency = Math.random() * 2 - 1;
+  const idleCenter = 1.45 - tendency * 0.25;
+  const hopCenter = 0.46 - tendency * 0.045;
+  const heightCenter = 19.4 + tendency * 2;
+  return {
+    idleMin: idleCenter - 0.55, idleMax: idleCenter + 0.55,
+    hopMin: hopCenter - 0.10, hopMax: hopCenter + 0.10,
+    heightMin: heightCenter - 6, heightMax: heightCenter + 6
+  };
+}
+
 function createFrogAt(x, y, tokenId, menuPreview = false) {
   if (!menuPreview && frogs.length >= Math.min(maxFrogsCap, ABSOLUTE_FROG_CAP)) return null;
   const el = document.createElement("div");
@@ -2549,22 +2562,7 @@ function createFrogAt(x, y, tokenId, menuPreview = false) {
   el.style.zIndex = "10";
   container.appendChild(el);
 
-  const personalityRoll = Math.random();
-  let idleMin, idleMax, hopMin, hopMax, heightMin, heightMax;
-
-  if (personalityRoll < 0.25) {
-    idleMin = 0.3; idleMax = 1.0;
-    hopMin = 0.25; hopMax = 0.50;
-    heightMin = 15.4; heightMax = 32;
-  } else if (personalityRoll < 0.6) {
-    idleMin = 0.8; idleMax = 3.0;
-    hopMin = 0.35; hopMax = 0.63;
-    heightMin = 11; heightMax = 26;
-  } else {
-    idleMin = 1.4; idleMax = 3.2;
-    hopMin = 0.35; hopMax = 0.63;
-    heightMin = 11; heightMax = 24;
-  }
+  const {idleMin, idleMax, hopMin, hopMax, heightMin, heightMax} = rollFrogMovementProfile();
 
   const cosmetics = rollFrogCosmetics();
 
@@ -2908,7 +2906,7 @@ function getRandomMutationUpgrade() {
     label: `
       🧬 Mutation<br>
       <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+15%</span> jump speed
-      & <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+20%</span> jump height
+      & <span style="color:${TOTAL_HIGHLIGHT_COLOR};">+15%</span> jump height
     `,
     apply: () => {
       applyMutationUpgrade();
@@ -2923,7 +2921,7 @@ function applyMutationUpgrade() {
     frogPermanentSpeedFactor = MIN_FROG_SPEED_FACTOR;
   }
 
-  frogPermanentJumpFactor *= 1.20; // 20% higher jumps
+  frogPermanentJumpFactor *= 1.15; // 15% higher jumps
   if (frogPermanentJumpFactor > MAX_FROG_JUMP_FACTOR) {
     frogPermanentJumpFactor = MAX_FROG_JUMP_FACTOR;
   }
@@ -5741,7 +5739,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (nightBloomActive && !afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Frogs spawned from expired orbs <span class=menu-number-accent data-card-accent>trigger them</span>", apply:()=>{afterglowActive=true;}});
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
 
-    upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>2–4</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],2,4)});
+    if (maxFrogsCap - frogs.length >= 4) upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>2–4</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],2,4)});
     if (!lastingLegacyActive) upgrades.push({
       id:"lastingLegacy", label:"Lasting Legacy<br><span>20%</span> chance to pass a special frog’s role on death",
       apply:()=>{lastingLegacyActive=true;}
@@ -6098,22 +6096,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     el.style.zIndex = "8";
     container.appendChild(el);
 
-    const personalityRoll = Math.random();
-    let idleMin, idleMax, hopMin, hopMax, heightMin, heightMax;
-
-    if (personalityRoll < 0.25) {
-      idleMin = 0.3; idleMax = 1.0;
-      hopMin = 0.25; hopMax = 0.50;
-      heightMin = 15.4; heightMax = 32;
-    } else if (personalityRoll < 0.6) {
-      idleMin = 0.8; idleMax = 3.0;
-      hopMin = 0.35; hopMax = 0.63;
-      heightMin = 11; heightMax = 26;
-    } else {
-      idleMin = 2.0; idleMax = 5.0;
-      hopMin = 0.45; hopMax = 0.9;
-      heightMin = 6;  heightMax = 20;
-    }
+    const {idleMin, idleMax, hopMin, hopMax, heightMin, heightMax} = rollFrogMovementProfile();
 
     const frog = {
       tokenId,
@@ -6743,7 +6726,7 @@ function closeAnimatedOverlay(overlayEl) {
     }
 
     const upgrades = [
-      { type: "mobility", label: "🧬 Mutation", desc: "+15% hop speed and +20% jump height and distance per pick." },
+      { type: "mobility", label: "🧬 Mutation", desc: "+15% hop speed and +15% jump height and distance per pick." },
       { type: "mobility", label: "⚡ Survival Instinct", desc: "Below 10 frogs, they jump 20% higher and farther." },
       { type: "mobility", label: "Double Jump", desc: "After two Mutations and Survival Instinct, double-hop chance rises from 5% to 10%." },
       { type: "mobility", label: "✂️ Ouroboros Curse", desc: "Makes the snake consume half its body and slows it." },
@@ -8331,6 +8314,8 @@ function startNewRun() {
     isPaused: () => gamePaused,
     setPaused: value => { gamePaused = value; },
     isOver: () => gameOver || mainMenuActive,
+    hud: () => hud,
+    controls: () => controlsBar,
     upgrade: () => upgradeOverlay?.querySelector('.frog-upgrade-choice'),
     frog: () => frogs.find(f => f.el?.isConnected)?.el,
     snake: () => snake?.head?.el,

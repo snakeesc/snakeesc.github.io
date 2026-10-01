@@ -186,14 +186,13 @@
 #upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice,
 #upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-choice:is(:hover,:focus,:active){background:linear-gradient(110deg,#fff5e2,#f7e5c5)!important;box-shadow:none!important}
 
-
 /* Match visible artwork size while preserving the approved image files. */
 #upgradeOverlay .frog-upgrade-emoji[data-approved="long tongue"]{background-size:157.08% auto!important;background-position:57.77% 64.25%!important}
 #upgradeOverlay .frog-upgrade-emoji[data-approved="deep pond"]{background-size:174.99% auto!important;background-position:50.08% 88.51%!important}
 img[src*="upgrade-long-tongue.png"],img.upgrade-icon-long-tongue{transform:translate(-4.45%,-6.1%) scale(1.5708)!important;transform-origin:center!important}
 img[src*="upgrade-deep-pond.png"],img.upgrade-icon-deep-pond{transform:translate(-0.06%,-6.38%) scale(1.7499)!important;transform-origin:center!important}
 
-/* Epic value accents match the copper border. */
+/* Epic value accents retain the approved light orange. */
 #upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay[data-rarity="epic"] .frog-upgrade-desc :is(.menu-number-accent,[data-card-accent],.stat-highlight,span){color:#b88249!important}
 
 /* Second Bloom: center its visible pixels within the standard icon slot. */
@@ -203,3 +202,8 @@ img[src*="upgrade-second-bloom.png"],img.upgrade-icon-second-bloom{transform:tra
 /* Uniform upgrade sprite slots, using Common Deathrattle proportions. */
 #upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji[data-approved]{width:42px!important;height:42px!important;left:14px!important;top:50%!important;scale:1!important;transform:translateY(-50%)!important;background-color:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 @media(pointer:coarse),(max-width:600px){#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay#upgradeOverlay .frog-upgrade-emoji[data-approved]{width:56px!important;height:56px!important;left:36px!important}}
+
+/* Game controls should never invoke native long-press text selection. */
+html, body, body *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+body img{-webkit-user-drag:none;}
+body input,body textarea,body [contenteditable="true"],body [contenteditable=""],body [contenteditable="plaintext-only"],body [contenteditable="true"] *,body [contenteditable=""] *,body [contenteditable="plaintext-only"] *{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}

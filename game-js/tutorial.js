@@ -3,7 +3,7 @@
   'use strict';
   const ALWAYS_SHOW_FOR_TESTING = false;
   const touchControls = (typeof navigator !== 'undefined' && (navigator.maxTouchPoints > 0 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || ''))) || window.matchMedia?.('(pointer: coarse)').matches;
-  const steeringHint = touchControls ? "Tap the screen to guide your frogs. They’ll hop toward where you tap." : 'Move your mouse to guide your frogs. They’ll hop toward your cursor.';
+  const steeringHint = touchControls ? "These are your frogs. Tap the screen where you want them to go. Keep them alive as long as possible." : 'These are your frogs. Move your cursor where you want them to go. Keep them alive as long as possible.';
   const KEY = 'escapeSnake.bubbleTutorialSeen.v3';
   let completed = false, replay = false, phase = 'idle', hooks = null, upgradeOpened = false;
   let overlay = null, target = null, previousPause = false;
@@ -85,13 +85,16 @@
       phase = 'frogs';
       bubble(hooks.frog(), steeringHint, 'Next', () => {
         phase = 'snake';
-        bubble(hooks.snake(), 'The snake chases and eats your frogs. Guide them away from its head. Your run ends when you lose your last frog.', 'Next', () => {
-          phase = 'shed';
-          bubble(hooks.snake(), 'Every 3 minutes, the snake sheds its skin and gets faster. After three sheds, another snake joins the hunt.', 'Next', () => {
-            phase = 'orb';
-            bubble(hooks.orb(), 'Guide a frog onto a glowing orb to collect it. Orbs can give your frogs temporary powers, weaken snakes, or bring in more frogs.', 'Next', () => {
-              phase = 'upgrade'; upgradeOpened = true; hooks.openUpgrades();
-              bubble(hooks.upgrade(), 'Pick one card to start your run. Each upgrade gives a different benefit. You’ll get more choices as you survive.', 'Choose my upgrade', finish);
+        bubble(hooks.snake(), 'The snake is hunting your frogs. Keep them away from its head to avoid being eaten. Your run ends when your last frog dies.', 'Next', () => {
+          phase = 'orb';
+          bubble(hooks.orb(), 'Guide your frogs onto glowing orbs to collect them. Orbs can grant temporary powers, weaken snakes, or spawn more frogs.', 'Next', () => {
+            phase = 'hud';
+            bubble(hooks.hud(), 'Your frog count, score, and time. Choose an upgrade every minute. The snake sheds and gets faster every 3 minutes.', 'Next', () => {
+              phase = 'controls';
+              bubble(hooks.controls(), 'Mute or pause the game.', 'Next', () => {
+                phase = 'upgrade'; upgradeOpened = true; hooks.openUpgrades();
+                bubble(hooks.upgrade(), 'Pick one card to start your run. Each upgrade gives a different benefit. You’ll get more choices as you survive.', 'Choose my upgrade', finish);
+              });
             });
           });
         });

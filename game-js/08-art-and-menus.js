@@ -79,7 +79,7 @@ window.approvedUpgrades["greedy hand"]="./game-assets/sprites/approved/upgrade-g
  'Greedy Hand':'Take every offer; another snake joins. Requires Loaded Hand. 20% offer chance; once per run. Never paired with Eye for Eye.',
  'Eye for Eye':'With 2+ snakes, kill the slowest. Survivors immediately devour its body. Current frog cap is halved. Once per run.',
  'Snake Egg':'One snake gains 25% less speed per shed. Targets the fewest sheds; future snakes are unaffected.',
- 'Wild Company':'Spawn 2–4 Bull, Magnet or Poison frogs—all one random role. Luck favors more.',
+ 'Wild Company':'Spawn 2–4 Bull, Magnet or Poison frogs—all one random role. Requires 4 open frog slots. Luck favors more.',
  'Frog Scatter':'Respawn the swarm, keeping roles, crowns and stats. Triggers death effects; bonus frogs respect the cap. Once per run.',
  'Lasting Legacy':'20% chance a dying special frog passes its role to an ordinary frog.',
  'Cannibal':'Eats up to 5 ordinary frogs. Each meal: 5% shorter hop timing and higher jumps. Death returns 2–5 frogs, never more than eaten.',
