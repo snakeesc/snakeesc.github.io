@@ -232,21 +232,3 @@ body input,body textarea,body [contenteditable="true"],body [contenteditable=""]
 @media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="shield-crowned"]::before{width:58.15577%!important;height:58.15577%!important;left:50.02119%!important;top:47.38737%!important;}}
 #frog-game#frog-game .frog-sprite[data-approved-role="zombie-crowned"]::before{width:59.53428%!important;height:59.53428%!important;left:50.00000%!important;top:48.92320%!important;}
 @media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="zombie-crowned"]::before{width:54.12290%!important;height:54.12290%!important;left:50.00000%!important;top:49.02108%!important;}}
-
-/* Enlarge desktop browser controls independently of the arena render scale. */
-html.desktop-browser-ui .frog-overlay:not(#mainMenuOverlay) > .frog-panel,
-html.desktop-browser-ui #runPauseOverlay > .pause-panel,
-html.desktop-browser-ui .frog-info-overlay > .frog-info-panel,
-html.desktop-browser-ui #mainMenuOverlay > .frog-panel,
-html.desktop-browser-ui #pocket-hud,
-html.desktop-browser-ui #pocket-controls,
-html.desktop-browser-ui #frog-mini-leaderboard { zoom:1.5; }
-/* Keep enlarged panels within the visible viewport, including short windows. */
-html.desktop-browser-ui body .frog-overlay.frog-overlay.frog-overlay.frog-overlay.frog-overlay.frog-overlay.frog-overlay.frog-overlay > .frog-panel,
-html.desktop-browser-ui body #runPauseOverlay#runPauseOverlay#runPauseOverlay#runPauseOverlay > .pause-panel {
- max-width:calc(62 * var(--app-vw,1vw))!important;
- max-height:calc(60 * var(--app-vh,1vh))!important;
-}
-/* Real dimensions preserve the tutorial pointer's positioning calculations. */
-html.desktop-browser-ui #runTutorial .tutorial-bubble {width:585px;font-size:40.5px;padding:27px 30px;}
-html.desktop-browser-ui #runTutorial button {min-height:66px;padding:15px 21px;}

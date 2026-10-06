@@ -5528,8 +5528,6 @@ function samplePathAtDistance(path, startIdx, dist) {
 
     }
 
-    window.updateSnakeHeadDirection?.(head.el, head.angle);
-
     // 3. PATH & BODY POSITIONING
     snakeObj.path.unshift({ x: head.x, y: head.y });
 
@@ -5716,12 +5714,6 @@ function samplePathAtDistance(path, startIdx, dist) {
     updateHUD();
   }
 
-  // Immediate spawn rewards require their offer-specific room; recurring and cap-raising upgrades
-  // retain their own eligibility rules.
-  function hasRoomForSpawnReward(count) {
-    return Math.min(maxFrogsCap, ABSOLUTE_FROG_CAP) - frogs.length >= count;
-  }
-
   function getUpgradeChoices() {
     const statColors = {
       mobility: "yellow",
@@ -5749,7 +5741,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     if (nightBloomActive && !afterglowActive) upgrades.push({id:"afterglow", label:"Afterglow<br>Frogs spawned from expired orbs <span class=menu-number-accent data-card-accent>trigger them</span>", apply:()=>{afterglowActive=true;}});
     if (!panicAttackActive) upgrades.push({id:"panicAttack", label:"Panic Attack<br>Confused snakes <span class=menu-number-accent data-card-accent>flee</span> your frogs", apply:()=>{panicAttackActive=true;}});
 
-    if (hasRoomForSpawnReward(4)) upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>2–4</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],2,4)});
+    if (maxFrogsCap - frogs.length >= 4) upgrades.push({id:"wildCompany",label:"Wild Company<br>Spawn <span>2–4</span> special frogs of a random common role",apply:()=>spawnRoleBatch(["bull","magnet","poison"][Math.floor(Math.random()*3)],2,4)});
     if (!lastingLegacyActive) upgrades.push({
       id:"lastingLegacy", label:"Lasting Legacy<br><span>20%</span> chance to pass a special frog’s role on death",
       apply:()=>{lastingLegacyActive=true;}
@@ -5783,7 +5775,7 @@ function samplePathAtDistance(path, startIdx, dist) {
       });
     }
 
-    if (hasRoomForSpawnReward(NORMAL_SPAWN_AMOUNT)) {
+    if (frogs.length < maxFrogsCap) {
       upgrades.push({
         id: "spawn20",
         label: `🐸 Spawn frogs<br><span style="color:${c.role};">${NORMAL_SPAWN_AMOUNT}</span> frogs right now`,
@@ -5960,7 +5952,7 @@ function samplePathAtDistance(path, startIdx, dist) {
     }
 
 
-    if (hasRoomForSpawnReward(6)) upgrades.push({
+    upgrades.push({
       id: "roleDraft",
       label: `🎭 Role Draft<br>Choose a role. Spawn <span style="color:${epicTitleColor};">3–6</span> special frogs`,
       opensRoleDraft: true,
@@ -6013,7 +6005,7 @@ function samplePathAtDistance(path, startIdx, dist) {
 
 
 
-    if (frogs.length > 0 && hasRoomForSpawnReward(15)) {
+    if (frogs.length < maxFrogsCap) {
       upgrades.push({
         id: "tidalWave",
         label: `🌊 Tidal Wave<br>Double your frogs. Spawn at least <span style="color:${epicTitleColor};">15</span>`,
@@ -6118,9 +6110,9 @@ function samplePathAtDistance(path, startIdx, dist) {
       hopMin = 0.35; hopMax = 0.63;
       heightMin = 11; heightMax = 26;
     } else {
-      idleMin = 1.4; idleMax = 3.2;
-      hopMin = 0.35; hopMax = 0.63;
-      heightMin = 11; heightMax = 24;
+      idleMin = 2.0; idleMax = 5.0;
+      hopMin = 0.45; hopMax = 0.9;
+      heightMin = 6;  heightMax = 20;
     }
 
     const frog = {
@@ -6592,7 +6584,7 @@ function closeAnimatedOverlay(overlayEl) {
       { title: "Promotion", desc: "Promotes 5–10 random frogs by one crown level. Frogs already at the crown cap are skipped." },
       { title: "Mutation", desc: `${fmtPct(speedPerPickPct)} faster hops and ${fmtPct(jumpPerPickPct)} higher and farther jumps per pick (up to two picks).` },
       { title: "Survival Instinct", desc: `Below 10 frogs, jumps are ${fmtPct(20)} higher and farther.` },
-      { title: "Spawn Frogs", desc: `Instantly adds ${statHighlight(NORMAL_SPAWN_AMOUNT)} frogs (only offered with room for the full spawn).` },
+      { title: "Spawn Frogs", desc: `Instantly adds ${statHighlight(NORMAL_SPAWN_AMOUNT)} frogs (only offered if you're below cap).` },
       { title: "Orb Whisperer", desc: `Orbs linger ${fmtPct(20)} longer before fading.` },
       { title: "Soul Offering", desc: "Deathrattle revivals leave an orb." },
       { title: "Coin Flip", desc: `Sacrifice ${statHighlight("1")} frog to trigger a random buff at ${statHighlight("1.75×")} duration.` },
@@ -8042,7 +8034,7 @@ function initUpgradeOverlay() {
       if (isFirstTimedNormal) {
         firstTimedNormalChoiceDone = true;
 
-        if (hasRoomForSpawnReward(NORMAL_SPAWN_AMOUNT)) {
+        if (frogs.length < maxFrogsCap) {
           let spawnChoiceIndex = pool.findIndex(c => c.id === "spawn20");
           let spawnChoice;
 
