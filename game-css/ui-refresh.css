@@ -207,3 +207,28 @@ img[src*="upgrade-second-bloom.png"],img.upgrade-icon-second-bloom{transform:tra
 html, body, body *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
 body img{-webkit-user-drag:none;}
 body input,body textarea,body [contenteditable="true"],body [contenteditable=""],body [contenteditable="plaintext-only"],body [contenteditable="true"] *,body [contenteditable=""] *,body [contenteditable="plaintext-only"] *{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}
+
+/* Crowned role art: match opaque body width and foot baseline to each uncrowned sprite.
+   Only visual pseudo-elements change; frog movement and collision sizes stay intact. */
+#frog-game#frog-game .frog-sprite[data-approved-role="alchemist-crowned"]::before{width:54.52996%!important;height:54.52996%!important;left:50.00000%!important;top:49.56006%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="alchemist-crowned"]::before{width:49.57345%!important;height:49.57345%!important;left:50.00000%!important;top:49.60004%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="aura-crowned"]::before{width:60.88665%!important;height:60.88665%!important;left:50.00000%!important;top:47.74080%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="aura-crowned"]::before{width:55.35235%!important;height:55.35235%!important;left:50.00000%!important;top:47.94615%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="bull-crowned"]::before{width:59.48549%!important;height:59.48549%!important;left:50.07148%!important;top:51.27500%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="bull-crowned"]::before{width:54.07835%!important;height:54.07835%!important;left:50.06499%!important;top:51.15910%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="cannibal-crowned"]::before{width:60.96900%!important;height:60.96900%!important;left:51.44423%!important;top:51.52915%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="cannibal-crowned"]::before{width:55.42701%!important;height:55.42701%!important;left:51.31295%!important;top:51.39015%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="champion-crowned"]::before{width:64.03484%!important;height:64.03484%!important;left:50.00000%!important;top:49.42697%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="champion-crowned"]::before{width:58.21438%!important;height:58.21438%!important;left:50.00000%!important;top:49.47905%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="lucky-crowned"]::before{width:53.16137%!important;height:53.16137%!important;left:50.04071%!important;top:53.70351%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="lucky-crowned"]::before{width:48.32925%!important;height:48.32925%!important;left:50.03701%!important;top:53.36688%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="magnet-crowned"]::before{width:55.27155%!important;height:55.27155%!important;left:50.00000%!important;top:50.56987%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="magnet-crowned"]::before{width:50.24763%!important;height:50.24763%!important;left:50.00000%!important;top:50.51807%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="necromancer-crowned"]::before{width:46.67620%!important;height:46.67620%!important;left:50.08663%!important;top:52.35056%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="necromancer-crowned"]::before{width:42.43356%!important;height:42.43356%!important;left:50.07876%!important;top:52.13690%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="poison-crowned"]::before{width:59.69233%!important;height:59.69233%!important;left:50.00000%!important;top:48.39131%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="poison-crowned"]::before{width:54.26639%!important;height:54.26639%!important;left:50.00000%!important;top:48.53754%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="shield-crowned"]::before{width:63.97037%!important;height:63.97037%!important;left:50.02331%!important;top:47.12615%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="shield-crowned"]::before{width:58.15577%!important;height:58.15577%!important;left:50.02119%!important;top:47.38737%!important;}}
+#frog-game#frog-game .frog-sprite[data-approved-role="zombie-crowned"]::before{width:59.53428%!important;height:59.53428%!important;left:50.00000%!important;top:48.92320%!important;}
+@media(max-width:600px){#frog-game#frog-game .frog-sprite[data-approved-role="zombie-crowned"]::before{width:54.12290%!important;height:54.12290%!important;left:50.00000%!important;top:49.02108%!important;}}

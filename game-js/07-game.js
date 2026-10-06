@@ -2537,19 +2537,6 @@ function assignSwarmDivideLanes() {
     frog.swarmDivideLane = (i % 2 === 0) ? -1 : 1;
   }
 }
-// Shared continuous movement profile for starting and newly spawned frogs.
-function rollFrogMovementProfile() {
-  const tendency = Math.random() * 2 - 1;
-  const idleCenter = 1.45 - tendency * 0.25;
-  const hopCenter = 0.46 - tendency * 0.045;
-  const heightCenter = 19.4 + tendency * 2;
-  return {
-    idleMin: idleCenter - 0.55, idleMax: idleCenter + 0.55,
-    hopMin: hopCenter - 0.10, hopMax: hopCenter + 0.10,
-    heightMin: heightCenter - 6, heightMax: heightCenter + 6
-  };
-}
-
 function createFrogAt(x, y, tokenId, menuPreview = false) {
   if (!menuPreview && frogs.length >= Math.min(maxFrogsCap, ABSOLUTE_FROG_CAP)) return null;
   const el = document.createElement("div");
@@ -2562,7 +2549,22 @@ function createFrogAt(x, y, tokenId, menuPreview = false) {
   el.style.zIndex = "10";
   container.appendChild(el);
 
-  const {idleMin, idleMax, hopMin, hopMax, heightMin, heightMax} = rollFrogMovementProfile();
+  const personalityRoll = Math.random();
+  let idleMin, idleMax, hopMin, hopMax, heightMin, heightMax;
+
+  if (personalityRoll < 0.25) {
+    idleMin = 0.3; idleMax = 1.0;
+    hopMin = 0.25; hopMax = 0.50;
+    heightMin = 15.4; heightMax = 32;
+  } else if (personalityRoll < 0.6) {
+    idleMin = 0.8; idleMax = 3.0;
+    hopMin = 0.35; hopMax = 0.63;
+    heightMin = 11; heightMax = 26;
+  } else {
+    idleMin = 1.4; idleMax = 3.2;
+    hopMin = 0.35; hopMax = 0.63;
+    heightMin = 11; heightMax = 24;
+  }
 
   const cosmetics = rollFrogCosmetics();
 
@@ -6096,7 +6098,22 @@ function samplePathAtDistance(path, startIdx, dist) {
     el.style.zIndex = "8";
     container.appendChild(el);
 
-    const {idleMin, idleMax, hopMin, hopMax, heightMin, heightMax} = rollFrogMovementProfile();
+    const personalityRoll = Math.random();
+    let idleMin, idleMax, hopMin, hopMax, heightMin, heightMax;
+
+    if (personalityRoll < 0.25) {
+      idleMin = 0.3; idleMax = 1.0;
+      hopMin = 0.25; hopMax = 0.50;
+      heightMin = 15.4; heightMax = 32;
+    } else if (personalityRoll < 0.6) {
+      idleMin = 0.8; idleMax = 3.0;
+      hopMin = 0.35; hopMax = 0.63;
+      heightMin = 11; heightMax = 26;
+    } else {
+      idleMin = 2.0; idleMax = 5.0;
+      hopMin = 0.45; hopMax = 0.9;
+      heightMin = 6;  heightMax = 20;
+    }
 
     const frog = {
       tokenId,
