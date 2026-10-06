@@ -11,6 +11,7 @@
   var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
   var isPhoneScreen = (matchMedia('(pointer: coarse)').matches || hasTouch) && Math.min(screen.width, screen.height) <= 600;
   var isApp = typeof window.Capacitor !== 'undefined';
+  document.documentElement.classList.toggle('desktop-browser-ui', !isPhoneScreen && !isApp);
 
   if (isPhoneScreen && !isApp) {
     // Website, real mobile browser: the original, working approach. Setting
