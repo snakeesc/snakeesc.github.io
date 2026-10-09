@@ -344,145 +344,196 @@
   // --------------------------------------------------
   // NETWORK: FETCH & SUBMIT
   // --------------------------------------------------
-  async function fetchLeaderboard() {
+  // Persist confirmed rankings separately from unconfirmed personal scores.
+  const clientId = getOrCreatePlayerId();
+  const storagePrefix = `frogSnake_leaderboard_v2_${platform}_${clientId}_`;
+  function readStored(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(storagePrefix + key)) ?? fallback; }
+    catch (_) { return fallback; }
+  }
+  function writeStored(key, value) {
+    try { localStorage.setItem(storagePrefix + key, JSON.stringify(value)); return true; }
+    catch (_) { return false; }
+  }
+  let snapshot = readStored('snapshot', null);
+  if (!snapshot || !Array.isArray(snapshot.entries) || !Number.isFinite(snapshot.savedAt)) snapshot = null;
+  let pending = readStored('pending', null);
+  if (!pending?.payload || pending.payload.clientId !== clientId ||
+      !Number.isFinite(pending.payload.score) || !Number.isFinite(pending.payload.time)) pending = null;
+  let pendingDurable = !!pending;
+  let usingCache = !!snapshot;
+  let syncPromise = null;
+  let initialized = false;
+  let lastSyncError = pending?.blocked ? 'Score saved locally, but the server rejected it. Try submitting again later.' : '';
+  if (snapshot) lastMyEntry = snapshot.myEntry || null;
+
+  function getCachedLeaderboard() {
+    return snapshot ? dedupeAndSortEntries(snapshot.entries) : [];
+  }
+
+  function getSyncStatus() {
+    return { cached: usingCache, savedAt: snapshot?.savedAt || null,
+      hasCache: !!snapshot, pending: !!pending, durable: pendingDurable,
+      pendingScore: pending?.payload.score || 0, error: lastSyncError };
+  }
+
+  function getStatusText() {
+    const parts = [];
+    if (usingCache || navigator.onLine === false) {
+      parts.push(snapshot
+        ? `Saved leaderboard · last updated ${new Date(snapshot.savedAt).toLocaleString()}.`
+        : 'Connect once to download the leaderboard for offline viewing.');
+    }
+    if (pending) parts.push(lastSyncError || (pendingDurable
+      ? 'Score saved on this device. It will upload automatically when connected.'
+      : 'Unable to save this score on the device. Keep the app open to retry uploading.'));
+    return parts.join(' ');
+  }
+
+  function notifySyncStatus() {
+    document.querySelectorAll('[data-leaderboard-status]').forEach(el => {
+      el.textContent = getStatusText();
+      el.hidden = !el.textContent;
+    });
+    window.dispatchEvent(new CustomEvent('frog-leaderboard-sync', { detail: getSyncStatus() }));
+  }
+
+  function rememberLeaderboard(data) {
+    if (!Array.isArray(data) && !Array.isArray(data?.entries)) throw new Error('Invalid leaderboard response');
+    const entries = dedupeAndSortEntries(Array.isArray(data) ? data : data.entries);
+    lastMyEntry = Array.isArray(data) ? null : data.myEntry || null;
+    snapshot = { entries, myEntry: lastMyEntry, savedAt: Date.now() };
+    writeStored('snapshot', snapshot);
+    usingCache = false;
+    if (lastMyEntry?.tag && lastMyEntry.tag.trim().toLowerCase() !== 'frog') {
+      try { localStorage.setItem(TAG_STORAGE_KEY, lastMyEntry.tag.trim()); } catch (_) {}
+    }
+    notifySyncStatus();
+    return entries;
+  }
+
+  // Bound both fetch and JSON decoding; network state flags alone are unreliable.
+  async function requestJson(url, options) {
+    const controller = new AbortController();
+    let timer;
     try {
-      const clientId = encodeURIComponent(getOrCreatePlayerId());
-      const res = await fetch(`${LEADERBOARD_URL}&clientId=${clientId}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
+      return await Promise.race([
+        (async () => {
+          const response = await fetch(url, { ...options, signal: controller.signal });
+          const data = await response.json();
+          return { ok: response.ok, status: response.status, data };
+        })(),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => { controller.abort(); reject(new Error('Network timeout')); }, 4000);
+        })
+      ]);
+    } finally { clearTimeout(timer); }
+  }
 
-      if (!res.ok) {
-        console.warn("fetchLeaderboard non-OK:", res.status);
-        return [];
-      }
+  function queueScore(payload) {
+    // Keep the score/time/stats from ONE run. Lower runs cannot overwrite a best.
+    const best = pending && !isBetterEntry(payload, pending.payload)
+      ? { ...pending.payload } : { ...payload };
+    if (payload.tag) best.tag = payload.tag;
+    if (payload.previousTag) best.previousTag = payload.previousTag;
+    pending = { id: generatePlayerId(), payload: best };
+    pendingDurable = writeStored('pending', pending);
+    lastSyncError = '';
+    notifySyncStatus();
+  }
 
-      const data = await res.json();
+  function queuedResult() {
+    return { _error: true, _queued: true, message: getStatusText() };
+  }
 
-      let entries = [];
-      lastMyEntry = null;
-
-      if (Array.isArray(data)) {
-        entries = data;
-      } else if (data && Array.isArray(data.entries)) {
-        entries = data.entries;
-        if (data.myEntry) lastMyEntry = data.myEntry;
-      }
-
-      if (
-        lastMyEntry &&
-        typeof lastMyEntry.tag === "string" &&
-        lastMyEntry.tag.trim() !== "" &&
-        lastMyEntry.tag.trim().toLowerCase() !== "frog" &&
-        typeof localStorage !== "undefined"
-      ) {
+  function syncPendingScores() {
+    if (syncPromise) return syncPromise;
+    if (!pending || navigator.onLine === false || pending.blocked) return Promise.resolve(pending ? queuedResult() : null);
+    syncPromise = (async () => {
+      let entries = null;
+      while (pending && navigator.onLine !== false && !pending.blocked) {
+        const sent = pending;
         try {
-          localStorage.setItem(TAG_STORAGE_KEY, lastMyEntry.tag.trim());
-        } catch (e) {}
+          const result = await requestJson(LEADERBOARD_URL, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sent.payload)
+          });
+          if (!result.ok) {
+            // Preserve the score if a tag conflicts; retry without the rejected rename.
+            if (pending?.id === sent.id && ['tag_taken', 'invalid_tag', 'tag_invalid', 'tag_not_allowed', 'profanity'].includes(result.data?.error)) {
+              delete pending.payload.tag;
+              delete pending.payload.previousTag;
+              pendingDurable = writeStored('pending', pending);
+            } else if (pending?.id === sent.id && result.status >= 400 && result.status < 500 && ![408, 429].includes(result.status)) {
+              pending.blocked = true;
+              pendingDurable = writeStored('pending', pending);
+              lastSyncError = 'Score saved locally, but the server rejected it. Please try again later.';
+            }
+            usingCache = true;
+            return { _error: true, status: result.status, ...(result.data || {}) };
+          }
+          // A successful response must confirm THIS score (or a better one).
+          if (!Array.isArray(result.data?.entries) || !result.data.myEntry ||
+              isBetterEntry(sent.payload, result.data.myEntry)) throw new Error('Score not confirmed');
+          entries = rememberLeaderboard(result.data);
+          if (pending?.id === sent.id) {
+            // Clear only the acknowledged revision. A new score may arrive in flight.
+            pending = null;
+            pendingDurable = writeStored('pending', null);
+            lastSyncError = '';
+          }
+        } catch (_) {
+          usingCache = true;
+          return queuedResult();
+        }
       }
+      return entries;
+    })().finally(() => { syncPromise = null; notifySyncStatus(); });
+    return syncPromise;
+  }
 
-      return dedupeAndSortEntries(entries);
-    } catch (err) {
-      console.error("fetchLeaderboard error", err);
-      return [];
+  async function fetchLeaderboard() {
+    if (navigator.onLine === false) {
+      usingCache = true;
+      notifySyncStatus();
+      return getCachedLeaderboard();
+    }
+    const synced = await syncPendingScores();
+    if (Array.isArray(synced)) return synced;
+    // Do not wait for another request after an upload already timed out.
+    if (synced?._queued) {
+      usingCache = true;
+      notifySyncStatus();
+      return getCachedLeaderboard();
+    }
+    try {
+      const result = await requestJson(`${LEADERBOARD_URL}&clientId=${encodeURIComponent(clientId)}`, {
+        method: 'GET', headers: { Accept: 'application/json' }
+      });
+      if (!result.ok) throw new Error('Leaderboard unavailable');
+      return rememberLeaderboard(result.data);
+    } catch (_) {
+      usingCache = true;
+      notifySyncStatus();
+      return getCachedLeaderboard();
     }
   }
 
   async function submitScoreToServer(score, time, stats, tag) {
-    try {
-      let finalTag = null;
-
-      if (typeof tag === "string" && tag.trim() !== "") {
-        finalTag = tag.trim();
-      }
-
-      if (!finalTag && typeof localStorage !== "undefined") {
-        try {
-          const stored = localStorage.getItem(TAG_STORAGE_KEY);
-          if (stored && stored.trim() !== "") {
-            finalTag = stored.trim();
-          }
-        } catch (e) {}
-      }
-
-      const payload = {
-        score,
-        time,
-        stats: stats || null,
-        clientId: getOrCreatePlayerId(),
-      };
-
-      let previousTag = null;
-      if (typeof localStorage !== "undefined") {
-        try {
-          const stored = localStorage.getItem(TAG_STORAGE_KEY);
-          if (stored && stored.trim() !== "") {
-            previousTag = stored.trim();
-          }
-        } catch (e) {}
-      }
-
-      if (finalTag && finalTag.length > 0) {
-        payload.tag = finalTag;
-      }
-
-      if (
-        previousTag &&
-        finalTag &&
-        previousTag.trim().toLowerCase() !== finalTag.trim().toLowerCase()
-      ) {
-        payload.previousTag = previousTag.trim();
-      }
-
-      if (finalTag && finalTag.length > 0) {
-        payload.tag = finalTag;
-      }
-
-      const res = await fetch(LEADERBOARD_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        console.warn("Failed to submit score:", res.status, errData);
-        return { _error: true, status: res.status, ...(errData || {}) };
-      }
-
-      const data = await res.json().catch(() => null);
-      if (!data || !Array.isArray(data.entries)) {
-        console.warn("Leaderboard response missing entries:", data);
-        return null;
-      }
-
-      const entries = dedupeAndSortEntries(data.entries);
-
-      if (data.myEntry) {
-        const key = getEntryKey(data.myEntry);
-        const match = key && entries.find((entry) => getEntryKey(entry) === key);
-        lastMyEntry = match || data.myEntry;
-
-        // Persist whatever tag the server assigned (including auto-generated arcade tags)
-        if (
-          lastMyEntry &&
-          typeof lastMyEntry.tag === "string" &&
-          lastMyEntry.tag.trim() !== "" &&
-          lastMyEntry.tag.trim().toLowerCase() !== "frog" &&
-          typeof localStorage !== "undefined"
-        ) {
-          try {
-            localStorage.setItem(TAG_STORAGE_KEY, lastMyEntry.tag.trim());
-          } catch (e) {}
-        }
-      }
-
-      return entries;
-    } catch (err) {
-      console.error("Error submitting score:", err);
-      return null;
+    if (!Number.isFinite(score) || score < 0 || !Number.isFinite(time) || time < 0) {
+      return { _error: true, message: 'Invalid score or time.' };
     }
+    let storedTag = null;
+    try { storedTag = localStorage.getItem(TAG_STORAGE_KEY)?.trim() || null; } catch (_) {}
+    const finalTag = typeof tag === 'string' && tag.trim() ? tag.trim() : storedTag;
+    const payload = { score, time, stats: stats || null, clientId };
+    if (finalTag) payload.tag = finalTag;
+    if (storedTag && finalTag && storedTag.toLowerCase() !== finalTag.toLowerCase()) payload.previousTag = storedTag;
+    queueScore(payload); // Synchronous durable write BEFORE any network operation.
+    const result = await syncPendingScores();
+    return result || queuedResult();
   }
+
   // --------------------------------------------------
   // MINI LEADERBOARD (top-right HUD / pre-game view)
   // --------------------------------------------------
@@ -594,7 +645,7 @@
     header.className = "scoreboard-header";
     header.innerHTML = `
       <div class="scoreboard-title">Run summary</div>
-      <div class="scoreboard-subtitle">${boardLabel} updated</div>
+      <div class="scoreboard-subtitle" data-leaderboard-status>${escapeHtml(getStatusText())}</div>
     `;
     scoreboardOverlayInner.appendChild(header);
 
@@ -1053,6 +1104,19 @@
   // --------------------------------------------------
   function initLeaderboard(container) {
     ensureScoreboardOverlay(container || document.body);
+    if (initialized) return;
+    initialized = true;
+    const retry = () => {
+      if (navigator.onLine !== false && document.visibilityState !== 'hidden') {
+        void fetchLeaderboard().then(updateMiniLeaderboard);
+      } else notifySyncStatus();
+    };
+    window.addEventListener('online', retry);
+    window.addEventListener('offline', notifySyncStatus);
+    window.addEventListener('focus', retry);
+    document.addEventListener('visibilitychange', retry);
+    document.addEventListener('resume', retry);
+    setInterval(() => { if (pending && !pending.blocked) retry(); }, 30000);
   }
 
   // --------------------------------------------------
@@ -1097,6 +1161,10 @@
     boardLabel,
     initLeaderboard,
     fetchLeaderboard,
+    getCachedLeaderboard,
+    getSyncStatus,
+    getStatusText,
+    syncPendingScores,
     submitScoreToServer,
     updateMiniLeaderboard,
     openScoreboardOverlay,

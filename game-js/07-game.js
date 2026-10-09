@@ -1824,6 +1824,7 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
  
  <p class="identity-best">Personal best <b>${menuPersonalBest(run.score,leaderboardBest.bestRun).toLocaleString()}</b></p><div class="summary-score"><strong>${Math.floor(run.score || 0).toLocaleString()}</strong><span>Final score</span></div>
  <div class="summary-details"><span><b>${formatLeaderboardTime(run.time || 0)}</b> survived</span><span><b>${run.orbs || 0}</b> orbs</span><span><b>${run.sheds || 0}</b> sheds</span></div>
+ <p data-leaderboard-status role="status">${pauseEscape(window.FrogGameLeaderboard?.getStatusText?.() || "")}</p>
  <section class="run-upgrades"></section>`;
   renderRunUpgrades(content.querySelector('.run-upgrades'),runUpgradeLog.map(x=>({...x})));
   openAnimatedOverlay(endGameSummaryOverlay);
@@ -1833,9 +1834,8 @@ function showEndGameSummaryOverlay(cachedLeaderboard, submitError) {
   const tagSaveBtn = document.getElementById("endSummaryTagSaveBtn");
   const tagMsg = document.getElementById("endSummaryTagMsg");
 
-  if (submitError && tagMsg) {
-    tagMsg.textContent = "Score saved on this device, but not confirmed on the leaderboard. Open the scoreboard to retry.";
-    tagMsg.style.color = "#fca5a5";
+  if (submitError && tagMsg && !window.FrogGameLeaderboard?.getSyncStatus?.().pending) {
+    tagMsg.textContent = 'Could not upload this score. Please try again when connected.';
   }
 
   if (tagSaveBtn && tagInput) {
@@ -6869,32 +6869,14 @@ function closeAnimatedOverlay(overlayEl) {
 
     try {
       let entries = await fetchLeaderboard();
-      const localBest = loadDashboardStats().bestRun;
-      const localScore = Math.floor(Number(localBest?.score) || 0);
-      const serverScore = getLeaderboardEntryScore(window.FrogGameLeaderboard?._lastMyEntry);
-      let syncWarning = "";
-      if (localScore > 0 && serverScore >= localScore) {
-        confirmLeaderboardScore(localScore);
-      } else if (localScore > getConfirmedLeaderboardScore()) {
-        // Retry a locally saved best on Android without replaying the run.
-        const retried = await submitScoreToServer(localScore, Number(localBest?.time) || 0,
-          null, getSavedPlayerTag ? getSavedPlayerTag() : null);
-        if (Array.isArray(retried) &&
-            getLeaderboardEntryScore(window.FrogGameLeaderboard?._lastMyEntry) >= localScore) {
-          confirmLeaderboardScore(localScore);
-          entries = retried;
-        } else {
-          syncWarning = `Your local best (${localScore.toLocaleString()}) has not reached the leaderboard. Check your connection and reopen this board to retry.`;
-        }
-      }
-      const warningHtml = syncWarning
-        ? `<p role="status" style="color:#9c351f;font-size:13px;margin:0 0 12px">${syncWarning}</p>` : "";
+      const statusText = window.FrogGameLeaderboard?.getStatusText?.() || '';
+      const warningHtml = `<p data-leaderboard-status role="status" style="font-size:13px;margin:0 0 12px" ${statusText ? '' : 'hidden'}>${pauseEscape(statusText)}</p>`;
       const list = Array.isArray(entries) ? entries.slice(0, 50) : [];
 
       if (list.length === 0) {
         content.innerHTML = `${warningHtml}
           <div class="frog-panel-section-label">Global Leaderboard</div>
-          <ul class="frog-panel-list"><li>No runs yet.</li></ul>
+          <ul class="frog-panel-list"><li>${window.FrogGameLeaderboard?.getSyncStatus?.().cached && !window.FrogGameLeaderboard?.getSyncStatus?.().hasCache ? "No saved leaderboard yet." : "No runs yet."}</li></ul>
         `;
         openAnimatedOverlay(leaderboardOverlay);
         return;
@@ -8884,16 +8866,26 @@ doubleYolkerActive = false;
     initDashboardOverlay();
     ensureInfoOverlay();
 
-    const topList = await fetchLeaderboard();
-    if (topList) {
-      updateMiniLeaderboard(topList);
-      infoLeaderboardData = topList;
-    } else {
-      infoLeaderboardData = [];
-    }
-
+    // Local assets and cached standings are usable before any network response.
+    infoLeaderboardData = window.FrogGameLeaderboard?.getCachedLeaderboard?.() || [];
+    updateMiniLeaderboard(infoLeaderboardData);
     seedMatchGrass();
     showMainMenu();
+
+    // Also recover a best saved by an older app version, without opening the board.
+    const best = loadDashboardStats().bestRun;
+    const savedScore = Math.floor(Number(best?.score) || 0);
+    const savedTime = Number(best?.time) || 0;
+    const known = window.FrogGameLeaderboard?._lastMyEntry;
+    const knownScore = getLeaderboardEntryScore(known);
+    const knownTime = getLeaderboardEntryTime(known);
+    if (savedScore > 0 && (savedScore > knownScore || (savedScore === knownScore && savedTime > knownTime))) {
+      void submitScoreToServer(savedScore, savedTime, null, getSavedPlayerTag?.());
+    }
+    void fetchLeaderboard().then(topList => {
+      infoLeaderboardData = Array.isArray(topList) ? topList : [];
+      updateMiniLeaderboard(infoLeaderboardData);
+    });
   }
 
   window.addEventListener("load", startGame);

@@ -1,0 +1,66 @@
+Escape the Snake — offline leaderboard and automatic high-score upload
+
+Source: snakeesc/snakeesc.github.io, main commit
+023b9b58b658c31812e763c62e84d67aa75f214d (checked October 9, 2026).
+
+INSTALL
+This ZIP is an update patch for the existing repository, not a complete APK.
+Copy index.html and game-js/ into the repository, replacing matching files.
+Build and copy the web assets into Android:
+
+  npm run build:www
+  npx cap sync android
+
+Then build/sign the Android app normally in Android Studio and install the updated
+APK or distribute the updated AAB. Preserve the existing app ID and signing key
+so this installs as an update and retains players' local data.
+No new plugin, package dependency, or Cloudflare Worker deployment is required.
+
+BEHAVIOR
+- The existing Capacitor project bundles the game and assets for offline play.
+- The menu now opens before leaderboard network requests finish.
+- Successful leaderboard downloads persist on the device, including your own
+  server entry. Offline viewing uses the latest successful download and its date.
+- If no leaderboard has ever been downloaded by this version, the menu asks the
+  player to connect once. It does not invent rankings for an offline score.
+- Score submissions are saved before contacting the server. While disconnected,
+  the best pending score is kept with its own survival time and run stats.
+  A lower later score cannot overwrite it. A longer time wins equal-score ties.
+- The pending best survives closing and reopening the app.
+- Upload retries occur on startup, connection return, foreground/resume, and
+  every 30 seconds while the app is visible and a score is pending.
+- Uploads are serialized. A new best recorded during an upload remains pending
+  until it is confirmed too. Failed, timed-out or malformed responses do not
+  clear the pending score. The server must acknowledge that score or better.
+- The previously saved personal best is also recovered automatically at startup
+  if it is better than the cached server record.
+- Rankings and pending uploads are separate for Android/web and player identity.
+- Status text explains when rankings are cached and when a score awaits upload.
+- A rejected player-tag rename cannot discard the pending score: a later retry
+  submits the score without the rejected tag. Other non-retryable server errors
+  preserve the record locally and display a rejection status.
+- Retries happen while the app is open or when it next resumes. This is not an
+  Android background service that runs after the app is closed.
+
+SCOPE
+This patch concerns leaderboard rankings and personal-best uploads. It does not
+queue every historical run for the separate recent-runs feed. Game balance,
+sprite artwork and the rejected icon previews are not part of this update.
+
+VALIDATION
+Run: node tests/offline-leaderboard.cjs
+11 automated behavior tests passed: cached cold start, empty-cache messaging,
+best-score preservation and tie times, saving before POST, lifecycle retries,
+concurrent best-score arrival, server/JSON/timeout failures, cache retention,
+tag conflicts, platform/player separation, and unavailable/corrupt storage.
+JavaScript syntax and ZIP integrity checks passed.
+Tests use the production leaderboard module with a simulated server and storage.
+No scores were submitted to the live leaderboard during testing.
+An Android APK was not built or device-tested here.
+
+DEVICE CHECK
+1. Open the rebuilt app online once and view the leaderboard.
+2. Enable airplane mode, fully close/reopen the app, and view the saved board.
+3. Finish a run offline, then close/reopen the app while still offline.
+4. Restore internet and resume/open the app; verify its best score uploads and
+   the pending notice clears. Reopen the board to inspect refreshed rankings.
